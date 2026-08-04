@@ -12,6 +12,10 @@ import HoyPage     from '@/pages/HoyPage'
 import JournalPage from '@/pages/JournalPage'
 import TuPage      from '@/pages/TuPage'
 
+// Onboarding (P1–P3 implementadas; el resto se añade dentro del propio flujo)
+import OnboardingFlow from '@/pages/onboarding/OnboardingFlow'
+import { isOnboardingComplete, markOnboardingComplete } from '@lib/onboardingStorage'
+
 const TABS = [
   { id: 'hoy',     label: 'Hoy',     icon: SunMoonIcon },
   { id: 'journal', label: 'Journal', icon: PenIcon     },
@@ -21,6 +25,19 @@ const TABS = [
 export default function App() {
   const [activeTab, setActiveTab] = useState('hoy')
   const [hideNav, setHideNav]     = useState(false)  // ocultar en rituales / escritura activa
+  const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingComplete())
+
+  // Primera vez: el onboarding ocupa toda la pantalla, sin barra de pestañas.
+  if (showOnboarding) {
+    return (
+      <OnboardingFlow
+        onComplete={() => {
+          markOnboardingComplete()
+          setShowOnboarding(false)
+        }}
+      />
+    )
+  }
 
   return (
     <div className="min-h-screen bg-paper text-ink font-sans flex flex-col">

@@ -21,8 +21,17 @@ export default function Chip({
   className,
   ...props
 }) {
+  // Área seleccionada: tinte + borde del color propio, pero el texto se queda en
+  // ink. Pintar la etiqueta con el color del área daba ~2.5:1 sobre el tinte
+  // claro y no pasaba contraste; el color ya lo comunica el punto y el borde.
+  // El inset extra engrosa el borde sin mover el layout: el estado seleccionado
+  // no depende solo del color.
   const selectedStyle = color
-    ? { backgroundColor: color + '22', borderColor: color, color }   // área con color propio
+    ? {
+        backgroundColor: color + '22',
+        borderColor:     color,
+        boxShadow:       `inset 0 0 0 1px ${color}`,
+      }
     : undefined
 
   const defaultSelected = !color && selected
@@ -45,8 +54,9 @@ export default function Chip({
         // Estado base (sin color de área)
         !color && !selected && 'bg-surface border-border text-ink hover:bg-surface/80',
         !color && selected  && 'bg-ink border-ink text-paper',
-        // Estado con color de área → se aplica via style
+        // Estado con color de área → el tinte y el borde se aplican via style
         color && !selected && 'bg-surface border-border text-ink hover:bg-surface/80',
+        color && selected  && 'text-ink',
         className
       )}
       style={selected && color ? selectedStyle : undefined}

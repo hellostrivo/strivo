@@ -14,15 +14,35 @@ export const copy = {
   appName: 'Strivo',
   tagline: 'Refugio digital para terminar cada día en paz contigo mismo.',
 
+  // ─── Áreas de identidad (§5.1.1) ─────────────────────────────────────────
+  // Nombres visibles de cada tipo de área. El orden canónico y el color
+  // viven en @lib/areas y @tokens. `areaId = null` significa "General".
+  areas: {
+    salud:       'Salud',
+    trabajo:     'Trabajo',
+    relaciones:  'Relaciones',
+    finanzas:    'Finanzas',
+    espiritual:  'Espiritual',
+    personal:    'Personal',
+    creatividad: 'Creatividad',
+  },
+
   // ─── Onboarding ──────────────────────────────────────────────────────────
   onboarding: {
+    // Navegación común del flujo (P1 → P11)
+    nav: {
+      back: 'Atrás',
+      continue: 'Continuar',
+      progressTemplate: 'Paso {n} de {total}',
+    },
     p1: {
-      title: 'Refugio digital para terminar cada día en paz.',
+      title: 'Tu refugio digital para reconectar, crecer y avanzar cada día.',
       subtitle: 'Tres minutos al día. Sin presión.',
+      cta: 'Empezar',
     },
     p2: {
       question: '¿Por qué estás aquí?',
-      hint: 'Elige los que resuenen',
+      hint: 'Elige las oraciones que más conecten contigo',
       options: [
         'Ordenar mis emociones',
         'Reconocer lo que sí logro',
@@ -30,6 +50,12 @@ export const copy = {
         'Establecer hábitos que duren',
         'Preparar mi mente para dormir',
       ],
+      // Motivos propios: se pueden añadir uno o varios
+      other:               'Otro…',
+      otherLabel:          'En tus palabras',
+      otherPlaceholder:    'Lo que te trajo aquí',
+      otherAdd:            'Añadir',
+      otherRemoveTemplate: 'Quitar {motivo}',
     },
     p3: {
       headline: 'No preguntamos qué quieres lograr.',
@@ -50,7 +76,7 @@ export const copy = {
     p3c: {
       question: 'Si quieres, ponle palabras.',
       hint: 'Si no, lo dejamos para después.',
-      prefixTemplate: 'En {área} soy alguien que…',
+      prefixTemplate: 'En “{área}” soy alguien que…',
     },
     p4: {
       question: 'Solo tu nombre. Nada más.',
@@ -299,8 +325,12 @@ export const copy = {
 
 // Utilidad: interpolar template strings
 // Uso: interpolate(copy.onboarding.p11.closingTemplate, { identidad: 'crece' })
+//
+// El patrón acepta acentos porque varias plantillas usan {área}, {áreaActiva}
+// y {áreaBaja} (p3c, habits.detail, insights.area). Con \w esas claves no
+// se sustituían y la plantilla salía en crudo a la interfaz.
 export function interpolate(template, vars) {
-  return template.replace(/\{(\w+)\}/g, (_, key) => vars[key] ?? `{${key}}`)
+  return template.replace(/\{([^{}]+)\}/g, (_, key) => vars[key] ?? `{${key}}`)
 }
 
 export default copy
