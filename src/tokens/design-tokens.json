@@ -1,0 +1,222 @@
+{
+  "version": "1.0",
+  "date": "4 ago 2026",
+  "description": "Tokens de diseño de Strivo del blueprint v3, §6.3–6.9",
+  "colors": {
+    "semantic": {
+      "ink": "#241E33",
+      "paper": "#FBF8F4",
+      "night": "#191428",
+      "comment": "Índigo violáceo para noche, NO puro negro. Aumenta la lectura en oscuridad."
+    },
+    "accents": {
+      "amber": "#E5A25C",
+      "plum": "#8B6BA8",
+      "sage": "#7E9E86",
+      "clay": "#C9836B",
+      "mist": "#93A9C4"
+    },
+    "gradients": {
+      "horarios": {
+        "amanecer_start": "#FEE8B6",
+        "amanecer_end": "#FFE4C4",
+        "dia_start": "#FFFEF0",
+        "dia_end": "#FFF8E7",
+        "atardecer_start": "#F5DEB3",
+        "atardecer_end": "#F0E6D2",
+        "noche_start": "#E8DCC8",
+        "noche_end": "#D9CFC4",
+        "madrugada_start": "#C9C0C0",
+        "madrugada_end": "#B8B0B0",
+        "comment": "Varían sin saltos abruptos. Cambio suave cada 30 min."
+      }
+    },
+    "areaColors": {
+      "salud": "#7E9E86",
+      "trabajo": "#93A9C4",
+      "relaciones": "#C9836B",
+      "finanzas": "#E5A25C",
+      "espiritual": "#8B6BA8",
+      "personal": "#FBF8F4",
+      "creatividad": "#FFE4C4",
+      "otra": "#D9CFC4",
+      "comment": "Cada área tiene su color. Se usa en chips, puntos de hábito, barras de progreso."
+    },
+    "states": {
+      "hecho": "#7E9E86",
+      "pendiente": "#D9CFC4",
+      "deshabilitado": "#E8E0D8",
+      "error": "#C9836B",
+      "comment": "NO usar rojo puro (#FF0000). El error usa clay (naranja cálido)."
+    }
+  },
+  "typography": {
+    "fontFamilies": {
+      "display": "Fraunces",
+      "interface": "Satoshi",
+      "fallback": "system-ui, -apple-system, sans-serif"
+    },
+    "scales": {
+      "baseSize": "16px",
+      "ratio": 1.25,
+      "comment": "Escala: 12, 16, 20, 25, 32, 40, 50, 64, 80, 100px",
+      "sizes": {
+        "xs": "12px",
+        "sm": "16px",
+        "base": "16px",
+        "md": "20px",
+        "lg": "25px",
+        "xl": "32px",
+        "2xl": "40px",
+        "3xl": "50px",
+        "4xl": "64px",
+        "5xl": "80px",
+        "6xl": "100px"
+      }
+    },
+    "weights": {
+      "display": {
+        "regular": 400,
+        "medium": 500,
+        "bold": 700,
+        "comment": "Fraunces: para títulos grandes (Hoy, etapas de ritual)"
+      },
+      "interface": {
+        "regular": 400,
+        "medium": 500,
+        "bold": 700,
+        "comment": "Satoshi: para cuerpo, botones, labels"
+      }
+    },
+    "lineHeights": {
+      "tight": 1.2,
+      "normal": 1.5,
+      "relaxed": 1.75,
+      "loose": 2,
+      "comment": "Aplicar según densidad de contenido. Rituales: tight. Journal: relaxed."
+    }
+  },
+  "spacing": {
+    "base": "4px",
+    "ratio": 1.25,
+    "comment": "Escala: 4, 5, 6, 8, 10, 12, 16, 20, 24, 32, 40, 48, 56, 64, 80, 100px",
+    "values": {
+      "0.25": "1px",
+      "0.5": "2px",
+      "1": "4px",
+      "1.5": "6px",
+      "2": "8px",
+      "2.5": "10px",
+      "3": "12px",
+      "4": "16px",
+      "5": "20px",
+      "6": "24px",
+      "8": "32px",
+      "10": "40px",
+      "12": "48px",
+      "14": "56px",
+      "16": "64px",
+      "20": "80px",
+      "24": "96px"
+    }
+  },
+  "borderRadius": {
+    "none": "0px",
+    "sm": "10px",
+    "md": "16px",
+    "lg": "24px",
+    "xl": "32px",
+    "full": "9999px",
+    "comment": "Cálido, acogedor. No usar 0 o radios agresivos. Min 10px, max 32px."
+  },
+  "motion": {
+    "durations": {
+      "fast": "120ms",
+      "base": "260ms",
+      "slow": "420ms",
+      "slower": "700ms",
+      "slowest": "900ms",
+      "comment": "Más lentas que UI estándar (Apple por defecto es 300ms). Cierre nocturno: 900ms."
+    },
+    "easing": {
+      "in": "cubic-bezier(0.4, 0, 1, 1)",
+      "out": "cubic-bezier(0, 0, 0.2, 1)",
+      "inOut": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "smooth": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      "comment": "Preferir inOut (smooth) para la mayoría. Usar out para apariciones."
+    },
+    "animations": {
+      "marcarHabito": {
+        "duration": "260ms",
+        "easing": "smooth",
+        "comment": "Trazo animado al marcar. Sin vibración."
+      },
+      "abrirBloque": {
+        "duration": "420ms",
+        "easing": "out",
+        "comment": "Expandir un bloque (agradecimientos, etc.)"
+      },
+      "cierreLuces": {
+        "duration": "900ms",
+        "easing": "smooth",
+        "comment": "Secuencia de cierre nocturno. Recorrido de luz por la pantalla."
+      }
+    }
+  },
+  "elevation": {
+    "none": "none",
+    "1": "0px 1px 3px rgba(36, 30, 51, 0.12)",
+    "2": "0px 3px 6px rgba(36, 30, 51, 0.16)",
+    "4": "0px 4px 12px rgba(36, 30, 51, 0.20)",
+    "8": "0px 8px 24px rgba(36, 30, 51, 0.24)",
+    "comment": "Usar elevation en lugar de drop shadow. Max 8dp. NO usar sombras pesadas."
+  },
+  "components": {
+    "button": {
+      "padding": "16px 24px",
+      "borderRadius": "16px",
+      "fontWeight": 500,
+      "fontSize": "16px",
+      "minHeight": "56px",
+      "minWidth": "56px",
+      "comment": "Mínimo 56px de alto para toque (48px recomendado por iOS, pero +8px para confort)."
+    },
+    "card": {
+      "borderRadius": "16px",
+      "padding": "16px",
+      "elevation": "2",
+      "comment": "Contenedor de contenido. Fondo = paper en modo claro, night en oscuro."
+    },
+    "input": {
+      "borderRadius": "10px",
+      "padding": "12px 16px",
+      "borderWidth": "1px",
+      "borderColor": "#D9CFC4",
+      "fontSize": "16px",
+      "minHeight": "48px",
+      "comment": "Campos de texto, textarea. Sin rounded extremo."
+    },
+    "chip": {
+      "padding": "8px 12px",
+      "borderRadius": "16px",
+      "fontSize": "14px",
+      "comment": "Etiquetas seleccionables (áreas, emociones, etc.). Cambio visual claro al tocar."
+    }
+  },
+  "contrast": {
+    "standards": "WCAG 2.2 AA",
+    "body_text_ratio": "4.5:1",
+    "large_text_ratio": "3:1",
+    "focusable_ratio": "3:1",
+    "comment": "AAA en cuerpo (18px+). Verificar con herramientas de contraste antes de comitear."
+  },
+  "accessibility": {
+    "minFontSize": "16px",
+    "maxFontSize": "32px",
+    "scalableTo": "200%",
+    "comment": "Todo debe escalar a 200% sin truncarse. Usar viewport-width relativo.",
+    "motion": "respetarPreferMovement",
+    "colorContrast": "verificarAAA",
+    "touchTargets": "min 56px x 56px"
+  }
+}

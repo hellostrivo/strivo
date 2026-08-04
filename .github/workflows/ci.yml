@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint (copy + ESLint)
+        run: |
+          npm run lint:copy || true   # Advertencia, no error bloqueante en Fase 0
+          npm run lint
+
+      - name: Build
+        run: npm run build
+        env:
+          # CI build sin Firebase real (usa valores vacíos)
+          VITE_FIREBASE_API_KEY: placeholder
+          VITE_FIREBASE_AUTH_DOMAIN: placeholder
+          VITE_FIREBASE_PROJECT_ID: placeholder
+          VITE_FIREBASE_STORAGE_BUCKET: placeholder
+          VITE_FIREBASE_MESSAGING_SENDER_ID: placeholder
+          VITE_FIREBASE_APP_ID: placeholder

@@ -1,0 +1,93 @@
+/* src/styles/globals.css */
+/* Tailwind */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Fuentes ───────────────────────────────────────────────────────────────
+   Fraunces (display): https://fonts.google.com/specimen/Fraunces
+   Satoshi (UI):       https://fontsource.org/fonts/satoshi  (o CDN de Fontshare)
+   En producción: self-hosted para privacidad.
+   En dev: Google Fonts / Fontshare CDN para velocidad.
+*/
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap');
+
+/* ─── Variables CSS globales (de design-tokens.json) ────────────────────────
+   Usado por componentes que necesitan acceso en tiempo de ejecución.
+   En Tailwind, preferir clases directamente.
+*/
+:root {
+  --color-ink:   #241E33;
+  --color-paper: #FBF8F4;
+  --color-night: #191428;
+  --color-amber: #E5A25C;
+  --color-plum:  #8B6BA8;
+  --color-sage:  #7E9E86;
+  --color-clay:  #C9836B;
+  --color-mist:  #93A9C4;
+
+  /* Safe area para iPhone notch */
+  --sab: env(safe-area-inset-bottom, 0px);
+}
+
+/* ─── Base ───────────────────────────────────────────────────────────────────
+   Reset mínimo que respeta las preferencias del sistema.
+*/
+@layer base {
+  html {
+    font-family: 'Satoshi', system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background-color: #FBF8F4;
+    color: #241E33;
+    overscroll-behavior: none; /* Evitar bounce en PWA */
+  }
+
+  /* Respetar preferencia del usuario de movimiento reducido */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Escalado de fuente hasta 200% sin romper layout */
+  @media (max-width: 480px) {
+    html { font-size: clamp(14px, 4vw, 18px); }
+  }
+}
+
+/* ─── Utilidades personalizadas ─────────────────────────────────────────────
+*/
+@layer utilities {
+  /* Safe area para barra de navegación inferior */
+  .pb-safe { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+  .pt-safe { padding-top: max(16px, env(safe-area-inset-top)); }
+
+  /* Fuente display para títulos emocionales */
+  .font-display { font-family: 'Fraunces', serif; }
+
+  /* Scroll suave sin overscroll bounce (para pantallas modales) */
+  .scroll-smooth-no-bounce {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Ocultar scrollbar visualmente (pero permitir scroll) */
+  .scrollbar-hidden {
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+  }
+
+  /* Transición de gradiente (para cambio de franja horaria) */
+  .gradient-transition {
+    transition: background 900ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+}
