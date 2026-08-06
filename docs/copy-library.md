@@ -22,7 +22,17 @@
 Pantalla 1 (Bienvenida):
 "Refugio digital para terminar cada día en paz."
 
-Pantalla P2 (Motivo):
+Pantalla P2 (Nombre):
+"Solo tu nombre. Nada más."
+"Es para saludarte. Puedes dejarlo en blanco."
+
+Pantalla P2A (Género):
+"¿Con qué género te identificas?"
+"Es para escribirte como eres. Lo cambias cuando quieras."
+- Masculino · Femenino · Prefiero no contestar · Otro
+(Contestar es opcional.)
+
+Pantalla P3 (Motivo):
 "¿Por qué estás aquí? (Elige los que resuenen)"
 - Ordenar mis emociones
 - Reconocer lo que sí logro
@@ -30,23 +40,20 @@ Pantalla P2 (Motivo):
 - Establecer hábitos que duren
 - Preparar mi mente para dormir
 
-Pantalla P3 (Identidad central):
+Pantalla P4 (Identidad central):
 "No preguntamos qué quieres lograr. 
 Preguntamos en quién te estás convirtiendo."
 [prefijo visible] "Alguien que…"
 Ejemplos rotatorios: "…crece cada día · …se respeta a sí misma · 
 …no se abandona · …termina lo que empieza · …vive con calma."
 
-Pantalla P3B (Áreas):
+Pantalla P4B (Áreas):
 "Nadie crece en una sola dirección. 
 Elige las que importan ahora. Podrás cambiarlas cuando quieras."
 
-Pantalla P3C (Identidad por área):
+Pantalla P4C (Identidad por área):
 "Si quieres, ponle palabras. Si no, lo dejamos para después."
 Prefijo dinámico: "En {área} soy alguien que…"
-
-Pantalla P4 (Nombre):
-"Solo tu nombre. Nada más."
 
 Pantalla P5 (Primer valor):
 "Empecemos ahora"

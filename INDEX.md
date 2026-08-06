@@ -25,11 +25,13 @@ https://github.com/hellostrivo/strivo
 
 ### Onboarding (P1–P11)
 - ✅ P1: Bienvenida — degradado amanecer, CTA principal
-- ✅ P2: Motivo — 5 opciones multi-selección, sin bloqueo
-- ✅ P3: Identidad central — prefijo visible "Alguien que…", ejemplos rotatorios
-- ✅ P3B: Selección de áreas — 7 áreas con color propio, pausable
-- ✅ P3C: Identidad por área — opcional, prefijo dinámico por área
-- ✅ P4: Nombre — campo simple, solo texto
+- ✅ P2: Nombre — campo simple, solo texto
+- ✅ P2A: Género — opcional; define el modo de lenguaje adaptativo (m / f / n)
+- ✅ P3: Motivo — 5 opciones multi-selección, sin bloqueo
+- ✅ P4: Identidad central — prefijo visible "Alguien que…", ejemplos rotatorios
+- ✅ P4B: Selección de áreas — 7 áreas con color propio, pausable
+- ⏳ T-4B: Transición entre áreas e identidad de área — pendiente de §9 (Parte 3)
+- ✅ P4C: Identidad por área — opcional, prefijo dinámico por área
 - ✅ P5: Primer valor — captura algo bueno antes de crear cuenta
 - ✅ P6: Horarios — hora de despertar, dormir, fin de día (diaTerminaA)
 - ✅ P7: Hábitos de mañana — sugerencias por área, seleccionables
@@ -91,8 +93,8 @@ src/
 
 | Sesión | Qué se hizo | Commits |
 |--------|-----------|---------|
-| Sesión 1 | P1, P2, P3 del onboarding | `dbb33cb`, `8fab3b5` |
-| Sesión 2 | P3B, P3C, P4, P5 + P6–P11 | `48946d9`, `344d328`, `0c5d189` |
+| Sesión 1 | P1, P3 (motivo), P4 (identidad) del onboarding | `dbb33cb`, `8fab3b5` |
+| Sesión 2 | P4B, P4C, P2 (nombre), P5 + P6–P11 | `48946d9`, `344d328`, `0c5d189` |
 | Sesión 3 | Ritual de Mañana (R1–R5) completo | (en progreso) |
 | Sesión 4 | Ritual de Noche (N1–N6) + animación | (en progreso) |
 | Sesión 5 | Vista de Mañana (6 bloques) | (en progreso) |

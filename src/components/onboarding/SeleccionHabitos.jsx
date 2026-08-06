@@ -72,7 +72,7 @@ export default function SeleccionHabitos({
 
   // Lo que no está entre las sugerencias visibles se muestra como chip propio,
   // con su aspa. Incluye lo escrito a mano y lo elegido para un área que
-  // después se quitó en P3B: el hábito no desaparece a espaldas de nadie (RN-04).
+  // después se quitó en P4B: el hábito no desaparece a espaldas de nadie (RN-04).
   const propios = habitos.filter(
     h => !suggestions.some(s => s.texto.toLowerCase() === h.texto.toLowerCase())
   )

@@ -1,6 +1,6 @@
-// src/pages/onboarding/P2Motivo.jsx
-// P2 — Motivo ("¿Por qué estás aquí?")
-// Copy: docs/copy-library.md §1 → copy.onboarding.p2
+// src/pages/onboarding/P3Motivo.jsx
+// P3 — Motivo ("¿Por qué estás aquí?")
+// Copy: docs/copy-library.md §1 → copy.onboarding.p3
 //
 // Selección múltiple y opcional: seguir adelante sin elegir nada es válido.
 // Nada aquí bloquea el flujo ni se presenta como requisito (§4.12, RN-03).
@@ -17,7 +17,7 @@ import OnboardingLayout from '@components/onboarding/OnboardingLayout'
 
 const MAX_LENGTH = 80
 
-export default function P2Motivo({
+export default function P3Motivo({
   step,
   totalSteps,
   motivos,          // elegidos de las opciones ofrecidas
@@ -47,7 +47,7 @@ export default function P2Motivo({
   const addPropio = () => {
     const limpio = texto.trim()
     if (!limpio) return
-    const yaEstá = [...copy.onboarding.p2.options, ...propios]
+    const yaEstá = [...copy.onboarding.p3.options, ...propios]
       .some(m => m.toLowerCase() === limpio.toLowerCase())
     if (!yaEstá) onChangePropios([...propios, limpio])
     setTexto('')
@@ -72,23 +72,23 @@ export default function P2Motivo({
       <h1
         ref={headingRef}
         tabIndex={-1}
-        id="p2-heading"
+        id="p3-heading"
         className="font-display text-xl leading-tight text-ink focus:outline-none"
       >
-        {copy.onboarding.p2.question}
+        {copy.onboarding.p3.question}
       </h1>
 
-      <p id="p2-hint" className="mt-3 text-base text-ink/80">
-        {copy.onboarding.p2.hint}
+      <p id="p3-hint" className="mt-3 text-base text-ink/80">
+        {copy.onboarding.p3.hint}
       </p>
 
       <div
         role="group"
-        aria-labelledby="p2-heading"
-        aria-describedby="p2-hint"
+        aria-labelledby="p3-heading"
+        aria-describedby="p3-hint"
         className="mt-10 flex flex-wrap gap-3"
       >
-        {copy.onboarding.p2.options.map(option => (
+        {copy.onboarding.p3.options.map(option => (
           <Chip
             key={option}
             selected={motivos.includes(option)}
@@ -103,7 +103,7 @@ export default function P2Motivo({
             key={motivo}
             selected
             onClick={() => removePropio(motivo)}
-            aria-label={interpolate(copy.onboarding.p2.otherRemoveTemplate, { motivo })}
+            aria-label={interpolate(copy.onboarding.p3.otherRemoveTemplate, { motivo })}
           >
             {motivo}
             <CloseIcon />
@@ -114,28 +114,28 @@ export default function P2Motivo({
           selected={adding}
           onClick={() => setAdding(a => !a)}
           aria-expanded={adding}
-          aria-controls="p2-otro"
+          aria-controls="p3-otro"
         >
-          {copy.onboarding.p2.other}
+          {copy.onboarding.p3.other}
         </Chip>
       </div>
 
       {adding && (
-        <div id="p2-otro" className="mt-6 animate-fade-up">
-          <label htmlFor="p2-otro-campo" className="block text-base text-ink/80">
-            {copy.onboarding.p2.otherLabel}
+        <div id="p3-otro" className="mt-6 animate-fade-up">
+          <label htmlFor="p3-otro-campo" className="block text-base text-ink/80">
+            {copy.onboarding.p3.otherLabel}
           </label>
 
           <div className="mt-3 flex items-start gap-3">
             <input
-              id="p2-otro-campo"
+              id="p3-otro-campo"
               ref={otherRef}
               type="text"
               value={texto}
               maxLength={MAX_LENGTH}
               autoComplete="off"
               enterKeyHint="done"
-              placeholder={copy.onboarding.p2.otherPlaceholder}
+              placeholder={copy.onboarding.p3.otherPlaceholder}
               onChange={event => setTexto(event.target.value)}
               onKeyDown={event => {
                 if (event.key === 'Enter') {
@@ -160,7 +160,7 @@ export default function P2Motivo({
               onClick={addPropio}
               className="flex-shrink-0"
             >
-              {copy.onboarding.p2.otherAdd}
+              {copy.onboarding.p3.otherAdd}
             </Button>
           </div>
         </div>

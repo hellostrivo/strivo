@@ -26,7 +26,7 @@ export default function P11Cierre({
   step,
   totalSteps,
   identidad,
-  areas,            // tipos elegidos en P3B
+  areas,            // tipos elegidos en P4B
   horaDespertar,
   onEnter,          // materializa el borrador; se llama una sola vez
   onBack,

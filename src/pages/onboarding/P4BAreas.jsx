@@ -1,6 +1,6 @@
-// src/pages/onboarding/P3BAreas.jsx
-// P3B — Áreas de identidad
-// Copy: docs/copy-library.md §1 → copy.onboarding.p3b
+// src/pages/onboarding/P4BAreas.jsx
+// P4B — Áreas de identidad
+// Copy: docs/copy-library.md §1 → copy.onboarding.p4b
 // Modelo: §5.1.1 — las áreas son 0..N y ninguna es obligatoria.
 //
 // Seguir sin elegir ninguna es una respuesta completa, no un paso a medias:
@@ -14,7 +14,7 @@ import Button from '@components/ui/Button'
 import Chip from '@components/ui/Chip'
 import OnboardingLayout from '@components/onboarding/OnboardingLayout'
 
-export default function P3BAreas({ step, totalSteps, areas, onChange, onBack, onNext }) {
+export default function P4BAreas({ step, totalSteps, areas, onChange, onBack, onNext }) {
   const headingRef = useRef(null)
   useEffect(() => { headingRef.current?.focus() }, [])
 
@@ -40,20 +40,20 @@ export default function P3BAreas({ step, totalSteps, areas, onChange, onBack, on
       <h1
         ref={headingRef}
         tabIndex={-1}
-        id="p3b-heading"
+        id="p4b-heading"
         className="font-display text-xl leading-tight text-ink focus:outline-none"
       >
-        {copy.onboarding.p3b.question}
+        {copy.onboarding.p4b.question}
       </h1>
 
-      <p id="p3b-hint" className="mt-3 text-base text-ink/80">
-        {copy.onboarding.p3b.hint}
+      <p id="p4b-hint" className="mt-3 text-base text-ink/80">
+        {copy.onboarding.p4b.hint}
       </p>
 
       <div
         role="group"
-        aria-labelledby="p3b-heading"
-        aria-describedby="p3b-hint"
+        aria-labelledby="p4b-heading"
+        aria-describedby="p4b-hint"
         className="mt-10 flex flex-wrap gap-3"
       >
         {AREAS.map(area => (

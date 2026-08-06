@@ -1,11 +1,15 @@
 // src/pages/onboarding/OnboardingFlow.jsx
 // Secuencia del onboarding de Strivo.
 //
-// Implementado: P1 (Bienvenida) · P2 (Motivo) · P3 (Identidad central) ·
-//               P3B (Áreas) · P3C (Identidad por área, opcional) · P4 (Nombre) ·
-//               P5 (Primer momento de valor) · P6 (Horarios) · P7 y P8 (hábitos
-//               de mañana y de noche) · P9 (Recordatorios) · P10 (Cuenta) ·
-//               P11 (Cierre).
+// Implementado: P1 (Bienvenida) · P2 (Nombre) · P2A (Género) · P3 (Motivo) ·
+//               P4 (Identidad central) · P4B (Áreas) · P4C (Identidad por área,
+//               opcional) · P5 (Primer momento de valor) · P6 (Horarios) ·
+//               P7 y P8 (hábitos de mañana y de noche) · P9 (Recordatorios) ·
+//               P10 (Cuenta) · P11 (Cierre).
+//
+// El orden va de lo fácil de contestar (nombre, género) a lo introspectivo
+// (identidad, áreas) y deja la cuenta para el final (§1.1 del documento de
+// cambios).
 //
 // Cada paso persiste al instante en local (RN-02): salir y volver no pierde nada.
 // En P11 el borrador se convierte en perfil, áreas y hábitos reales.
@@ -15,11 +19,12 @@ import { loadDraft, saveDraft, savePrimeraVictoria } from '@lib/onboardingStorag
 import { finishOnboarding } from '@lib/onboardingProfile'
 import { todayKey } from '@lib/timeSlot'
 import P1Bienvenida       from './P1Bienvenida'
-import P2Motivo           from './P2Motivo'
-import P3Identidad        from './P3Identidad'
-import P3BAreas           from './P3BAreas'
-import P3CIdentidadArea   from './P3CIdentidadArea'
-import P4Nombre           from './P4Nombre'
+import P2Nombre           from './P2Nombre'
+import P2AGenero          from './P2AGenero'
+import P3Motivo           from './P3Motivo'
+import P4Identidad        from './P4Identidad'
+import P4BAreas           from './P4BAreas'
+import P4CIdentidadArea   from './P4CIdentidadArea'
 import P5PrimerValor      from './P5PrimerValor'
 import P6Horarios         from './P6Horarios'
 import P7HabitosManana    from './P7HabitosManana'
@@ -31,11 +36,16 @@ import P11Cierre          from './P11Cierre'
 const STEPS = [
   { id: 'p1'  },
   { id: 'p2'  },
+  { id: 'p2a' },
   { id: 'p3'  },
-  { id: 'p3b' },
-  // Sin áreas no hay nada que nombrar: el paso desaparece en vez de mostrarse vacío.
-  { id: 'p3c', skipWhen: draft => draft.areas.length === 0 },
   { id: 'p4'  },
+  { id: 'p4b' },
+  // Aquí va T-4B (transición entre áreas e identidad por área). Su contenido se
+  // especifica en §9 del documento de cambios (Parte 3); hasta entonces el flujo
+  // pasa de P4B a P4C sin pantalla intermedia.
+  //
+  // Sin áreas no hay nada que nombrar: el paso desaparece en vez de mostrarse vacío.
+  { id: 'p4c', skipWhen: draft => draft.areas.length === 0 },
   { id: 'p5'  },
   { id: 'p6'  },
   { id: 'p7'  },
@@ -113,7 +123,29 @@ export default function OnboardingFlow({ onComplete }) {
 
     case 'p2':
       return (
-        <P2Motivo
+        <P2Nombre
+          {...common}
+          nombre={draft.nombre}
+          onChange={nombre => update({ nombre })}
+          onBack={back}
+          onNext={next}
+        />
+      )
+
+    case 'p2a':
+      return (
+        <P2AGenero
+          {...common}
+          gender={draft.gender}
+          onChange={gender => update({ gender })}
+          onBack={back}
+          onNext={next}
+        />
+      )
+
+    case 'p3':
+      return (
+        <P3Motivo
           {...common}
           motivos={draft.motivos}
           propios={draft.motivosPropios}
@@ -124,9 +156,9 @@ export default function OnboardingFlow({ onComplete }) {
         />
       )
 
-    case 'p3':
+    case 'p4':
       return (
-        <P3Identidad
+        <P4Identidad
           {...common}
           identidad={draft.identidadCentral}
           onChange={identidadCentral => update({ identidadCentral })}
@@ -135,9 +167,9 @@ export default function OnboardingFlow({ onComplete }) {
         />
       )
 
-    case 'p3b':
+    case 'p4b':
       return (
-        <P3BAreas
+        <P4BAreas
           {...common}
           areas={draft.areas}
           onChange={areas => update({ areas })}
@@ -146,26 +178,15 @@ export default function OnboardingFlow({ onComplete }) {
         />
       )
 
-    case 'p3c':
+    case 'p4c':
       return (
-        <P3CIdentidadArea
+        <P4CIdentidadArea
           {...common}
           areas={draft.areas}
           identidades={draft.identidadesArea}
           onChange={(tipo, texto) =>
             update({ identidadesArea: { ...draft.identidadesArea, [tipo]: texto } })
           }
-          onBack={back}
-          onNext={next}
-        />
-      )
-
-    case 'p4':
-      return (
-        <P4Nombre
-          {...common}
-          nombre={draft.nombre}
-          onChange={nombre => update({ nombre })}
           onBack={back}
           onNext={next}
         />

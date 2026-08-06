@@ -3,7 +3,13 @@
 // P11 materializa al cerrar el flujo.
 
 import { describe, it, expect } from 'vitest'
-import { emptyDraft, savePrimeraVictoria } from '@lib/onboardingStorage'
+import {
+  emptyDraft,
+  loadDraft,
+  saveDraft,
+  savePrimeraVictoria,
+  ONBOARDING_SCHEMA_VERSION,
+} from '@lib/onboardingStorage'
 import { finishOnboarding } from '@lib/onboardingProfile'
 import { getLocalUserId, getCurrentUserId, getAccountUserId } from '@lib/user'
 import { filasDe } from './helpers/db.js'
@@ -19,6 +25,61 @@ const borrador = (extra = {}) => ({
   habitosManana: [{ id: 'hm1', texto: 'Beber agua', areaId: 'salud', momento: 'manana' }],
   habitosNoche:  [{ id: 'hn1', texto: 'Guardar el teléfono', areaId: null, momento: 'noche' }],
   ...extra,
+})
+
+describe('Borrador · migración del orden viejo (§1.4)', () => {
+  // Un borrador guardado con la numeración anterior (P2 motivo, P3 identidad,
+  // P3B, P3C, P4 nombre). Los campos no cambian de nombre: lo que cambia es la
+  // pantalla en la que se preguntan.
+  const borradorViejo = {
+    schemaVersion: 1,
+    paso: 4,
+    motivos: ['Ordenar mis emociones'],
+    motivosPropios: ['Dormir en paz'],
+    identidadCentral: 'crece cada día',
+    areas: ['salud'],
+    identidadesArea: { salud: 'cuida su cuerpo' },
+    nombre: 'Alejandra',
+    horaDespertar: '06:45',
+  }
+
+  it('conserva lo capturado y se queda en la versión nueva', () => {
+    localStorage.setItem('strivo.onboarding.draft', JSON.stringify(borradorViejo))
+
+    const draft = loadDraft()
+
+    expect(draft.schemaVersion).toBe(ONBOARDING_SCHEMA_VERSION)
+    expect(draft).toMatchObject({
+      nombre: 'Alejandra',
+      motivos: ['Ordenar mis emociones'],
+      motivosPropios: ['Dormir en paz'],
+      identidadCentral: 'crece cada día',
+      areas: ['salud'],
+      identidadesArea: { salud: 'cuida su cuerpo' },
+      horaDespertar: '06:45',
+    })
+    // El paso guardado se descarta: con la numeración nueva apuntaría a otra
+    // pantalla. Se vuelve a empezar en P1 con todo precargado.
+    expect(draft.paso).toBeUndefined()
+    // Campos que no existían en la versión vieja llegan con su valor de partida
+    expect(draft.gender).toBeNull()
+  })
+
+  it('la migración se persiste, no se repite en cada arranque', () => {
+    localStorage.setItem('strivo.onboarding.draft', JSON.stringify(borradorViejo))
+    loadDraft()
+
+    const guardado = JSON.parse(localStorage.getItem('strivo.onboarding.draft'))
+    expect(guardado.schemaVersion).toBe(ONBOARDING_SCHEMA_VERSION)
+    expect(guardado.paso).toBeUndefined()
+  })
+
+  it('un borrador de la versión vigente pasa intacto', () => {
+    const actual = { ...emptyDraft, nombre: 'Alejandra', gender: 'femenino' }
+    saveDraft(actual)
+
+    expect(loadDraft()).toMatchObject({ nombre: 'Alejandra', gender: 'femenino' })
+  })
 })
 
 describe('P5 · la primera cosa buena', () => {

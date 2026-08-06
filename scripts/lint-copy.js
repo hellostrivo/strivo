@@ -32,11 +32,18 @@ const EXCLUDE_DIRS = ['node_modules', 'dist', '.git', 'scripts']
 
 let issues = 0
 
+// Los comentarios se saltan: lo que se valida es lo que la persona lee en
+// pantalla, y varias notas del código nombran el léxico prohibido justamente
+// para recordar que no se usa ("NUNCA: días seguidos"). Marcarlas convertía el
+// linter en ruido y lo dejaba siempre en rojo.
+const isComment = line => /^\s*(\/\/|\/\*|\*|#)/.test(line)
+
 function checkFile(filePath) {
   const content = readFileSync(filePath, 'utf8')
   const lines   = content.split('\n')
 
   lines.forEach((line, i) => {
+    if (isComment(line)) return
     FORBIDDEN.forEach(({ pattern, reason }) => {
       if (pattern.test(line)) {
         console.error(`❌ [strivo-voice] ${filePath}:${i + 1}`)

@@ -1,6 +1,6 @@
-// src/pages/onboarding/P3Identidad.jsx
-// P3 — Identidad central
-// Copy: docs/copy-library.md §1 → copy.onboarding.p3
+// src/pages/onboarding/P4Identidad.jsx
+// P4 — Identidad central
+// Copy: docs/copy-library.md §1 → copy.onboarding.p4
 // Modelo: §5.1.1 (identidad central: amplia, estable, emocional; no es un objetivo)
 //
 // Se guarda la frase SIN el prefijo ("crece cada día", no "alguien que crece cada día"),
@@ -20,13 +20,13 @@ import useReducedMotion from '@hooks/useReducedMotion'
 const ROTATION_MS = 4200
 const MAX_LENGTH  = 80
 
-export default function P3Identidad({ step, totalSteps, identidad, onChange, onBack, onNext }) {
+export default function P4Identidad({ step, totalSteps, identidad, onChange, onBack, onNext }) {
   const headingRef     = useRef(null)
   const reducedMotion  = useReducedMotion()
   const [exampleIndex, setExampleIndex] = useState(0)
   const [focused, setFocused]           = useState(false)
 
-  const examples = copy.onboarding.p3.placeholders
+  const examples = copy.onboarding.p4.placeholders
   const hasText  = identidad.trim().length > 0
 
   useEffect(() => { headingRef.current?.focus() }, [])
@@ -64,10 +64,10 @@ export default function P3Identidad({ step, totalSteps, identidad, onChange, onB
         tabIndex={-1}
         className="font-display text-xl leading-tight text-ink/80 focus:outline-none"
       >
-        {copy.onboarding.p3.headline}
+        {copy.onboarding.p4.headline}
       </h1>
       <p className="mt-2 font-display text-xl leading-tight text-ink">
-        {copy.onboarding.p3.subhead}
+        {copy.onboarding.p4.subhead}
       </p>
 
       <div className="mt-12">
@@ -75,7 +75,7 @@ export default function P3Identidad({ step, totalSteps, identidad, onChange, onB
           htmlFor="identidad-central"
           className="block font-display text-md text-ink"
         >
-          {copy.onboarding.p3.prefix}
+          {copy.onboarding.p4.prefix}
         </label>
 
         <input

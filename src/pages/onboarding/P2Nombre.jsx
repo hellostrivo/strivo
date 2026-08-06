@@ -1,6 +1,9 @@
-// src/pages/onboarding/P4Nombre.jsx
-// P4 — Nombre
-// Copy: docs/copy-library.md §1 → copy.onboarding.p4
+// src/pages/onboarding/P2Nombre.jsx
+// P2 — Nombre
+// Copy: docs/copy-library.md §1 → copy.onboarding.p2
+//
+// Primera pregunta del flujo: la más fácil de contestar. Lo introspectivo viene
+// después, cuando ya hay confianza (§1.1 del documento de cambios).
 //
 // Una sola pregunta y nada alrededor: ni correo, ni apellido, ni foto.
 //
@@ -16,7 +19,7 @@ import OnboardingLayout from '@components/onboarding/OnboardingLayout'
 
 const MAX_LENGTH = 40
 
-export default function P4Nombre({ step, totalSteps, nombre, onChange, onBack, onNext }) {
+export default function P2Nombre({ step, totalSteps, nombre, onChange, onBack, onNext }) {
   const headingRef = useRef(null)
   useEffect(() => { headingRef.current?.focus() }, [])
 
@@ -36,16 +39,16 @@ export default function P4Nombre({ step, totalSteps, nombre, onChange, onBack, o
         tabIndex={-1}
         className="font-display text-xl leading-tight text-ink focus:outline-none"
       >
-        {copy.onboarding.p4.question}
+        {copy.onboarding.p2.question}
       </h1>
 
       <p className="mt-3 text-base text-ink/80">
-        {copy.onboarding.p4.hint}
+        {copy.onboarding.p2.hint}
       </p>
 
       <div className="mt-12">
         <label htmlFor="nombre" className="block font-display text-md text-ink">
-          {copy.onboarding.p4.label}
+          {copy.onboarding.p2.label}
         </label>
 
         <input

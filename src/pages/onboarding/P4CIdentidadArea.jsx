@@ -1,15 +1,15 @@
-// src/pages/onboarding/P3CIdentidadArea.jsx
-// P3C — Identidad por área (opcional)
-// Copy: docs/copy-library.md §1 → copy.onboarding.p3c
+// src/pages/onboarding/P4CIdentidadArea.jsx
+// P4C — Identidad por área (opcional)
+// Copy: docs/copy-library.md §1 → copy.onboarding.p4c
 // Modelo: §5.1.1 — `identidadArea` es opcional y nunca contradice la central.
 //
 // Todo el paso es opcional: Continuar sigue disponible con los campos vacíos,
 // y quien los deje así no ve ningún aviso. Lo que se escriba se guarda sin el
-// prefijo ("cuida su cuerpo"), igual que la identidad central en P3, porque el
+// prefijo ("cuida su cuerpo"), igual que la identidad central en P4, porque el
 // resto de la app lo interpola después de "alguien que"
 // (habits.detail.identityTemplate · profile.identity.areaPrefix).
 //
-// Si en P3B no se eligió ninguna área, el flujo salta esta pantalla.
+// Si en P4B no se eligió ninguna área, el flujo salta esta pantalla.
 
 import { useEffect, useRef } from 'react'
 import { copy, interpolate } from '@copy'
@@ -19,10 +19,10 @@ import OnboardingLayout from '@components/onboarding/OnboardingLayout'
 
 const MAX_LENGTH = 80
 
-export default function P3CIdentidadArea({
+export default function P4CIdentidadArea({
   step,
   totalSteps,
-  areas,             // tipos elegidos en P3B, en orden de selección
+  areas,             // tipos elegidos en P4B, en orden de selección
   identidades,       // { [tipo]: texto }
   onChange,
   onBack,
@@ -50,11 +50,11 @@ export default function P3CIdentidadArea({
         tabIndex={-1}
         className="font-display text-xl leading-tight text-ink focus:outline-none"
       >
-        {copy.onboarding.p3c.question}
+        {copy.onboarding.p4c.question}
       </h1>
 
       <p className="mt-3 text-base text-ink/80">
-        {copy.onboarding.p3c.hint}
+        {copy.onboarding.p4c.hint}
       </p>
 
       <div className="mt-10 flex flex-col gap-8">
@@ -71,7 +71,7 @@ export default function P3CIdentidadArea({
                   style={{ backgroundColor: area.color }}
                   aria-hidden="true"
                 />
-                {interpolate(copy.onboarding.p3c.prefixTemplate, { área: area.nombre })}
+                {interpolate(copy.onboarding.p4c.prefixTemplate, { área: area.nombre })}
               </label>
 
               <input

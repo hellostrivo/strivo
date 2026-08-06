@@ -65,6 +65,24 @@ export const copy = {
       cta: 'Empezar',
     },
     p2: {
+      question: 'Solo tu nombre. Nada más.',
+      hint: 'Es para saludarte. Puedes dejarlo en blanco.',
+      label: 'Tu nombre',
+    },
+    // P2A — género. Sirve para hablarle a cada quien en su propio género
+    // (§2 del documento de cambios). Contestar es opcional: sin respuesta, la
+    // app usa la variante neutra y no vuelve a preguntar.
+    p2a: {
+      question: '¿Con qué género te identificas?',
+      hint: 'Es para escribirte como eres. Lo cambias cuando quieras.',
+      options: {
+        masculino:             'Masculino',
+        femenino:              'Femenino',
+        prefiero_no_contestar: 'Prefiero no contestar',
+        otro:                  'Otro',
+      },
+    },
+    p3: {
       question: '¿Por qué estás aquí?',
       hint: 'Elige las oraciones que más conecten contigo',
       options: [
@@ -81,7 +99,7 @@ export const copy = {
       otherAdd:            'Añadir',
       otherRemoveTemplate: 'Quitar {motivo}',
     },
-    p3: {
+    p4: {
       headline: 'No preguntamos qué quieres lograr.',
       subhead: 'Preguntamos en quién te estás convirtiendo.',
       prefix: 'Alguien que…',
@@ -93,19 +111,14 @@ export const copy = {
         '…vive con calma',
       ],
     },
-    p3b: {
+    p4b: {
       question: 'Nadie crece en una sola dirección.',
       hint: 'Elige las que importan ahora. Podrás cambiarlas cuando quieras.',
     },
-    p3c: {
+    p4c: {
       question: 'Si quieres, ponle palabras.',
       hint: 'Si no, lo dejamos para después.',
       prefixTemplate: 'En “{área}” soy alguien que…',
-    },
-    p4: {
-      question: 'Solo tu nombre. Nada más.',
-      hint: 'Es para saludarte. Puedes dejarlo en blanco.',
-      label: 'Tu nombre',
     },
     p5: {
       headline: 'Empecemos ahora',
@@ -116,7 +129,7 @@ export const copy = {
       skip: 'Ahora no',
       saved: {
         title: 'Guardado.',
-        // Con identidad central (siempre existe: se escribe en P3)
+        // Con identidad central (siempre existe: se escribe en P4)
         evidenceTemplate: 'Eres alguien que {identidad}. Esto ya lo confirma.',
         evidencePlain: 'Esta es tu primera evidencia.',
         edit: 'Cambiar esto',
@@ -320,7 +333,7 @@ export const copy = {
 
   // ─── Vistas de Diario ────────────────────────────────────────────────────
   diarioManana: {
-    // Bloque 1 — la frase con la que abre el día. La identidad viene de P3 y la
+    // Bloque 1 — la frase con la que abre el día. La identidad viene de P4 y la
     // intención de R5; ninguna de las dos es obligatoria.
     phrase: {
       identityTemplate: 'Te estás convirtiendo en alguien que {identidad}.',

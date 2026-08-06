@@ -7,7 +7,7 @@
 // Guardar no pide nada a cambio (§8.12 — el registro llega después, en P6+).
 //
 // La confirmación devuelve el texto tal como se escribió y lo une a la identidad
-// de P3: la evidencia es suya, la app solo se la enseña (§5.1.1, RN-ID-05).
+// de P4: la evidencia es suya, la app solo se la enseña (§5.1.1, RN-ID-05).
 //
 // "Ahora no" es una salida entera, no un descarte: se pasa adelante sin aviso,
 // sin insistir y sin dejar la pantalla marcada como pendiente (RN-03).
@@ -23,7 +23,7 @@ const MAX_LENGTH = 140
 export default function P5PrimerValor({
   step,
   totalSteps,
-  identidad,        // identidad central de P3, sin prefijo
+  identidad,        // identidad central de P4, sin prefijo
   victoria,         // { texto, fecha } si ya se guardó; null si no
   onSave,
   onBack,

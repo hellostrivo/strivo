@@ -1,7 +1,7 @@
 // src/lib/habitSuggestions.js
 // Qué hábitos se ofrecen en P7 (mañana) y P8 (noche).
 //
-// Las sugerencias siguen a las áreas elegidas en P3B: lo que se ofrece confirma
+// Las sugerencias siguen a las áreas elegidas en P4B: lo que se ofrece confirma
 // la dirección que la persona ya dijo que le importa (§5.1.1). Sin áreas se
 // ofrece la lista general, que vive en "General" (areaId = null).
 //
@@ -17,7 +17,7 @@ const POR_MOMENTO = {
 
 /**
  * @param {'manana'|'noche'} momento
- * @param {string[]} areas - tipos de área elegidos en P3B (puede ir vacío)
+ * @param {string[]} areas - tipos de área elegidos en P4B (puede ir vacío)
  * @returns {{texto: string, areaId: string|null, color: string|undefined}[]}
  */
 export function suggestionsFor(momento, areas) {
