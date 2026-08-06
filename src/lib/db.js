@@ -9,65 +9,83 @@
 import { openDB } from 'idb'
 
 const DB_NAME    = 'strivo-local'
-const DB_VERSION = 1
+// 1 → esquema inicial (§7.2)
+// 2 → UserProfile.gender (§2.2 del documento de cambios): lenguaje adaptativo
+const DB_VERSION = 2
 
 // ─── Abrir / inicializar la base de datos ────────────────────────────────────
 export async function getDB() {
-  return openDB(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      // UserProfile (1 por usuario; key = userId)
-      if (!db.objectStoreNames.contains('userProfile')) {
-        db.createObjectStore('userProfile', { keyPath: 'userId' })
-      }
+  return openDB(DB_NAME, DB_VERSION, { upgrade: upgradeSchema })
+}
 
-      // Area (áreas de identidad; FK: userId)
-      if (!db.objectStoreNames.contains('areas')) {
-        const areas = db.createObjectStore('areas', { keyPath: 'id' })
-        areas.createIndex('byUser', 'userId')
-      }
+// Se exporta para poder probar las migraciones contra una base desechable, sin
+// tocar la del navegador (ver tests/genero.test.js).
+export function upgradeSchema(db, oldVersion, newVersion, tx) {
+  // UserProfile (1 por usuario; key = userId)
+  if (!db.objectStoreNames.contains('userProfile')) {
+    db.createObjectStore('userProfile', { keyPath: 'userId' })
+  }
 
-      // DailyEntry (una por fecha por usuario; FK: userId)
-      if (!db.objectStoreNames.contains('dailyEntries')) {
-        const de = db.createObjectStore('dailyEntries', { keyPath: 'id' })
-        de.createIndex('byUserDate', ['userId', 'fecha'])
-      }
+  // Area (áreas de identidad; FK: userId)
+  if (!db.objectStoreNames.contains('areas')) {
+    const areas = db.createObjectStore('areas', { keyPath: 'id' })
+    areas.createIndex('byUser', 'userId')
+  }
 
-      // Victory (N por fecha; FK: userId, areaId opcional)
-      if (!db.objectStoreNames.contains('victories')) {
-        const v = db.createObjectStore('victories', { keyPath: 'id' })
-        v.createIndex('byUserDate', ['userId', 'fecha'])
-        v.createIndex('byUser', 'userId')
-      }
+  // DailyEntry (una por fecha por usuario; FK: userId)
+  if (!db.objectStoreNames.contains('dailyEntries')) {
+    const de = db.createObjectStore('dailyEntries', { keyPath: 'id' })
+    de.createIndex('byUserDate', ['userId', 'fecha'])
+  }
 
-      // Habit (hábitos del usuario; FK: userId, areaId)
-      if (!db.objectStoreNames.contains('habits')) {
-        const h = db.createObjectStore('habits', { keyPath: 'id' })
-        h.createIndex('byUser', 'userId')
-        h.createIndex('byUserArea', ['userId', 'areaId'])
-      }
+  // Victory (N por fecha; FK: userId, areaId opcional)
+  if (!db.objectStoreNames.contains('victories')) {
+    const v = db.createObjectStore('victories', { keyPath: 'id' })
+    v.createIndex('byUserDate', ['userId', 'fecha'])
+    v.createIndex('byUser', 'userId')
+  }
 
-      // HabitLog (una fila = hábito marcado; NUNCA una fila de "falló")
-      // La ausencia de fila = no hecho. Decisión de modelo deliberada. (§7.2)
-      if (!db.objectStoreNames.contains('habitLogs')) {
-        const hl = db.createObjectStore('habitLogs', { keyPath: 'id' })
-        hl.createIndex('byHabitDate', ['habitId', 'fecha'])
-        hl.createIndex('byUserDate', ['userId', 'fecha'])
-      }
+  // Habit (hábitos del usuario; FK: userId, areaId)
+  if (!db.objectStoreNames.contains('habits')) {
+    const h = db.createObjectStore('habits', { keyPath: 'id' })
+    h.createIndex('byUser', 'userId')
+    h.createIndex('byUserArea', ['userId', 'areaId'])
+  }
 
-      // JournalEntry (escritura libre; FK: userId)
-      if (!db.objectStoreNames.contains('journalEntries')) {
-        const je = db.createObjectStore('journalEntries', { keyPath: 'id' })
-        je.createIndex('byUser', 'userId')
-        je.createIndex('byUserDate', ['userId', 'fecha'])
-      }
+  // HabitLog (una fila = hábito marcado; NUNCA una fila de "falló")
+  // La ausencia de fila = no hecho. Decisión de modelo deliberada. (§7.2)
+  if (!db.objectStoreNames.contains('habitLogs')) {
+    const hl = db.createObjectStore('habitLogs', { keyPath: 'id' })
+    hl.createIndex('byHabitDate', ['habitId', 'fecha'])
+    hl.createIndex('byUserDate', ['userId', 'fecha'])
+  }
 
-      // SyncQueue (cola de cambios pendientes de subir a Firebase)
-      if (!db.objectStoreNames.contains('syncQueue')) {
-        const sq = db.createObjectStore('syncQueue', { keyPath: 'id', autoIncrement: true })
-        sq.createIndex('byStatus', 'status')
+  // JournalEntry (escritura libre; FK: userId)
+  if (!db.objectStoreNames.contains('journalEntries')) {
+    const je = db.createObjectStore('journalEntries', { keyPath: 'id' })
+    je.createIndex('byUser', 'userId')
+    je.createIndex('byUserDate', ['userId', 'fecha'])
+  }
+
+  // SyncQueue (cola de cambios pendientes de subir a Firebase)
+  if (!db.objectStoreNames.contains('syncQueue')) {
+    const sq = db.createObjectStore('syncQueue', { keyPath: 'id', autoIncrement: true })
+    sq.createIndex('byStatus', 'status')
+  }
+
+  // v2 — los perfiles escritos antes de P2A no tienen `gender`. Se les pone
+  // null explícito: la app lee esa ausencia como "sin respuesta" y usa la
+  // variante neutra (§2.2). Nadie tiene que volver a contestar nada.
+  if (oldVersion > 0 && oldVersion < 2) {
+    const perfiles = tx.objectStore('userProfile')
+    perfiles.openCursor().then(function siguiente(cursor) {
+      if (!cursor) return
+      if (cursor.value.gender === undefined) {
+        cursor.update({ ...cursor.value, gender: null })
       }
-    },
-  })
+      return cursor.continue().then(siguiente)
+    })
+  }
 }
 
 // ─── UserProfile ──────────────────────────────────────────────────────────────

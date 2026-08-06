@@ -11,6 +11,7 @@
 
 import { getDB, saveUserProfile, saveArea, saveHabit } from '@lib/db'
 import { getLocalUserId, setAccountUserId } from '@lib/user'
+import { normalizeGender } from '@lib/gender'
 import { AREAS } from '@lib/areas'
 
 const TODOS_LOS_DIAS = [0, 1, 2, 3, 4, 5, 6]
@@ -56,6 +57,9 @@ function perfilDesde(draft, userId) {
   return {
     userId,
     nombre:           draft.nombre,
+    // Lo contestado en P2A. Se guarda tal cual; `genderMode` no se persiste
+    // porque se deriva (§2.2) y guardarlo duplicaría la fuente de verdad.
+    gender:           normalizeGender(draft.gender),
     identidadCentral: draft.identidadCentral,
     // El historial arranca con la primera versión abierta (§5.1.1): editar la
     // identidad cierra esta entrada y abre otra, nunca sobrescribe.

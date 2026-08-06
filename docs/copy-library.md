@@ -11,6 +11,61 @@
 4. ❌ Sin "Fallaste", "incumpliste", "debería", léxico de juicio.
 5. ❌ Sin emojis salvo los 24 de la tabla de emociones (§3.9).
 6. ❌ Sin "racha", "streak". Usar "Constancia", "días contigo".
+7. ✅ Si el string cambia según el género, se escribe en tres variantes (ver §0).
+
+---
+
+## 0. Lenguaje adaptativo por género
+
+Strivo le habla a cada persona en su propio género. No con barras para todos, sino
+con la forma correcta cuando se sabe cuál es, y con una redacción **naturalmente
+neutra** cuando no.
+
+En P2A se pregunta el género. De ahí sale `profile.gender`
+(`masculino` · `femenino` · `prefiero_no_contestar` · `otro` · `null`) y de ahí el
+modo que consume el copy:
+
+| `gender` | modo |
+|---|---|
+| `masculino` | `m` |
+| `femenino` | `f` |
+| `prefiero_no_contestar` · `otro` · sin respuesta | `n` |
+
+**Cómo se escribe un string con variantes** (`src/copy/index.js`):
+
+```js
+'onboarding.p4.chip.cuidado': {
+  m: 'cuida de sí mismo.',
+  f: 'cuida de sí misma.',
+  n: 'se cuida.',
+}
+```
+
+Los strings que no cambian se quedan como texto plano. Tres copias idénticas solo
+ensucian la biblioteca.
+
+**Reglas de redacción de la variante `n`:**
+
+1. ❌ Nunca "elle" ni sus derivados.
+2. ❌ Nunca la "e" inclusiva, la "@" ni la "x" (`todes`, `amig@s`, `nosotrxs`).
+3. ✅ Reformular para que el género no aparezca:
+   - "alguien que cuida de sí mismo/a" → **"alguien que se cuida."**
+   - "estoy orgulloso/a" → **"siento orgullo."**
+   - "estoy listo/a" → **"ya está."** / **"puedo empezar."**
+4. ⚠️ `mismo/a`, `listo/a` solo cuando la reformulación suene forzada. Es el último
+   recurso, no el primero.
+5. La variante `n` nunca debe leerse como una omisión: suena tan intencional como
+   las otras dos.
+
+**En código:** se consume con `useCopy()`, nunca leyendo `copy[...]` a mano. El modo
+vive en un estado global reactivo, así que cambiar el género desde Ajustes reescribe
+lo que está en pantalla sin recargar la app.
+
+`npm run lint:copy` verifica las reglas 1 y 2 y que toda entrada con variantes
+declare las tres claves.
+
+El copy escrito antes de este sistema (emociones, rituales, diario) sigue en género
+fijo: el inventario de lo que falta convertir está en `docs/gender-audit.md`.
 
 ---
 
@@ -36,7 +91,7 @@ Pantalla P3 (Motivo):
 "¿Por qué estás aquí? (Elige los que resuenen)"
 - Ordenar mis emociones
 - Reconocer lo que sí logro
-- Conectar conmigo mismo
+- Conectar conmigo mismo / Conectar conmigo misma / neutro: "Reconectar conmigo"
 - Establecer hábitos que duren
 - Preparar mi mente para dormir
 
@@ -44,7 +99,8 @@ Pantalla P4 (Identidad central):
 "No preguntamos qué quieres lograr. 
 Preguntamos en quién te estás convirtiendo."
 [prefijo visible] "Alguien que…"
-Ejemplos rotatorios: "…crece cada día · …se respeta a sí misma · 
+Ejemplos rotatorios: "…crece cada día · …cuida de sí mismo/misma (neutro: 
+…se cuida) · …se respeta a sí mismo/misma (neutro: …se respeta) · 
 …no se abandona · …termina lo que empieza · …vive con calma."
 
 Pantalla P4B (Áreas):

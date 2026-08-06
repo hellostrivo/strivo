@@ -2,7 +2,7 @@
 // Punto de entrada de la app Strivo
 // Navegación de 3 pestañas: Hoy · Journal · Tú (§4.3.1, Blueprint v3)
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { clsx } from 'clsx'
 import { copy } from '@copy'
 
@@ -15,6 +15,9 @@ import TuPage      from '@/pages/TuPage'
 // Onboarding (P1–P5 implementadas; el resto se añade dentro del propio flujo)
 import OnboardingFlow from '@/pages/onboarding/OnboardingFlow'
 import { isOnboardingComplete, markOnboardingComplete } from '@lib/onboardingStorage'
+import { getUserProfile } from '@lib/db'
+import { getCurrentUserId } from '@lib/user'
+import { setGender } from '@lib/genderStore'
 
 const TABS = [
   { id: 'hoy',     label: 'Hoy',     icon: SunMoonIcon },
@@ -26,6 +29,27 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('hoy')
   const [hideNav, setHideNav]     = useState(false)  // ocultar en rituales / escritura activa
   const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingComplete())
+
+  // El copy de toda la app habla en el género del perfil (§2.4). Se lee al
+  // arrancar y otra vez al terminar el onboarding, cuando el perfil ya existe.
+  //
+  // Mientras el onboarding está en marcha manda el borrador (lo escribe la
+  // propia pantalla P2A): la lectura del perfil es asíncrona y llegaría después,
+  // pisando con un null lo que la persona acaba de contestar.
+  //
+  // Si no hay perfil todavía, o si la lectura falla, no se toca nada: el modo
+  // arranca en neutro, así que nunca hay pantalla sin copy que mostrar.
+  useEffect(() => {
+    if (showOnboarding) return undefined
+
+    let vigente = true
+    getUserProfile(getCurrentUserId())
+      .then(perfil => { if (vigente && perfil) setGender(perfil.gender) })
+      .catch(error => {
+        console.warn('[Strivo] El modo de lenguaje se queda en neutro:', error)
+      })
+    return () => { vigente = false }
+  }, [showOnboarding])
 
   // Primera vez: el onboarding ocupa toda la pantalla, sin barra de pestañas.
   if (showOnboarding) {

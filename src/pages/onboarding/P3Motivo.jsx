@@ -14,8 +14,16 @@ import Button from '@components/ui/Button'
 import Chip from '@components/ui/Chip'
 import CloseIcon from '@components/ui/CloseIcon'
 import OnboardingLayout from '@components/onboarding/OnboardingLayout'
+import useCopy from '@hooks/useCopy'
 
 const MAX_LENGTH = 80
+
+// Lo elegido se guarda con las palabras que se leyeron ("Conectar conmigo
+// misma"), no con una clave interna. Para que volver a P2A y cambiar de género
+// no deje un chip elegido con el texto de la otra variante, la comparación mira
+// todas las variantes de la misma opción.
+const variantesDe = option =>
+  typeof option === 'string' ? [option] : [option.m, option.f, option.n]
 
 export default function P3Motivo({
   step,
@@ -27,19 +35,28 @@ export default function P3Motivo({
   onBack,
   onNext,
 }) {
+  const t          = useCopy()
   const headingRef = useRef(null)
   const otherRef   = useRef(null)
   const [adding, setAdding] = useState(false)
   const [texto, setTexto]   = useState('')
 
+  // Las opciones se leen dos veces: en crudo para saber qué variantes existen,
+  // ya resueltas para mostrarlas y guardarlas en el género que corresponde.
+  const options  = copy.onboarding.p3.options
+  const visibles = t('onboarding.p3.options')
+
   useEffect(() => { headingRef.current?.focus() }, [])
   useEffect(() => { if (adding) otherRef.current?.focus() }, [adding])
 
-  const toggle = option => {
+  const estaElegido = option => variantesDe(option).some(v => motivos.includes(v))
+
+  const toggle = (option, visible) => {
+    const variantes = variantesDe(option)
     onChangeMotivos(
-      motivos.includes(option)
-        ? motivos.filter(m => m !== option)
-        : [...motivos, option]
+      estaElegido(option)
+        ? motivos.filter(m => !variantes.includes(m))
+        : [...motivos, visible]
     )
   }
 
@@ -47,7 +64,7 @@ export default function P3Motivo({
   const addPropio = () => {
     const limpio = texto.trim()
     if (!limpio) return
-    const yaEstá = [...copy.onboarding.p3.options, ...propios]
+    const yaEstá = [...visibles, ...propios]
       .some(m => m.toLowerCase() === limpio.toLowerCase())
     if (!yaEstá) onChangePropios([...propios, limpio])
     setTexto('')
@@ -88,13 +105,13 @@ export default function P3Motivo({
         aria-describedby="p3-hint"
         className="mt-10 flex flex-wrap gap-3"
       >
-        {copy.onboarding.p3.options.map(option => (
+        {options.map((option, i) => (
           <Chip
-            key={option}
-            selected={motivos.includes(option)}
-            onClick={() => toggle(option)}
+            key={visibles[i]}
+            selected={estaElegido(option)}
+            onClick={() => toggle(option, visibles[i])}
           >
-            {option}
+            {visibles[i]}
           </Chip>
         ))}
 

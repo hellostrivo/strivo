@@ -15,18 +15,23 @@ import { useEffect, useRef, useState } from 'react'
 import { copy } from '@copy'
 import Button from '@components/ui/Button'
 import OnboardingLayout from '@components/onboarding/OnboardingLayout'
+import useCopy from '@hooks/useCopy'
 import useReducedMotion from '@hooks/useReducedMotion'
 
 const ROTATION_MS = 4200
 const MAX_LENGTH  = 80
 
 export default function P4Identidad({ step, totalSteps, identidad, onChange, onBack, onNext }) {
+  const t              = useCopy()
   const headingRef     = useRef(null)
   const reducedMotion  = useReducedMotion()
   const [exampleIndex, setExampleIndex] = useState(0)
   const [focused, setFocused]           = useState(false)
 
-  const examples = copy.onboarding.p4.placeholders
+  // Los ejemplos se ofrecen en el género que se contestó en P2A: quien lea
+  // "…cuida de sí misma" está leyendo una frase escrita para ella, no un
+  // formulario con barras (§2.1).
+  const examples = t('onboarding.p4.placeholders')
   const hasText  = identidad.trim().length > 0
 
   useEffect(() => { headingRef.current?.focus() }, [])

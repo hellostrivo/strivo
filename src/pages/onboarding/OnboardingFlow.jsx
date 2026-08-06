@@ -14,9 +14,10 @@
 // Cada paso persiste al instante en local (RN-02): salir y volver no pierde nada.
 // En P11 el borrador se convierte en perfil, áreas y hábitos reales.
 
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { loadDraft, saveDraft, savePrimeraVictoria } from '@lib/onboardingStorage'
 import { finishOnboarding } from '@lib/onboardingProfile'
+import { setGender } from '@lib/genderStore'
 import { todayKey } from '@lib/timeSlot'
 import P1Bienvenida       from './P1Bienvenida'
 import P2Nombre           from './P2Nombre'
@@ -79,6 +80,11 @@ export default function OnboardingFlow({ onComplete }) {
   const steps   = STEPS.filter(s => !s.skipWhen?.(draft))
   const index   = Math.min(stepIndex, steps.length - 1)
   const current = steps[index]
+
+  // El copy de las pantallas siguientes habla en el género contestado en P2A.
+  // También al retomar un borrador a medias: lo que se eligió sigue vigente sin
+  // volver a preguntarlo (§2.4).
+  useEffect(() => { setGender(draft.gender) }, [draft.gender])
 
   const update = patch => {
     const next = { ...draft, ...patch }

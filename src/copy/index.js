@@ -7,6 +7,18 @@
 // ❌ Sin "Fallaste", "Racha", "Debería", exclamaciones innecesarias
 // ❌ Sin emojis del sistema (solo los 24 de la tabla de emociones)
 // Cambios de copy → editar AQUÍ, no en los componentes.
+//
+// VARIANTES DE GÉNERO (§2.3 del documento de cambios):
+// Un string que cambia según el género deja de ser string y pasa a ser
+// { m, f, n }. Se consume con useCopy(), nunca leyendo copy[...] a mano.
+//
+//   'algo': { m: 'cuida de sí mismo.', f: 'cuida de sí misma.', n: 'se cuida.' }
+//
+// La variante `n` se redacta en neutro natural: se reformula la frase para que
+// el género no aparezca. "mismo/a" es el último recurso, no el primero. Nunca
+// "elle", ni "@", ni "x" como marca de género (lo verifica lint:copy).
+// Los strings sin variación se quedan como string plano: tres copias idénticas
+// solo ensucian la biblioteca.
 
 export const copy = {
 
@@ -88,7 +100,12 @@ export const copy = {
       options: [
         'Ordenar mis emociones',
         'Reconocer lo que sí logro',
-        'Conectar conmigo mismo',
+        // La variante neutra reformula en vez de poner barras (§2.5)
+        {
+          m: 'Conectar conmigo mismo',
+          f: 'Conectar conmigo misma',
+          n: 'Reconectar conmigo',
+        },
         'Establecer hábitos que duren',
         'Preparar mi mente para dormir',
       ],
@@ -105,7 +122,16 @@ export const copy = {
       prefix: 'Alguien que…',
       placeholders: [
         '…crece cada día',
-        '…se respeta a sí misma',
+        {
+          m: '…cuida de sí mismo',
+          f: '…cuida de sí misma',
+          n: '…se cuida',
+        },
+        {
+          m: '…se respeta a sí mismo',
+          f: '…se respeta a sí misma',
+          n: '…se respeta',
+        },
         '…no se abandona',
         '…termina lo que empieza',
         '…vive con calma',
