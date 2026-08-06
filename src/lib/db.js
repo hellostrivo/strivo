@@ -154,6 +154,11 @@ export async function getActiveHabitsForMoment(userId, momento, diaSemana) {
   )
 }
 
+export async function getHabit(habitId) {
+  const db = await getDB()
+  return db.get('habits', habitId)
+}
+
 export async function saveHabit(habit) {
   const db = await getDB()
   await db.put('habits', habit)
@@ -173,6 +178,17 @@ export async function getHabitLog(habitId, fecha) {
 export async function getHabitLogsByDate(userId, fecha) {
   const db = await getDB()
   return db.getAllFromIndex('habitLogs', 'byUserDate', [userId, fecha])
+}
+
+// Todas las marcas de un hábito entre dos fechas, para la cuadrícula de 90 días
+// del detalle (§5.7). Rango inclusivo por ambos extremos.
+export async function getHabitLogsInRange(habitId, desde, hasta) {
+  const db = await getDB()
+  return db.getAllFromIndex(
+    'habitLogs',
+    'byHabitDate',
+    IDBKeyRange.bound([habitId, desde], [habitId, hasta])
+  )
 }
 
 export async function markHabit(habitId, userId, fecha) {

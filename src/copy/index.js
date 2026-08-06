@@ -283,10 +283,10 @@ export const copy = {
     },
     // Las victorias heredadas y los logros no planeados comparten pantalla, como
     // en la Vista de Noche: las etiquetas de cada acción viven en diarioNoche.
+    // Las etiquetas de cada acción (decidir, añadir, quitar) viven en diarioNoche:
+    // son las mismas en el ritual y en la Vista de Noche.
     n3: {
       question: '¿Qué lograste hoy?',
-      addLabel: 'Añadir',
-      removeTemplate: 'Quitar {logro}',
     },
     n4: {
       question: '¿Qué agradeces de hoy?',
@@ -364,6 +364,8 @@ export const copy = {
     unplanned: {
       label: '¿Algo más?',
       placeholder: 'Un logro que no habías planeado…',
+      add: 'Añadir',
+      removeTemplate: 'Quitar {logro}',
     },
     learning: {
       label: '¿Qué fue lo menos difícil de hoy?',
@@ -374,17 +376,40 @@ export const copy = {
 
   // ─── Hábitos ─────────────────────────────────────────────────────────────
   habits: {
+    // H1 — lista agrupada por momento
+    list: {
+      title: 'Tus hábitos',
+      add: 'Nuevo hábito',
+      // Encabezados de grupo: mismo orden que create.moments
+      groups: ['Por la mañana', 'Por la noche', 'A lo largo del día'],
+      pausedGroup: 'En pausa',
+      countTemplate: '{n} activos',
+      open: 'Ver detalle',
+    },
     create: {
       label: '¿Cuál es tu nuevo hábito?',
       placeholder: 'Beber agua, leer, estirar…',
       moments: ['Mañana', 'Noche', 'A lo largo del día'],
+      momentLabel: '¿Cuándo?',
+      areaLabel: '¿Dónde vive esto?',
+      daysLabel: '¿Qué días?',
+      everyDay: 'Todos los días',
+      suggestionsLabel: 'O empieza por una de estas:',
+      save: 'Crear hábito',
     },
     detail: {
       identityTemplate: 'En {área} eres alguien que {identidad}.',
       totalTemplate: 'Lo has hecho {n} veces',
       last30Template: '{n} de los últimos 30 días',
+      gridLabel: 'Los últimos 90 días',
+      // Un día sin marca no es un fallo: no se nombra como tal
+      gridDoneTemplate: '{fecha}: hecho',
+      gridEmptyTemplate: '{fecha}: sin registro',
+      momentTemplate: 'Lo haces {momento}',
+      neverTemplate: 'Todavía no lo has registrado. Cuando pase, aquí estará.',
     },
     pause: {
+      action: 'Pausar',
       confirm: 'Pausado. Aquí estará cuando lo quieras de vuelta.',
       resume: 'Reanudar',
     },

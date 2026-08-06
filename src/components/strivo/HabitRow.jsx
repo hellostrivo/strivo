@@ -10,6 +10,7 @@
 
 import { useState } from 'react'
 import { clsx } from 'clsx'
+import { copy } from '@copy'
 import { areaColors } from '@tokens'
 
 /**
@@ -19,9 +20,13 @@ import { areaColors } from '@tokens'
  * @param {boolean} done - si ya está marcado hoy
  * @param {function} onToggle - callback(habitId, done)
  * @param {object} area - entidad Area (para color)
+ * @param {function} [onOpen] - abrir el detalle (H2). Sin él, el nombre no es
+ *   tocable: en los rituales no hay a dónde ir y un botón que no lleva a
+ *   ningún sitio solo estorba al recorrer con teclado.
  */
-export default function HabitRow({ habit, done = false, onToggle, area, className }) {
+export default function HabitRow({ habit, done = false, onToggle, area, className, onOpen }) {
   const [pressed, setPressed] = useState(false)
+  const Contenedor = onOpen ? 'button' : 'div'
 
   const color = area?.color ?? areaColors[area?.tipo] ?? '#D9CFC4'
 
@@ -82,13 +87,18 @@ export default function HabitRow({ habit, done = false, onToggle, area, classNam
       </button>
 
       {/* Contenido del hábito */}
-      <button
-        type="button"
+      <Contenedor
+        {...(onOpen
+          ? {
+              type: 'button',
+              onClick: onOpen,
+              'aria-label': `${habit.nombre} — ${copy.habits.list.open}`,
+            }
+          : {})}
         className={clsx(
           'flex-1 text-left',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20 rounded-sm',
+          onOpen && 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20 rounded-sm',
         )}
-        onClick={() => {/* abrir detalle del hábito */}}
       >
         <div className="flex items-center gap-2">
           {/* Punto de color del área */}
@@ -111,7 +121,7 @@ export default function HabitRow({ habit, done = false, onToggle, area, classNam
             {area.identidadArea}
           </p>
         )}
-      </button>
+      </Contenedor>
 
       {/* Total de veces (discreto, solo lectura) */}
       {habit.totalCompletados > 0 && (

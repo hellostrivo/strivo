@@ -26,6 +26,9 @@ jobs:
           npm run lint:copy || true   # Advertencia, no error bloqueante en Fase 0
           npm run lint
 
+      - name: Test (capa de datos)
+        run: npm test
+
       - name: Build
         run: npm run build
         env:

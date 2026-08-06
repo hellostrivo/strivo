@@ -252,6 +252,11 @@ Toda pantalla debe cumplir:
 Antes de hacer commit:
 
 ```bash
+# Pruebas de la capa de datos (IndexedDB de mentira, entorno node)
+# Cubren: almacén local, onboarding → perfil, rituales, vistas y el
+# recorrido de un día entero (tests/recorridoDelDia.test.js)
+npm test
+
 # Verifica que no haya léxico prohibido en strings
 grep -r "Fallaste\|Racha\|debería" src/ || echo "✅ Léxico limpio"
 

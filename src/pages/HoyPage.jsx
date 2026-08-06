@@ -1,9 +1,10 @@
 // src/pages/HoyPage.jsx
 // Pantalla "Hoy" — pantalla raíz de Strivo
 //
-// Contiene el Diario del momento y los Rituales como overlays (§4.3.1). En la
-// franja de amanecer y durante el día se muestra la Vista de Mañana; el resto
-// de franjas siguen con la tarjeta de Fase 0 hasta que exista la Vista de Noche.
+// Contiene el Diario del momento y los Rituales como overlays (§4.3.1). El
+// Diario cambia con la franja: Vista de Mañana en amanecer y durante el día,
+// Vista de Noche al atardecer y de noche. De madrugada no se propone nada:
+// quien abre la app a las tres no necesita que le pidan cerrar un día.
 //
 // Cada ritual se abre solo en su franja (mañana 4:00–11:30, noche 19:00–03:00)
 // si ese día todavía no se cerró. Una vez cerrado —por donde sea— no vuelve a
@@ -28,11 +29,13 @@ import { gradientsBySlot } from '@tokens'
 import { copy } from '@copy'
 import Button from '@components/ui/Button'
 import VistaManana from '@/pages/diario/VistaManana'
+import VistaNoche  from '@/pages/diario/VistaNoche'
 import RitualManana from '@/pages/ritual/RitualManana'
 import RitualNoche  from '@/pages/ritual/RitualNoche'
 
-// Franjas en las que el Diario del día es la Vista de Mañana
+// Qué Diario toca según la franja (§4.3.3)
 const FRANJAS_DE_MANANA = ['amanecer', 'dia']
+const FRANJAS_DE_NOCHE  = ['atardecer', 'noche']
 
 export default function HoyPage({ onHideNav }) {
   const slot     = useMemo(() => getTimeSlot(), [])
@@ -84,6 +87,7 @@ export default function HoyPage({ onHideNav }) {
   const puedeVolver = ritualDeAhora && hechos && !ritualAbierto
 
   const esFranjaDeManana = FRANJAS_DE_MANANA.includes(slot)
+  const esFranjaDeNoche  = FRANJAS_DE_NOCHE.includes(slot)
 
   return (
     <div
@@ -117,16 +121,20 @@ export default function HoyPage({ onHideNav }) {
         )}
       </div>
 
-      {esFranjaDeManana ? (
-        <VistaManana recarga={recarga} />
-      ) : (
-        /* STUB: hasta que exista la Vista de Noche (§5.4) */
-        <div className="w-full max-w-sm mx-auto mt-10 p-4 rounded-md bg-paper/70 backdrop-blur-sm shadow-elev-2 text-center">
+      {esFranjaDeManana && <VistaManana recarga={recarga} />}
+
+      {esFranjaDeNoche && (
+        <VistaNoche
+          recarga={recarga}
+          onDiaCerrado={() => setHechos(previos => ({ ...previos, noche: true }))}
+        />
+      )}
+
+      {/* Madrugada: solo el saludo. No se propone nada a esta hora. */}
+      {!esFranjaDeManana && !esFranjaDeNoche && (
+        <div className="w-full max-w-sm mx-auto mt-10 px-6 text-center">
           <p className="text-base text-ink/60">
-            Fase 0 · Prototipo
-          </p>
-          <p className="text-sm text-ink/40 mt-1">
-            Franja horaria: <strong>{slot}</strong>
+            {copy.return.constancy}
           </p>
         </div>
       )}
