@@ -88,7 +88,17 @@ export function getWeekDay() {
 
 /**
  * Fecha actual en formato 'YYYY-MM-DD' (clave de DailyEntry)
+ *
+ * Se compone a mano en hora local, no con toISOString(): eso da UTC y en
+ * México (UTC-6) todo lo escrito después de las 18:00 —justo la franja del
+ * cierre nocturno— caía en la fecha del día siguiente.
+ *
+ * Pendiente para el Ritual de Noche: el día de Strivo termina a `diaTerminaA`
+ * (03:00 por defecto), así que de madrugada la entrada pertenece aún al día
+ * anterior. Eso lo resuelve quien tenga el perfil a mano.
  */
-export function todayKey() {
-  return new Date().toISOString().split('T')[0]
+export function todayKey(date = new Date()) {
+  const mes = String(date.getMonth() + 1).padStart(2, '0')
+  const dia = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${mes}-${dia}`
 }

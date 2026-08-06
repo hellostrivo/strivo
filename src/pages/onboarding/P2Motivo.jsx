@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from 'react'
 import { copy, interpolate } from '@copy'
 import Button from '@components/ui/Button'
 import Chip from '@components/ui/Chip'
+import CloseIcon from '@components/ui/CloseIcon'
 import OnboardingLayout from '@components/onboarding/OnboardingLayout'
 
 const MAX_LENGTH = 80
@@ -165,21 +166,5 @@ export default function P2Motivo({
         </div>
       )}
     </OnboardingLayout>
-  )
-}
-
-function CloseIcon() {
-  return (
-    <svg
-      className="w-3 h-3 flex-shrink-0 opacity-60"
-      viewBox="0 0 12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      aria-hidden="true"
-    >
-      <path d="M3 3l6 6M9 3l-6 6" />
-    </svg>
   )
 }
