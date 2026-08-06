@@ -1,33 +1,21 @@
 // src/components/strivo/EmotionCard.jsx
 // Tarjeta de emoción para la Vista de Mañana (§5.3, bloque 3)
-// El usuario selecciona hasta 3 emociones de 16 disponibles
+// Copy: copy.emotions · catálogo y colores: @lib/emotions
 //
 // REGLAS:
 // ✅ Máx 3 seleccionadas
 // ✅ Selección visible por color + borde + escala (3 señales, no solo color)
 // ✅ Accesible: estado "pressed" anunciado por lector de pantalla
+//
+// Las tarjetas no llevan emoji: el sistema solo admite los de la tabla de
+// emociones (§3.6) y esa tabla todavía no está en el repo. Hasta entonces la
+// emoción se distingue por su nombre y su color.
 
 import { clsx } from 'clsx'
+import { copy, interpolate } from '@copy'
+import { EMOTIONS } from '@lib/emotions'
 
-// Las 16 emociones curadas (§5.3, tabla de emociones)
-export const EMOTIONS = [
-  { id: 'tranquilo',   label: 'Tranquilo',    color: '#7E9E86' },
-  { id: 'agradecido',  label: 'Agradecido',   color: '#E5A25C' },
-  { id: 'motivado',    label: 'Motivado',      color: '#93A9C4' },
-  { id: 'ansioso',     label: 'Ansioso',       color: '#C9836B' },
-  { id: 'cansado',     label: 'Cansado',       color: '#8B6BA8' },
-  { id: 'esperanzado', label: 'Esperanzado',   color: '#7E9E86' },
-  { id: 'irritable',   label: 'Irritable',     color: '#C9836B' },
-  { id: 'enfocado',    label: 'Enfocado',      color: '#93A9C4' },
-  { id: 'triste',      label: 'Triste',        color: '#8B6BA8' },
-  { id: 'contento',    label: 'Contento',      color: '#E5A25C' },
-  { id: 'abrumado',    label: 'Abrumado',      color: '#C9836B' },
-  { id: 'curioso',     label: 'Curioso',       color: '#93A9C4' },
-  { id: 'presente',    label: 'Presente',      color: '#7E9E86' },
-  { id: 'inseguro',    label: 'Inseguro',      color: '#8B6BA8' },
-  { id: 'aliviado',    label: 'Aliviado',      color: '#7E9E86' },
-  { id: 'nostalgico',  label: 'Nostálgico',    color: '#8B6BA8' },
-]
+export { EMOTIONS }
 
 /**
  * EmotionCard — tarjeta tocable de emoción
@@ -37,7 +25,7 @@ export function EmotionCard({ emotion, selected, onToggle, disabled }) {
     <button
       type="button"
       aria-pressed={selected}
-      aria-label={`${emotion.label}${selected ? ', seleccionado' : ''}`}
+      aria-label={emotion.label}
       disabled={disabled && !selected}
       onClick={() => onToggle(emotion.id)}
       className={clsx(
@@ -58,38 +46,39 @@ export function EmotionCard({ emotion, selected, onToggle, disabled }) {
       style={selected ? {
         backgroundColor: emotion.color + '15',
         borderColor: emotion.color,
-        color: emotion.color,
       } : undefined}
     >
-      <span className="text-base" aria-hidden="true">{emotion.icon ?? '•'}</span>
       <span>{emotion.label}</span>
     </button>
   )
 }
 
 /**
- * EmotionSelector — grid de 16 tarjetas con lógica de máx 3
+ * EmotionSelector — grid de tarjetas con lógica de máximo
  *
  * @param {string[]} selected - IDs de emociones seleccionadas
  * @param {function} onChange - callback(ids[])
  */
 export default function EmotionSelector({ selected = [], onChange }) {
-  const MAX = 3
+  const max = copy.diarioManana.emotions.max
 
   function toggle(id) {
     if (selected.includes(id)) {
       onChange(selected.filter(s => s !== id))
-    } else if (selected.length < MAX) {
+    } else if (selected.length < max) {
       onChange([...selected, id])
     }
-    // Si ya hay 3 y quieren añadir otra: ignorar (botón disabled)
+    // Si ya están las 3 y quieren añadir otra: ignorar (botón disabled)
   }
 
   return (
     <div
-      className="grid grid-cols-4 gap-2"
+      className="grid grid-cols-3 gap-2"
       role="group"
-      aria-label="¿Cómo quieres sentirte hoy? Selecciona hasta 3."
+      aria-label={`${copy.diarioManana.emotions.label} ${interpolate(
+        copy.diarioManana.emotions.hintTemplate,
+        { max }
+      )}`}
     >
       {EMOTIONS.map(emotion => (
         <EmotionCard
@@ -97,7 +86,7 @@ export default function EmotionSelector({ selected = [], onChange }) {
           emotion={emotion}
           selected={selected.includes(emotion.id)}
           onToggle={toggle}
-          disabled={selected.length >= MAX && !selected.includes(emotion.id)}
+          disabled={selected.length >= max && !selected.includes(emotion.id)}
         />
       ))}
     </div>

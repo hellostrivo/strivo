@@ -25,6 +25,30 @@ export const copy = {
     espiritual:  'Espiritual',
     personal:    'Personal',
     creatividad: 'Creatividad',
+    // Nombre visible de `areaId = null`: lo que no pertenece a un área concreta
+    // hereda la identidad central (§5.1.1)
+    general:     'General',
+  },
+
+  // ─── Emociones (§5.3, tabla de emociones) ────────────────────────────────
+  // Los nombres visibles; el orden y el color viven en @lib/emotions.
+  emotions: {
+    tranquilo:   'Tranquilo',
+    agradecido:  'Agradecido',
+    motivado:    'Motivado',
+    ansioso:     'Ansioso',
+    cansado:     'Cansado',
+    esperanzado: 'Esperanzado',
+    irritable:   'Irritable',
+    enfocado:    'Enfocado',
+    triste:      'Triste',
+    contento:    'Contento',
+    abrumado:    'Abrumado',
+    curioso:     'Curioso',
+    presente:    'Presente',
+    inseguro:    'Inseguro',
+    aliviado:    'Aliviado',
+    nostalgico:  'Nostálgico',
   },
 
   // ─── Onboarding ──────────────────────────────────────────────────────────
@@ -296,15 +320,26 @@ export const copy = {
 
   // ─── Vistas de Diario ────────────────────────────────────────────────────
   diarioManana: {
+    // Bloque 1 — la frase con la que abre el día. La identidad viene de P3 y la
+    // intención de R5; ninguna de las dos es obligatoria.
+    phrase: {
+      identityTemplate: 'Te estás convirtiendo en alguien que {identidad}.',
+      intentionLabel: 'Hoy quieres vivirlo así:',
+    },
     gratitude: {
       label: '¿Qué agradeces?',
+      placeholder: 'Algo por lo que dar gracias…',
+      suggestionsLabel: 'Si no sale solo:',
       suggestions: ['Tu familia', 'Tu cuerpo', 'Este momento', 'El silencio', 'Lo que tienes'],
       suggestionsDelay: 6000, // ms
+      max: 10,
     },
     emotions: {
       label: '¿Cómo quieres sentirte hoy?',
       max: 3,
+      hintTemplate: 'Elige hasta {max}.',
       complementary: '¿Qué necesitas para lograrlo?',
+      complementaryPlaceholder: 'Lo que te ayudaría…',
     },
     bigDay: {
       label: '¿Cómo imaginas tu mejor día hoy?',
@@ -313,6 +348,8 @@ export const copy = {
     victories: {
       label: 'Tres cosas que, si pasan hoy, el día valió la pena.',
       placeholder: 'Una victoria que quiero lograr hoy…',
+      max: 3,
+      areaLabel: '¿Dónde vive esto?',
     },
   },
 

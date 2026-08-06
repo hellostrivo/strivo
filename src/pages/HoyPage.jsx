@@ -1,11 +1,14 @@
 // src/pages/HoyPage.jsx
 // Pantalla "Hoy" — pantalla raíz de Strivo
-// En Fase 0: degradado horario + Rituales de Mañana y de Noche como overlays
-// En Fase 1: se añaden tarjeta de acción y Vista de Mañana/Noche
+//
+// Contiene el Diario del momento y los Rituales como overlays (§4.3.1). En la
+// franja de amanecer y durante el día se muestra la Vista de Mañana; el resto
+// de franjas siguen con la tarjeta de Fase 0 hasta que exista la Vista de Noche.
 //
 // Cada ritual se abre solo en su franja (mañana 4:00–11:30, noche 19:00–03:00)
 // si ese día todavía no se cerró. Una vez cerrado —por donde sea— no vuelve a
-// aparecer: queda el enlace para volver a él cuando se quiera.
+// aparecer: queda el enlace para volver a él cuando se quiera. Al cerrarlo, la
+// Vista se recarga para reflejar lo que se marcó dentro (RN-01).
 //
 // La fecha es la del día de Strivo, que termina a las 03:00 (§7.2): quien cierra
 // su día a la 1:30 no estrena un día nuevo, sigue en el de ayer.
@@ -24,8 +27,12 @@ import { ritualNocheHecho } from '@lib/ritualNoche'
 import { gradientsBySlot } from '@tokens'
 import { copy } from '@copy'
 import Button from '@components/ui/Button'
+import VistaManana from '@/pages/diario/VistaManana'
 import RitualManana from '@/pages/ritual/RitualManana'
 import RitualNoche  from '@/pages/ritual/RitualNoche'
+
+// Franjas en las que el Diario del día es la Vista de Mañana
+const FRANJAS_DE_MANANA = ['amanecer', 'dia']
 
 export default function HoyPage({ onHideNav }) {
   const slot     = useMemo(() => getTimeSlot(), [])
@@ -33,6 +40,7 @@ export default function HoyPage({ onHideNav }) {
 
   const [ritualAbierto, setRitualAbierto] = useState(null)   // 'manana' | 'noche' | null
   const [hechos, setHechos]               = useState(null)   // null mientras carga
+  const [recarga, setRecarga]             = useState(0)
 
   // Saludo sin nombre (en Fase 1 se añade el nombre del perfil)
   const greeting = copy.greetings[slot] ?? copy.greetings.dia
@@ -64,6 +72,7 @@ export default function HoyPage({ onHideNav }) {
   const cerrarRitual = cual => {
     setRitualAbierto(null)
     setHechos(previos => ({ ...previos, [cual]: true }))
+    setRecarga(n => n + 1)
   }
 
   // Qué ritual toca según la hora, para poder volver a él
@@ -74,44 +83,52 @@ export default function HoyPage({ onHideNav }) {
   const textos = ritualDeAhora === 'noche' ? copy.ritualNoche : copy.ritualManana
   const puedeVolver = ritualDeAhora && hechos && !ritualAbierto
 
+  const esFranjaDeManana = FRANJAS_DE_MANANA.includes(slot)
+
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center p-6"
+      className="min-h-screen"
       style={{
         background: `linear-gradient(160deg, ${gradient.from} 0%, ${gradient.to} 100%)`,
       }}
     >
-      {/* Logo / nombre */}
-      <p className="font-sans text-sm tracking-widest text-ink/40 uppercase mb-8">
-        {copy.appName}
-      </p>
-
-      {/* Saludo principal */}
-      <h1 className="font-display text-xl text-ink text-center leading-snug mb-4">
-        {greeting}
-      </h1>
-
-      {/* STUB: En Fase 1 aquí va la tarjeta de acción contextual */}
-      <div className="w-full max-w-sm p-4 rounded-md bg-paper/70 backdrop-blur-sm shadow-elev-2 text-center">
-        <p className="text-base text-ink/60">
-          Fase 0 · Prototipo
+      <div className="w-full max-w-md mx-auto px-6 pt-safe pt-10 flex flex-col items-center text-center">
+        {/* Logo / nombre */}
+        <p className="font-sans text-sm tracking-widest text-ink/40 uppercase mb-6">
+          {copy.appName}
         </p>
-        <p className="text-sm text-ink/40 mt-1">
-          Franja horaria: <strong>{slot}</strong>
-        </p>
+
+        {/* Saludo principal */}
+        <h1 className="font-display text-xl text-ink leading-snug">
+          {greeting}
+        </h1>
+
+        {puedeVolver && (
+          <Button
+            variant="secondary"
+            size="md"
+            className="mt-6"
+            onClick={() => setRitualAbierto(ritualDeAhora)}
+          >
+            {hechos[ritualDeAhora]
+              ? textos.reopen
+              : (ritualDeAhora === 'noche' ? textos.n6.cta : textos.cta)}
+          </Button>
+        )}
       </div>
 
-      {puedeVolver && (
-        <Button
-          variant="secondary"
-          size="md"
-          className="mt-6"
-          onClick={() => setRitualAbierto(ritualDeAhora)}
-        >
-          {hechos[ritualDeAhora]
-            ? textos.reopen
-            : (ritualDeAhora === 'noche' ? textos.n6.cta : textos.cta)}
-        </Button>
+      {esFranjaDeManana ? (
+        <VistaManana recarga={recarga} />
+      ) : (
+        /* STUB: hasta que exista la Vista de Noche (§5.4) */
+        <div className="w-full max-w-sm mx-auto mt-10 p-4 rounded-md bg-paper/70 backdrop-blur-sm shadow-elev-2 text-center">
+          <p className="text-base text-ink/60">
+            Fase 0 · Prototipo
+          </p>
+          <p className="text-sm text-ink/40 mt-1">
+            Franja horaria: <strong>{slot}</strong>
+          </p>
+        </div>
       )}
 
       {ritualAbierto === 'manana' && (
