@@ -90,7 +90,7 @@ export default function RitualLayout({
         <header className="pt-safe px-6 flex items-center gap-4">
           {onBack ? (
             <Button variant="ghost" size="sm" onClick={onBack} className="-ml-4">
-              {copy.ritualManana.nav.back}
+              {copy.ritual.nav.back}
             </Button>
           ) : (
             <span className="min-h-touch" aria-hidden="true" />
@@ -111,12 +111,12 @@ export default function RitualLayout({
           </div>
 
           <Button variant="ghost" size="sm" onClick={onClose} className="-mr-4">
-            {copy.ritualManana.nav.close}
+            {copy.ritual.nav.close}
           </Button>
         </header>
 
         <p className="sr-only" aria-live="polite">
-          {interpolate(copy.ritualManana.nav.progressTemplate, { n: step, total: totalSteps })}
+          {interpolate(copy.ritual.nav.progressTemplate, { n: step, total: totalSteps })}
         </p>
 
         <main className="flex-1 w-full max-w-md mx-auto px-6 pt-10 pb-8 flex flex-col animate-fade-up">

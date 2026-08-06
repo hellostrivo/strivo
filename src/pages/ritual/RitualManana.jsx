@@ -131,7 +131,7 @@ export default function RitualManana({ onClose }) {
   ) : (
     <>
       <Button variant="primary" size="lg" fullWidth onClick={siguiente}>
-        {copy.ritualManana.nav.continue}
+        {copy.ritual.nav.continue}
       </Button>
       {/* Ruta express: termina el ritual aquí mismo, sin pasar por el resto */}
       <Button variant="ghost" size="md" fullWidth onClick={() => cerrar(undefined)}>

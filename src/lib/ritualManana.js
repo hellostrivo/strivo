@@ -15,7 +15,7 @@ import {
   updateDailyEntry,
 } from '@lib/db'
 import { getCurrentUserId } from '@lib/user'
-import { todayKey, getWeekDay } from '@lib/timeSlot'
+import { strivoDayKey, previousDayKey, getWeekDay } from '@lib/timeSlot'
 
 // Ánimos de cierre que hacen que la mañana salude distinto (copy.ritualNoche.n6)
 const ANIMOS_DIFICILES = ['Cansado', 'Inquieto']
@@ -26,11 +26,12 @@ export function ritualMananaHecho(entry) {
 
 export async function loadRitualManana() {
   const userId = getCurrentUserId()
-  const fecha  = todayKey()
-  const ayer   = fechaAnterior(fecha)
+  // La fecha del día de Strivo, igual que en Hoy y en el Ritual de Noche
+  const perfil = await getUserProfile(userId)
+  const fecha  = strivoDayKey(perfil?.diaTerminaA)
+  const ayer   = previousDayKey(fecha)
 
-  const [perfil, areas, habitos, logs, entradaHoy, entradaAyer] = await Promise.all([
-    getUserProfile(userId),
+  const [areas, habitos, logs, entradaHoy, entradaAyer] = await Promise.all([
     getAreas(userId),
     getActiveHabitsForMoment(userId, 'manana', getWeekDay()),
     getHabitLogsByDate(userId, fecha),
@@ -99,12 +100,6 @@ export function elegirAreaDelDia(areas, habitos, fecha) {
   // Rotación estable: el mismo día siempre da la misma área
   const candidatas = masHabitos.length ? masHabitos : activas
   return candidatas[diaDelAno(fecha) % candidatas.length]
-}
-
-function fechaAnterior(fecha) {
-  const [ano, mes, dia] = fecha.split('-').map(Number)
-  const d = new Date(ano, mes - 1, dia - 1)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 function diaDelAno(fecha) {

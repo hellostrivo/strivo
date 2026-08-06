@@ -102,3 +102,28 @@ export function todayKey(date = new Date()) {
   const dia = String(date.getDate()).padStart(2, '0')
   return `${date.getFullYear()}-${mes}-${dia}`
 }
+
+/**
+ * La fecha del "día de Strivo", que no termina a medianoche sino a
+ * `diaTerminaA` (§7.2, 03:00 por defecto).
+ *
+ * Quien cierra su día a la 1:30 de la madrugada lo está cerrando *ayer*: sus
+ * agradecimientos y su ánimo pertenecen a esa fecha, y el Ritual de Noche no
+ * debe volver a aparecer como si fuera un día nuevo sin registrar.
+ */
+export function strivoDayKey(diaTerminaA = '03:00', date = new Date()) {
+  const minutosAhora = date.getHours() * 60 + date.getMinutes()
+  if (minutosAhora >= timeToMinutes(diaTerminaA)) return todayKey(date)
+
+  const ayer = new Date(date)
+  ayer.setDate(ayer.getDate() - 1)
+  return todayKey(ayer)
+}
+
+/**
+ * La fecha anterior a una clave 'YYYY-MM-DD'.
+ */
+export function previousDayKey(fecha) {
+  const [ano, mes, dia] = fecha.split('-').map(Number)
+  return todayKey(new Date(ano, mes - 1, dia - 1))
+}

@@ -195,17 +195,20 @@ export const copy = {
   },
 
   // ─── Rituales ─────────────────────────────────────────────────────────────
-  ritualManana: {
-    // Nombre accesible del overlay y vuelta desde Hoy
-    title: 'Ritual de la mañana',
-    reopen: 'Volver al ritual',
-    // Navegación propia del ritual (el onboarding tiene la suya en onboarding.nav)
+  // Navegación común a los dos rituales (el onboarding tiene la suya aparte)
+  ritual: {
     nav: {
       back: 'Atrás',
       continue: 'Continuar',
       close: 'Cerrar',
       progressTemplate: 'Paso {n} de {total}',
     },
+  },
+
+  ritualManana: {
+    // Nombre accesible del overlay y vuelta desde Hoy
+    title: 'Ritual de la mañana',
+    reopen: 'Volver al ritual',
     r1: {
       prompt: 'Respira conmigo',
       duration: '6 segundos',
@@ -240,13 +243,51 @@ export const copy = {
   },
 
   ritualNoche: {
-    n1: { prompt: 'Respira conmigo', duration: '6 segundos' },
+    title: 'Ritual de la noche',
+    reopen: 'Volver al ritual',
+    n1: {
+      prompt: 'Respira conmigo',
+      duration: '6 segundos',
+      breatheIn: 'Inhala',
+      breatheOut: 'Exhala',
+    },
+    n2: {
+      question: '¿Qué hábitos completaste?',
+      progressTemplate: '{hecho} de {total}',
+      complete: 'Ritual completo.',
+      empty: 'Tu ritual de la noche está libre. ¿Quieres añadir algo?',
+    },
+    // Las victorias heredadas y los logros no planeados comparten pantalla, como
+    // en la Vista de Noche: las etiquetas de cada acción viven en diarioNoche.
+    n3: {
+      question: '¿Qué lograste hoy?',
+      addLabel: 'Añadir',
+      removeTemplate: 'Quitar {logro}',
+    },
+    n4: {
+      question: '¿Qué agradeces de hoy?',
+      placeholder: 'Algo de hoy…',
+      // Aparecen a los 6s sin escribir, como una mano tendida, no como una tarea
+      suggestionsLabel: 'Si no sale solo:',
+      max: 10,
+    },
+    n5: {
+      placeholder: 'Con curiosidad, no con juicio…',
+    },
     n6: {
       question: '¿Cómo te vas a dormir?',
       states: ['Tranquilo', 'Pensativo', 'Cansado', 'Inquieto', 'Otro'],
+      cta: 'Cerrar el día',
     },
     closing: {
+      // La plantilla base es la de la biblioteca; las variantes existen solo
+      // por concordancia ("1 cosas" no se le dice a nadie a las once de la
+      // noche). La regla de cuál se usa está en @lib/ritualNoche.
       summaryTemplate: 'Hoy agradeciste {n} cosas. Lograste {m}.',
+      summarySingularTemplate: 'Hoy agradeciste una cosa. Lograste {m}.',
+      summaryOnlyGratitude: 'Hoy agradeciste {n} cosas.',
+      summaryOnlyGratitudeSingular: 'Hoy agradeciste una cosa.',
+      summaryOnlyAchievements: 'Hoy lograste {m}.',
       peace: 'En paz con tu día.',
       goodnight: 'Buenas noches.',
       nothingWritten: 'Hoy solo viniste. También cuenta.',
