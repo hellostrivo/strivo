@@ -528,6 +528,63 @@ export const copy = {
     short: ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'],
     long:  ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
   },
+
+  // ─── Meses ────────────────────────────────────────────────────────────────
+  months: {
+    long: [
+      'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+    ],
+    // "5 de agosto" · "5 de agosto de 2025" cuando no es el año en curso
+    dayTemplate: '{dia} de {mes}',
+    dayYearTemplate: '{dia} de {mes} de {ano}',
+    // "Miércoles, 5 de agosto"
+    weekdayTemplate: '{diaSemana}, {fecha}',
+    monthTemplate: '{mes} de {ano}',
+  },
+
+  // ─── Journal (escritura libre) ────────────────────────────────────────────
+  journal: {
+    title: 'Journal',
+    new: 'Escribir',
+    // El editor abre con el cursor puesto: el marcador es una invitación,
+    // no una pregunta que haya que contestar
+    placeholder: 'Lo que sea que estés pensando…',
+    back: 'Listo',
+    search: 'Buscar una palabra',
+    searchPlaceholder: 'Una palabra',
+    clearSearch: 'Quitar la búsqueda',
+    noResults: 'Nada con esa palabra.',
+    resultsTemplate: '{n} entradas',
+    resultsSingular: '1 entrada',
+  },
+
+  // ─── Historial ────────────────────────────────────────────────────────────
+  historial: {
+    title: 'Tu historial',
+    previousMonth: 'Mes anterior',
+    nextMonth: 'Mes siguiente',
+    moodLabel: 'Cómo te fuiste a dormir',
+    // Un día sin registro no es un hueco que reprochar
+    emptyDay: 'De ese día no quedó nada escrito. También cuenta.',
+    blocks: {
+      intencion: 'Tu intención',
+      emociones: 'Cómo querías sentirte',
+      necesito: 'Lo que necesitabas',
+      granDia: 'Tu mejor día',
+      agradecimientos: 'Lo que agradeciste',
+      victorias: 'Lo que te propusiste',
+      aprendizaje: 'Lo que aprendiste',
+      habitos: 'Lo que hiciste',
+      journal: 'Lo que escribiste',
+    },
+    victoryStates: {
+      pendiente: 'Sin decidir',
+      lograda: 'Lo lograste',
+      no_se_dio: 'No se dio',
+      soltada: 'La dejaste ir',
+    },
+  },
 }
 
 // Utilidad: interpolar template strings

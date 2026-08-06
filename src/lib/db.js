@@ -102,6 +102,26 @@ export async function getDailyEntry(userId, fecha) {
   return all[0] ?? null
 }
 
+// Todas las entradas de un usuario entre dos fechas (rango inclusivo).
+// La usa el Historial para pintar un mes de una sola lectura.
+export async function getDailyEntriesInRange(userId, desde, hasta) {
+  const db = await getDB()
+  return db.getAllFromIndex(
+    'dailyEntries',
+    'byUserDate',
+    IDBKeyRange.bound([userId, desde], [userId, hasta])
+  )
+}
+
+export async function getVictoriesInRange(userId, desde, hasta) {
+  const db = await getDB()
+  return db.getAllFromIndex(
+    'victories',
+    'byUserDate',
+    IDBKeyRange.bound([userId, desde], [userId, hasta])
+  )
+}
+
 export async function saveDailyEntry(entry) {
   const db = await getDB()
   await db.put('dailyEntries', entry)

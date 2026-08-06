@@ -1,21 +1,26 @@
 // src/pages/TuPage.jsx
 // Pestaña "Tú" — espacio de autoconocimiento (§4.3.1)
 //
-// En Fase 0 contiene el módulo de Hábitos. Insights, Historial y Perfil se
-// añaden aquí como entradas hermanas cuando existan.
+// En Fase 0 contiene Hábitos e Historial. Insights y Perfil se añaden aquí
+// como entradas hermanas cuando existan.
 //
 // Desde Hoy: Tú → Hábitos (2 toques) → detalle (3). Dentro de RN-10.
 
 import { useState } from 'react'
 import { copy } from '@copy'
 import HabitosModulo from '@/pages/habitos/HabitosModulo'
+import HistorialModulo from '@/pages/historial/HistorialModulo'
 import Button from '@components/ui/Button'
 
 export default function TuPage() {
-  const [seccion, setSeccion] = useState(null)   // null | 'habitos'
+  const [seccion, setSeccion] = useState(null)   // null | 'habitos' | 'historial'
 
   if (seccion === 'habitos') {
     return <HabitosModulo onSalir={() => setSeccion(null)} />
+  }
+
+  if (seccion === 'historial') {
+    return <HistorialModulo onSalir={() => setSeccion(null)} />
   }
 
   return (
@@ -31,10 +36,19 @@ export default function TuPage() {
         >
           {copy.habits.list.title}
         </Button>
+
+        <Button
+          variant="secondary"
+          size="lg"
+          fullWidth
+          onClick={() => setSeccion('historial')}
+        >
+          {copy.historial.title}
+        </Button>
       </div>
 
       <p className="mt-10 text-sm text-ink/40">
-        Insights · Historial · Perfil — Fase 1
+        Insights · Perfil — Fase 1
       </p>
     </div>
   )
