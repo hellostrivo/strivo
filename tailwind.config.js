@@ -142,6 +142,12 @@ export default {
           '0%':   { opacity: '0', transform: 'translateY(8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        // Respiración guiada del ritual: un ciclo completo de 6s (§5.5, R1)
+        'breathe': {
+          '0%':   { transform: 'scale(0.82)', opacity: '0.55' },
+          '50%':  { transform: 'scale(1.12)', opacity: '1' },
+          '100%': { transform: 'scale(0.82)', opacity: '0.55' },
+        },
         // Escala de chip al tocar
         'chip-press': {
           '0%':   { transform: 'scale(1)' },
@@ -154,6 +160,7 @@ export default {
         'light-sweep': 'light-sweep 900ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
         'fade-up':     'fade-up 420ms cubic-bezier(0, 0, 0.2, 1) both',
         'chip-press':  'chip-press 180ms cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        'breathe':     'breathe 6s cubic-bezier(0.4, 0, 0.2, 1) forwards',
       },
 
       // ─── Tamaños mínimos para toque (WCAG 2.2) ───────────────────────────

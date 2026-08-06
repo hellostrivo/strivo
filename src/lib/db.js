@@ -108,6 +108,19 @@ export async function saveDailyEntry(entry) {
   enqueueSyncItem('dailyEntries', entry.id, entry)
 }
 
+// Crea la entrada del día si no existe y le aplica el parche.
+// La usan los rituales y las vistas: cada bloque escribe lo suyo sin pisar el
+// resto de lo que ya se registró ese día.
+export async function updateDailyEntry(userId, fecha, patch) {
+  const existing = await getDailyEntry(userId, fecha)
+  const entry = {
+    ...(existing ?? { id: `${userId}_${fecha}`, userId, fecha }),
+    ...patch,
+  }
+  await saveDailyEntry(entry)
+  return entry
+}
+
 // ─── Victories ────────────────────────────────────────────────────────────────
 export async function getVictoriesByDate(userId, fecha) {
   const db = await getDB()
@@ -177,6 +190,17 @@ export async function markHabit(habitId, userId, fecha) {
   const db = await getDB()
   await db.put('habitLogs', log)
   enqueueSyncItem('habitLogs', log.id, log)
+
+  // Contador desnormalizado del hábito (§7.2). Sube solo cuando se crea una
+  // fila nueva, así que marcar dos veces el mismo día no lo infla. Al desmarcar
+  // NO baja: el modelo dice que solo crece, nunca se reinicia.
+  const habit = await db.get('habits', habitId)
+  if (habit) {
+    const actualizado = { ...habit, totalCompletados: (habit.totalCompletados ?? 0) + 1 }
+    await db.put('habits', actualizado)
+    enqueueSyncItem('habits', habit.id, actualizado)
+  }
+
   return log
 }
 

@@ -196,19 +196,37 @@ export const copy = {
 
   // ─── Rituales ─────────────────────────────────────────────────────────────
   ritualManana: {
-    r1: { prompt: 'Respira conmigo', duration: '6 segundos' },
+    // Nombre accesible del overlay y vuelta desde Hoy
+    title: 'Ritual de la mañana',
+    reopen: 'Volver al ritual',
+    // Navegación propia del ritual (el onboarding tiene la suya en onboarding.nav)
+    nav: {
+      back: 'Atrás',
+      continue: 'Continuar',
+      close: 'Cerrar',
+      progressTemplate: 'Paso {n} de {total}',
+    },
+    r1: {
+      prompt: 'Respira conmigo',
+      duration: '6 segundos',
+      breatheIn: 'Inhala',
+      breatheOut: 'Exhala',
+    },
     r2: {
       normal: 'Te espera tu día',
       difficultDay: 'Ayer fue difícil. Hoy es nuevo.',
+      greetingTemplate: 'Buenos días, {nombre}.',
     },
     r3: {
       template: 'Te estás convirtiendo en alguien que {identidad}.',
       areaLabel: 'Hoy toca sobre todo:',
+      areaIdentityTemplate: 'alguien que {identidad}',
       commitmentLabel: 'Y estás cultivando:',
       commitmentDays: '(día {n} de {total})',
       editLink: 'Cambiar esto',
     },
     r4: {
+      title: 'Tus hábitos de la mañana',
       progressTemplate: '{hecho} de {total}',
       complete: 'Ritual completo. Buen comienzo.',
       empty: 'Tu ritual de la mañana está libre. ¿Quieres añadir algo?',

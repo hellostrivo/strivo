@@ -1,19 +1,52 @@
 // src/pages/HoyPage.jsx
 // Pantalla "Hoy" — pantalla raíz de Strivo
-// En Fase 0: stub con degradado horario funcional
-// En Fase 1: se añaden tarjeta de acción, Ritual y Vista de Mañana/Noche
+// En Fase 0: degradado horario + Ritual de Mañana como overlay
+// En Fase 1: se añaden tarjeta de acción y Vista de Mañana/Noche
+//
+// El Ritual de Mañana se abre solo en la franja de amanecer (4:00–11:30) si
+// hoy todavía no se cerró. Una vez cerrado —por donde sea— no vuelve a
+// aparecer en el día: queda el enlace para volver a él cuando se quiera.
 
-import { useMemo } from 'react'
-import { getTimeSlot } from '@lib/timeSlot'
+import { useEffect, useMemo, useState } from 'react'
+import { getTimeSlot, isRitualMananaWindow, todayKey } from '@lib/timeSlot'
+import { getDailyEntry } from '@lib/db'
+import { getCurrentUserId } from '@lib/user'
+import { ritualMananaHecho } from '@lib/ritualManana'
 import { gradientsBySlot } from '@tokens'
 import { copy } from '@copy'
+import Button from '@components/ui/Button'
+import RitualManana from '@/pages/ritual/RitualManana'
 
-export default function HoyPage() {
+export default function HoyPage({ onHideNav }) {
   const slot     = useMemo(() => getTimeSlot(), [])
   const gradient = gradientsBySlot[slot]
 
+  const [ritualAbierto, setRitualAbierto] = useState(false)
+  const [ritualHecho, setRitualHecho]     = useState(null)   // null mientras carga
+
   // Saludo sin nombre (en Fase 1 se añade el nombre del perfil)
   const greeting = copy.greetings[slot] ?? copy.greetings.dia
+
+  useEffect(() => {
+    let vivo = true
+    getDailyEntry(getCurrentUserId(), todayKey())
+      .then(entrada => {
+        if (!vivo) return
+        const hecho = ritualMananaHecho(entrada)
+        setRitualHecho(hecho)
+        if (!hecho && isRitualMananaWindow()) setRitualAbierto(true)
+      })
+      .catch(() => { if (vivo) setRitualHecho(false) })
+    return () => { vivo = false }
+  }, [])
+
+  // La barra de pestañas no compite con el ritual
+  useEffect(() => {
+    onHideNav?.(ritualAbierto)
+    return () => onHideNav?.(false)
+  }, [ritualAbierto, onHideNav])
+
+  const puedeVolverAlRitual = isRitualMananaWindow() && ritualHecho !== null && !ritualAbierto
 
   return (
     <div
@@ -41,6 +74,26 @@ export default function HoyPage() {
           Franja horaria: <strong>{slot}</strong>
         </p>
       </div>
+
+      {puedeVolverAlRitual && (
+        <Button
+          variant="secondary"
+          size="md"
+          className="mt-6"
+          onClick={() => setRitualAbierto(true)}
+        >
+          {ritualHecho ? copy.ritualManana.reopen : copy.ritualManana.cta}
+        </Button>
+      )}
+
+      {ritualAbierto && (
+        <RitualManana
+          onClose={() => {
+            setRitualAbierto(false)
+            setRitualHecho(true)
+          }}
+        />
+      )}
     </div>
   )
 }
