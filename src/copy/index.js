@@ -90,11 +90,14 @@ export const copy = {
       label: 'Tu nombre',
     },
     // P2A — género. Sirve para hablarle a cada quien en su propio género
-    // (§2 del documento de cambios). Contestar es opcional: sin respuesta, la
-    // app usa la variante neutra y no vuelve a preguntar.
+    // (§2 y §5 del documento de cambios).
+    //
+    // El subtítulo hace un trabajo desproporcionado para su tamaño: es lo que
+    // convierte un campo de formulario en un gesto de atención. No acortarlo.
+    // "Prefiero no contestar" es la salida sin fricción, y está a un toque.
     p2a: {
       question: '¿Con qué género te identificas?',
-      hint: 'Es para escribirte como eres. Lo cambias cuando quieras.',
+      hint: 'Solo lo usamos para hablarte como te corresponde.',
       options: {
         masculino:             'Masculino',
         femenino:              'Femenino',

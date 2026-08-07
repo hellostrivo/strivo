@@ -12,9 +12,10 @@
 // y guardarlo es la promesa de esa pantalla; esperar a que haya cuenta la
 // rompería.
 
-import { saveVictory } from '@lib/db'
+import { saveVictory, getUserProfile, saveUserProfile } from '@lib/db'
+import { normalizeGender } from '@lib/gender'
 import { todayKey } from '@lib/timeSlot'
-import { getLocalUserId } from '@lib/user'
+import { getCurrentUserId, getLocalUserId } from '@lib/user'
 
 const DRAFT_KEY = 'strivo.onboarding.draft'
 const DONE_KEY  = 'strivo.onboarding.done'
@@ -99,6 +100,21 @@ export function markOnboardingComplete() {
   } catch {
     // Ver arriba
   }
+}
+
+// ─── P2A — el género ─────────────────────────────────────────────────────────
+// Baja a IndexedDB en el momento de elegir, no al pulsar Continuar (§5.9): es
+// el dato del que depende cómo le habla la app a la persona, y cerrar la
+// pestaña entre una cosa y la otra no puede costarle volver a contestarlo.
+//
+// La fila del perfil todavía está a medias (solo userId y gender). No pasa nada:
+// hasta P11 nadie la lee más que el motor de lenguaje, y P11 la completa.
+export async function saveGenero(gender) {
+  const userId   = getCurrentUserId()
+  const anterior = await getUserProfile(userId)
+  const perfil   = { ...(anterior ?? {}), userId, gender: normalizeGender(gender) }
+  await saveUserProfile(perfil)
+  return perfil
 }
 
 // ─── P5 — la primera cosa buena ──────────────────────────────────────────────

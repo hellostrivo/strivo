@@ -3,6 +3,7 @@
 // Usada para: áreas de identidad, emociones del día, días de la semana
 // Motion: 180ms chip-press al tocar
 
+import { forwardRef } from 'react'
 import { clsx } from 'clsx'
 
 /**
@@ -11,16 +12,23 @@ import { clsx } from 'clsx'
  * @param {boolean} selected - estado seleccionado
  * @param {string} color - color hex del acento (para áreas de identidad)
  * @param {'sm'|'md'} size
+ * @param {'radio'} [role] - para grupos de una sola respuesta (P2A): cambia
+ *   aria-pressed por aria-checked y añade una marca, para que el estado no
+ *   dependa solo del color
+ * @param {boolean} [fullWidth] - fila a ancho completo en vez de etiqueta que fluye
  */
-export default function Chip({
+const Chip = forwardRef(function Chip({
   children,
   selected = false,
   color,           // hex, p.ej. '#7E9E86' para área Salud
   size = 'md',
+  role,
+  fullWidth = false,
   onClick,
   className,
   ...props
-}) {
+}, ref) {
+  const esRadio = role === 'radio'
   // Área seleccionada: tinte + borde del color propio, pero el texto se queda en
   // ink. Pintar la etiqueta con el color del área daba ~2.5:1 sobre el tinte
   // claro y no pasaba contraste; el color ya lo comunica el punto y el borde.
@@ -38,11 +46,15 @@ export default function Chip({
 
   return (
     <button
+      ref={ref}
       type="button"
       onClick={onClick}
-      aria-pressed={selected}
+      role={role}
+      aria-pressed={esRadio ? undefined : selected}
+      aria-checked={esRadio ? selected : undefined}
       className={clsx(
-        'inline-flex items-center gap-1.5',
+        esRadio ? 'inline-flex items-center gap-3' : 'inline-flex items-center gap-1.5',
+        fullWidth && 'w-full justify-start text-left',
         'rounded-full border font-sans font-medium',
         'transition-all duration-260 ease-smooth',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20',
@@ -70,7 +82,29 @@ export default function Chip({
           aria-hidden="true"
         />
       )}
+
+      {/* Una sola respuesta: la marca cambia de forma, no solo de color, para
+          que la elegida se distinga también en escala de grises. */}
+      {esRadio && (
+        <span
+          className={clsx(
+            'flex items-center justify-center flex-shrink-0',
+            'w-5 h-5 rounded-full border',
+            selected ? 'border-paper' : 'border-border'
+          )}
+          aria-hidden="true"
+        >
+          {selected && (
+            <svg viewBox="0 0 16 16" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M3 8.5l3.5 3.5L13 5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </span>
+      )}
+
       {children}
     </button>
   )
-}
+})
+
+export default Chip

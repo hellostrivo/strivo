@@ -89,9 +89,11 @@ Pantalla P2 (Nombre):
 
 Pantalla P2A (Género):
 "¿Con qué género te identificas?"
-"Es para escribirte como eres. Lo cambias cuando quieras."
+"Solo lo usamos para hablarte como te corresponde."
 - Masculino · Femenino · Prefiero no contestar · Otro
-(Contestar es opcional.)
+(Una sola respuesta. Continuar espera a que haya una; "Prefiero no contestar"
+ es la salida sin fricción. El subtítulo no se acorta: es lo que convierte un
+ campo de formulario en un gesto de atención.)
 
 Pantalla P3 (Motivo):
 "¿Por qué estás aquí? (Elige los que resuenen)"

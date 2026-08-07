@@ -15,7 +15,7 @@
 // En P11 el borrador se convierte en perfil, áreas y hábitos reales.
 
 import { useCallback, useEffect, useState } from 'react'
-import { loadDraft, saveDraft, savePrimeraVictoria } from '@lib/onboardingStorage'
+import { loadDraft, saveDraft, savePrimeraVictoria, saveGenero } from '@lib/onboardingStorage'
 import { finishOnboarding } from '@lib/onboardingProfile'
 import { setGender } from '@lib/genderStore'
 import { todayKey } from '@lib/timeSlot'
@@ -101,6 +101,17 @@ export default function OnboardingFlow({ onComplete }) {
     setStepIndex(index + 1)
   }
 
+  // P2A — el borrador se actualiza en el acto y la fila del perfil se escribe
+  // detrás, sin hacer esperar a la selección (§5.9: se guarda al elegir, no al
+  // pulsar Continuar). Si el almacén falla, el borrador conserva la respuesta y
+  // el motor de lenguaje ya está en el género correcto.
+  const guardarGenero = gender => {
+    update({ gender })
+    saveGenero(gender).catch(error => {
+      console.warn('[Strivo] El género se queda solo en el borrador:', error)
+    })
+  }
+
   // P5 — el borrador se actualiza en el acto (síncrono, nunca falla) y la fila de
   // IndexedDB se escribe detrás, sin hacer esperar a la confirmación. Si el
   // almacén no está disponible, lo escrito sigue vivo en el borrador: la promesa
@@ -143,7 +154,7 @@ export default function OnboardingFlow({ onComplete }) {
         <P2AGenero
           {...common}
           gender={draft.gender}
-          onChange={gender => update({ gender })}
+          onChange={guardarGenero}
           onBack={back}
           onNext={next}
         />

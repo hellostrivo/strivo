@@ -15,8 +15,9 @@ import {
   subscribeGenderMode,
   resetGenderStore,
 } from '@lib/genderStore'
-import { emptyDraft } from '@lib/onboardingStorage'
+import { emptyDraft, saveGenero } from '@lib/onboardingStorage'
 import { finishOnboarding } from '@lib/onboardingProfile'
+import { getCurrentUserId } from '@lib/user'
 import { filasDe } from './helpers/db.js'
 
 beforeEach(() => resetGenderStore())
@@ -182,6 +183,47 @@ describe('El género baja al perfil (§2.2)', () => {
   it('un valor fuera del catálogo se guarda como sin respuesta', async () => {
     await finishOnboarding(borrador({ gender: 'inventado' }))
     expect((await filasDe('userProfile'))[0].gender).toBeNull()
+  })
+})
+
+describe('P2A · el género se guarda al elegir (§5.9)', () => {
+  it('baja a IndexedDB sin esperar a Continuar', async () => {
+    await saveGenero('femenino')
+
+    const [perfil] = await filasDe('userProfile')
+    expect(perfil).toMatchObject({ userId: getCurrentUserId(), gender: 'femenino' })
+  })
+
+  it('cambiar de opción actualiza la misma fila', async () => {
+    await saveGenero('masculino')
+    await saveGenero('prefiero_no_contestar')
+
+    const perfiles = await filasDe('userProfile')
+    expect(perfiles).toHaveLength(1)
+    expect(perfiles[0].gender).toBe('prefiero_no_contestar')
+  })
+
+  it('lo que P2A escribió sigue ahí cuando P11 completa el perfil', async () => {
+    await saveGenero('femenino')
+    await finishOnboarding({ ...emptyDraft, gender: 'femenino', identidadCentral: 'crece' })
+
+    const perfiles = await filasDe('userProfile')
+    expect(perfiles).toHaveLength(1)
+    expect(perfiles[0]).toMatchObject({ gender: 'femenino', identidadCentral: 'crece' })
+  })
+
+  it('con cuenta, no queda un perfil huérfano bajo el id local', async () => {
+    await saveGenero('femenino')
+    await finishOnboarding({
+      ...emptyDraft,
+      gender: 'femenino',
+      cuenta: { uid: 'firebase-123', correo: 'hola@strivo.com', proveedor: 'correo' },
+    })
+
+    const perfiles = await filasDe('userProfile')
+    expect(perfiles).toHaveLength(1)
+    expect(perfiles[0].userId).toBe('firebase-123')
+    expect(perfiles[0].gender).toBe('femenino')
   })
 })
 

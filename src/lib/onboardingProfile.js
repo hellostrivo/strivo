@@ -37,6 +37,10 @@ export async function finishOnboarding(draft) {
   if (uid) {
     setAccountUserId(uid)
     await reasignarFilas(localUserId, uid)
+    // El perfil se vuelve a escribir entero unas líneas más abajo bajo el id de
+    // la cuenta. Lo que se borra aquí es la fila a medias que P2A dejó bajo el
+    // id local: su clave es el userId, así que no se reasigna sola.
+    await borrarPerfilLocal(localUserId)
   }
 
   await saveUserProfile(perfilDesde(draft, userId))
@@ -102,6 +106,11 @@ function habitoDesde(habito, userId) {
     totalCompletados: 0,
     origen: 'onboarding',
   }
+}
+
+async function borrarPerfilLocal(localUserId) {
+  const db = await getDB()
+  await db.delete('userProfile', localUserId)
 }
 
 // Mueve las filas del id local al id de la cuenta. Se hace con transacción por
