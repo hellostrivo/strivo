@@ -12,6 +12,7 @@
 import { getDB, saveUserProfile, saveArea, saveHabit } from '@lib/db'
 import { getLocalUserId, setAccountUserId } from '@lib/user'
 import { normalizeGender } from '@lib/gender'
+import { normalizarIdentidad } from '@lib/identidad'
 import { AREAS } from '@lib/areas'
 
 const TODOS_LOS_DIAS = [0, 1, 2, 3, 4, 5, 6]
@@ -64,12 +65,19 @@ function perfilDesde(draft, userId) {
     // Lo contestado en P2A. Se guarda tal cual; `genderMode` no se persiste
     // porque se deriva (§2.2) y guardarlo duplicaría la fuente de verdad.
     gender:           normalizeGender(draft.gender),
-    identidadCentral: draft.identidadCentral,
+    // §7.8 — `identidadCentral` es el `coreIdentity` de la especificación y
+    // `identidadCentralFuente` su `coreIdentitySource` (solo para analítica:
+    // no se muestra nunca). Se conservan estos nombres porque ya están escritos
+    // en los perfiles guardados y en el historial de versiones.
+    identidadCentral: normalizarIdentidad(draft.identidadCentral),
+    identidadCentralFuente: draft.identidadCentralFuente ?? null,
     // El historial arranca con la primera versión abierta (§5.1.1): editar la
-    // identidad cierra esta entrada y abre otra, nunca sobrescribe.
-    identidadCentralHistorial: [
-      { texto: draft.identidadCentral, desde: ahora, hasta: null },
-    ],
+    // identidad cierra esta entrada y abre otra, nunca sobrescribe. Sin frase
+    // todavía no hay nada que versionar: la primera entrada se abrirá el día
+    // que se escriba.
+    identidadCentralHistorial: normalizarIdentidad(draft.identidadCentral)
+      ? [{ texto: normalizarIdentidad(draft.identidadCentral), desde: ahora, hasta: null }]
+      : [],
     horaDespertar: draft.horaDespertar,
     horaDormir:    draft.horaDormir,
     diaTerminaA:   DIA_TERMINA_A,

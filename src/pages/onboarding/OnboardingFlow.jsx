@@ -18,6 +18,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { loadDraft, saveDraft, savePrimeraVictoria, saveGenero } from '@lib/onboardingStorage'
 import { finishOnboarding } from '@lib/onboardingProfile'
 import { setGender } from '@lib/genderStore'
+import { normalizarIdentidad } from '@lib/identidad'
 import { todayKey } from '@lib/timeSlot'
 import P1Bienvenida       from './P1Bienvenida'
 import P2Nombre           from './P2Nombre'
@@ -67,7 +68,8 @@ function finalize(draft) {
   }
   return {
     ...draft,
-    identidadCentral: draft.identidadCentral.trim(),
+    // null si se dejó en blanco: es una respuesta válida y se completa otro día
+    identidadCentral: normalizarIdentidad(draft.identidadCentral),
     identidadesArea,
     nombre: (draft.nombre ?? '').trim(),
   }
@@ -178,7 +180,10 @@ export default function OnboardingFlow({ onComplete }) {
         <P4Identidad
           {...common}
           identidad={draft.identidadCentral}
-          onChange={identidadCentral => update({ identidadCentral })}
+          fuente={draft.identidadCentralFuente}
+          onChange={(identidadCentral, identidadCentralFuente) =>
+            update({ identidadCentral, identidadCentralFuente })
+          }
           onBack={back}
           onNext={next}
         />
@@ -213,7 +218,7 @@ export default function OnboardingFlow({ onComplete }) {
       return (
         <P5PrimerValor
           {...common}
-          identidad={draft.identidadCentral.trim()}
+          identidad={normalizarIdentidad(draft.identidadCentral)}
           victoria={draft.primeraVictoria}
           onSave={guardarPrimeraVictoria}
           onBack={back}
@@ -285,7 +290,7 @@ export default function OnboardingFlow({ onComplete }) {
       return (
         <P11Cierre
           {...common}
-          identidad={draft.identidadCentral.trim()}
+          identidad={normalizarIdentidad(draft.identidadCentral)}
           areas={draft.areas}
           horaDespertar={draft.horaDespertar}
           onEnter={materializar}

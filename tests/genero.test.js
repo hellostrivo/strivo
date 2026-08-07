@@ -82,18 +82,19 @@ describe('Resolución del copy (§2.4)', () => {
 })
 
 describe('El copy del onboarding habla en el género contestado (§2.8)', () => {
-  const sugerenciaCuidado = modo => resolveCopy(copy.onboarding.p4.placeholders, modo)[1]
+  // El chip de cuidado de P4: la frase completa se lee "Soy alguien que…"
+  const sugerenciaCuidado = modo => resolveCopy(copy.onboarding.p4.chips.cuidado, modo)
 
   it('masculino', () => {
-    expect(sugerenciaCuidado('m')).toBe('…cuida de sí mismo')
+    expect(sugerenciaCuidado('m')).toBe('cuida de sí mismo.')
   })
 
   it('femenino', () => {
-    expect(sugerenciaCuidado('f')).toBe('…cuida de sí misma')
+    expect(sugerenciaCuidado('f')).toBe('cuida de sí misma.')
   })
 
   it('neutro: reformulado, sin barras', () => {
-    expect(sugerenciaCuidado('n')).toBe('…se cuida')
+    expect(sugerenciaCuidado('n')).toBe('se cuida.')
   })
 
   it('ninguna variante usa "elle", "@" ni "x" como marca de género', () => {

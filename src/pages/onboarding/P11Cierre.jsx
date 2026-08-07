@@ -46,12 +46,16 @@ export default function P11Cierre({
   const listaAreas = areas
     .map(tipo => getAreaName(tipo).toLocaleLowerCase('es'))
 
-  const frase = listaAreas.length
-    ? interpolate(copy.onboarding.p11.closingWithAreas, {
-        identidad,
-        areas: unirAreas(listaAreas),
-      })
-    : interpolate(copy.onboarding.p11.closingTemplate, { identidad })
+  // Sin identidad (P4 se puede dejar en blanco) el cierre no la echa de menos:
+  // devuelve lo que sí hay, que son las áreas, y nada más.
+  const plantilla = identidad
+    ? (listaAreas.length ? copy.onboarding.p11.closingWithAreas : copy.onboarding.p11.closingTemplate)
+    : (listaAreas.length ? copy.onboarding.p11.closingPlainWithAreas : copy.onboarding.p11.closingPlain)
+
+  const frase = interpolate(plantilla, {
+    identidad,
+    areas: unirAreas(listaAreas),
+  })
 
   return (
     <OnboardingLayout

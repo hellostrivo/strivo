@@ -102,6 +102,46 @@ describe('Borrador · migración del orden viejo (§1.4)', () => {
   })
 })
 
+describe('P4 · la identidad central (§7.8)', () => {
+  it('la sugerencia se guarda sin el punto con el que se lee', async () => {
+    // En pantalla la frase completa es "Soy alguien que cuida de sí misma.";
+    // guardada con el punto, las plantillas que la interpolan cerrarían con dos
+    await finishOnboarding({
+      ...emptyDraft,
+      identidadCentral: 'cuida de sí misma.',
+      identidadCentralFuente: 'chip:cuidado',
+    })
+
+    const [perfil] = await filasDe('userProfile')
+    expect(perfil.identidadCentral).toBe('cuida de sí misma')
+    expect(perfil.identidadCentralFuente).toBe('chip:cuidado')
+    expect(perfil.identidadCentralHistorial).toEqual([
+      { texto: 'cuida de sí misma', desde: expect.any(String), hasta: null },
+    ])
+  })
+
+  it('en blanco es una respuesta válida: se guarda null y sin historial', async () => {
+    await finishOnboarding({ ...emptyDraft, identidadCentral: '   ' })
+
+    const [perfil] = await filasDe('userProfile')
+    expect(perfil.identidadCentral).toBeNull()
+    expect(perfil.identidadCentralFuente).toBeNull()
+    expect(perfil.identidadCentralHistorial).toEqual([])
+  })
+
+  it('lo escrito a mano se guarda tal cual, marcado como libre', async () => {
+    await finishOnboarding({
+      ...emptyDraft,
+      identidadCentral: '  no se abandona  ',
+      identidadCentralFuente: 'libre',
+    })
+
+    const [perfil] = await filasDe('userProfile')
+    expect(perfil.identidadCentral).toBe('no se abandona')
+    expect(perfil.identidadCentralFuente).toBe('libre')
+  })
+})
+
 describe('P3 · lo que se vino a buscar (§6.8)', () => {
   it('el perfil guarda ids, no las etiquetas que se leyeron', async () => {
     await finishOnboarding({

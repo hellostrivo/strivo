@@ -110,12 +110,26 @@ Campo de "Otro": "¿Qué buscas?" · máx. 80 · contador desde el carácter 65
  de género: funcionan igual en los tres modos.)
 
 Pantalla P4 (Identidad central):
-"No preguntamos qué quieres lograr. 
-Preguntamos en quién te estás convirtiendo."
-[prefijo visible] "Alguien que…"
-Ejemplos rotatorios: "…crece cada día · …cuida de sí mismo/misma (neutro: 
-…se cuida) · …se respeta a sí mismo/misma (neutro: …se respeta) · 
-…no se abandona · …termina lo que empieza · …vive con calma."
+"La persona que quieres ser se construye un día a la vez."
+(cursiva) "No busques la frase perfecta. Solo escribe algo que quieras recordar
+cuando abras Strivo."
+[prefijo visible] "Soy alguien que..."
+
+Sugerencias (chips; se tocan y el campo sigue editable):
+- cuida de sí mismo. / cuida de sí misma. / neutro: "se cuida."   (id: cuidado)
+- encuentra paz incluso en días difíciles.                         (id: paz)
+- cumple lo que se promete.                                        (id: promesa)
+- vive con intención.                                              (id: intencion)
+- aprende de cada experiencia.                                     (id: aprendizaje)
+- celebra sus pequeños avances.                                    (id: avances)
+- Otro  → limpia el campo y le da el foco
+
+Bajo el botón primario, con la jerarquía más baja de la pantalla:
+"Esta frase será un recordatorio silencioso de la persona en la que quieres
+convertirte."
+
+(La frase se guarda sin el punto final: el resto de la app la interpola después
+ de "alguien que". Se puede dejar en blanco, sin ninguna advertencia.)
 
 Pantalla P4B (Áreas):
 "Nadie crece en una sola dirección. 

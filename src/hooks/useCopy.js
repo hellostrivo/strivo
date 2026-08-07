@@ -3,7 +3,7 @@
 //
 //   const t = useCopy()
 //   t('onboarding.p4.prefix')                        → string
-//   t('onboarding.p4.placeholders')                  → lista ya resuelta
+//   t('onboarding.p3.options')                       → objeto/lista ya resuelto
 //   t('onboarding.p11.nextTemplate', { hora: '6:45' }) → interpolado
 //
 // Ningún componente lee `copy[...]` directamente cuando el string tiene

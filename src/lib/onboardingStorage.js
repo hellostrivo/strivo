@@ -35,6 +35,7 @@ export const emptyDraft = {
   reasons: [],              // P3  — ids de @lib/reasons (0..N)
   reasonOther: null,        // P3  — texto libre si se eligió "otro"; máx 80
   identidadCentral: '',     // P4  — frase sin el prefijo "Soy alguien que…"
+  identidadCentralFuente: null, // P4 — 'chip:<id>' | 'libre' | null (§7.8)
   areas: [],                // P4B — tipos de área elegidos (0..N)
   identidadesArea: {},      // P4C — { [tipo]: texto sin prefijo }, opcional
   primeraVictoria: null,    // P5  — { texto, fecha } una vez guardada

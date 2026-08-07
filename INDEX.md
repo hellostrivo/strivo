@@ -24,11 +24,12 @@ https://github.com/hellostrivo/strivo
 ## Pantallas completadas ✅
 
 ### Onboarding (P1–P11)
-- ✅ P1: Bienvenida — degradado amanecer, CTA principal
+- ✅ Apertura — 5 s de descompresión antes de P1; se ve una sola vez
+- ✅ P1: Bienvenida — degradado horario, "Tu lugar para volver a ti."
 - ✅ P2: Nombre — campo simple, solo texto
-- ✅ P2A: Género — opcional; define el modo de lenguaje adaptativo (m / f / n)
-- ✅ P3: Motivo — 5 opciones multi-selección, sin bloqueo
-- ✅ P4: Identidad central — prefijo visible "Alguien que…", ejemplos rotatorios
+- ✅ P2A: Género — define el modo de lenguaje adaptativo (m / f / n)
+- ✅ P3: Qué te gustaría encontrar aquí — 7 opciones multi-selección, sin bloqueo
+- ✅ P4: Identidad central — "Soy alguien que...", 7 chips de sugerencia
 - ✅ P4B: Selección de áreas — 7 áreas con color propio, pausable
 - ⏳ T-4B: Transición entre áreas e identidad de área — pendiente de §9 (Parte 3)
 - ✅ P4C: Identidad por área — opcional, prefijo dinámico por área

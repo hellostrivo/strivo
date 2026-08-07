@@ -126,26 +126,33 @@ export const copy = {
       otherPlaceholder:     '¿Qué buscas?',
       otherCounterTemplate: '{n} de {max}',
     },
+    // P4 — la identidad central: la pantalla sobre la que se construye todo lo
+    // demás. Las sugerencias sustituyen a los ejemplos rotatorios (§7.2): rotar
+    // obliga a esperar a que aparezca el que sirve, y estos además se tocan.
     p4: {
-      headline: 'No preguntamos qué quieres lograr.',
-      subhead: 'Preguntamos en quién te estás convirtiendo.',
-      prefix: 'Alguien que…',
-      placeholders: [
-        '…crece cada día',
-        {
-          m: '…cuida de sí mismo',
-          f: '…cuida de sí misma',
-          n: '…se cuida',
+      headline: 'La persona que quieres ser se construye un día a la vez.',
+      subhead: 'No busques la frase perfecta. Solo escribe algo que quieras recordar cuando abras Strivo.',
+      // No es la etiqueta de un campo: es la primera mitad de la frase
+      prefix: 'Soy alguien que...',
+      suggestionsLabel: 'Sugerencias',
+      // Ids y orden en @lib/identidad. Solo la primera lleva marca de género; en
+      // neutro se reformula ("se cuida") en vez de poner barras (§2.5.3).
+      chips: {
+        cuidado: {
+          m: 'cuida de sí mismo.',
+          f: 'cuida de sí misma.',
+          n: 'se cuida.',
         },
-        {
-          m: '…se respeta a sí mismo',
-          f: '…se respeta a sí misma',
-          n: '…se respeta',
-        },
-        '…no se abandona',
-        '…termina lo que empieza',
-        '…vive con calma',
-      ],
+        paz:         'encuentra paz incluso en días difíciles.',
+        promesa:     'cumple lo que se promete.',
+        intencion:   'vive con intención.',
+        aprendizaje: 'aprende de cada experiencia.',
+        avances:     'celebra sus pequeños avances.',
+      },
+      // Limpia el campo y le da el foco: "ninguna de estas, quiero la mía"
+      chipOther: 'Otro',
+      // Epílogo, no instrucción: por eso va debajo del botón
+      closing: 'Esta frase será un recordatorio silencioso de la persona en la que quieres convertirte.',
     },
     p4b: {
       question: 'Nadie crece en una sola dirección.',
@@ -247,6 +254,10 @@ export const copy = {
       // Template: "Te estás convirtiendo en alguien que {identidad}, en tu {área1} y en tu {área2}."
       closingTemplate: 'Te estás convirtiendo en alguien que {identidad}.',
       closingWithAreas: 'Te estás convirtiendo en alguien que {identidad}, en tu {areas}.',
+      // Sin frase todavía (P4 se puede dejar en blanco): el cierre no la echa
+      // de menos ni la reclama. Ya habrá día.
+      closingPlain: 'Aquí empieza tu espacio.',
+      closingPlainWithAreas: 'Aquí empieza tu espacio, en tu {areas}.',
       nextTemplate: 'Nos vemos mañana a las {hora}.',
       areasJoin: ' y ',
       ctaLabel: 'Entrar a Strivo',
