@@ -30,9 +30,9 @@ https://github.com/hellostrivo/strivo
 - ✅ P2A: Género — define el modo de lenguaje adaptativo (m / f / n)
 - ✅ P3: Qué te gustaría encontrar aquí — 7 opciones multi-selección, sin bloqueo
 - ✅ P4: Identidad central — "Soy alguien que...", 7 chips de sugerencia
-- ✅ P4B: Selección de áreas — 7 áreas con color propio, pausable
-- ⏳ T-4B: Transición entre áreas e identidad de área — pendiente de §9 (Parte 3)
-- ✅ P4C: Identidad por área — opcional, prefijo dinámico por área
+- ✅ P4B: Selección de áreas — 7 áreas con color propio, máximo 3 activas
+- ✅ T-4B: Transición — 3 s entre elegir y reflexionar; solo si hay ≥ 1 área
+- ✅ P4C: Identidad por área — una área por pantalla, opcional, con sugerencias
 - ✅ P5: Primer valor — captura algo bueno antes de crear cuenta
 - ✅ P6: Horarios — hora de despertar, dormir, fin de día (diaTerminaA)
 - ✅ P7: Hábitos de mañana — sugerencias por área, seleccionables

@@ -26,6 +26,7 @@ import P2AGenero          from './P2AGenero'
 import P3Motivo           from './P3Motivo'
 import P4Identidad        from './P4Identidad'
 import P4BAreas           from './P4BAreas'
+import T4BTransicion      from './T4BTransicion'
 import P4CIdentidadArea   from './P4CIdentidadArea'
 import P5PrimerValor      from './P5PrimerValor'
 import P6Horarios         from './P6Horarios'
@@ -42,11 +43,15 @@ const STEPS = [
   { id: 'p3'  },
   { id: 'p4'  },
   { id: 'p4b' },
-  // Aquí va T-4B (transición entre áreas e identidad por área). Su contenido se
-  // especifica en §9 del documento de cambios (Parte 3); hasta entonces el flujo
-  // pasa de P4B a P4C sin pantalla intermedia.
+  // Sin áreas no hay nada que reencuadrar ni que nombrar: los dos pasos
+  // desaparecen y de P4B se va directo a P5.
   //
-  // Sin áreas no hay nada que nombrar: el paso desaparece en vez de mostrarse vacío.
+  // La transición es un respiro, no un paso: hacia atrás no se reproduce.
+  {
+    id: 't4b',
+    esTransicion: true,
+    skipWhen: draft => draft.areas.length === 0,
+  },
   { id: 'p4c', skipWhen: draft => draft.areas.length === 0 },
   { id: 'p5'  },
   { id: 'p6'  },
@@ -94,7 +99,13 @@ export default function OnboardingFlow({ onComplete }) {
     saveDraft(next)
   }
 
-  const back = () => setStepIndex(Math.max(0, index - 1))
+  // Hacia atrás las transiciones se saltan: son un respiro entre dos pantallas,
+  // y volver a verlas al corregir algo las convertiría en un peaje (§10.13).
+  const back = () => {
+    let anterior = index - 1
+    while (anterior > 0 && steps[anterior].esTransicion) anterior -= 1
+    setStepIndex(Math.max(0, anterior))
+  }
   const next = () => {
     if (index === steps.length - 1) {
       onComplete?.(finalize(draft))
@@ -199,6 +210,9 @@ export default function OnboardingFlow({ onComplete }) {
           onNext={next}
         />
       )
+
+    case 't4b':
+      return <T4BTransicion onNext={next} />
 
     case 'p4c':
       return (

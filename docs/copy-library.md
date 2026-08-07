@@ -132,12 +132,52 @@ convertirte."
  de "alguien que". Se puede dejar en blanco, sin ninguna advertencia.)
 
 Pantalla P4B (Áreas):
-"Nadie crece en una sola dirección. 
-Elige las que importan ahora. Podrás cambiarlas cuando quieras."
+"Elige dónde quieres poner más atención ahora."
+"No tienes que abarcarlo todo."
+"Elige hasta 3 áreas."            ← tercer nivel: información operativa
+(Solo lector de pantalla) "{n} de 3 áreas elegidas"
+Etiquetas: Salud · Trabajo · Relaciones · Finanzas · Espiritualidad ·
+Crecimiento personal · Creatividad
+(Etiquetas visibles. Los `id` internos no cambian: `espiritual` y `personal`.)
+Al tocar una cuarta: la instrucción pulsa. Ni error, ni aviso, ni sacudida.
 
-Pantalla P4C (Identidad por área):
-"Si quieres, ponle palabras. Si no, lo dejamos para después."
-Prefijo dinámico: "En {área} soy alguien que…"
+Fuera del onboarding, al intentar activar una cuarta área:
+"Puedes enfocarte en 3 áreas a la vez. Elige cuál sueltas para hacerle espacio
+a esta."
+(El verbo es "soltar": nada se pierde.)
+
+Transición T-4B (entre P4B y P4C, solo si hay ≥ 1 área):
+"Elegiste dónde quieres crecer. Ahora pongámosle una dirección."
+[Continuar]  ← invisible hasta recibir el foco; para teclado y lector
+
+Pantalla P4C (Identidad por área) — una área por pantalla:
+"{Área} · {n} de {total}"
+"En {Área}, quiero ser alguien que…"   ← nunca "soy alguien que…"
+"Algunas ideas"
+"No busques la frase perfecta. Solo una dirección que se sienta tuya."
+[Siguiente] / [Listo] en la última
+"Omitir por ahora"                     ← omite solo el área actual
+
+Ideas por área (4 por área, resueltas por `id` interno):
+- salud: cuida su cuerpo con cariño · hace espacio para descansar ·
+  se mueve porque le hace bien · escucha lo que necesita
+- trabajo: trabaja con intención · pone límites cuando los necesita ·
+  confía en sus capacidades · hace bien lo importante sin exigirse perfección
+- relaciones: está presente para las personas que ama · expresa lo que siente ·
+  cuida sus relaciones importantes · sabe poner límites con cariño
+- espiritual: hace espacio para su vida espiritual · vive con más gratitud ·
+  conecta con lo que cree · cultiva momentos de reflexión
+- personal: aprende algo nuevo sin prisa · se trata con la misma amabilidad que
+  a los demás · se anima a intentar cosas que le dan nervios · hace las paces
+  con sus errores
+- finanzas: sabe en qué se le va el dinero · gasta en lo que de verdad le
+  importa · guarda algo para su tranquilidad · toma decisiones de dinero con
+  calma
+- creatividad: hace cosas solo porque le gustan · se da permiso de empezar mal ·
+  guarda tiempo para crear · se deja llevar por su curiosidad
+
+(Todas en tercera persona, sin marca de género: no necesitan variantes.
+ Finanzas nunca menciona montos, plazos, deuda ni "controlar".)
 
 Pantalla P5 (Primer valor):
 "Empecemos ahora"

@@ -7,6 +7,7 @@
 // Relaciones:           §7.3 del Blueprint v3
 
 import { openDB } from 'idb'
+import { areasActivas, cabeOtraArea, LimiteDeAreasError } from '@lib/areas'
 
 const DB_NAME    = 'strivo-local'
 // 1 → esquema inicial (§7.2)
@@ -136,10 +137,30 @@ export async function getAreas(userId) {
   return db.getAllFromIndex('areas', 'byUser', userId)
 }
 
+// El máximo de 3 áreas activas se valida aquí y no solo en la interfaz (§8.5-bis):
+// ninguna ruta de escritura puede dejar un perfil con cuatro. Pausar o archivar
+// nunca se rechaza —soltar un área siempre tiene que ser posible— y lo que se
+// escribe conserva su identidad de área, sus hábitos y su historial.
 export async function saveArea(area) {
+  if (area.estado === 'activa') {
+    const yaActivas = areasActivas(await getAreas(area.userId))
+      .filter(otra => otra.id !== area.id)
+
+    if (!cabeOtraArea(yaActivas.length)) throw new LimiteDeAreasError()
+  }
+
   const db = await getDB()
   await db.put('areas', area)
   enqueueSyncItem('areas', area.id, area)
+}
+
+// Las identidades por área de una persona, con el `id` interno del área como
+// clave (§10.15: el `profile.areaIdentities` de la especificación). Se leen de
+// las filas de área, que es donde viven, e incluyen las de las áreas inactivas:
+// soltar un área no borra lo que se escribió sobre ella.
+export async function getAreaIdentities(userId) {
+  const areas = await getAreas(userId)
+  return Object.fromEntries(areas.map(area => [area.tipo, area.identidadArea ?? null]))
 }
 
 // ─── DailyEntry ───────────────────────────────────────────────────────────────

@@ -55,6 +55,12 @@ export const durations = {
   reveal:  200,
   base:    260,
   slow:    420,
+  // Cambio de área dentro de P4C: el bloque de contenido cruza en 280ms y el
+  // indicador de progreso en 180ms (§10.3)
+  areaSwap:      280,
+  areaIndicator: 180,
+  // Pulso de la instrucción de límite en P4B (§8.5)
+  pulse:   600,
   slower:  700,
   slowest: 900, // cierre nocturno
 }
@@ -88,6 +94,21 @@ export const apertura = {
   totalReducido:       1600,
   palabraEntraReducida: 400,
   easingRespiracion: 'cubic-bezier(0.37, 0, 0.63, 1)',
+}
+
+// ─── Pantallas de transición del onboarding (§9) ─────────────────────────────
+// La otra excepción autorizada al rango 120–900 ms. En ms, como la apertura.
+export const transicion = {
+  total:              3000,
+  fondoEntra:          400,
+  fraseEntraDesde:     300,
+  fraseEntra:          600,
+  fraseSaleDesde:     2600,
+  fraseSale:           400,
+  saltar:              250,
+  // Con movimiento reducido: sin desplazamiento vertical y más corta
+  totalReducida:      2300,
+  fraseEntraReducida:  250,
 }
 
 // Núcleo de luz de la apertura (px). El escalado máximo nunca toca los bordes.

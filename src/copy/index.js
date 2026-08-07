@@ -29,17 +29,25 @@ export const copy = {
   // ─── Áreas de identidad (§5.1.1) ─────────────────────────────────────────
   // Nombres visibles de cada tipo de área. El orden canónico y el color
   // viven en @lib/areas y @tokens. `areaId = null` significa "General".
+  // OJO: estas son las etiquetas visibles. Los `id` internos (las claves) no
+  // cambian nunca: están referenciados en hábitos, en HabitLog, en las
+  // sugerencias de H3 y en los perfiles ya guardados (§8.4).
   areas: {
     salud:       'Salud',
     trabajo:     'Trabajo',
     relaciones:  'Relaciones',
     finanzas:    'Finanzas',
-    espiritual:  'Espiritual',
-    personal:    'Personal',
+    espiritual:  'Espiritualidad',      // id `espiritual`, etiqueta nueva
+    personal:    'Crecimiento personal', // id `personal`, etiqueta nueva
     creatividad: 'Creatividad',
     // Nombre visible de `areaId = null`: lo que no pertenece a un área concreta
     // hereda la identidad central (§5.1.1)
     general:     'General',
+    // Al intentar activar una cuarta área fuera del onboarding (§8.5-bis). Aquí
+    // sí se explica: en el onboarding la regla está a la vista y basta con
+    // señalarla; en la app instalada no. El verbo es "soltar", no "eliminar":
+    // nada se pierde.
+    limiteFueraDelOnboarding: 'Puedes enfocarte en 3 áreas a la vez. Elige cuál sueltas para hacerle espacio a esta.',
   },
 
   // ─── Emociones (§5.3, tabla de emociones) ────────────────────────────────
@@ -154,14 +162,88 @@ export const copy = {
       // Epílogo, no instrucción: por eso va debajo del botón
       closing: 'Esta frase será un recordatorio silencioso de la persona en la que quieres convertirte.',
     },
+    // P4B — dónde poner la atención. La frase deja de ser poética y pasa a ser
+    // una instrucción amable: aquí lo que hace falta es saber qué hacer (§8.1).
+    // El límite de 3 es de producto, no técnico: la pantalla siguiente pide una
+    // reflexión por área y más de tres convierte el onboarding en trabajo.
     p4b: {
-      question: 'Nadie crece en una sola dirección.',
-      hint: 'Elige las que importan ahora. Podrás cambiarlas cuando quieras.',
+      question: 'Elige dónde quieres poner más atención ahora.',
+      hint: 'No tienes que abarcarlo todo.',
+      // Tercer nivel: información operativa, no voz de marca
+      limit: 'Elige hasta 3 áreas.',
+      // Solo para lector de pantalla: llegar al límite no tiene aviso visual
+      countTemplate: '{n} de {max} áreas elegidas',
     },
+    // P4C — una área por pantalla. "Quiero ser" y no "soy": afirmar en presente
+    // algo que todavía no se cumple genera disonancia y culpa (§10.4).
     p4c: {
-      question: 'Si quieres, ponle palabras.',
-      hint: 'Si no, lo dejamos para después.',
-      prefixTemplate: 'En “{área}” soy alguien que…',
+      progressTemplate: '{area} · {n} de {total}',
+      titleTemplate: 'En {area}, quiero ser alguien que…',
+      ideasLabel: 'Algunas ideas',
+      useSuggestionTemplate: 'Usar sugerencia: {texto}',
+      // Llega justo donde aparece la presión: al decidir si se escribe o no
+      pressure: 'No busques la frase perfecta. Solo una dirección que se sienta tuya.',
+      skip: 'Omitir por ahora',
+      next: 'Siguiente',
+      done: 'Listo',
+      // Sugerencias por área, resueltas por el `id` interno del área. Sin
+      // marca de género en ninguna: funcionan igual en los tres modos (§10.6).
+      // Si un área no tuviera las suyas, P4C oculta el bloque entero en vez de
+      // ofrecer las de otra.
+      ideas: {
+        salud: [
+          'cuida su cuerpo con cariño',
+          'hace espacio para descansar',
+          'se mueve porque le hace bien',
+          'escucha lo que necesita',
+        ],
+        trabajo: [
+          'trabaja con intención',
+          'pone límites cuando los necesita',
+          'confía en sus capacidades',
+          'hace bien lo importante sin exigirse perfección',
+        ],
+        relaciones: [
+          'está presente para las personas que ama',
+          'expresa lo que siente',
+          'cuida sus relaciones importantes',
+          'sabe poner límites con cariño',
+        ],
+        espiritual: [
+          'hace espacio para su vida espiritual',
+          'vive con más gratitud',
+          'conecta con lo que cree',
+          'cultiva momentos de reflexión',
+        ],
+        personal: [
+          'aprende algo nuevo sin prisa',
+          'se trata con la misma amabilidad que a los demás',
+          'se anima a intentar cosas que le dan nervios',
+          'hace las paces con sus errores',
+        ],
+        // Sin cifras, sin metas, sin plazos y sin "controlar": el vocabulario
+        // financiero por defecto trae vergüenza y rompería la promesa.
+        finanzas: [
+          'sabe en qué se le va el dinero',
+          'gasta en lo que de verdad le importa',
+          'guarda algo para su tranquilidad',
+          'toma decisiones de dinero con calma',
+        ],
+        // Disfrute y permiso, nunca productividad creativa ni audiencia
+        creatividad: [
+          'hace cosas solo porque le gustan',
+          'se da permiso de empezar mal',
+          'guarda tiempo para crear',
+          'se deja llevar por su curiosidad',
+        ],
+      },
+    },
+    // T-4B — el respiro entre elegir y reflexionar. Sin él se pasa de tocar
+    // tarjetas a escribir sobre uno mismo en menos de un segundo (§9.1).
+    t4b: {
+      phrase: 'Elegiste dónde quieres crecer. Ahora pongámosle una dirección.',
+      // Existe para quien no puede "tocar la pantalla": teclado y lector
+      continue: 'Continuar',
     },
     p5: {
       headline: 'Empecemos ahora',

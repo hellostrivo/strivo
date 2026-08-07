@@ -134,7 +134,10 @@
       "fast": "120ms",
       "reveal": "200ms",
       "base": "260ms",
+      "areaIndicator": "180ms",
+      "areaSwap": "280ms",
       "slow": "420ms",
+      "pulse": "600ms",
       "slower": "700ms",
       "slowest": "900ms",
       "comment": "Más lentas que UI estándar (Apple por defecto es 300ms). Cierre nocturno: 900ms."
@@ -161,6 +164,11 @@
         "duration": "900ms",
         "easing": "smooth",
         "comment": "Secuencia de cierre nocturno. Recorrido de luz por la pantalla."
+      },
+      "pulsoLimite": {
+        "duration": "600ms",
+        "easing": "inOut",
+        "comment": "P4B: al tocar una área atenuada, la instrucción del límite pulsa (0.55 → 1 → 0.55). Sin error, sin aviso, sin sacudida (§8.5)."
       }
     },
     "apertura": {
@@ -182,6 +190,18 @@
       "totalReducido": "1600ms",
       "palabraEntraReducida": "400ms",
       "easingRespiracion": "cubic-bezier(0.37, 0, 0.63, 1)"
+    },
+    "transicion": {
+      "comment": "Pantallas de transición del onboarding (T-4B, §9). Segunda excepción autorizada al rango 120–900ms.",
+      "total": "3000ms",
+      "fondoEntra": "400ms",
+      "fraseEntra": "600ms",
+      "fraseEntraDesde": "300ms",
+      "fraseSale": "400ms",
+      "fraseSaleDesde": "2600ms",
+      "saltar": "250ms",
+      "totalReducida": "2300ms",
+      "fraseEntraReducida": "250ms"
     }
   },
   "elevation": {

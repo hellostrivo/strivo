@@ -13,7 +13,7 @@ import { getDB, saveUserProfile, saveArea, saveHabit } from '@lib/db'
 import { getLocalUserId, setAccountUserId } from '@lib/user'
 import { normalizeGender } from '@lib/gender'
 import { normalizarIdentidad } from '@lib/identidad'
-import { AREAS } from '@lib/areas'
+import { AREAS, limitarAreas } from '@lib/areas'
 
 const TODOS_LOS_DIAS = [0, 1, 2, 3, 4, 5, 6]
 const DIA_TERMINA_A  = '03:00'
@@ -46,7 +46,10 @@ export async function finishOnboarding(draft) {
 
   await saveUserProfile(perfilDesde(draft, userId))
 
-  for (const tipo of draft.areas) {
+  // Recortar es defensivo: P4B ya no deja elegir una cuarta. Si un borrador
+  // viejo trae más, se cierra el onboarding igual con las tres primeras en vez
+  // de dejar que la escritura falle (§3.3 — el cierre nunca falla).
+  for (const tipo of limitarAreas(draft.areas)) {
     await saveArea(areaDesde(draft, userId, tipo))
   }
 

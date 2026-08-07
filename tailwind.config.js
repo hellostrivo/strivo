@@ -114,8 +114,10 @@ export default {
       // ─── Motion (más lento que el estándar, intencional) ─────────────────
       transitionDuration: {
         '120': '120ms',
+        '180': '180ms',
         '200': '200ms',
         '260': '260ms',
+        '280': '280ms',
         '420': '420ms',
         '700': '700ms',
         '900': '900ms',
@@ -182,6 +184,27 @@ export default {
           '0%':   { opacity: '1' },
           '100%': { opacity: '0' },
         },
+        // P4B: al tocar una área atenuada, la instrucción del límite se hace
+        // notar. Ni error, ni aviso, ni sacudida (§8.5).
+        'pulso-limite': {
+          '0%,100%': { opacity: '0.55' },
+          '50%':     { opacity: '1' },
+        },
+        // T-4B: la frase entra, se queda y se va, dentro de los 3s de la
+        // transición. Un solo recorrido, como el núcleo de la apertura (§9.2).
+        'transicion-frase': {
+          '0%,10%': { opacity: '0', transform: 'translateY(12px)' },
+          '30%':    { opacity: '1', transform: 'translateY(0)' },
+          '87%':    { opacity: '1', transform: 'translateY(0)' },
+          '100%':   { opacity: '0', transform: 'translateY(0)' },
+        },
+        // Movimiento reducido: la misma frase, sin desplazamiento y en 2.3s
+        'transicion-frase-quieta': {
+          '0%':   { opacity: '0' },
+          '11%':  { opacity: '1' },
+          '89%':  { opacity: '1' },
+          '100%': { opacity: '0' },
+        },
       },
       animation: {
         'check-draw':  'check-draw 260ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
@@ -195,6 +218,9 @@ export default {
         'apertura-palabra':         'apertura-palabra 5000ms cubic-bezier(0, 0, 0.2, 1) forwards',
         'apertura-palabra-quieta':  'apertura-palabra-quieta 400ms cubic-bezier(0, 0, 0.2, 1) forwards',
         'apertura-fondo':           'apertura-fondo 800ms cubic-bezier(0, 0, 0.2, 1) forwards',
+        'pulso-limite':             'pulso-limite 600ms cubic-bezier(0.4, 0, 0.2, 1)',
+        'transicion-frase':         'transicion-frase 3000ms cubic-bezier(0, 0, 0.2, 1) forwards',
+        'transicion-frase-quieta':  'transicion-frase-quieta 2300ms cubic-bezier(0, 0, 0.2, 1) forwards',
       },
 
       // ─── Tamaños mínimos para toque (WCAG 2.2) ───────────────────────────

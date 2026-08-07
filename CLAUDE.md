@@ -111,7 +111,7 @@ El Diario **NO es una pestaña**; se accede desde Hoy en su momento.
 
 **Excepciones autorizadas al rango 120–900ms** (no marcarlas en el QA gate):
 - **Apertura de Strivo** (`AperturaStrivo`, antes de P1): 5000ms, o 1600ms con movimiento reducido. Es una descompresión, no una transición de interfaz. Tokens en `motion.apertura`.
-- **Pantallas de transición del onboarding** (T-4B y siguientes).
+- **Pantallas de transición del onboarding** (`T4BTransicion`, entre P4B y P4C): 3000ms, o 2300ms con movimiento reducido. Tokens en `motion.transicion`.
 
 **Componentes:** radios 10–32px (ver tokens). Sin sombras de drop; usar elevación (2–8 dp). Haptics livianas, sin vibración en errores.
 
