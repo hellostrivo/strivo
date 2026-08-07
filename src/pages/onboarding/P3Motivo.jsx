@@ -111,6 +111,7 @@ export default function P3Motivo({
                   'transition-all duration-200 ease-out motion-reduce:transition-none',
                   otroElegido ? 'grid-rows-[1fr] opacity-100 mt-3' : 'grid-rows-[0fr] opacity-0',
                 ].join(' ')}
+                aria-hidden={!otroElegido || undefined}
               >
                 <div className="overflow-hidden">
                   <label htmlFor="p3-otro-campo" className="sr-only">
