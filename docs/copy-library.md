@@ -74,8 +74,14 @@ fijo: el inventario de lo que falta convertir está en `docs/gender-audit.md`.
 ### Onboarding
 
 ```
-Pantalla 1 (Bienvenida):
-"Refugio digital para terminar cada día en paz."
+Apertura (los 5 s previos a P1):
+"Respira."
+[Entrar]   ← salida explícita, aparece a los 1.5 s
+
+Pantalla P1 (Bienvenida):
+"Tu lugar para volver a ti."
+"Tres minutos para respirar, reconocer lo que sí lograste y seguir adelante con más calma."
+[Empezar]
 
 Pantalla P2 (Nombre):
 "Solo tu nombre. Nada más."

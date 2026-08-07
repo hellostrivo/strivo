@@ -161,6 +161,26 @@
         "easing": "smooth",
         "comment": "Secuencia de cierre nocturno. Recorrido de luz por la pantalla."
       }
+    },
+    "apertura": {
+      "comment": "Secuencia de apertura de Strivo (§3.3 del documento de cambios v2.2). Excepción autorizada al rango 120–900ms: es una descompresión, no una transición de interfaz.",
+      "total": "5000ms",
+      "fondoEntra": "800ms",
+      "nucleoEntra": "600ms",
+      "nucleoEntraDesde": "800ms",
+      "expansion": "1400ms",
+      "expansionDesde": "1400ms",
+      "contraccion": "1400ms",
+      "contraccionDesde": "2800ms",
+      "palabraEntra": "800ms",
+      "palabraEntraDesde": "1800ms",
+      "salida": "800ms",
+      "salidaDesde": "4200ms",
+      "entrarApareceEn": "1500ms",
+      "saltar": "300ms",
+      "totalReducido": "1600ms",
+      "palabraEntraReducida": "400ms",
+      "easingRespiracion": "cubic-bezier(0.37, 0, 0.63, 1)"
     }
   },
   "elevation": {
@@ -201,6 +221,18 @@
       "borderRadius": "16px",
       "fontSize": "14px",
       "comment": "Etiquetas seleccionables (áreas, emociones, etc.). Cambio visual claro al tocar."
+    },
+    "aperturaNucleo": {
+      "diametroCompacto": "96px",
+      "diametroBase": "120px",
+      "diametroAmplio": "140px",
+      "puntoDeCorteCompacto": "360px",
+      "puntoDeCorteAmplio": "430px",
+      "escalaMaxima": 1.32,
+      "opacidadNucleo": 0.9,
+      "opacidadPalabra": 0.75,
+      "opacidadEntrar": 0.45,
+      "comment": "Luz difusa, sin borde ni figura sólida. El escalado máximo nunca toca los bordes de la pantalla (verificado a 320px)."
     }
   },
   "contrast": {

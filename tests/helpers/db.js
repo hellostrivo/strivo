@@ -13,6 +13,7 @@ const STORES = [
   'habitLogs',
   'journalEntries',
   'syncQueue',
+  'appFlags',
 ]
 
 export async function limpiarBaseDeDatos() {

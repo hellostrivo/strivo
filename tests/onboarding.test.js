@@ -11,6 +11,7 @@ import {
   ONBOARDING_SCHEMA_VERSION,
 } from '@lib/onboardingStorage'
 import { finishOnboarding } from '@lib/onboardingProfile'
+import { getFlag, setFlag } from '@lib/db'
 import { getLocalUserId, getCurrentUserId, getAccountUserId } from '@lib/user'
 import { filasDe } from './helpers/db.js'
 
@@ -25,6 +26,21 @@ const borrador = (extra = {}) => ({
   habitosManana: [{ id: 'hm1', texto: 'Beber agua', areaId: 'salud', momento: 'manana' }],
   habitosNoche:  [{ id: 'hn1', texto: 'Guardar el teléfono', areaId: null, momento: 'noche' }],
   ...extra,
+})
+
+describe('Apertura · la bandera del dispositivo (§3.3)', () => {
+  it('la primera vez no se ha visto; después sí', async () => {
+    expect(await getFlag('hasSeenIntro', false)).toBe(false)
+
+    await setFlag('hasSeenIntro', true)
+
+    expect(await getFlag('hasSeenIntro', false)).toBe(true)
+  })
+
+  it('una bandera que no existe devuelve su valor por defecto', async () => {
+    expect(await getFlag('loQueSea')).toBeNull()
+    expect(await getFlag('loQueSea', 'algo')).toBe('algo')
+  })
 })
 
 describe('Borrador · migración del orden viejo (§1.4)', () => {

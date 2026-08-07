@@ -71,9 +71,17 @@ export const copy = {
       continue: 'Continuar',
       progressTemplate: 'Paso {n} de {total}',
     },
+    // Apertura: los cinco segundos que separan el ruido de afuera del espacio de
+    // adentro (§3.3). Una palabra, ninguna orden: "Inhala" / "Exhala" sería dar
+    // instrucciones en el primer segundo de uso.
+    apertura: {
+      palabra: 'Respira.',
+      entrar:  'Entrar',
+    },
     p1: {
-      title: 'Tu refugio digital para reconectar, crecer y avanzar cada día.',
-      subtitle: 'Tres minutos al día. Sin presión.',
+      // Ya no describe el producto: describe lo que la persona recibe
+      subtitle: 'Tu lugar para volver a ti.',
+      support: 'Tres minutos para respirar, reconocer lo que sí lograste y seguir adelante con más calma.',
       cta: 'Empezar',
     },
     p2: {

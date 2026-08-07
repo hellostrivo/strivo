@@ -62,3 +62,41 @@ export const touch = {
   min:  56,
   smMin: 48,
 }
+
+// ─── Apertura de Strivo (§3.3 del documento de cambios v2.2) ─────────────────
+// Excepción autorizada al rango 120–900 ms: la apertura es una descompresión,
+// no una transición de interfaz. Documentada como tal en CLAUDE.md.
+// En ms, para poder programar los relevos desde JS.
+export const apertura = {
+  total:               5000,
+  fondoEntra:           800,
+  nucleoEntraDesde:     800,
+  nucleoEntra:          600,
+  expansionDesde:      1400,
+  expansion:           1400,
+  contraccionDesde:    2800,
+  contraccion:         1400,
+  palabraEntraDesde:   1800,
+  palabraEntra:         800,
+  salidaDesde:         4200,
+  salida:               800,
+  entrarApareceEn:     1500,
+  saltar:               300,
+  // Con movimiento reducido: sin escala y mucho más corta
+  totalReducido:       1600,
+  palabraEntraReducida: 400,
+  easingRespiracion: 'cubic-bezier(0.37, 0, 0.63, 1)',
+}
+
+// Núcleo de luz de la apertura (px). El escalado máximo nunca toca los bordes.
+export const aperturaNucleo = {
+  diametroCompacto:      96,
+  diametroBase:         120,
+  diametroAmplio:       140,
+  puntoDeCorteCompacto: 360,
+  puntoDeCorteAmplio:   430,
+  escalaMaxima:        1.32,
+  opacidadNucleo:       0.9,
+  opacidadPalabra:     0.75,
+  opacidadEntrar:      0.45,
+}

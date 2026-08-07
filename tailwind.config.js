@@ -154,6 +154,33 @@ export default {
           '50%':  { transform: 'scale(1.04)' },
           '100%': { transform: 'scale(1)' },
         },
+        // Apertura de Strivo — núcleo de luz (§3.3 del documento de cambios).
+        // Un solo recorrido de 5s: aparece (800→1400), se expande (1400→2800),
+        // se contrae (2800→4200) y se va (4200→5000). Solo transform y opacity.
+        'apertura-nucleo': {
+          '0%,16%': { transform: 'scale(0.85)', opacity: '0' },
+          '28%':    { transform: 'scale(1)',    opacity: '0.9' },
+          '56%':    { transform: 'scale(1.32)', opacity: '1' },
+          '84%':    { transform: 'scale(1)',    opacity: '1' },
+          '100%':   { transform: 'scale(1)',    opacity: '0' },
+        },
+        // La palabra entra a los 1800ms y se queda quieta mientras el núcleo respira
+        'apertura-palabra': {
+          '0%,36%': { opacity: '0',    transform: 'translateY(8px)' },
+          '52%':    { opacity: '0.75', transform: 'translateY(0)' },
+          '84%':    { opacity: '0.75', transform: 'translateY(0)' },
+          '100%':   { opacity: '0',    transform: 'translateY(0)' },
+        },
+        // Movimiento reducido: la misma palabra, sin escala y en 400ms
+        'apertura-palabra-quieta': {
+          '0%':   { opacity: '0' },
+          '100%': { opacity: '0.75' },
+        },
+        // La capa oscura que se retira para dejar ver el degradado horario
+        'apertura-fondo': {
+          '0%':   { opacity: '1' },
+          '100%': { opacity: '0' },
+        },
       },
       animation: {
         'check-draw':  'check-draw 260ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
@@ -161,6 +188,12 @@ export default {
         'fade-up':     'fade-up 420ms cubic-bezier(0, 0, 0.2, 1) both',
         'chip-press':  'chip-press 180ms cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         'breathe':     'breathe 6s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+        // Excepción autorizada al rango 120–900ms (§3.3): es una descompresión,
+        // no una transición de interfaz.
+        'apertura-nucleo':          'apertura-nucleo 5000ms cubic-bezier(0.37, 0, 0.63, 1) forwards',
+        'apertura-palabra':         'apertura-palabra 5000ms cubic-bezier(0, 0, 0.2, 1) forwards',
+        'apertura-palabra-quieta':  'apertura-palabra-quieta 400ms cubic-bezier(0, 0, 0.2, 1) forwards',
+        'apertura-fondo':           'apertura-fondo 800ms cubic-bezier(0, 0, 0.2, 1) forwards',
       },
 
       // ─── Tamaños mínimos para toque (WCAG 2.2) ───────────────────────────

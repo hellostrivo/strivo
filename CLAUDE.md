@@ -109,6 +109,10 @@ El Diario **NO es una pestaña**; se accede desde Hoy en su momento.
 
 **Motion:** duraciones **más lentas que lo normal**. Min 120ms, máx 900ms para cierre nocturno. Preferir easing smooth (ease-in-out).
 
+**Excepciones autorizadas al rango 120–900ms** (no marcarlas en el QA gate):
+- **Apertura de Strivo** (`AperturaStrivo`, antes de P1): 5000ms, o 1600ms con movimiento reducido. Es una descompresión, no una transición de interfaz. Tokens en `motion.apertura`.
+- **Pantallas de transición del onboarding** (T-4B y siguientes).
+
 **Componentes:** radios 10–32px (ver tokens). Sin sombras de drop; usar elevación (2–8 dp). Haptics livianas, sin vibración en errores.
 
 ---

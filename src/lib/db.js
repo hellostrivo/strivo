@@ -11,7 +11,8 @@ import { openDB } from 'idb'
 const DB_NAME    = 'strivo-local'
 // 1 → esquema inicial (§7.2)
 // 2 → UserProfile.gender (§2.2 del documento de cambios): lenguaje adaptativo
-const DB_VERSION = 2
+// 3 → appFlags: banderas del dispositivo, no del usuario (§3.3, hasSeenIntro)
+const DB_VERSION = 3
 
 // ─── Abrir / inicializar la base de datos ────────────────────────────────────
 export async function getDB() {
@@ -73,6 +74,12 @@ export function upgradeSchema(db, oldVersion, newVersion, tx) {
     sq.createIndex('byStatus', 'status')
   }
 
+  // AppFlag (banderas de este dispositivo: si ya se vio la apertura, etc.)
+  // No llevan userId: describen la instalación, no a la persona.
+  if (!db.objectStoreNames.contains('appFlags')) {
+    db.createObjectStore('appFlags', { keyPath: 'key' })
+  }
+
   // v2 — los perfiles escritos antes de P2A no tienen `gender`. Se les pone
   // null explícito: la app lee esa ausencia como "sin respuesta" y usa la
   // variante neutra (§2.2). Nadie tiene que volver a contestar nada.
@@ -85,6 +92,29 @@ export function upgradeSchema(db, oldVersion, newVersion, tx) {
       }
       return cursor.continue().then(siguiente)
     })
+  }
+}
+
+// ─── Banderas del dispositivo ─────────────────────────────────────────────────
+// Lo que sabe esta instalación, no lo que sabe la persona: si ya se vio la
+// apertura, por ejemplo. No se sincronizan ni entran en la cola de subida.
+export async function getFlag(key, porDefecto = null) {
+  try {
+    const db   = await getDB()
+    const fila = await db.get('appFlags', key)
+    return fila ? fila.value : porDefecto
+  } catch {
+    // Sin almacén, la app sigue: la bandera vale su valor por defecto
+    return porDefecto
+  }
+}
+
+export async function setFlag(key, value) {
+  try {
+    const db = await getDB()
+    await db.put('appFlags', { key, value })
+  } catch {
+    // Guardar una bandera nunca puede interrumpir nada
   }
 }
 
