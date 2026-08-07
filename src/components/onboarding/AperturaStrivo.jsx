@@ -18,14 +18,6 @@ import { copy } from '@copy'
 import { colors, apertura, aperturaNucleo } from '@tokens'
 import useReducedMotion from '@hooks/useReducedMotion'
 
-// El núcleo es luz difusa, no una figura: un gradiente radial que se desvanece
-// hacia los bordes, sin borde ni contorno que lo recorte.
-const LUZ = `radial-gradient(circle,
-  rgba(255, 255, 255, 0.95) 0%,
-  rgba(255, 249, 235, 0.65) 38%,
-  rgba(254, 232, 182, 0.28) 62%,
-  rgba(254, 232, 182, 0) 78%)`
-
 function diametroPara(ancho) {
   if (ancho < aperturaNucleo.puntoDeCorteCompacto) return aperturaNucleo.diametroCompacto
   if (ancho < aperturaNucleo.puntoDeCorteAmplio)   return aperturaNucleo.diametroBase
@@ -114,7 +106,7 @@ export default function AperturaStrivo({ onEnd }) {
             style={{
               width:  `${diametro}px`,
               height: `${diametro}px`,
-              background: LUZ,
+              background: aperturaNucleo.luz,
             }}
           />
         )}

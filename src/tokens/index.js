@@ -113,6 +113,13 @@ export const transicion = {
 
 // Núcleo de luz de la apertura (px). El escalado máximo nunca toca los bordes.
 export const aperturaNucleo = {
+  // Luz difusa, no una figura: el gradiente se desvanece antes del borde del
+  // elemento, así que no hay contorno que lo recorte.
+  luz: `radial-gradient(circle,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 249, 235, 0.65) 38%,
+    rgba(254, 232, 182, 0.28) 62%,
+    rgba(254, 232, 182, 0) 78%)`,
   diametroCompacto:      96,
   diametroBase:         120,
   diametroAmplio:       140,

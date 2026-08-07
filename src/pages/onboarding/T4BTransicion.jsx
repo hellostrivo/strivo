@@ -34,21 +34,26 @@ export default function T4BTransicion({ onNext }) {
 
   const duracion = reducedMotion ? transicion.totalReducida : transicion.total
 
+  // El relevo se programa una sola vez. Guardar la salida en una referencia
+  // evita que un re-render del flujo reinicie la cuenta y alargue la pausa.
+  const salida = useRef(onNext)
+  salida.current = onNext
+
   const saltar = () => {
     if (cerrado.current) return
     cerrado.current = true
     setSaliendo(true)
-    setTimeout(() => onNext?.(), transicion.saltar)
+    setTimeout(() => salida.current?.(), transicion.saltar)
   }
 
   useEffect(() => {
     const relevo = setTimeout(() => {
       if (cerrado.current) return
       cerrado.current = true
-      onNext?.()
+      salida.current?.()
     }, duracion)
     return () => clearTimeout(relevo)
-  }, [duracion, onNext])
+  }, [duracion])
 
   return (
     <div
