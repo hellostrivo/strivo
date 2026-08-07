@@ -105,27 +105,26 @@ export const copy = {
         otro:                  'Otro',
       },
     },
+    // P3 — lo que se viene a buscar. La pregunta pide un deseo, no una
+    // justificación: se mira hacia adelante, no hacia lo que está mal (§6.1).
+    // El orden y los ids viven en @lib/reasons; aquí solo las etiquetas.
+    // Ninguna lleva marca de género: funcionan igual en los tres modos.
     p3: {
-      question: '¿Por qué estás aquí?',
-      hint: 'Elige las oraciones que más conecten contigo',
-      options: [
-        'Ordenar mis emociones',
-        'Reconocer lo que sí logro',
-        // La variante neutra reformula en vez de poner barras (§2.5)
-        {
-          m: 'Conectar conmigo mismo',
-          f: 'Conectar conmigo misma',
-          n: 'Reconectar conmigo',
-        },
-        'Establecer hábitos que duren',
-        'Preparar mi mente para dormir',
-      ],
-      // Motivos propios: se pueden añadir uno o varios
-      other:               'Otro…',
-      otherLabel:          'En tus palabras',
-      otherPlaceholder:    'Lo que te trajo aquí',
-      otherAdd:            'Añadir',
-      otherRemoveTemplate: 'Quitar {motivo}',
+      question: '¿Qué te gustaría encontrar aquí?',
+      hint: 'Elige todo lo que resuene contigo. Puedes seleccionar varias opciones.',
+      options: {
+        paz:     'Terminar el día con más paz',
+        avance:  'Sentir que sí estoy avanzando',
+        escucha: 'Volver a escucharme',
+        sueno:   'Dormir con la mente más tranquila',
+        habitos: 'Construir hábitos que realmente duren',
+        espacio: 'Tener un espacio solo para mí',
+        otro:    'Otro',
+      },
+      // El campo de "Otro" es opcional: se puede dejar vacío y avanzar igual
+      otherLabel:           'En tus palabras',
+      otherPlaceholder:     '¿Qué buscas?',
+      otherCounterTemplate: '{n} de {max}',
     },
     p4: {
       headline: 'No preguntamos qué quieres lograr.',

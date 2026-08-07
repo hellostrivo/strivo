@@ -67,8 +67,6 @@ describe('Borrador · migración del orden viejo (§1.4)', () => {
     expect(draft.schemaVersion).toBe(ONBOARDING_SCHEMA_VERSION)
     expect(draft).toMatchObject({
       nombre: 'Alejandra',
-      motivos: ['Ordenar mis emociones'],
-      motivosPropios: ['Dormir en paz'],
       identidadCentral: 'crece cada día',
       areas: ['salud'],
       identidadesArea: { salud: 'cuida su cuerpo' },
@@ -79,6 +77,12 @@ describe('Borrador · migración del orden viejo (§1.4)', () => {
     expect(draft.paso).toBeUndefined()
     // Campos que no existían en la versión vieja llegan con su valor de partida
     expect(draft.gender).toBeNull()
+    // Los motivos viejos eran textos y ahora son ids: no hay equivalencia que
+    // inventar, así que se van con su pantalla en vez de quedarse a medias.
+    expect(draft.motivos).toBeUndefined()
+    expect(draft.motivosPropios).toBeUndefined()
+    expect(draft.reasons).toEqual([])
+    expect(draft.reasonOther).toBeNull()
   })
 
   it('la migración se persiste, no se repite en cada arranque', () => {
@@ -95,6 +99,42 @@ describe('Borrador · migración del orden viejo (§1.4)', () => {
     saveDraft(actual)
 
     expect(loadDraft()).toMatchObject({ nombre: 'Alejandra', gender: 'femenino' })
+  })
+})
+
+describe('P3 · lo que se vino a buscar (§6.8)', () => {
+  it('el perfil guarda ids, no las etiquetas que se leyeron', async () => {
+    await finishOnboarding({
+      ...emptyDraft,
+      identidadCentral: 'crece cada día',
+      reasons: ['paz', 'sueno', 'otro'],
+      reasonOther: 'Dejar de correr todo el tiempo',
+    })
+
+    const [perfil] = await filasDe('userProfile')
+    expect(perfil.reasons).toEqual(['paz', 'sueno', 'otro'])
+    expect(perfil.reasonOther).toBe('Dejar de correr todo el tiempo')
+  })
+
+  it('sin elegir nada, el perfil se escribe igual', async () => {
+    await finishOnboarding({ ...emptyDraft, identidadCentral: 'vive con calma' })
+
+    const [perfil] = await filasDe('userProfile')
+    expect(perfil.reasons).toEqual([])
+    expect(perfil.reasonOther).toBeNull()
+  })
+
+  it('"Otro" con el campo vacío guarda la opción y ningún texto', async () => {
+    await finishOnboarding({
+      ...emptyDraft,
+      identidadCentral: 'crece',
+      reasons: ['otro'],
+      reasonOther: '   ',
+    })
+
+    const [perfil] = await filasDe('userProfile')
+    expect(perfil.reasons).toEqual(['otro'])
+    expect(perfil.reasonOther).toBeNull()
   })
 })
 

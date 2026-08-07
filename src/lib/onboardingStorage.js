@@ -25,15 +25,16 @@ const DONE_KEY  = 'strivo.onboarding.done'
 // arrancar, en silencio y sin perder nada.
 //   1 → orden original (P2 motivo, P3 identidad, P3B, P3C, P4 nombre)
 //   2 → orden nuevo (P2 nombre, P2A género, P3 motivo, P4 identidad, P4B, P4C)
-export const ONBOARDING_SCHEMA_VERSION = 2
+//   3 → P3 pregunta qué se busca: ids en vez de textos (§6.8)
+export const ONBOARDING_SCHEMA_VERSION = 3
 
 export const emptyDraft = {
   schemaVersion: ONBOARDING_SCHEMA_VERSION,
   nombre: '',               // P2  — opcional
   gender: null,             // P2A — null = sin respuesta → modo neutro (§2.2)
-  motivos: [],              // P3  — de las opciones ofrecidas (0..N)
-  motivosPropios: [],       // P3  — escritos por la persona (0..N)
-  identidadCentral: '',     // P4  — frase sin el prefijo "Alguien que…"
+  reasons: [],              // P3  — ids de @lib/reasons (0..N)
+  reasonOther: null,        // P3  — texto libre si se eligió "otro"; máx 80
+  identidadCentral: '',     // P4  — frase sin el prefijo "Soy alguien que…"
   areas: [],                // P4B — tipos de área elegidos (0..N)
   identidadesArea: {},      // P4C — { [tipo]: texto sin prefijo }, opcional
   primeraVictoria: null,    // P5  — { texto, fecha } una vez guardada
@@ -47,16 +48,24 @@ export const emptyDraft = {
 
 // Migración de un borrador de una versión anterior (§1.4).
 //
-// Lo capturado se conserva tal cual —los nombres de los campos no cambian, solo
-// la pantalla en la que se preguntan—, así que migrar es quedarse con lo escrito
-// y volver a empezar en P1 con las respuestas precargadas. Cualquier rastro del
-// paso en el que se quedó la sesión se descarta: con la numeración nueva
-// apuntaría al lugar equivocado.
+// Se conserva lo capturado que sigue existiendo y se descarta el resto: los
+// campos que ya no están en `emptyDraft` desaparecieron con su pantalla (los
+// motivos viejos de P3, por ejemplo, eran textos y ahora son ids: no hay
+// equivalencia que inventar). Cualquier rastro del paso en el que se quedó la
+// sesión también se va: con la numeración nueva apuntaría al lugar equivocado.
 //
 // Es silenciosa a propósito: nadie ve un aviso de que algo cambió.
 export function migrateDraft(guardado) {
-  const { schemaVersion, paso, step, ...datos } = guardado ?? {}   // eslint-disable-line no-unused-vars
-  return { ...emptyDraft, ...datos, schemaVersion: ONBOARDING_SCHEMA_VERSION }
+  const previo   = guardado ?? {}
+  const migrado  = { ...emptyDraft }
+
+  for (const clave of Object.keys(emptyDraft)) {
+    if (clave !== 'schemaVersion' && previo[clave] !== undefined) {
+      migrado[clave] = previo[clave]
+    }
+  }
+
+  return migrado
 }
 
 export function loadDraft() {

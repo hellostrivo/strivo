@@ -51,6 +51,8 @@ export const areaIcons = {
 // Duraciones de animación (ms)
 export const durations = {
   fast:    120,
+  // Revelar un campo que aparece bajo una opción (§6.3.C)
+  reveal:  200,
   base:    260,
   slow:    420,
   slower:  700,

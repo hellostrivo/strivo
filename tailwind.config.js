@@ -114,6 +114,7 @@ export default {
       // ─── Motion (más lento que el estándar, intencional) ─────────────────
       transitionDuration: {
         '120': '120ms',
+        '200': '200ms',
         '260': '260ms',
         '420': '420ms',
         '700': '700ms',

@@ -73,7 +73,11 @@ function perfilDesde(draft, userId) {
     horaDespertar: draft.horaDespertar,
     horaDormir:    draft.horaDormir,
     diaTerminaA:   DIA_TERMINA_A,
-    motivos:       [...draft.motivos, ...draft.motivosPropios],
+    // Lo que se vino a buscar (§6.8): ids de @lib/reasons, y el texto libre
+    // aparte. Guardar el id y no la etiqueta permite reescribir el copy sin
+    // tocar los perfiles ya guardados.
+    reasons:       [...draft.reasons],
+    reasonOther:   draft.reasonOther?.trim() || null,
     recordatorios: draft.recordatorios ?? { activos: false, permiso: 'default' },
     cuenta:        draft.cuenta ?? null,
     creadoEn:      ahora,

@@ -95,13 +95,19 @@ Pantalla P2A (Género):
  es la salida sin fricción. El subtítulo no se acorta: es lo que convierte un
  campo de formulario en un gesto de atención.)
 
-Pantalla P3 (Motivo):
-"¿Por qué estás aquí? (Elige los que resuenen)"
-- Ordenar mis emociones
-- Reconocer lo que sí logro
-- Conectar conmigo mismo / Conectar conmigo misma / neutro: "Reconectar conmigo"
-- Establecer hábitos que duren
-- Preparar mi mente para dormir
+Pantalla P3 (Qué te gustaría encontrar aquí):
+"¿Qué te gustaría encontrar aquí?"
+"Elige todo lo que resuene contigo. Puedes seleccionar varias opciones."
+- Terminar el día con más paz          (id: paz)
+- Sentir que sí estoy avanzando        (id: avance)
+- Volver a escucharme                  (id: escucha)
+- Dormir con la mente más tranquila    (id: sueno)
+- Construir hábitos que realmente duren (id: habitos)
+- Tener un espacio solo para mí        (id: espacio)
+- Otro                                 (id: otro → revela campo)
+Campo de "Otro": "¿Qué buscas?" · máx. 80 · contador desde el carácter 65
+(Se puede avanzar sin elegir nada, en silencio. Ninguna opción lleva marca
+ de género: funcionan igual en los tres modos.)
 
 Pantalla P4 (Identidad central):
 "No preguntamos qué quieres lograr. 

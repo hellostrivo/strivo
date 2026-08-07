@@ -164,10 +164,10 @@ export default function OnboardingFlow({ onComplete }) {
       return (
         <P3Motivo
           {...common}
-          motivos={draft.motivos}
-          propios={draft.motivosPropios}
-          onChangeMotivos={motivos => update({ motivos })}
-          onChangePropios={motivosPropios => update({ motivosPropios })}
+          reasons={draft.reasons}
+          otro={draft.reasonOther}
+          onChangeReasons={reasons => update({ reasons })}
+          onChangeOtro={reasonOther => update({ reasonOther })}
           onBack={back}
           onNext={next}
         />
