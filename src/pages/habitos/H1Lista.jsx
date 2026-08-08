@@ -14,6 +14,7 @@ import { useEffect, useRef } from 'react'
 import { copy, interpolate } from '@copy'
 import { agruparPorMomento } from '@lib/habits'
 import HabitRow from '@components/strivo/HabitRow'
+import { etiquetaDeArea } from '@lib/areas'
 import Button from '@components/ui/Button'
 
 export default function H1Lista({ habitos, areas, hechos, onToggle, onAbrir, onCrear }) {
@@ -76,7 +77,9 @@ export default function H1Lista({ habitos, areas, hechos, onToggle, onAbrir, onC
               </h2>
 
               <div className="mt-4 flex flex-col gap-2">
-                {pausados.map(habito => (
+                {pausados.map(habito => {
+                  const etiqueta = etiquetaDeArea(areaDe(habito))
+                  return (
                   <button
                     key={habito.id}
                     type="button"
@@ -93,9 +96,18 @@ export default function H1Lista({ habitos, areas, hechos, onToggle, onAbrir, onC
                       style={{ backgroundColor: areaDe(habito)?.color ?? '#D9CFC4' }}
                       aria-hidden="true"
                     />
-                    <span className="text-base text-ink">{habito.nombre}</span>
+                    {/* Misma regla que en las filas activas: el área, y solo si
+                        la persona la tiene entre las suyas. Sin ella, la fila se
+                        queda igual de alta que antes. */}
+                    <span className="flex flex-col">
+                      <span className="text-base text-ink">{habito.nombre}</span>
+                      {etiqueta && (
+                        <span className="text-sm text-ink/70">{etiqueta.nombre}</span>
+                      )}
+                    </span>
                   </button>
-                ))}
+                  )
+                })}
               </div>
             </section>
           )}

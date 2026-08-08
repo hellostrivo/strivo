@@ -7,12 +7,18 @@
 // ✅ Al desmarcar: inverso, sin penalización visual
 // ✅ NUNCA rojo, ni porcentaje de incumplimiento, ni texto "fallaste"
 // ✅ El texto tachado NO se usa (connota tarea eliminada, no logro)
+//
+// Bajo el nombre va el ÁREA del hábito, no la identidad de área: emparejar cada
+// hábito con la frase de su área daba cosas como "Dormir a tiempo · se mueve
+// porque le hace bien". La regla la resuelve @lib/areas, igual en todas las
+// pantallas.
 
 import { useRef, useState } from 'react'
 import { clsx } from 'clsx'
 import { copy } from '@copy'
 import { areaColors } from '@tokens'
 import { EMOJI_POR_DEFECTO } from '@lib/emojis'
+import { etiquetaDeArea } from '@lib/areas'
 
 /**
  * HabitRow — fila de hábito en checklist
@@ -36,6 +42,8 @@ export default function HabitRow({ habit, done = false, onToggle, area, classNam
   const Contenedor = onOpen ? 'button' : 'div'
 
   const color = area?.color ?? areaColors[area?.tipo] ?? '#D9CFC4'
+  // El área a la que pertenece, y solo si la persona la tiene activa (@lib/areas)
+  const etiqueta = etiquetaDeArea(area)
 
   // Interruptor de dos estados, nunca un contador: tocarlo marca, volver a
   // tocarlo desmarca. En ningún caso suma (§26.3).
@@ -136,10 +144,11 @@ export default function HabitRow({ habit, done = false, onToggle, area, classNam
           </span>
         </div>
 
-        {/* Identidad de área (si existe) — aparece debajo del nombre */}
-        {area?.identidadArea && (
+        {/* El área a la que pertenece. Sin área, no se pinta nada: el bloque
+            entero desaparece y la fila queda del alto que le toca. */}
+        {etiqueta && (
           <p className="text-sm text-surface-fg-muted mt-0.5 ml-4">
-            {area.identidadArea}
+            {etiqueta.nombre}
           </p>
         )}
       </Contenedor>

@@ -13,6 +13,7 @@
 import { useEffect, useRef } from 'react'
 import { copy, interpolate } from '@copy'
 import { nombreDeMomento } from '@lib/habits'
+import { etiquetaDeArea } from '@lib/areas'
 import { areaColors } from '@tokens'
 import CuadriculaDias from '@components/habitos/CuadriculaDias'
 import Button from '@components/ui/Button'
@@ -21,7 +22,8 @@ export default function H2Detalle({ habito, area, detalle, onPausar, onReanudar,
   const headingRef = useRef(null)
   useEffect(() => { headingRef.current?.focus() }, [habito.id])
 
-  const color   = area?.color ?? areaColors[area?.tipo] ?? '#D9CFC4'
+  const color    = area?.color ?? areaColors[area?.tipo] ?? '#D9CFC4'
+  const etiqueta = etiquetaDeArea(area)
   const pausado = habito.estado === 'pausado'
   const nunca   = detalle.total === 0
 
@@ -44,13 +46,11 @@ export default function H2Detalle({ habito, area, detalle, onPausar, onReanudar,
         {habito.nombre}
       </h1>
 
-      {/* La identidad de área, si la hay: el hábito como prueba de quién eres */}
-      {area?.identidadArea && (
+      {/* El área a la que pertenece. La identidad de área se quedó fuera: es
+          demasiado específica para encajar con cualquier hábito (@lib/areas). */}
+      {etiqueta && (
         <p className="mt-4 text-base leading-relaxed text-ink/80">
-          {interpolate(copy.habits.detail.identityTemplate, {
-            área: area.nombre,
-            identidad: area.identidadArea,
-          })}
+          {etiqueta.nombre}
         </p>
       )}
 

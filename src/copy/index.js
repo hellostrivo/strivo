@@ -840,6 +840,11 @@ export const copy = {
       save: 'Crear hábito',
     },
     detail: {
+      // Ya no se usa: el detalle de un hábito muestra el NOMBRE de su área, no
+      // la identidad de área, que era demasiado específica para encajar con
+      // cualquier hábito ("Dormir a tiempo · se mueve porque le hace bien").
+      // La clave se conserva porque la frase sigue viva en el ritual de mañana
+      // y en el perfil, y por si el detalle vuelve a quererla algún día.
       identityTemplate: 'En {área} eres alguien que {identidad}.',
       totalTemplate: 'Lo has hecho {n} veces',
       last30Template: '{n} de los últimos 30 días',
