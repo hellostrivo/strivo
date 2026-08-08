@@ -179,6 +179,33 @@ export default {
           '0%':   { opacity: '0' },
           '100%': { opacity: '0.75' },
         },
+        // Apertura de sesión (§17): una luz que se enciende, se queda y se va
+        // expandiéndose apenas. Un solo recorrido de 3.4s.
+        'sesion-luz': {
+          '0%':   { opacity: '0',    transform: 'scale(0.9)' },
+          '21%':  { opacity: '0.85', transform: 'scale(1)' },
+          '85%':  { opacity: '0.85', transform: 'scale(1)' },
+          '100%': { opacity: '0',    transform: 'scale(1.06)' },
+        },
+        'sesion-frase': {
+          '0%,15%': { opacity: '0', transform: 'translateY(10px)' },
+          '35%':    { opacity: '1', transform: 'translateY(0)' },
+          '85%':    { opacity: '1', transform: 'translateY(0)' },
+          '100%':   { opacity: '0', transform: 'translateY(0)' },
+        },
+        // Con movimiento reducido: sin escala ni desplazamiento, 2.4s
+        'sesion-luz-quieta': {
+          '0%':     { opacity: '0' },
+          '13%':    { opacity: '0.85' },
+          '87%':    { opacity: '0.85' },
+          '100%':   { opacity: '0' },
+        },
+        'sesion-frase-quieta': {
+          '0%':   { opacity: '0' },
+          '13%':  { opacity: '1' },
+          '87%':  { opacity: '1' },
+          '100%': { opacity: '0' },
+        },
         // La capa oscura que se retira para dejar ver el degradado horario
         'apertura-fondo': {
           '0%':   { opacity: '1' },
@@ -221,6 +248,10 @@ export default {
         'pulso-limite':             'pulso-limite 600ms cubic-bezier(0.4, 0, 0.2, 1)',
         'transicion-frase':         'transicion-frase 3000ms cubic-bezier(0, 0, 0.2, 1) forwards',
         'transicion-frase-quieta':  'transicion-frase-quieta 2300ms cubic-bezier(0, 0, 0.2, 1) forwards',
+        'sesion-luz':               'sesion-luz 3400ms cubic-bezier(0, 0, 0.2, 1) forwards',
+        'sesion-frase':             'sesion-frase 3400ms cubic-bezier(0, 0, 0.2, 1) forwards',
+        'sesion-luz-quieta':        'sesion-luz-quieta 2400ms cubic-bezier(0, 0, 0.2, 1) forwards',
+        'sesion-frase-quieta':      'sesion-frase-quieta 2400ms cubic-bezier(0, 0, 0.2, 1) forwards',
       },
 
       // ─── Tamaños mínimos para toque (WCAG 2.2) ───────────────────────────

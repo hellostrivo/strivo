@@ -40,6 +40,12 @@ https://github.com/hellostrivo/strivo
 - ✅ P10: Crear cuenta — guardado local + Firebase auth
 - ✅ P11: Pantalla de cierre — confirmación de onboarding completado
 
+### Pantalla de inicio y navegación
+- ✅ Fondo con degradado horario, interpolado por la hora exacta y en vivo (§18)
+- ✅ Apertura de sesión — luz y frase al abrir la app; una vez por hora (§17)
+- ✅ Cuatro pestañas: Hoy · Journal · Hábitos · Tú (§19)
+- ✅ Cabecera de "Hoy" — frase del día + Mañana/Noche siempre disponibles (§20)
+
 ### Rituales
 - ✅ **Ritual de Mañana** — 5 pantallas (R1–R5): respiración, bienvenida, identidad+área, hábitos, intención
 - ✅ **Ritual de Noche** — 6 pantallas (N1–N6): respiración, herencia de victorias, nuevos logros, agradecimientos, reflexión, ánimo de cierre, hábitos, síntesis con animación de luz 900ms

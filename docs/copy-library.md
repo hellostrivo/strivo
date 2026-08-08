@@ -184,24 +184,45 @@ Pantalla P11 (Cierre onboarding):
 Nos vemos mañana a las 6:45."
 ```
 
-### Saludos dinámicos (por franja horaria)
+### Apertura de sesión (§17)
+
+Lo primero que se lee al abrir la app, antes de cualquier pendiente.
 
 ```
-Amanecer (4:00–11:30):
-"Buenos días. ¿Cómo quieres sentirte hoy?"
-
-Día (fin de amanecer – 4h antes de dormir):
-"Tu día está en curso."
-
-Atardecer (4h antes de dormir):
-"Se va el día. Aún hay tiempo."
-
-Noche (19:00–03:00):
-"Buenas noches. Cerremos el día."
-
-Madrugada (03:00–04:00):
-"Aún de pie. Aquí está tu espacio."
+[una frase del Repertorio A]   ← 100 frases en docs/frases.md
+[Entrar]                       ← para teclado y lector de pantalla
 ```
+
+La frase sale por baraja: no se repite hasta agotar el repertorio, y el estado
+sobrevive a cerrar la app. Aparece en arranque en frío o tras 30 min fuera, y
+como mucho una vez por hora. Nunca justo después del onboarding.
+
+### Navegación principal (§19)
+
+```
+Hoy · Journal · Hábitos · Tú
+```
+
+### Cabecera de "Hoy" (§20)
+
+```
+[tarjeta con la frase del día]  ← 60 frases en docs/frases.md, Repertorio B
+                                   una por día natural, la misma todo el día
+[ Mañana ]  [ Noche ]           ← las dos secciones, disponibles siempre
+```
+
+Retirado en esta parte: los saludos por franja ("Tu día está en curso.").
+Informaban de algo que la persona ya sabe y devolvían su identidad como
+marcador de progreso.
+
+### Saludos dinámicos (por franja horaria) — retirados
+
+Los saludos por franja se retiraron de la app en §20: informaban de algo que la
+persona ya sabe y le devolvían su identidad como marcador de progreso. En su
+lugar, "Hoy" abre con la frase del día, que no habla de su desempeño.
+
+El saludo con nombre del ritual de la mañana sigue existiendo
+(`ritualManana.r2.greetingTemplate`); es otro momento y otra intención.
 
 ---
 

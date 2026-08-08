@@ -1,20 +1,24 @@
 // src/pages/HoyPage.jsx
 // Pantalla "Hoy" — pantalla raíz de Strivo
 //
-// Contiene el Diario del momento y los Rituales como overlays (§4.3.1). El
-// Diario cambia con la franja: Vista de Mañana en amanecer y durante el día,
-// Vista de Noche al atardecer y de noche. De madrugada no se propone nada:
-// quien abre la app a las tres no necesita que le pidan cerrar un día.
+// Arriba, una frase que no habla de tu desempeño (§20.3). Antes había un texto
+// que informaba de algo que la persona ya sabe ("Tu día está en curso") y le
+// devolvía su propia identidad como marcador de progreso: ese eco convertía en
+// ruido de interfaz una frase que eligió con cuidado en P4.
 //
-// Cada ritual se abre solo en su franja (mañana 4:00–11:30, noche 19:00–03:00)
-// si ese día todavía no se cerró. Una vez cerrado —por donde sea— no vuelve a
-// aparecer: queda el enlace para volver a él cuando se quiera. Al cerrarlo, la
-// Vista se recarga para reflejar lo que se marcó dentro (RN-01).
+// Debajo, la única decisión que hay que tomar al abrir: mañana o noche. Las dos
+// secciones están disponibles siempre, a cualquier hora (§20.3.B). Quien
+// despierta a las 14:00 hace su ritual de mañana; quien quiere adelantar su
+// cierre a las 19:00, también. La franja solo decide cuál viene preseleccionada.
+//
+// El fondo es la capa compartida de la app (@components/strivo/FondoHorario):
+// aquí no se pinta ninguno, para que no parpadee al cambiar de pestaña.
 //
 // La fecha es la del día de Strivo, que termina a las 03:00 (§7.2): quien cierra
 // su día a la 1:30 no estrena un día nuevo, sigue en el de ayer.
 
 import { useEffect, useMemo, useState } from 'react'
+import { clsx } from 'clsx'
 import {
   getTimeSlot,
   isRitualMananaWindow,
@@ -25,28 +29,30 @@ import { getDailyEntry } from '@lib/db'
 import { getCurrentUserId } from '@lib/user'
 import { ritualMananaHecho } from '@lib/ritualManana'
 import { ritualNocheHecho } from '@lib/ritualNoche'
-import { gradientsBySlot } from '@tokens'
+import { fraseDelDia } from '@lib/frases'
 import { copy } from '@copy'
+import useFondoHorario from '@hooks/useFondoHorario'
 import Button from '@components/ui/Button'
 import VistaManana from '@/pages/diario/VistaManana'
 import VistaNoche  from '@/pages/diario/VistaNoche'
 import RitualManana from '@/pages/ritual/RitualManana'
 import RitualNoche  from '@/pages/ritual/RitualNoche'
 
-// Qué Diario toca según la franja (§4.3.3)
+// Qué sección viene sugerida según la franja (§4.3.3). Es una sugerencia: las
+// dos están siempre a un toque.
 const FRANJAS_DE_MANANA = ['amanecer', 'dia']
-const FRANJAS_DE_NOCHE  = ['atardecer', 'noche']
 
 export default function HoyPage({ onHideNav }) {
-  const slot     = useMemo(() => getTimeSlot(), [])
-  const gradient = gradientsBySlot[slot]
+  const slot  = useMemo(() => getTimeSlot(), [])
+  const fondo = useFondoHorario()
 
+  const [seccion, setSeccion] = useState(
+    () => (FRANJAS_DE_MANANA.includes(slot) ? 'manana' : 'noche')
+  )
+  const [frase, setFrase]                 = useState(null)
   const [ritualAbierto, setRitualAbierto] = useState(null)   // 'manana' | 'noche' | null
   const [hechos, setHechos]               = useState(null)   // null mientras carga
   const [recarga, setRecarga]             = useState(0)
-
-  // Saludo sin nombre (en Fase 1 se añade el nombre del perfil)
-  const greeting = copy.greetings[slot] ?? copy.greetings.dia
 
   useEffect(() => {
     let vivo = true
@@ -63,6 +69,16 @@ export default function HoyPage({ onHideNav }) {
         else if (!estado.noche && isRitualNocheWindow())  setRitualAbierto('noche')
       })
       .catch(() => { if (vivo) setHechos({ manana: false, noche: false }) })
+    return () => { vivo = false }
+  }, [])
+
+  // La misma frase todo el día natural: si cambiara al recargar dejaría de ser
+  // "la frase de hoy" y sería un elemento aleatorio más (§20.3.A).
+  useEffect(() => {
+    let vivo = true
+    fraseDelDia(strivoDayKey())
+      .then(texto => { if (vivo) setFrase(texto) })
+      .catch(error => console.warn('[Strivo] Hoy se queda sin frase:', error))
     return () => { vivo = false }
   }, [])
 
@@ -86,31 +102,56 @@ export default function HoyPage({ onHideNav }) {
   const textos = ritualDeAhora === 'noche' ? copy.ritualNoche : copy.ritualManana
   const puedeVolver = ritualDeAhora && hechos && !ritualAbierto
 
-  const esFranjaDeManana = FRANJAS_DE_MANANA.includes(slot)
-  const esFranjaDeNoche  = FRANJAS_DE_NOCHE.includes(slot)
-
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        background: `linear-gradient(160deg, ${gradient.from} 0%, ${gradient.to} 100%)`,
-      }}
-    >
-      <div className="w-full max-w-md mx-auto px-6 pt-safe pt-10 flex flex-col items-center text-center">
-        {/* Logo / nombre */}
-        <p className="font-sans text-sm tracking-widest text-ink/40 uppercase mb-6">
+    <div className="min-h-screen" style={{ color: fondo.texto }}>
+      <div className="w-full max-w-md mx-auto px-6 pt-safe pt-10">
+        <p className="text-center font-sans text-sm tracking-widest uppercase opacity-60">
           {copy.appName}
         </p>
 
-        {/* Saludo principal */}
-        <h1 className="font-display text-xl text-ink leading-snug">
-          {greeting}
-        </h1>
+        {/* La frase del día. Trae su propia superficie: así se lee igual de bien
+            a las siete de la mañana que a las once de la noche, sin depender de
+            la franja (§18.4). Sin icono, sin comillas, sin firma: se sostiene
+            sola. */}
+        {frase && (
+          <div className="mt-8 rounded-lg bg-surface/95 shadow-elev-2 px-6 py-8">
+            <p className="text-center font-display text-md leading-snug text-ink">
+              {frase}
+            </p>
+          </div>
+        )}
+
+        {/* La decisión que sí hay que tomar al abrir */}
+        <div role="tablist" aria-label={copy.appName} className="mt-8 flex gap-3">
+          {['manana', 'noche'].map(cual => {
+            const activa = seccion === cual
+            return (
+              <button
+                key={cual}
+                role="tab"
+                aria-selected={activa}
+                onClick={() => setSeccion(cual)}
+                className={clsx(
+                  'flex-1 min-h-touch rounded-md px-4 py-3 text-base',
+                  'transition-colors duration-260 ease-smooth motion-reduce:transition-none',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30',
+                  // Relleno y peso, nunca solo color (§20.3.B)
+                  activa
+                    ? 'bg-ink text-paper font-bold'
+                    : 'bg-surface/70 text-ink font-medium'
+                )}
+              >
+                {copy.hoy.seccion[cual]}
+              </button>
+            )
+          })}
+        </div>
 
         {puedeVolver && (
           <Button
             variant="secondary"
             size="md"
+            fullWidth
             className="mt-6"
             onClick={() => setRitualAbierto(ritualDeAhora)}
           >
@@ -121,23 +162,21 @@ export default function HoyPage({ onHideNav }) {
         )}
       </div>
 
-      {esFranjaDeManana && <VistaManana recarga={recarga} />}
-
-      {esFranjaDeNoche && (
-        <VistaNoche
-          recarga={recarga}
-          onDiaCerrado={() => setHechos(previos => ({ ...previos, noche: true }))}
-        />
-      )}
-
-      {/* Madrugada: solo el saludo. No se propone nada a esta hora. */}
-      {!esFranjaDeManana && !esFranjaDeNoche && (
-        <div className="w-full max-w-sm mx-auto mt-10 px-6 text-center">
-          <p className="text-base text-ink/60">
-            {copy.return.constancy}
-          </p>
-        </div>
-      )}
+      {/* Cambiar de sección cruza el contenido; los botones no se mueven */}
+      <div
+        key={seccion}
+        className="mt-10 animate-fade-up motion-reduce:animate-none"
+        aria-live="polite"
+      >
+        {seccion === 'manana'
+          ? <VistaManana recarga={recarga} />
+          : (
+            <VistaNoche
+              recarga={recarga}
+              onDiaCerrado={() => setHechos(previos => ({ ...previos, noche: true }))}
+            />
+          )}
+      </div>
 
       {ritualAbierto === 'manana' && (
         <RitualManana onClose={() => cerrarRitual('manana')} />

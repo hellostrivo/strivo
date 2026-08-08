@@ -7,10 +7,10 @@
 //
 // Una sola pregunta y nada alrededor: ni correo, ni apellido, ni foto.
 //
-// El nombre es opcional y Continuar nunca se inhabilita. Los saludos tienen
-// versión con nombre y sin él (greetings vs greetings.withName), así que dejarlo
-// en blanco no rompe nada ni deja la app a medias. Pedirlo dos veces sí sería
-// una forma de decir que la respuesta anterior no valía.
+// El nombre es opcional y Continuar nunca se inhabilita: lo que lo usa tiene
+// versión con nombre y sin él (el ritual de la mañana saluda con él si está),
+// así que dejarlo en blanco no rompe nada ni deja la app a medias. Pedirlo dos
+// veces sí sería una forma de decir que la respuesta anterior no valía.
 
 import { useEffect, useRef } from 'react'
 import { copy } from '@copy'
