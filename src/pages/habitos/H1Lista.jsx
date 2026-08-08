@@ -17,11 +17,13 @@ import HabitRow from '@components/strivo/HabitRow'
 import { etiquetaDeArea } from '@lib/areas'
 import Button from '@components/ui/Button'
 
-export default function H1Lista({ habitos, areas, hechos, onToggle, onAbrir, onCrear }) {
+export default function H1Lista({ habitos, areas, hechos, diaSemana, onToggle, onAbrir, onCrear }) {
   const headingRef = useRef(null)
   useEffect(() => { headingRef.current?.focus() }, [])
 
-  const { grupos, pausados, totalActivos } = agruparPorMomento(habitos)
+  // Con el día de hoy: los que no tocan salen de los grupos marcables y bajan
+  // a su propia sección, desde donde se siguen pudiendo abrir y editar.
+  const { grupos, otrosDias, pausados, totalActivos } = agruparPorMomento(habitos, diaSemana)
   const areaDe = habito => areas.find(a => a.id === habito.areaId)
 
   return (
@@ -40,7 +42,7 @@ export default function H1Lista({ habitos, areas, hechos, onToggle, onAbrir, onC
         </p>
       )}
 
-      {grupos.length === 0 && pausados.length === 0 ? (
+      {grupos.length === 0 && otrosDias.length === 0 && pausados.length === 0 ? (
         <p className="mt-8 text-base leading-relaxed text-ink/80">
           {copy.empty.habits}
         </p>
@@ -69,6 +71,45 @@ export default function H1Lista({ habitos, areas, hechos, onToggle, onAbrir, onC
               </div>
             </section>
           ))}
+
+          {otrosDias.length > 0 && (
+            <section aria-labelledby="grupo-otros-dias">
+              <h2 id="grupo-otros-dias" className="font-display text-md text-ink/70">
+                {copy.habits.create.otherDaysGroup}
+              </h2>
+
+              <div className="mt-4 flex flex-col gap-2">
+                {otrosDias.map(habito => {
+                  const etiqueta = etiquetaDeArea(areaDe(habito))
+                  return (
+                    <button
+                      key={habito.id}
+                      type="button"
+                      onClick={() => onAbrir(habito)}
+                      className={[
+                        'w-full min-h-touch flex items-center gap-3 px-1 py-3 rounded-sm text-left',
+                        'opacity-70 hover:opacity-100',
+                        'transition-opacity duration-260 ease-smooth motion-reduce:transition-none',
+                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20',
+                      ].join(' ')}
+                    >
+                      <span
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: areaDe(habito)?.color ?? '#D9CFC4' }}
+                        aria-hidden="true"
+                      />
+                      <span className="flex flex-col">
+                        <span className="text-base text-ink">{habito.nombre}</span>
+                        {etiqueta && (
+                          <span className="text-sm text-ink/70">{etiqueta.nombre}</span>
+                        )}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </section>
+          )}
 
           {pausados.length > 0 && (
             <section aria-labelledby="grupo-pausados">

@@ -1,5 +1,5 @@
 // src/pages/habitos/H3Crear.jsx
-// H3 — Crear un hábito (§5.7)
+// H3 — Crear y editar un hábito (§5.7)
 //
 // Cuatro decisiones y solo una obligatoria: el nombre. El momento viene en
 // "Mañana", el área en General y los días en todos, así que crear un hábito
@@ -11,27 +11,35 @@
 //
 // En cuanto se crea, le toca en su ritual: no hay ningún paso de "añadirlo al
 // ritual de la mañana" (RN-HR-01).
+//
+// La misma pantalla edita. Con `habito`, los campos vienen rellenos y guardar
+// ajusta el que ya existe en vez de crear otro: conserva su id, su contador y
+// sus marcas. Cambiar de momento o de días manda desde ese instante, porque las
+// vistas preguntan por momento y día en cada carga.
 
 import { useEffect, useRef, useState } from 'react'
 import { copy } from '@copy'
-import { MOMENTOS, DIAS_TODOS, sugerenciasPara } from '@lib/habits'
+import { MOMENTOS, DIAS_TODOS, sugerenciasPara, normalizarMomento } from '@lib/habits'
 import Button from '@components/ui/Button'
 import Chip from '@components/ui/Chip'
 
 const MAX_LENGTH = 60
 
-export default function H3Crear({ areas, habitos, onCrear, onVolver }) {
+export default function H3Crear({ areas, habitos, habito, onCrear, onVolver }) {
   const headingRef = useRef(null)
   const campoRef   = useRef(null)
+  const editando   = Boolean(habito)
 
-  const [nombre, setNombre]   = useState('')
-  const [areaId, setAreaId]   = useState(null)
-  const [momento, setMomento] = useState('manana')
-  const [dias, setDias]       = useState(DIAS_TODOS)
+  const [nombre, setNombre]   = useState(habito?.nombre ?? '')
+  const [areaId, setAreaId]   = useState(habito?.areaId ?? null)
+  const [momento, setMomento] = useState(() => normalizarMomento(habito?.momento))
+  const [dias, setDias]       = useState(habito?.diasSemana ?? DIAS_TODOS)
 
   useEffect(() => { headingRef.current?.focus() }, [])
 
-  const sugerencias = sugerenciasPara(areas, habitos)
+  // Editando no se sugiere nada: el hábito ya tiene nombre y ofrecerle otro
+  // invita a reemplazarlo, que no es lo que se vino a hacer.
+  const sugerencias = editando ? [] : sugerenciasPara(areas, habitos)
   const puedeCrear  = nombre.trim().length > 0 && dias.length > 0
   const todosLosDias = dias.length === DIAS_TODOS.length
 
@@ -39,6 +47,12 @@ export default function H3Crear({ areas, habitos, onCrear, onVolver }) {
     setNombre(sugerencia.texto)
     setAreaId(sugerencia.areaId)
     campoRef.current?.focus()
+  }
+
+  // Crear y editar escriben lo mismo; quién lo recibe lo decide el módulo.
+  const guardar = () => {
+    if (!puedeCrear) return
+    onCrear({ nombre, areaId, momento, diasSemana: dias })
   }
 
   const alternarDia = dia => {
@@ -60,7 +74,7 @@ export default function H3Crear({ areas, habitos, onCrear, onVolver }) {
         tabIndex={-1}
         className="mt-6 font-display text-xl leading-tight text-ink focus:outline-none"
       >
-        {copy.habits.create.label}
+        {editando ? copy.habits.create.editTitle : copy.habits.create.label}
       </h1>
 
       <input
@@ -76,7 +90,7 @@ export default function H3Crear({ areas, habitos, onCrear, onVolver }) {
         onChange={event => setNombre(event.target.value)}
         onKeyDown={event => {
           if (event.key === 'Enter' && puedeCrear) {
-            onCrear({ nombre, areaId, momento, diasSemana: dias })
+            guardar()
           }
         }}
         className={[
@@ -206,9 +220,9 @@ export default function H3Crear({ areas, habitos, onCrear, onVolver }) {
         fullWidth
         className="mt-12"
         disabled={!puedeCrear}
-        onClick={() => onCrear({ nombre, areaId, momento, diasSemana: dias })}
+        onClick={guardar}
       >
-        {copy.habits.create.save}
+        {editando ? copy.habits.create.editSave : copy.habits.create.save}
       </Button>
     </div>
   )

@@ -81,8 +81,21 @@ export function isRitualNocheWindow() {
  * Día de la semana en formato 0=Lun, 6=Dom
  * (Los hábitos usan este formato en diasSemana[])
  */
-export function getWeekDay() {
-  const d = new Date().getDay() // 0=Dom en JS
+/**
+ * Día de la semana en el formato del modelo: 0 = lunes, 6 = domingo.
+ *
+ * Acepta la clave del día de Strivo, que es la que decide a qué fecha pertenece
+ * lo que se registra. Importa: el día de Strivo termina a las 03:00, así que a
+ * la 1:30 de un domingo todavía se está cerrando el sábado, y los hábitos que
+ * tocan son los del sábado. Leerlo del reloj a secas adelantaba el cambio de día
+ * tres horas y hacía aparecer y desaparecer hábitos en mitad de la madrugada.
+ *
+ * Sin argumento se comporta como antes, con la fecha de hoy.
+ */
+export function getWeekDay(fecha) {
+  const d = fecha
+    ? new Date(...fecha.split('-').map((v, i) => (i === 1 ? Number(v) - 1 : Number(v)))).getDay()
+    : new Date().getDay()   // 0=Dom en JS
   return d === 0 ? 6 : d - 1   // convertir a 0=Lun
 }
 

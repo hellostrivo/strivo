@@ -18,7 +18,7 @@ import { areaColors } from '@tokens'
 import CuadriculaDias from '@components/habitos/CuadriculaDias'
 import Button from '@components/ui/Button'
 
-export default function H2Detalle({ habito, area, detalle, onPausar, onReanudar, onVolver }) {
+export default function H2Detalle({ habito, area, detalle, onEditar, onPausar, onReanudar, onVolver }) {
   const headingRef = useRef(null)
   useEffect(() => { headingRef.current?.focus() }, [habito.id])
 
@@ -87,6 +87,18 @@ export default function H2Detalle({ habito, area, detalle, onPausar, onReanudar,
           {copy.habits.pause.confirm}
         </p>
       )}
+
+      {/* Ajustar el hábito: nombre, momento y días. Va antes que pausar porque
+          cambiar cuándo te toca es lo que se viene a hacer más a menudo. */}
+      <Button
+        variant="secondary"
+        size="lg"
+        fullWidth
+        className="mt-10"
+        onClick={onEditar}
+      >
+        {copy.habits.create.edit}
+      </Button>
 
       <Button
         variant={pausado ? 'primary' : 'secondary'}

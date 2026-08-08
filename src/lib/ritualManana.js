@@ -33,7 +33,7 @@ export async function loadRitualManana() {
 
   const [areas, habitos, logs, entradaHoy, entradaAyer] = await Promise.all([
     getAreas(userId),
-    getActiveHabitsForMoment(userId, 'manana', getWeekDay()),
+    getActiveHabitsForMoment(userId, 'manana', getWeekDay(fecha)),
     getHabitLogsByDate(userId, fecha),
     getDailyEntry(userId, fecha),
     getDailyEntry(userId, ayer),

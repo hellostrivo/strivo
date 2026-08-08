@@ -17,7 +17,9 @@ const DB_NAME    = 'strivo-local'
 // 5 → se deduplican las marcas de hábito y se recalcula su contador (§26.3)
 // 6 → DailyEntry.animoCierre pasa del rótulo visible a un id estable, para que
 //     el estado de cierre pueda decirse en femenino sin dejar de reconocerse
-const DB_VERSION = 6
+// 7 → se retira el momento 'dia' de los hábitos: los que lo tenían pasan a la
+//     mañana, que es donde ahora sí les toca un ritual
+const DB_VERSION = 7
 
 // ─── Abrir / inicializar la base de datos ────────────────────────────────────
 export async function getDB() {
@@ -181,6 +183,24 @@ export function upgradeSchema(db, oldVersion, newVersion, tx) {
       return cursor.continue().then(siguiente)
     })
   }
+
+  // v7 — "A lo largo del día" se retira (§5.7). Era el único momento que no
+  // proyectaba a ningún ritual: esos hábitos vivían sueltos en la lista, fuera
+  // de las dos ceremonias de las que este producto saca su sentido.
+  //
+  // Pasan a la mañana, que es donde antes se encontraban primero. No se pierde
+  // nada: el hábito conserva su id, sus días, su contador y sus marcas, que
+  // viven aparte en habitLogs y no se tocan.
+  if (oldVersion > 0 && oldVersion < 7) {
+    const habitos = tx.objectStore('habits')
+    habitos.openCursor().then(function siguiente(cursor) {
+      if (!cursor) return
+      if (cursor.value.momento === 'dia') {
+        cursor.update({ ...cursor.value, momento: 'manana' })
+      }
+      return cursor.continue().then(siguiente)
+    })
+  }
 }
 
 // El mapa de la migración v6 vive aquí y no en @lib/animos porque `upgrade` de
@@ -329,14 +349,20 @@ export async function getHabits(userId) {
 }
 
 export async function getActiveHabitsForMoment(userId, momento, diaSemana) {
-  // momento: 'manana' | 'noche' | 'dia'
+  // momento: 'manana' | 'noche'
   // diaSemana: 0 (lunes) – 6 (domingo)
   // Proyección automática a Rituales: §5.7.2, RN-HR-01
+  //
+  // El día manda: un hábito de lunes, miércoles y viernes no se ofrece un
+  // sábado. Y `momento` se compara ya normalizado, por si queda alguno con el
+  // 'dia' retirado que la migración v7 no alcanzara (llegado tarde por
+  // sincronización, por ejemplo).
   const db = await getDB()
   const all = await db.getAllFromIndex('habits', 'byUser', userId)
   return all.filter(h =>
     h.estado === 'activo' &&
-    h.momento === momento &&
+    (h.momento === momento || (h.momento === 'dia' && momento === 'manana')) &&
+    Array.isArray(h.diasSemana) &&
     h.diasSemana.includes(diaSemana)
   )
 }

@@ -11,8 +11,12 @@
 // borra: pausar y archivar conservan hábito, marcas e historial íntegros
 // (RN-04), y el contador de veces nunca baja (§7.2).
 //
-// Los hábitos de momento 'dia' no se proyectan a ningún ritual: viven en la
-// lista y se marcan desde ahí.
+// DOS MOMENTOS. Antes había un tercero, 'dia' ("a lo largo del día"), que no se
+// proyectaba a ningún ritual: vivía suelto en la lista. Un hábito que no
+// pertenece a ninguno de los dos momentos del día no llega a formar parte de
+// ninguna ceremonia, que es de donde este producto saca su sentido. Los que
+// existían pasan a la mañana (migración v7 de @lib/db) y `normalizarMomento`
+// hace de red por si alguno llega tarde desde la sincronización.
 
 import { copy } from '@copy'
 import {
@@ -24,19 +28,30 @@ import {
 import { newId } from '@lib/user'
 import { todayKey, previousDayKey } from '@lib/timeSlot'
 
-export const MOMENTOS = ['manana', 'noche', 'dia']
+export const MOMENTOS = ['manana', 'noche']
+
+// Los hábitos del momento retirado ('dia') se leen como de mañana: es el
+// momento con el que empieza el día, así que se encuentran antes.
+export const MOMENTO_POR_DEFECTO = 'manana'
+
+export const normalizarMomento = momento =>
+  MOMENTOS.includes(momento) ? momento : MOMENTO_POR_DEFECTO
 
 export const DIAS_TODOS = [0, 1, 2, 3, 4, 5, 6]
 
 export function nombreDeMomento(momento) {
-  const indice = MOMENTOS.indexOf(momento)
+  const indice = MOMENTOS.indexOf(normalizarMomento(momento))
   return copy.habits.create.moments[indice] ?? momento
 }
 
 export function grupoDeMomento(momento) {
-  const indice = MOMENTOS.indexOf(momento)
+  const indice = MOMENTOS.indexOf(normalizarMomento(momento))
   return copy.habits.list.groups[indice] ?? momento
 }
+
+/** ¿Le toca a este hábito en este día de la semana? (0 = lunes) */
+export const leTocaHoy = (habito, diaSemana) =>
+  Array.isArray(habito.diasSemana) && habito.diasSemana.includes(diaSemana)
 
 // ─── Lista (H1) ──────────────────────────────────────────────────────────────
 
@@ -47,18 +62,27 @@ export function grupoDeMomento(momento) {
  *
  * Los archivados no se listan.
  */
-export function agruparPorMomento(habitos) {
+export function agruparPorMomento(habitos, diaSemana = null) {
   const activos  = habitos.filter(h => h.estado === 'activo')
   const pausados = habitos.filter(h => h.estado === 'pausado')
+
+  // Con un día concreto, la lista es la de HOY: los que no tocan hoy salen de
+  // los grupos marcables. No desaparecen —se pueden abrir y editar desde su
+  // propia sección— pero no se ofrecen para marcar un día que no les toca.
+  const tocaHoy = habito => diaSemana === null || leTocaHoy(habito, diaSemana)
+  const deHoy   = activos.filter(tocaHoy)
+  const otrosDias = activos.filter(habito => !tocaHoy(habito))
 
   return {
     grupos: MOMENTOS.map(momento => ({
       momento,
       titulo: grupoDeMomento(momento),
-      habitos: activos.filter(h => h.momento === momento),
+      habitos: deHoy.filter(h => normalizarMomento(h.momento) === momento),
     })).filter(grupo => grupo.habitos.length > 0),
+    otrosDias,
     pausados,
     totalActivos: activos.length,
+    totalHoy: deHoy.length,
   }
 }
 
@@ -74,13 +98,13 @@ export async function loadHabitos(userId) {
  * otra cosa. Desde ese momento ya le toca en su ritual: no hay que hacer nada
  * más (RN-HR-01).
  */
-export async function crearHabito(userId, { nombre, areaId = null, momento = 'manana', diasSemana = DIAS_TODOS }) {
+export async function crearHabito(userId, { nombre, areaId = null, momento = MOMENTO_POR_DEFECTO, diasSemana = DIAS_TODOS }) {
   const habito = {
     id: newId(),
     userId,
     nombre: nombre.trim(),
     areaId,
-    momento,
+    momento: normalizarMomento(momento),
     diasSemana: [...diasSemana].sort((a, b) => a - b),
     estado: 'activo',
     totalCompletados: 0,
@@ -88,6 +112,31 @@ export async function crearHabito(userId, { nombre, areaId = null, momento = 'ma
   }
   await saveHabit(habito)
   return habito
+}
+
+/**
+ * Editar un hábito que ya existe (H3 en modo edición).
+ *
+ * Conserva el id, el estado, la fecha de creación y el contador: cambiar cuándo
+ * te toca un hábito no es empezarlo de cero, y su historial —las marcas viven en
+ * habitLogs, aparte— no se toca. Solo se reescriben los campos que se editan.
+ *
+ * La nueva configuración manda desde ya: las vistas y los rituales preguntan por
+ * momento y día en cada carga, así que no hay nada que sincronizar aparte.
+ */
+export async function actualizarHabito(habito, { nombre, areaId, momento, diasSemana }) {
+  const actualizado = {
+    ...habito,
+    nombre: nombre !== undefined ? nombre.trim() : habito.nombre,
+    areaId: areaId !== undefined ? areaId : habito.areaId,
+    momento: normalizarMomento(momento !== undefined ? momento : habito.momento),
+    diasSemana: diasSemana !== undefined
+      ? [...diasSemana].sort((a, b) => a - b)
+      : habito.diasSemana,
+    editadoEn: new Date().toISOString(),
+  }
+  await saveHabit(actualizado)
+  return actualizado
 }
 
 /**

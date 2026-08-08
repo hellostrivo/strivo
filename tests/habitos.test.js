@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { copy } from '@copy'
 import { markHabit, saveHabit, saveArea, getActiveHabitsForMoment } from '@lib/db'
 import {
+  MOMENTOS,
   agruparPorMomento,
   crearHabito,
   pausarHabito,
@@ -43,7 +44,7 @@ describe('H1 · agrupar por momento', () => {
 
   it('ordena los grupos como transcurre el día', () => {
     const { grupos } = agruparPorMomento(habitos)
-    expect(grupos.map(g => g.momento)).toEqual(['manana', 'noche', 'dia'])
+    expect(grupos.map(g => g.momento)).toEqual(['manana', 'noche'])
   })
 
   it('un momento sin hábitos no se pinta vacío', () => {
@@ -129,13 +130,14 @@ describe('proyección automática a los rituales (RN-HR-01)', () => {
     expect(habitos.map(h => h.nombre)).toEqual(['Guardar el teléfono'])
   })
 
-  it('uno de "a lo largo del día" no se cuela en ningún ritual', async () => {
+  // "A lo largo del día" se retiró: era el único momento que no proyectaba a
+  // ningún ritual, así que esos hábitos vivían fuera de las dos ceremonias.
+  it('el momento retirado se guarda como de mañana y sí llega a su ritual', async () => {
     const userId = getCurrentUserId()
-    await crearHabito(userId, { nombre: 'Respirar', momento: 'dia' })
+    const habito = await crearHabito(userId, { nombre: 'Respirar', momento: 'dia' })
 
-    expect((await loadRitualManana()).habitos).toHaveLength(0)
-    vi.setSystemTime(new Date(2026, 7, 5, 22, 30))
-    expect((await loadRitualNoche()).habitos).toHaveLength(0)
+    expect(habito.momento).toBe('manana')
+    expect((await loadRitualManana()).habitos.map(h => h.nombre)).toEqual(['Respirar'])
   })
 
   it('solo aparece los días que le tocan', async () => {
@@ -244,6 +246,13 @@ describe('etiquetas', () => {
   it('el nombre del momento sale de copy', () => {
     expect(nombreDeMomento('manana')).toBe(copy.habits.create.moments[0])
     expect(nombreDeMomento('noche')).toBe(copy.habits.create.moments[1])
-    expect(nombreDeMomento('dia')).toBe(copy.habits.create.moments[2])
+  })
+
+  it('ya no se ofrece "a lo largo del día" en ninguna parte', () => {
+    expect(MOMENTOS).toEqual(['manana', 'noche'])
+    expect(copy.habits.create.moments).toHaveLength(2)
+    expect(copy.habits.list.groups).toHaveLength(2)
+    const todoElCopy = JSON.stringify(copy)
+    expect(todoElCopy).not.toContain('A lo largo del día')
   })
 })

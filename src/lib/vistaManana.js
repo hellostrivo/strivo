@@ -30,7 +30,7 @@ export async function loadVistaManana() {
 
   const [areas, habitos, logs, entrada, victorias] = await Promise.all([
     getAreas(userId),
-    getActiveHabitsForMoment(userId, 'manana', getWeekDay()),
+    getActiveHabitsForMoment(userId, 'manana', getWeekDay(fecha)),
     getHabitLogsByDate(userId, fecha),
     getDailyEntry(userId, fecha),
     getVictoriesByDate(userId, fecha),

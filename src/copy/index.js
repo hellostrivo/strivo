@@ -823,7 +823,7 @@ export const copy = {
       title: 'Tus hábitos',
       add: 'Nuevo hábito',
       // Encabezados de grupo: mismo orden que create.moments
-      groups: ['Por la mañana', 'Por la noche', 'A lo largo del día'],
+      groups: ['Por la mañana', 'Por la noche'],
       pausedGroup: 'En pausa',
       countTemplate: '{n} activos',
       open: 'Ver detalle',
@@ -831,13 +831,20 @@ export const copy = {
     create: {
       label: '¿Cuál es tu nuevo hábito?',
       placeholder: 'Beber agua, leer, estirar…',
-      moments: ['Mañana', 'Noche', 'A lo largo del día'],
+      moments: ['Mañana', 'Noche'],
       momentLabel: '¿Cuándo?',
       areaLabel: '¿Dónde vive esto?',
       daysLabel: '¿Qué días?',
       everyDay: 'Todos los días',
       suggestionsLabel: 'O empieza por una de estas:',
       save: 'Crear hábito',
+      // Los mismos campos, en modo edición. El hábito no se recrea: se ajusta.
+      editTitle: 'Ajusta tu hábito',
+      editSave: 'Guardar cambios',
+      edit: 'Editar',
+      // Los que hoy no tocan. Siguen ahí y se pueden abrir, pero no se ofrecen
+      // para marcar un día que no les corresponde.
+      otherDaysGroup: 'Otros días',
     },
     detail: {
       // Ya no se usa: el detalle de un hábito muestra el NOMBRE de su área, no

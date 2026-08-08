@@ -29,7 +29,7 @@ export async function loadVistaNoche() {
 
   const [areas, habitos, logs, entrada, victorias] = await Promise.all([
     getAreas(userId),
-    getActiveHabitsForMoment(userId, 'noche', getWeekDay()),
+    getActiveHabitsForMoment(userId, 'noche', getWeekDay(fecha)),
     getHabitLogsByDate(userId, fecha),
     getDailyEntry(userId, fecha),
     getVictoriesByDate(userId, fecha),

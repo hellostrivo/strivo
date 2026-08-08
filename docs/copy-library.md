@@ -473,7 +473,7 @@ Pantalla H3:
 "¿Cuál es tu nuevo hábito?"
 [Campo: nombre]
 [Chips de área]
-[Selector: Mañana / Noche / A lo largo del día]
+[Selector: Mañana / Noche / Noche]
 [Días de la semana, default all]
 [Opcional: hora de recordatorio]
 

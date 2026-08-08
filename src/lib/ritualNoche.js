@@ -35,8 +35,8 @@ export async function loadRitualNoche() {
 
   const [areas, deNoche, deManana, logs, entrada, victorias] = await Promise.all([
     getAreas(userId),
-    getActiveHabitsForMoment(userId, 'noche', getWeekDay()),
-    getActiveHabitsForMoment(userId, 'manana', getWeekDay()),
+    getActiveHabitsForMoment(userId, 'noche', getWeekDay(fecha)),
+    getActiveHabitsForMoment(userId, 'manana', getWeekDay(fecha)),
     getHabitLogsByDate(userId, fecha),
     getDailyEntry(userId, fecha),
     getVictoriesByDate(userId, fecha),

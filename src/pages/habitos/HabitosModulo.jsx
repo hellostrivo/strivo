@@ -12,11 +12,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { getAreas, getHabitLogsByDate, markHabit, unmarkHabit } from '@lib/db'
 import { getCurrentUserId } from '@lib/user'
-import { strivoDayKey } from '@lib/timeSlot'
+import { strivoDayKey, getWeekDay } from '@lib/timeSlot'
 import {
   loadHabitos,
   loadDetalleHabito,
   crearHabito,
+  actualizarHabito,
   pausarHabito,
   reanudarHabito,
 } from '@lib/habits'
@@ -93,6 +94,19 @@ export default function HabitosModulo({ onSalir }) {
     setPantalla('lista')
   }
 
+  // Editar conserva el hábito: mismo id, mismo contador, mismas marcas. Solo
+  // cambian los campos que se tocaron, y mandan desde ya.
+  const editar = async valores => {
+    try {
+      const actualizado = await actualizarHabito(abierto, valores)
+      setAbierto(actualizado)
+      await recargar()
+    } catch (error) {
+      avisar('Los cambios del hábito se guardan más tarde:', error)
+    }
+    setPantalla('detalle')
+  }
+
   const cambiarEstado = async accion => {
     try {
       const actualizado = await accion(abierto)
@@ -120,12 +134,27 @@ export default function HabitosModulo({ onSalir }) {
     )
   }
 
+  // La misma pantalla, con el hábito ya cargado: guardar ajusta el que existe
+  // en vez de crear otro.
+  if (pantalla === 'editar' && abierto) {
+    return (
+      <H3Crear
+        areas={datos.areas}
+        habitos={datos.habitos}
+        habito={abierto}
+        onCrear={editar}
+        onVolver={() => setPantalla('detalle')}
+      />
+    )
+  }
+
   if (pantalla === 'detalle' && abierto && detalle) {
     return (
       <H2Detalle
         habito={abierto}
         area={datos.areas.find(a => a.id === abierto.areaId)}
         detalle={detalle}
+        onEditar={() => setPantalla('editar')}
         onPausar={() => cambiarEstado(pausarHabito)}
         onReanudar={() => cambiarEstado(reanudarHabito)}
         onVolver={volverALista}
@@ -138,6 +167,7 @@ export default function HabitosModulo({ onSalir }) {
       habitos={datos.habitos}
       areas={datos.areas}
       hechos={datos.hechos}
+      diaSemana={getWeekDay(datos.fecha)}
       onToggle={alternarHabito}
       onAbrir={habito => { setAbierto(habito); setPantalla('detalle') }}
       onCrear={() => setPantalla('crear')}
