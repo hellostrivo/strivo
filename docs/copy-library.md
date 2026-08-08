@@ -428,6 +428,25 @@ Acciones:
 [6 sugerencias tocables por área]
 ```
 
+### Símbolo del hábito (§16 de la Parte 4A)
+
+Cada hábito lleva un símbolo a la izquierda de su nombre. Es **decorativo**: el
+lector de pantalla oye el nombre, que es el identificador real.
+
+```
+Botón que abre la hoja:  (aria-label) "Elegir símbolo para este hábito"
+Título de la hoja:       "Elige un símbolo"
+Categorías:              Movimiento · Descanso · Mente · Casa · Comida ·
+                         Naturaleza · Símbolos
+Cada símbolo:            (aria-label) "Usar {nombre}"
+Por defecto:             ✨   ← se puede cambiar; elegir es opcional siempre
+```
+
+Los símbolos de las sugerencias de P7 y P8 viven junto a su texto en
+`copy.onboarding.p7.suggestions` y `p8.suggestions`. Objetos y naturaleza, nunca
+caras ni personas: una cara carga una emoción que puede chocar con cómo se
+siente la persona ese día. Uno por hábito, sin repetir dentro de una pantalla.
+
 ---
 
 ## 5. Journal

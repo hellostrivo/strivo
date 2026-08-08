@@ -16,23 +16,30 @@ const POR_MOMENTO = {
 }
 
 /**
+ * Cada sugerencia trae su símbolo desde el copy (§16.3.A): es parte de su
+ * definición, no algo que se decida aquí.
+ *
  * @param {'manana'|'noche'} momento
  * @param {string[]} areas - tipos de área elegidos en P4B (puede ir vacío)
- * @returns {{texto: string, areaId: string|null, color: string|undefined}[]}
+ * @returns {{texto: string, emoji: string, areaId: string|null, color: string|undefined}[]}
  */
 export function suggestionsFor(momento, areas) {
   const catalogo = POR_MOMENTO[momento] ?? {}
 
   if (!areas.length) {
-    return (catalogo.general ?? []).map(texto => ({ texto, areaId: null, color: undefined }))
+    return (catalogo.general ?? []).map(sugerencia => ({
+      ...sugerencia,
+      areaId: null,
+      color:  undefined,
+    }))
   }
 
   // Se recorre AREAS para conservar el orden canónico del catálogo
   return AREAS
     .filter(area => areas.includes(area.tipo))
     .flatMap(area =>
-      (catalogo[area.tipo] ?? []).map(texto => ({
-        texto,
+      (catalogo[area.tipo] ?? []).map(sugerencia => ({
+        ...sugerencia,
         areaId: area.tipo,
         color:  area.color,
       }))

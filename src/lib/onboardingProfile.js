@@ -113,6 +113,9 @@ function habitoDesde(habito, userId) {
     id:     `${userId}_habito_${habito.id}`,
     userId,
     nombre: habito.texto,
+    // Su símbolo (§16.4). null cuando no se eligió ninguno: la interfaz muestra
+    // el de por defecto, pero el hábito no lleva escrito uno que nadie escogió.
+    emoji:  habito.emoji ?? null,
     // areaId apunta a la fila del área; null = "General" (§5.1.1)
     areaId: habito.areaId ? areaRowId(userId, habito.areaId) : null,
     momento: habito.momento,

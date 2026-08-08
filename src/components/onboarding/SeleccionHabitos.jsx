@@ -12,10 +12,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { copy, interpolate } from '@copy'
 import { newId } from '@lib/user'
+import { EMOJI_POR_DEFECTO } from '@lib/emojis'
 import Button from '@components/ui/Button'
 import Chip from '@components/ui/Chip'
 import CloseIcon from '@components/ui/CloseIcon'
 import OnboardingLayout from '@components/onboarding/OnboardingLayout'
+import SelectorEmoji, { BotonEmoji } from '@components/habitos/SelectorEmoji'
 
 const MAX_LENGTH = 60
 
@@ -26,8 +28,8 @@ export default function SeleccionHabitos({
   question,
   hint,
   otherPlaceholder,
-  suggestions,       // [{ texto, areaId, color }]
-  habitos,           // [{ id, texto, areaId, momento }]
+  suggestions,       // [{ texto, emoji, areaId, color }]
+  habitos,           // [{ id, texto, emoji, areaId, momento }]
   onChange,
   onBack,
   onNext,
@@ -36,6 +38,10 @@ export default function SeleccionHabitos({
   const otherRef   = useRef(null)
   const [adding, setAdding] = useState(false)
   const [texto, setTexto]   = useState('')
+  // El símbolo del hábito propio que se está escribiendo. Empieza con uno
+  // neutro: un hueco vacío se leería como un campo obligatorio pendiente.
+  const [emoji, setEmoji]   = useState(EMOJI_POR_DEFECTO)
+  const [eligiendoEmoji, setEligiendoEmoji] = useState(false)
 
   useEffect(() => { headingRef.current?.focus() }, [])
   useEffect(() => { if (adding) otherRef.current?.focus() }, [adding])
@@ -53,6 +59,7 @@ export default function SeleccionHabitos({
         : [...habitos, {
             id:     newId(),
             texto:  sugerencia.texto,
+            emoji:  sugerencia.emoji,
             areaId: sugerencia.areaId,
             momento,
           }]
@@ -64,9 +71,10 @@ export default function SeleccionHabitos({
     const limpio = texto.trim()
     if (!limpio) return
     if (!yaEstá(limpio)) {
-      onChange([...habitos, { id: newId(), texto: limpio, areaId: null, momento }])
+      onChange([...habitos, { id: newId(), texto: limpio, emoji, areaId: null, momento }])
     }
     setTexto('')
+    setEmoji(EMOJI_POR_DEFECTO)
     otherRef.current?.focus()
   }
 
@@ -114,6 +122,9 @@ export default function SeleccionHabitos({
             selected={yaEstá(sugerencia.texto)}
             onClick={() => toggleSugerencia(sugerencia)}
           >
+            {/* Decorativo: quien usa lector de pantalla oye el nombre, que es
+                el identificador real del hábito (§16.6). */}
+            <span className="text-md leading-none" aria-hidden="true">{sugerencia.emoji}</span>
             {sugerencia.texto}
           </Chip>
         ))}
@@ -127,6 +138,9 @@ export default function SeleccionHabitos({
               habito: habito.texto,
             })}
           >
+            <span className="text-md leading-none" aria-hidden="true">
+              {habito.emoji ?? EMOJI_POR_DEFECTO}
+            </span>
             {habito.texto}
             <CloseIcon />
           </Chip>
@@ -149,6 +163,8 @@ export default function SeleccionHabitos({
           </label>
 
           <div className="mt-3 flex items-start gap-3">
+            <BotonEmoji emoji={emoji} onClick={() => setEligiendoEmoji(true)} />
+
             <input
               id="habitos-otro-campo"
               ref={otherRef}
@@ -187,6 +203,16 @@ export default function SeleccionHabitos({
           </div>
         </div>
       )}
+
+      <SelectorEmoji
+        abierto={eligiendoEmoji}
+        onElegir={elegido => {
+          setEmoji(elegido)
+          setEligiendoEmoji(false)
+          otherRef.current?.focus()
+        }}
+        onCerrar={() => setEligiendoEmoji(false)}
+      />
     </OnboardingLayout>
   )
 }

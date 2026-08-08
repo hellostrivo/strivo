@@ -257,15 +257,42 @@ export const copy = {
     p7: {
       question: 'Tu ritual de la mañana',
       hint: 'Elige lo que quieras cultivar. Uno basta para empezar.',
+      // Cada hábito con su símbolo (§16.3.A): objetos y naturaleza, uno por
+      // hábito y sin repetir dentro de la misma pantalla. Los textos no
+      // cambian; el símbolo es lo que se añade.
       suggestions: {
-        salud:       ['Beber agua', 'Estirar', 'Caminar 10 min'],
-        trabajo:     ['Revisar prioridades', 'Escribir una idea'],
-        relaciones:  ['Mensajear a alguien'],
-        finanzas:    ['Revisar gastos'],
-        espiritual:  ['Meditar', 'Tiempo en silencio'],
-        personal:    ['Leer 10 páginas', 'Aprender algo nuevo'],
-        creatividad: ['Crear algo pequeño'],
-        general:     ['Beber agua', 'Respirar', 'Estirar', 'Escribir una idea'],
+        salud: [
+          { texto: 'Beber agua',          emoji: '💧' },
+          { texto: 'Estirar',             emoji: '🌿' },
+          { texto: 'Caminar 10 min',      emoji: '👟' },
+        ],
+        trabajo: [
+          { texto: 'Revisar prioridades', emoji: '📋' },
+          { texto: 'Escribir una idea',   emoji: '💡' },
+        ],
+        relaciones: [
+          { texto: 'Mensajear a alguien', emoji: '💬' },
+        ],
+        finanzas: [
+          { texto: 'Revisar gastos',      emoji: '🧾' },
+        ],
+        espiritual: [
+          { texto: 'Meditar',             emoji: '🕯️' },
+          { texto: 'Tiempo en silencio',  emoji: '🕊️' },
+        ],
+        personal: [
+          { texto: 'Leer 10 páginas',     emoji: '📖' },
+          { texto: 'Aprender algo nuevo', emoji: '🌱' },
+        ],
+        creatividad: [
+          { texto: 'Crear algo pequeño',  emoji: '🎨' },
+        ],
+        general: [
+          { texto: 'Beber agua',          emoji: '💧' },
+          { texto: 'Respirar',            emoji: '☁️' },
+          { texto: 'Estirar',             emoji: '🌿' },
+          { texto: 'Escribir una idea',   emoji: '💡' },
+        ],
       },
       otherPlaceholder: 'Un hábito para la mañana',
     },
@@ -273,14 +300,37 @@ export const copy = {
       question: 'Tu ritual de la noche',
       hint: 'Lo que te ayuda a cerrar el día. También puede quedarse vacío.',
       suggestions: {
-        salud:       ['Dormir a tiempo', 'Estirar'],
-        trabajo:     ['Dejar mañana preparado'],
-        relaciones:  ['Dar las gracias a alguien', 'Escuchar de verdad'],
-        finanzas:    ['Anotar un gasto'],
-        espiritual:  ['Agradecer en voz alta', 'Meditar'],
-        personal:    ['Leer 10 páginas', 'Escribir'],
-        creatividad: ['Dibujar', 'Tocar'],
-        general:     ['Guardar el teléfono', 'Respirar', 'Leer 10 páginas'],
+        salud: [
+          { texto: 'Dormir a tiempo',          emoji: '🌙' },
+          { texto: 'Estirar',                  emoji: '🌿' },
+        ],
+        trabajo: [
+          { texto: 'Dejar mañana preparado',   emoji: '📋' },
+        ],
+        relaciones: [
+          { texto: 'Dar las gracias a alguien', emoji: '💌' },
+          { texto: 'Escuchar de verdad',        emoji: '🎧' },
+        ],
+        finanzas: [
+          { texto: 'Anotar un gasto',          emoji: '🧾' },
+        ],
+        espiritual: [
+          { texto: 'Agradecer en voz alta',    emoji: '🕊️' },
+          { texto: 'Meditar',                  emoji: '🕯️' },
+        ],
+        personal: [
+          { texto: 'Leer 10 páginas',          emoji: '📖' },
+          { texto: 'Escribir',                 emoji: '✏️' },
+        ],
+        creatividad: [
+          { texto: 'Dibujar',                  emoji: '🎨' },
+          { texto: 'Tocar',                    emoji: '🎵' },
+        ],
+        general: [
+          { texto: 'Guardar el teléfono',      emoji: '📱' },
+          { texto: 'Respirar',                 emoji: '☁️' },
+          { texto: 'Leer 10 páginas',          emoji: '📖' },
+        ],
       },
       otherPlaceholder: 'Un hábito para la noche',
     },
@@ -554,6 +604,55 @@ export const copy = {
       espiritual:  ['Meditar', 'Agradecer en voz alta', 'Tiempo en silencio'],
       personal:    ['Leer 10 páginas', 'Escribir', 'Aprender algo nuevo'],
       creatividad: ['Dibujar', 'Tocar', 'Crear algo pequeño'],
+    },
+
+    // ─── Símbolo del hábito (§16) ────────────────────────────────────────
+    // El símbolo es decorativo en la fila del hábito: quien usa lector de
+    // pantalla oye el nombre, que es el identificador real. Aquí solo se nombra
+    // lo que sí necesita etiqueta: el botón que abre la hoja y cada símbolo
+    // dentro de ella.
+    emoji: {
+      pickerLabel: 'Elegir símbolo para este hábito',
+      sheetTitle:  'Elige un símbolo',
+      close:       'Cerrar',
+      useTemplate: 'Usar {nombre}',
+      categories: {
+        movimiento: 'Movimiento',
+        descanso:   'Descanso',
+        mente:      'Mente',
+        casa:       'Casa',
+        comida:     'Comida',
+        naturaleza: 'Naturaleza',
+        simbolos:   'Símbolos',
+      },
+      // Nombre de cada símbolo, para el lector de pantalla. El catálogo y su
+      // orden viven en @lib/emojis.
+      names: {
+        '👟': 'zapatilla',        '⚽': 'balón',           '🏀': 'pelota de básquet',
+        '🚲': 'bicicleta',        '🎾': 'pelota de tenis',  '🥾': 'bota de montaña',
+        '🛹': 'patineta',         '⛰️': 'montaña',
+        '🌙': 'luna',             '🛏️': 'cama',            '💤': 'sueño',
+        '🕯️': 'vela',            '☁️': 'nube',            '🧸': 'peluche',
+        '🛁': 'bañera',           '🌜': 'luna con cara',
+        '💡': 'bombilla',         '📖': 'libro abierto',    '📝': 'nota',
+        '🎯': 'diana',            '🔍': 'lupa',             '🧩': 'pieza de rompecabezas',
+        '✏️': 'lápiz',           '📚': 'libros',
+        '🏠': 'casa',             '🧹': 'escoba',           '🌵': 'cactus',
+        '🧺': 'cesta',            '🔑': 'llave',            '🛋️': 'sofá',
+        '🧽': 'esponja',          '🚿': 'ducha',
+        '💧': 'gota de agua',     '🍎': 'manzana',          '🥗': 'ensalada',
+        '🍵': 'té',               '🥑': 'aguacate',         '🍋': 'limón',
+        '🥕': 'zanahoria',        '☕': 'café',
+        '🌿': 'hierba',           '🌱': 'brote',            '🌳': 'árbol',
+        '🌊': 'ola',              '☀️': 'sol',             '🌻': 'girasol',
+        '🍃': 'hojas',            '🌷': 'tulipán',
+        '✨': 'destellos',        '⭐': 'estrella',         '🔥': 'fuego',
+        '💫': 'estrella fugaz',   '🎵': 'nota musical',     '🎨': 'paleta de pintura',
+        '💬': 'globo de diálogo', '🕊️': 'paloma',
+        // Los que traen las sugerencias de P7 y P8 y no están en el catálogo
+        '📋': 'portapapeles',     '🧾': 'recibo',           '💌': 'carta',
+        '🎧': 'auriculares',      '📱': 'teléfono',
+      },
     },
   },
 

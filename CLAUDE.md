@@ -74,7 +74,7 @@ El Diario **NO es una pestaña**; se accede desde Hoy en su momento.
 - "Fallaste", "incumpliste", "abandonaste", "deberías", "debilidades".
 - "Racha", "streak" (usamos "Constancia").
 - "Tarea" (usamos "Hábito", "Victoria", "Logro" según contexto).
-- Emojis del sistema (solo los 24 de §3.9 en tabla de emociones).
+- Emojis del sistema (solo los 24 de §3.9 en tabla de emociones y el símbolo de cada hábito, §16 de la Parte 4A: objetos y naturaleza, nunca caras ni personas).
 - Signos de exclamación, salvo en confirmaciones muy especiales.
 
 **§3.6.4 — Tono:** cálido, cercano, sin condescendencia. Tuteo. Brevedad sin frialdad.

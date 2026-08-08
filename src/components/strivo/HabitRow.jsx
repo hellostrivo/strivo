@@ -12,6 +12,7 @@ import { useState } from 'react'
 import { clsx } from 'clsx'
 import { copy } from '@copy'
 import { areaColors } from '@tokens'
+import { EMOJI_POR_DEFECTO } from '@lib/emojis'
 
 /**
  * HabitRow — fila de hábito en checklist
@@ -107,6 +108,14 @@ export default function HabitRow({ habit, done = false, onToggle, area, classNam
             style={{ backgroundColor: color }}
             aria-hidden="true"
           />
+
+          {/* Su símbolo (§16). Decorativo: quien usa lector de pantalla oye el
+              nombre, que es el identificador real. Los hábitos escritos antes
+              de que esto existiera muestran el de por defecto. */}
+          <span className="text-md leading-none flex-shrink-0" aria-hidden="true">
+            {habit.emoji ?? EMOJI_POR_DEFECTO}
+          </span>
+
           <span className={clsx(
             'text-base text-ink font-sans',
             // SIN tachar. El texto se atenúa por el padre (opacity-70)
