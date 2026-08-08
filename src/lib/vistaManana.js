@@ -82,7 +82,10 @@ export async function guardarVictoria(userId, fecha, victoria) {
     userId,
     fecha,
     texto,
+    // Deducido del texto (§24.5), no elegido a mano: `areaDismissed` recuerda
+    // que la persona quitó la etiqueta, para no volver a ponérsela.
     areaId:   victoria.areaId ?? null,
+    areaDismissed: victoria.areaDismissed ?? false,
     estado:   'pendiente',
     creadoEn: victoria.creadoEn ?? new Date().toISOString(),
   }

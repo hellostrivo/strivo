@@ -206,6 +206,11 @@ export default {
           '87%':  { opacity: '1' },
           '100%': { opacity: '0' },
         },
+        // Sugerencias de gratitud que aparecen tras 5s sin escribir (§21.3)
+        'sugerencia-entra': {
+          '0%':   { opacity: '0', transform: 'translateY(6px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
         // La capa oscura que se retira para dejar ver el degradado horario
         'apertura-fondo': {
           '0%':   { opacity: '1' },
@@ -252,6 +257,7 @@ export default {
         'sesion-frase':             'sesion-frase 3400ms cubic-bezier(0, 0, 0.2, 1) forwards',
         'sesion-luz-quieta':        'sesion-luz-quieta 2400ms cubic-bezier(0, 0, 0.2, 1) forwards',
         'sesion-frase-quieta':      'sesion-frase-quieta 2400ms cubic-bezier(0, 0, 0.2, 1) forwards',
+        'sugerencia-entra':         'sugerencia-entra 250ms cubic-bezier(0, 0, 0.2, 1) both',
       },
 
       // ─── Tamaños mínimos para toque (WCAG 2.2) ───────────────────────────

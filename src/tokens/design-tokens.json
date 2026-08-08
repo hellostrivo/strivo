@@ -176,6 +176,7 @@
     "durations": {
       "fast": "120ms",
       "reveal": "200ms",
+      "sugerencia": "250ms",
       "base": "260ms",
       "areaIndicator": "180ms",
       "areaSwap": "280ms",
@@ -183,8 +184,8 @@
       "pulse": "600ms",
       "slower": "700ms",
       "slowest": "900ms",
-      "comment": "Más lentas que UI estándar (Apple por defecto es 300ms). Cierre nocturno: 900ms.",
-      "franja": "2000ms"
+      "franja": "2000ms",
+      "comment": "Más lentas que UI estándar (Apple por defecto es 300ms). Cierre nocturno: 900ms."
     },
     "easing": {
       "in": "cubic-bezier(0.4, 0, 1, 1)",

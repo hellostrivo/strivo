@@ -51,7 +51,7 @@ https://github.com/hellostrivo/strivo
 - ✅ **Ritual de Noche** — 6 pantallas (N1–N6): respiración, herencia de victorias, nuevos logros, agradecimientos, reflexión, ánimo de cierre, hábitos, síntesis con animación de luz 900ms
 
 ### Diario
-- ✅ **Vista de Mañana** — 6 bloques: frase del día, agradecimientos, emociones (máx 3), gran visión, victorias con área, checklist ritual
+- ✅ **Vista de Mañana** — 6 bloques: frase, agradecimientos con sugerencias por inactividad (§21), 15 emociones a cultivar con variantes de género (§22), el gran día (§23), victorias con área deducida (§24) y el enlace al ritual (§25)
 - ✅ **Vista de Noche** — 8 bloques: victorias heredadas (con decisiones), nuevos logros, agradecimientos, aprendizaje, estado de sueño, checklist ritual, síntesis, cierre con animación
 
 ### Módulos adicionales

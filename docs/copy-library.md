@@ -313,45 +313,57 @@ N8 (Síntesis y cierre):
 ### Vista de Mañana — Bloque por bloque
 
 ```
-ENCABEZADO:
-Saludo dinámico + frase inspiradora variable
+Bloque 1 — Frase del día:
+"Te estás convirtiendo en alguien que {identidad}."
+"Hoy quieres vivirlo así: {intención}"
 
-BLOQUE 1 (Frase del día):
-"Empieza bien"
-[Frase con reglas: no se repite 365 días, filtrada por ánimo reciente,
- 20% alineada con Compromiso si existe]
-Interacción: "Guardar esta frase" (colección personal, visible en Tú)
-
-BLOQUE 2 (Agradecimientos):
+Bloque 2 — Agradecimientos (§21):
 "¿Qué agradeces?"
-[3 campos que crecen dinámicamente al escribir en el tercero, máx 10]
-[Emoji opcional de 24 de la paleta]
-Sugerencias tras 6s de inactividad: "Tu familia · Tu cuerpo · Este momento"
+[campo] "Algo por lo que dar gracias…"
+Sugerencias por campo, a los 5 s con el foco puesto y sin escribir:
+  tu familia · tu cuerpo · este momento · el silencio · lo que tienes
+(Sin encabezado: cinco chips bajo un campo vacío se explican solos, y una
+ etiqueta añadiría una voz más. En el ritual de noche siguen saliendo a los
+ 6 s, con "Si no sale solo:".)
 
-BLOQUE 3 (Emociones del día):
-"¿Cómo quieres sentirte hoy?"
-[16 tarjetas de emoción, máx 3 seleccionables con punto de color]
-Pregunta complementaria: "¿Qué necesitas para lograrlo?"
+Bloque 3 — Emociones (§22):
+"¿Cómo me quiero sentir hoy?"
+"Elige las emociones que quieres cultivar"
+🦁 Orgulloso/a de mí (n: Con orgullo de mí)   🙏 Agradecido/a (n: Con gratitud)
+💗 Amado/a          🤝 Acompañado/a (n: Con compañía)
+🕊️ Conectado/a con Dios (n: Cerca de Dios)   🌱 Próspero/a (n: En abundancia)
+☮️ En paz            ⚡ Con energía          😊 Alegre
+🌊 Sereno/a (n: Con serenidad)               🦋 Confiado/a (n: Con confianza)
+🌸 Pleno/a (n: En plenitud)                  💡 Inspirado/a (n: Con inspiración)
+🔥 Poderoso/a (n: Con fuerza)                ✨ Radiante
++ Otra  → campo de 30 caracteres, sin emoji
+(Solo lector de pantalla) "{n} de 3 emociones elegidas"
+"¿Qué necesitas para lograrlo?"
 
-BLOQUE 4 (Gran visión del día):
-"¿Cómo imaginas tu mejor día hoy?"
-[Campo amplio, se recupera en noche como contraste]
+(Once de las quince llevan variante de género. "Amado/a" es la ÚNICA entrada
+ con barra en todo el producto: cualquier reformulación neutra desplaza el
+ significado. Excepción autorizada; no se extiende.
+ Retiradas: irritable, abrumado, nostálgico y las demás negativas. La pregunta
+ es qué se quiere cultivar, no cómo se está.)
 
-BLOQUE 5 (Mis victorias):
-"Tres cosas que, si pasan hoy, el día valió la pena."
-[3+ campos, dinámicos, con área por victoria]
-Sugerencia inteligente de área si el texto lo sugiere
+Bloque 4 — El gran día (§23):
+"¿Qué haría que hoy sea un gran día?"
+[campo] "Imagina tu día ideal"
+(Un ideal es fácil de fallar; una condición concreta se reconoce cuando ocurre.
+ La pregunta aterriza y el marcador abre, a propósito en direcciones contrarias.)
 
-BLOQUE 6 (Checklist de Ritual):
-[Hábitos de mañana filtrados por día actual]
-"2 de 3"
+Bloque 5 — Victorias (§24):
+"Tres victorias que quisiera conseguir hoy"
+[campo] "Una victoria que quiero lograr hoy…"
+El área se deduce del texto y se muestra como una etiqueta diminuta; tocarla
+la retira. Sin selector, y sin etiqueta cuando no hay una respuesta clara.
+Retirado: "¿Dónde vive esto?"
 
-BOTONES:
-[Comenzar mi día]
-[Hoy voy con prisa]
-
-[Si vacío:]
-"Tu ritual de la mañana está libre. ¿Quieres añadir algo?"
+Bloque 6 — El cierre de la mañana (§25):
+[tarjeta] "Tu ritual de la mañana"
+          "2 de 5 completados"  ·  "Completado" cuando ya están todos
+(Sin hábitos configurados no aparece la línea de progreso: "0 de 0" sería un
+ reproche. Lleva a la pestaña "Hábitos", donde se registran.)
 ```
 
 ### Vista de Noche — Bloque por bloque

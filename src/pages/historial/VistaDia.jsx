@@ -12,14 +12,17 @@
 
 import { useEffect, useRef } from 'react'
 import { copy } from '@copy'
+import useCopy from '@hooks/useCopy'
 import { fechaConDiaSemana } from '@lib/fechas'
 import { nombreDeEstado, colorDeAnimo } from '@lib/historial'
-import { getEmotionName } from '@lib/emotions'
+import { nombreDeEmocion } from '@lib/emociones'
 import BloqueDiario from '@components/diario/BloqueDiario'
 import Button from '@components/ui/Button'
 import Card from '@components/ui/Card'
 
 export default function VistaDia({ dia, onVolver }) {
+  // Las emociones cambian con el género de quien las lee (§22.4)
+  const t = useCopy()
   const headingRef = useRef(null)
   useEffect(() => { headingRef.current?.focus() }, [dia.fecha])
 
@@ -55,7 +58,7 @@ export default function VistaDia({ dia, onVolver }) {
           {dia.emociones.length > 0 && (
             <BloqueDiario id="h-emociones" label={blocks.emociones}>
               <p className="text-base text-ink">
-                {dia.emociones.map(getEmotionName).join(' · ')}
+                {dia.emociones.map(id => nombreDeEmocion(id, t)).join(' · ')}
               </p>
               {dia.necesito && (
                 <p className="mt-3 text-base text-ink/80">

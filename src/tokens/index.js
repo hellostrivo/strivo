@@ -78,6 +78,9 @@ export const durations = {
   fast:    120,
   // Revelar un campo que aparece bajo una opción (§6.3.C)
   reveal:  200,
+  // Sugerencias que aparecen tras 5s sin escribir (§21.3). Suave: a los cinco
+  // segundos, una aparición brusca sobresalta.
+  sugerencia: 250,
   base:    260,
   slow:    420,
   // Cambio de área dentro de P4C: el bloque de contenido cruza en 280ms y el

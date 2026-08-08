@@ -61,27 +61,6 @@ export const copy = {
     limiteFueraDelOnboarding: 'Puedes enfocarte en 3 áreas a la vez. Elige cuál sueltas para hacerle espacio a esta.',
   },
 
-  // ─── Emociones (§5.3, tabla de emociones) ────────────────────────────────
-  // Los nombres visibles; el orden y el color viven en @lib/emotions.
-  emotions: {
-    tranquilo:   'Tranquilo',
-    agradecido:  'Agradecido',
-    motivado:    'Motivado',
-    ansioso:     'Ansioso',
-    cansado:     'Cansado',
-    esperanzado: 'Esperanzado',
-    irritable:   'Irritable',
-    enfocado:    'Enfocado',
-    triste:      'Triste',
-    contento:    'Contento',
-    abrumado:    'Abrumado',
-    curioso:     'Curioso',
-    presente:    'Presente',
-    inseguro:    'Inseguro',
-    aliviado:    'Aliviado',
-    nostalgico:  'Nostálgico',
-  },
-
   // ─── Onboarding ──────────────────────────────────────────────────────────
   onboarding: {
     // Navegación común del flujo (P1 → P11)
@@ -514,6 +493,74 @@ export const copy = {
       manana: 'Mañana',
       noche:  'Noche',
     },
+
+    // §21 — la ayuda aparece cuando hace falta, y hace falta cuando alguien
+    // mira el campo sin escribir. Fijas eran decoración permanente y, peor, una
+    // respuesta prefabricada que se lee antes de pensar.
+    gratitud: {
+      sugerencias: ['tu familia', 'tu cuerpo', 'este momento', 'el silencio', 'lo que tienes'],
+      usarTemplate: 'Usar sugerencia: {texto}',
+    },
+
+    // §22 — la pregunta es qué se quiere cultivar, no cómo se está. Por eso no
+    // hay ninguna emoción negativa: ofrecer "irritable" como algo a cultivar no
+    // tiene sentido. La primera persona alinea el bloque con la voz de la
+    // identidad central ("Soy alguien que…"): la app habla COMO la persona.
+    emociones: {
+      titulo: '¿Cómo me quiero sentir hoy?',
+      subtitulo: 'Elige las emociones que quieres cultivar',
+      countTemplate: '{n} de {max} emociones elegidas',
+      otraLabel: 'En tus palabras',
+      otraPlaceholder: 'Una emoción tuya',
+      otraAdd: 'Añadir',
+      // Ids, orden y emojis en @lib/emociones. Once llevan variante de género:
+      // sin ellas, media lista le hablaría mal a media gente en la pantalla más
+      // emocional del ritual.
+      opciones: {
+        orgullo:     { m: 'Orgulloso de mí',    f: 'Orgullosa de mí',    n: 'Con orgullo de mí' },
+        gratitud:    { m: 'Agradecido',         f: 'Agradecida',         n: 'Con gratitud' },
+        // La única entrada con barra en todo el producto: toda reformulación
+        // neutra desplaza el significado ("Con amor" es sentir amor hacia
+        // otros, no sentirse querido). Excepción autorizada, no se extiende.
+        amor:        { m: 'Amado',              f: 'Amada',              n: 'Amado/a' },
+        compania:    { m: 'Acompañado',         f: 'Acompañada',         n: 'Con compañía' },
+        fe:          { m: 'Conectado con Dios', f: 'Conectada con Dios', n: 'Cerca de Dios' },
+        prosperidad: { m: 'Próspero',           f: 'Próspera',           n: 'En abundancia' },
+        paz:         'En paz',
+        energia:     'Con energía',
+        alegria:     'Alegre',
+        serenidad:   { m: 'Sereno',             f: 'Serena',             n: 'Con serenidad' },
+        confianza:   { m: 'Confiado',           f: 'Confiada',           n: 'Con confianza' },
+        plenitud:    { m: 'Pleno',              f: 'Plena',              n: 'En plenitud' },
+        inspiracion: { m: 'Inspirado',          f: 'Inspirada',          n: 'Con inspiración' },
+        poder:       { m: 'Poderoso',           f: 'Poderosa',           n: 'Con fuerza' },
+        radiante:    'Radiante',
+        otra:        { m: 'Otro',               f: 'Otra',               n: 'Otra emoción' },
+      },
+    },
+
+    // §23 — un ideal es difícil de alcanzar y fácil de fallar; una condición
+    // concreta se reconoce cuando ocurre. La pregunta aterriza y el marcador
+    // abre, a propósito en direcciones contrarias.
+    granDia: {
+      pregunta: '¿Qué haría que hoy sea un gran día?',
+      placeholder: 'Imagina tu día ideal',
+    },
+
+    // §24 — "victorias", la misma palabra que usa el ritual de noche, y
+    // "quisiera", que deja espacio a que no pase sin que sea un fracaso.
+    victorias: {
+      titulo: 'Tres victorias que quisiera conseguir hoy',
+      quitarAreaTemplate: 'Quitar la etiqueta de {area}',
+    },
+
+    // §25 — después de decidir cómo quieres sentirte y qué victorias quieres,
+    // el paso siguiente es ir a hacerlo.
+    ritualManana: {
+      cta: 'Tu ritual de la mañana',
+      progreso: '{completados} de {total} completados',
+      completado: 'Completado',
+    },
     // Una por día natural, la misma todo el día. Repertorio distinto al de la
     // apertura: aquel mira al presente, este al día por delante. Si se mezclaran,
     // la misma frase saldría dos veces con dos minutos de diferencia.
@@ -692,27 +739,22 @@ export const copy = {
     gratitude: {
       label: '¿Qué agradeces?',
       placeholder: 'Algo por lo que dar gracias…',
+      // El ritual de noche (N4) las sigue ofreciendo a los 6 s; la Vista de
+      // Mañana las pide por campo, a los 5 s sin escribir (§21). Los textos
+      // son los mismos y viven una sola vez, en hoy.gratitud.sugerencias.
       suggestionsLabel: 'Si no sale solo:',
-      suggestions: ['Tu familia', 'Tu cuerpo', 'Este momento', 'El silencio', 'Lo que tienes'],
       suggestionsDelay: 6000, // ms
       max: 10,
     },
     emotions: {
-      label: '¿Cómo quieres sentirte hoy?',
+      // El título y las opciones viven en `hoy.emociones` (§22)
       max: 3,
-      hintTemplate: 'Elige hasta {max}.',
       complementary: '¿Qué necesitas para lograrlo?',
       complementaryPlaceholder: 'Lo que te ayudaría…',
     },
-    bigDay: {
-      label: '¿Cómo imaginas tu mejor día hoy?',
-      placeholder: 'Descríbelo como quieras…',
-    },
     victories: {
-      label: 'Tres cosas que, si pasan hoy, el día valió la pena.',
       placeholder: 'Una victoria que quiero lograr hoy…',
       max: 3,
-      areaLabel: '¿Dónde vive esto?',
     },
   },
 

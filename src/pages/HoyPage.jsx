@@ -42,7 +42,7 @@ import RitualNoche  from '@/pages/ritual/RitualNoche'
 // dos están siempre a un toque.
 const FRANJAS_DE_MANANA = ['amanecer', 'dia']
 
-export default function HoyPage({ onHideNav }) {
+export default function HoyPage({ onHideNav, onIrAHabitos }) {
   const slot  = useMemo(() => getTimeSlot(), [])
   const fondo = useFondoHorario()
 
@@ -169,7 +169,7 @@ export default function HoyPage({ onHideNav }) {
         aria-live="polite"
       >
         {seccion === 'manana'
-          ? <VistaManana recarga={recarga} />
+          ? <VistaManana recarga={recarga} onIrAlRitual={onIrAHabitos} />
           : (
             <VistaNoche
               recarga={recarga}

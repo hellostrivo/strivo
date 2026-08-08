@@ -140,7 +140,7 @@ export default function App() {
           activeTab !== 'hoy' && 'bg-paper',
         )}
       >
-        {activeTab === 'hoy'     && <HoyPage     onHideNav={setHideNav} />}
+        {activeTab === 'hoy'     && <HoyPage     onHideNav={setHideNav} onIrAHabitos={() => setActiveTab('habitos')} />}
         {activeTab === 'journal' && <JournalPage onHideNav={setHideNav} />}
         {activeTab === 'habitos' && <HabitosModulo />}
         {activeTab === 'tu'      && <TuPage />}
