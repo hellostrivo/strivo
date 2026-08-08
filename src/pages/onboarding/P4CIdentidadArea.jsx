@@ -38,6 +38,8 @@ export default function P4CIdentidadArea({
   totalSteps,
   areas,             // tipos elegidos en P4B, en orden de selección
   identidades,       // { [tipo]: texto | null }
+  indice,            // qué área se está viendo; la guarda el flujo (§14.3)
+  onIndice,
   onChange,
   onBack,            // vuelve a P4B (el flujo se salta T-4B hacia atrás)
   onNext,
@@ -46,7 +48,6 @@ export default function P4CIdentidadArea({
   const tituloRef = useRef(null)
   const campoRef  = useRef(null)
 
-  const [indice, setIndice]       = useState(0)
   const [cambiando, setCambiando] = useState(false)
   const [inerte, setInerte]       = useState(null)
 
@@ -99,19 +100,19 @@ export default function P4CIdentidadArea({
   }
 
   // Avanzar: lo del área actual ya está guardado (el borrador se escribe en
-  // cada pulsación) y entra la siguiente con un cruce corto. En la última, a P5.
+  // cada pulsación) y entra la siguiente con un cruce corto. En la última, a P6.
   const avanzar = () => {
     if (esUltima) {
       onNext()
       return
     }
     if (reducedMotion) {
-      setIndice(posicion + 1)
+      onIndice(posicion + 1)
       return
     }
     setCambiando(true)
     setTimeout(() => {
-      setIndice(posicion + 1)
+      onIndice(posicion + 1)
       setCambiando(false)
     }, CAMBIO_MS)
   }
@@ -130,7 +131,7 @@ export default function P4CIdentidadArea({
       onBack()
       return
     }
-    setIndice(posicion - 1)
+    onIndice(posicion - 1)
   }
 
   return (

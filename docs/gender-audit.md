@@ -60,7 +60,6 @@ misma palabra que en el diario.
 | `tagline` | “…terminar cada día en paz contigo mismo.” | “…terminar cada día en paz.” |
 | `insights.area.lowActivity` | “Llevas un tiempo enfocado en {áreaActiva}…” | “Llevas un tiempo en {áreaActiva}…” |
 | `onboarding.p10.ready` | “Tu cuenta está lista.” | invariable (concuerda con “cuenta”) — sin cambio |
-| `onboarding.p5.hint` | “Se queda guardada aquí.” | invariable (concuerda con “cosa”) — sin cambio |
 | `errors.generic.body` / `errors.syncFailed` | “Hemos guardado…”, “…sigue guardado.” | invariable (concuerda con “lo escrito”) — sin cambio |
 | `onboarding.p8.suggestions.trabajo[0]` | “Dejar mañana preparado” | invariable (concuerda con “mañana” como objeto) — sin cambio |
 

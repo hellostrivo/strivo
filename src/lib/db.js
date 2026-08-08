@@ -13,7 +13,8 @@ const DB_NAME    = 'strivo-local'
 // 1 → esquema inicial (§7.2)
 // 2 → UserProfile.gender (§2.2 del documento de cambios): lenguaje adaptativo
 // 3 → appFlags: banderas del dispositivo, no del usuario (§3.3, hasSeenIntro)
-const DB_VERSION = 3
+// 4 → se retira lo que capturaba P5, que ya no existe (§14.4)
+const DB_VERSION = 4
 
 // ─── Abrir / inicializar la base de datos ────────────────────────────────────
 export async function getDB() {
@@ -91,6 +92,22 @@ export function upgradeSchema(db, oldVersion, newVersion, tx) {
       if (cursor.value.gender === undefined) {
         cursor.update({ ...cursor.value, gender: null })
       }
+      return cursor.continue().then(siguiente)
+    })
+  }
+
+  // v4 — P5 pedía una primera cosa buena antes de que existiera cuenta y la
+  // guardaba como Victory con `origen: 'onboarding'`. La pantalla se retiró
+  // (§14) y con ella el dato: dejar filas de una pantalla que ya no existe
+  // sería arrastrar un campo muerto por el resto del desarrollo.
+  //
+  // Solo se borra lo que escribió esa pantalla. Todo lo demás que haya en
+  // `victories` es de la persona y no se toca.
+  if (oldVersion > 0 && oldVersion < 4) {
+    const victorias = tx.objectStore('victories')
+    victorias.openCursor().then(function siguiente(cursor) {
+      if (!cursor) return
+      if (cursor.value.origen === 'onboarding') cursor.delete()
       return cursor.continue().then(siguiente)
     })
   }

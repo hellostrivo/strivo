@@ -1,17 +1,16 @@
 // tests/onboarding.test.js
-// De borrador a perfil real: lo que P5 guarda antes de que haya cuenta y lo que
-// P11 materializa al cerrar el flujo.
+// De borrador a perfil real: lo que cada pantalla deja escrito y lo que P11
+// materializa al cerrar el flujo.
 
 import { describe, it, expect } from 'vitest'
 import {
   emptyDraft,
   loadDraft,
   saveDraft,
-  savePrimeraVictoria,
   ONBOARDING_SCHEMA_VERSION,
 } from '@lib/onboardingStorage'
 import { finishOnboarding } from '@lib/onboardingProfile'
-import { getFlag, setFlag } from '@lib/db'
+import { getFlag, setFlag, saveVictory } from '@lib/db'
 import { getLocalUserId, getCurrentUserId, getAccountUserId } from '@lib/user'
 import { filasDe } from './helpers/db.js'
 
@@ -178,30 +177,6 @@ describe('P3 · lo que se vino a buscar (§6.8)', () => {
   })
 })
 
-describe('P5 · la primera cosa buena', () => {
-  it('se guarda como victoria ya lograda, sin cuenta', async () => {
-    const victoria = await savePrimeraVictoria('Salí a caminar')
-
-    expect(victoria).toMatchObject({
-      texto: 'Salí a caminar',
-      estado: 'lograda',
-      areaId: null,
-      origen: 'onboarding',
-    })
-    expect(victoria.userId).toBe(getLocalUserId())
-    expect(await filasDe('victories')).toHaveLength(1)
-  })
-
-  it('volver atrás y guardar otra vez actualiza la misma fila', async () => {
-    await savePrimeraVictoria('Salí a caminar')
-    await savePrimeraVictoria('Salí a caminar dos veces')
-
-    const victorias = await filasDe('victories')
-    expect(victorias).toHaveLength(1)
-    expect(victorias[0].texto).toBe('Salí a caminar dos veces')
-  })
-})
-
 describe('P11 · materializar el borrador', () => {
   it('escribe perfil, áreas y hábitos con la forma de §7.2', async () => {
     const userId = await finishOnboarding(borrador())
@@ -276,10 +251,23 @@ describe('P11 · materializar el borrador', () => {
   })
 })
 
+// Lo que se escribe antes de que exista cuenta vive bajo el id local
+const victoriaLocal = async texto => {
+  const userId = getLocalUserId()
+  await saveVictory({
+    id: `${userId}_v1`,
+    userId,
+    fecha: '2026-08-06',
+    texto,
+    areaId: null,
+    estado: 'lograda',
+  })
+}
+
 describe('P10 · lo escrito antes de la cuenta no se pierde', () => {
-  it('la victoria de P5 pasa a ser del usuario de la cuenta', async () => {
+  it('lo registrado sin cuenta pasa a ser del usuario de la cuenta', async () => {
     const localUserId = getLocalUserId()
-    await savePrimeraVictoria('Salí a caminar')
+    await victoriaLocal('Salí a caminar')
 
     await finishOnboarding(borrador({
       cuenta: { uid: 'firebase-123', correo: 'hola@strivo.com', proveedor: 'correo' },
@@ -305,7 +293,7 @@ describe('P10 · lo escrito antes de la cuenta no se pierde', () => {
   })
 
   it('sin cuenta, todo se queda bajo el id local', async () => {
-    await savePrimeraVictoria('Salí a caminar')
+    await victoriaLocal('Salí a caminar')
     await finishOnboarding(borrador())
 
     expect(getAccountUserId()).toBeNull()

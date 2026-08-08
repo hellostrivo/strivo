@@ -6,8 +6,8 @@
 // actualiza las mismas filas en vez de duplicarlas (criterio 3).
 //
 // Si en P10 se creó cuenta, el id de la cuenta pasa a ser el vigente y lo que
-// se escribió antes bajo el id local se reasigna: la Victory de P5 sigue siendo
-// suya, con su fecha, sin pedir nada otra vez.
+// se escribió antes bajo el id local se reasigna: lo registrado sigue siendo
+// suyo, con su fecha, sin pedir nada otra vez.
 
 import { getDB, saveUserProfile, saveArea, saveHabit } from '@lib/db'
 import { getLocalUserId, setAccountUserId } from '@lib/user'
@@ -18,8 +18,8 @@ import { AREAS, limitarAreas } from '@lib/areas'
 const TODOS_LOS_DIAS = [0, 1, 2, 3, 4, 5, 6]
 const DIA_TERMINA_A  = '03:00'
 
-// Stores cuyas filas llevan userId. Antes de P10 solo puede existir la Victory
-// de P5, pero la lista está completa para cuando el registro llegue más tarde.
+// Stores cuyas filas llevan userId. Antes de P10 no suele haber nada escrito
+// todavía, pero la lista está completa para cuando el registro llegue más tarde.
 const STORES_CON_USUARIO = [
   'victories',
   'dailyEntries',

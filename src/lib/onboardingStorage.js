@@ -7,15 +7,13 @@
 // y se guarda en IndexedDB. Mientras tanto, nada de lo escrito se pierde:
 // cada paso persiste al instante y sin red.
 //
-// Excepción deliberada: lo que se escribe en P5 sí baja a IndexedDB en el
-// momento (ver savePrimeraVictoria). Es el primer registro real de la persona
-// y guardarlo es la promesa de esa pantalla; esperar a que haya cuenta la
-// rompería.
+// Excepción deliberada: lo que se contesta en P2A sí baja a IndexedDB en el
+// momento (ver saveGenero). Es el dato del que depende cómo le habla la app a
+// la persona, y esperar a que haya cuenta le costaría volver a contestarlo.
 
-import { saveVictory, getUserProfile, saveUserProfile } from '@lib/db'
+import { getUserProfile, saveUserProfile } from '@lib/db'
 import { normalizeGender } from '@lib/gender'
-import { todayKey } from '@lib/timeSlot'
-import { getCurrentUserId, getLocalUserId } from '@lib/user'
+import { getCurrentUserId } from '@lib/user'
 
 const DRAFT_KEY = 'strivo.onboarding.draft'
 const DONE_KEY  = 'strivo.onboarding.done'
@@ -26,7 +24,8 @@ const DONE_KEY  = 'strivo.onboarding.done'
 //   1 → orden original (P2 motivo, P3 identidad, P3B, P3C, P4 nombre)
 //   2 → orden nuevo (P2 nombre, P2A género, P3 motivo, P4 identidad, P4B, P4C)
 //   3 → P3 pregunta qué se busca: ids en vez de textos (§6.8)
-export const ONBOARDING_SCHEMA_VERSION = 3
+//   4 → P5 desaparece del flujo (§14): de P4C se pasa a P6
+export const ONBOARDING_SCHEMA_VERSION = 4
 
 export const emptyDraft = {
   schemaVersion: ONBOARDING_SCHEMA_VERSION,
@@ -38,7 +37,6 @@ export const emptyDraft = {
   identidadCentralFuente: null, // P4 — 'chip:<id>' | 'libre' | null (§7.8)
   areas: [],                // P4B — tipos de área elegidos (0..N)
   identidadesArea: {},      // P4C — { [tipo]: texto sin prefijo }, opcional
-  primeraVictoria: null,    // P5  — { texto, fecha } una vez guardada
   horaDespertar: '07:00',   // P6  — vienen puestas: seguir sin tocarlas es válido
   horaDormir: '23:00',      // P6
   habitosManana: [],        // P7  — [{ id, texto, areaId, momento }]
@@ -125,26 +123,4 @@ export async function saveGenero(gender) {
   const perfil   = { ...(anterior ?? {}), userId, gender: normalizeGender(gender) }
   await saveUserProfile(perfil)
   return perfil
-}
-
-// ─── P5 — la primera cosa buena ──────────────────────────────────────────────
-// Se guarda como Victory ya lograda (§7.2): es algo que pasó, no algo por hacer.
-// areaId = null → "General", hereda la identidad central (§5.1.1).
-//
-// El id es determinista: volver atrás y guardar de nuevo actualiza la misma
-// fila en vez de crear otra (criterio 3 — sincroniza después sin duplicarse).
-export async function savePrimeraVictoria(texto) {
-  const userId   = getLocalUserId()
-  const victoria = {
-    id:       `${userId}_primera`,
-    userId,
-    fecha:    todayKey(),
-    texto,
-    areaId:   null,
-    estado:   'lograda',
-    origen:   'onboarding',
-    creadoEn: new Date().toISOString(),
-  }
-  await saveVictory(victoria)
-  return victoria
 }

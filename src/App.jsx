@@ -12,7 +12,7 @@ import HoyPage     from '@/pages/HoyPage'
 import JournalPage from '@/pages/JournalPage'
 import TuPage      from '@/pages/TuPage'
 
-// Onboarding (P1–P5 implementadas; el resto se añade dentro del propio flujo)
+// Onboarding (el flujo completo vive en OnboardingFlow)
 import OnboardingFlow from '@/pages/onboarding/OnboardingFlow'
 import { isOnboardingComplete, markOnboardingComplete } from '@lib/onboardingStorage'
 import { getUserProfile } from '@lib/db'

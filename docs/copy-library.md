@@ -179,10 +179,6 @@ Ideas por área (4 por área, resueltas por `id` interno):
 (Todas en tercera persona, sin marca de género: no necesitan variantes.
  Finanzas nunca menciona montos, plazos, deuda ni "controlar".)
 
-Pantalla P5 (Primer valor):
-"Empecemos ahora"
-[Guardar] [Ahora no]
-
 Pantalla P11 (Cierre onboarding):
 "Te estás convirtiendo en alguien que crece, en tu salud y en tu trabajo.
 Nos vemos mañana a las 6:45."

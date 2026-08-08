@@ -224,6 +224,36 @@ describe('P2A · el género se guarda al elegir (§5.9)', () => {
   })
 })
 
+describe('Migración del almacén local a v4 (§14.4)', () => {
+  const NOMBRE = 'strivo-migracion-p5'
+
+  it('lo que capturaba P5 se retira; lo demás se queda', async () => {
+    const v3 = await openDB(NOMBRE, 3, {
+      upgrade(db) {
+        const v = db.createObjectStore('victories', { keyPath: 'id' })
+        v.createIndex('byUserDate', ['userId', 'fecha'])
+        v.createIndex('byUser', 'userId')
+      },
+    })
+    await v3.put('victories', {
+      id: 'u1_primera', userId: 'u1', fecha: '2026-08-01',
+      texto: 'Salí a caminar', estado: 'lograda', origen: 'onboarding',
+    })
+    await v3.put('victories', {
+      id: 'u1_v2', userId: 'u1', fecha: '2026-08-02',
+      texto: 'Llamé a mi hermana', estado: 'lograda',
+    })
+    v3.close()
+
+    const v4 = await openDB(NOMBRE, 4, { upgrade: upgradeSchema })
+    const quedan = await v4.getAll('victories')
+    v4.close()
+
+    expect(quedan).toHaveLength(1)
+    expect(quedan[0].texto).toBe('Llamé a mi hermana')
+  })
+})
+
 describe('Migración del almacén local a v2 (§2.2)', () => {
   // Se prueba contra una base desechable: la de la app la comparten las demás
   // pruebas y abrirla en v1 las dejaría a media migración.

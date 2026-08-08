@@ -1,8 +1,8 @@
 // src/lib/user.js
 // Quién es el dueño de las filas locales.
 //
-// Strivo se usa antes de tener cuenta: P5 ya escribe una Victory real y P7/P8
-// crean hábitos. Todo eso se guarda bajo un id local que se genera solo. Si más
+// Strivo se usa antes de tener cuenta: P2A escribe el género y P7 y P8 crean
+// hábitos reales. Todo eso se guarda bajo un id local que se genera solo. Si más
 // tarde se crea cuenta (P10), el id de la cuenta pasa a ser el vigente y las
 // filas escritas antes se reasignan (ver @lib/onboardingProfile). Nada de lo
 // registrado sin cuenta se pierde ni se vuelve a pedir.

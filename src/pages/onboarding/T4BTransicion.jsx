@@ -7,7 +7,7 @@
 // segundo, y la escritura se siente como una demanda inesperada (§9.1).
 //
 // Solo aparece si se eligió al menos un área: sin áreas no hay nada que
-// reencuadrar y el flujo va directo a P5.
+// reencuadrar y el flujo va directo a P6.
 //
 // Motion: 3000 ms (2300 con movimiento reducido). Es la segunda excepción
 // autorizada al rango 120–900 ms, junto con la apertura (ver CLAUDE.md §5).

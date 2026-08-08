@@ -245,21 +245,6 @@ export const copy = {
       // Existe para quien no puede "tocar la pantalla": teclado y lector
       continue: 'Continuar',
     },
-    p5: {
-      headline: 'Empecemos ahora',
-      question: '¿Qué cosa buena te pasó hoy?',
-      hint: 'Por pequeña que parezca. Se queda guardada aquí.',
-      placeholder: 'Algo bueno de hoy…',
-      save: 'Guardar',
-      skip: 'Ahora no',
-      saved: {
-        title: 'Guardado.',
-        // Con identidad central (siempre existe: se escribe en P4)
-        evidenceTemplate: 'Eres alguien que {identidad}. Esto ya lo confirma.',
-        evidencePlain: 'Esta es tu primera evidencia.',
-        edit: 'Cambiar esto',
-      },
-    },
     p6: {
       question: '¿Cómo son tus días?',
       hint: 'Para acompañarte a tu ritmo, no al de la app. Lo cambias cuando quieras.',

@@ -2,9 +2,9 @@
 // Secuencia del onboarding de Strivo.
 //
 // Implementado: P1 (Bienvenida) · P2 (Nombre) · P2A (Género) · P3 (Motivo) ·
-//               P4 (Identidad central) · P4B (Áreas) · P4C (Identidad por área,
-//               opcional) · P5 (Primer momento de valor) · P6 (Horarios) ·
-//               P7 y P8 (hábitos de mañana y de noche) · P9 (Recordatorios) ·
+//               P4 (Identidad central) · P4B (Áreas) · T-4B (transición) ·
+//               P4C (Identidad por área, opcional) · P6 (Horarios) · P7 y P8
+//               (hábitos de mañana y de noche) · P9 (Recordatorios) ·
 //               P10 (Cuenta) · P11 (Cierre).
 //
 // El orden va de lo fácil de contestar (nombre, género) a lo introspectivo
@@ -15,11 +15,10 @@
 // En P11 el borrador se convierte en perfil, áreas y hábitos reales.
 
 import { useCallback, useEffect, useState } from 'react'
-import { loadDraft, saveDraft, savePrimeraVictoria, saveGenero } from '@lib/onboardingStorage'
+import { loadDraft, saveDraft, saveGenero } from '@lib/onboardingStorage'
 import { finishOnboarding } from '@lib/onboardingProfile'
 import { setGender } from '@lib/genderStore'
 import { normalizarIdentidad } from '@lib/identidad'
-import { todayKey } from '@lib/timeSlot'
 import P1Bienvenida       from './P1Bienvenida'
 import P2Nombre           from './P2Nombre'
 import P2AGenero          from './P2AGenero'
@@ -28,7 +27,6 @@ import P4Identidad        from './P4Identidad'
 import P4BAreas           from './P4BAreas'
 import T4BTransicion      from './T4BTransicion'
 import P4CIdentidadArea   from './P4CIdentidadArea'
-import P5PrimerValor      from './P5PrimerValor'
 import P6Horarios         from './P6Horarios'
 import P7HabitosManana    from './P7HabitosManana'
 import P8HabitosNoche     from './P8HabitosNoche'
@@ -44,7 +42,7 @@ const STEPS = [
   { id: 'p4'  },
   { id: 'p4b' },
   // Sin áreas no hay nada que reencuadrar ni que nombrar: los dos pasos
-  // desaparecen y de P4B se va directo a P5.
+  // desaparecen y de P4B se va directo a P6.
   //
   // La transición es un respiro, no un paso: hacia atrás no se reproduce.
   {
@@ -53,7 +51,6 @@ const STEPS = [
     skipWhen: draft => draft.areas.length === 0,
   },
   { id: 'p4c', skipWhen: draft => draft.areas.length === 0 },
-  { id: 'p5'  },
   { id: 'p6'  },
   { id: 'p7'  },
   { id: 'p8'  },
@@ -83,6 +80,10 @@ function finalize(draft) {
 export default function OnboardingFlow({ onComplete }) {
   const [stepIndex, setStepIndex] = useState(0)
   const [draft, setDraft]         = useState(loadDraft)
+
+  // Qué área está viendo P4C. Vive aquí y no dentro de la pantalla para que
+  // volver desde P6 devuelva a la última área, no a la primera (§14.3).
+  const [areaEnFoco, setAreaEnFoco] = useState(0)
 
   const steps   = STEPS.filter(s => !s.skipWhen?.(draft))
   const index   = Math.min(stepIndex, steps.length - 1)
@@ -122,17 +123,6 @@ export default function OnboardingFlow({ onComplete }) {
     update({ gender })
     saveGenero(gender).catch(error => {
       console.warn('[Strivo] El género se queda solo en el borrador:', error)
-    })
-  }
-
-  // P5 — el borrador se actualiza en el acto (síncrono, nunca falla) y la fila de
-  // IndexedDB se escribe detrás, sin hacer esperar a la confirmación. Si el
-  // almacén no está disponible, lo escrito sigue vivo en el borrador: la promesa
-  // de la pantalla ("se queda guardada aquí") se cumple igual.
-  const guardarPrimeraVictoria = texto => {
-    update({ primeraVictoria: { texto, fecha: todayKey() } })
-    savePrimeraVictoria(texto).catch(error => {
-      console.warn('[Strivo] La primera victoria se queda solo en el borrador:', error)
     })
   }
 
@@ -220,21 +210,11 @@ export default function OnboardingFlow({ onComplete }) {
           {...common}
           areas={draft.areas}
           identidades={draft.identidadesArea}
+          indice={areaEnFoco}
+          onIndice={setAreaEnFoco}
           onChange={(tipo, texto) =>
             update({ identidadesArea: { ...draft.identidadesArea, [tipo]: texto } })
           }
-          onBack={back}
-          onNext={next}
-        />
-      )
-
-    case 'p5':
-      return (
-        <P5PrimerValor
-          {...common}
-          identidad={normalizarIdentidad(draft.identidadCentral)}
-          victoria={draft.primeraVictoria}
-          onSave={guardarPrimeraVictoria}
           onBack={back}
           onNext={next}
         />

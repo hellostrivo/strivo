@@ -33,7 +33,6 @@ https://github.com/hellostrivo/strivo
 - ✅ P4B: Selección de áreas — 7 áreas con color propio, máximo 3 activas
 - ✅ T-4B: Transición — 3 s entre elegir y reflexionar; solo si hay ≥ 1 área
 - ✅ P4C: Identidad por área — una área por pantalla, opcional, con sugerencias
-- ✅ P5: Primer valor — captura algo bueno antes de crear cuenta
 - ✅ P6: Horarios — hora de despertar, dormir, fin de día (diaTerminaA)
 - ✅ P7: Hábitos de mañana — sugerencias por área, seleccionables
 - ✅ P8: Hábitos de noche — sugerencias por área, seleccionables
@@ -95,7 +94,7 @@ src/
 | Sesión | Qué se hizo | Commits |
 |--------|-----------|---------|
 | Sesión 1 | P1, P3 (motivo), P4 (identidad) del onboarding | `dbb33cb`, `8fab3b5` |
-| Sesión 2 | P4B, P4C, P2 (nombre), P5 + P6–P11 | `48946d9`, `344d328`, `0c5d189` |
+| Sesión 2 | P4B, P4C, P2 (nombre) + P6–P11 | `48946d9`, `344d328`, `0c5d189` |
 | Sesión 3 | Ritual de Mañana (R1–R5) completo | (en progreso) |
 | Sesión 4 | Ritual de Noche (N1–N6) + animación | (en progreso) |
 | Sesión 5 | Vista de Mañana (6 bloques) | (en progreso) |
