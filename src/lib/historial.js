@@ -11,7 +11,7 @@
 // punto.
 
 import { copy } from '@copy'
-import { colors } from '@tokens'
+import { ANIMOS, idDeAnimo, colorDeAnimoId } from '@lib/animos'
 import {
   getDailyEntriesInRange,
   getVictoriesInRange,
@@ -23,21 +23,20 @@ import {
 import { loadEntradasDeFecha } from '@lib/journal'
 import { rangoDelMes } from '@lib/fechas'
 
-// Los cinco estados de copy.ritualNoche.n6.states, en orden
-export const COLOR_DE_ANIMO = {
-  Tranquilo: colors.sage,
-  Pensativo: colors.mist,
-  Cansado:   colors.plum,
-  Inquieto:  colors.amber,
-  Otro:      '#D9CFC4',   // border: sigue siendo un día registrado
-}
+// Los cinco estados de @lib/animos, en orden. El color vive con el id porque el
+// rótulo cambia con el género y el punto del calendario no puede depender de él.
+export const COLOR_DE_ANIMO = Object.fromEntries(
+  ANIMOS.map(({ id, color }) => [id, color])
+)
 
 // Un día con algo escrito pero sin ánimo de cierre: se nota que estuvo, sin
 // inventarle un estado de ánimo
 export const COLOR_SIN_ANIMO = '#EDE7DC'   // surface.muted
 
+// Acepta tanto el id como el rótulo de antes de la migración v6: un mes viejo
+// del calendario sigue teniendo sus colores.
 export function colorDeAnimo(animo) {
-  return COLOR_DE_ANIMO[animo] ?? COLOR_SIN_ANIMO
+  return colorDeAnimoId(idDeAnimo(animo)) ?? COLOR_SIN_ANIMO
 }
 
 /**
@@ -76,7 +75,7 @@ export async function loadMes(userId, ano, mes) {
     if (!tieneRegistro(entrada) && !conVictoria.has(entrada.fecha)) continue
     dias.set(entrada.fecha, {
       fecha: entrada.fecha,
-      animo: entrada.animoCierre || null,
+      animo: idDeAnimo(entrada.animoCierre) || null,
       color: colorDeAnimo(entrada.animoCierre),
     })
   }
@@ -117,7 +116,7 @@ export async function loadDia(userId, fecha) {
     intencion:   entrada?.intencion ?? '',
     granDia:     entrada?.granDia ?? '',
     aprendizaje: entrada?.aprendizaje ?? '',
-    animo:       entrada?.animoCierre ?? '',
+    animo:       idDeAnimo(entrada?.animoCierre) ?? '',
     necesito:    entrada?.emocionesNecesito ?? '',
     agradecimientos,
     emociones,

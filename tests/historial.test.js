@@ -13,6 +13,7 @@ import {
   nombreDeEstado,
   COLOR_DE_ANIMO,
 } from '@lib/historial'
+import { ANIMOS } from '@lib/animos'
 import { guardarEntrada, entradaNueva } from '@lib/journal'
 import { getCurrentUserId } from '@lib/user'
 import { rejillaDelMes, fechaConDiaSemana, mesEnPalabras, mesAnterior, mesSiguiente } from '@lib/fechas'
@@ -28,10 +29,18 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers())
 
 describe('colores de ánimo', () => {
-  it('los cinco estados del cierre tienen color', () => {
-    for (const estado of copy.ritualNoche.n6.states) {
-      expect(COLOR_DE_ANIMO[estado]).toBeTruthy()
+  it('los cinco estados del cierre tienen color y nombre', () => {
+    for (const { id } of ANIMOS) {
+      expect(COLOR_DE_ANIMO[id], id).toBeTruthy()
+      expect(copy.ritualNoche.n6.states[id], id).toBeTruthy()
     }
+  })
+
+  // El catálogo y el copy se leen por el mismo id: si uno gana una entrada que
+  // el otro no tiene, el chip se queda sin nombre o el punto sin color.
+  it('el catálogo y el copy nombran exactamente los mismos estados', () => {
+    expect(ANIMOS.map(a => a.id).sort())
+      .toEqual(Object.keys(copy.ritualNoche.n6.states).sort())
   })
 
   it('ninguno es rojo, ni siquiera el clay que el sistema usa para errores', () => {
@@ -54,7 +63,7 @@ describe('colores de ánimo', () => {
 describe('¿quedó algo del día?', () => {
   it('cualquier cosa cuenta', () => {
     expect(tieneRegistro({ intencion: 'Con calma' })).toBe(true)
-    expect(tieneRegistro({ animoCierre: 'Tranquilo' })).toBe(true)
+    expect(tieneRegistro({ animoCierre: 'tranquilo' })).toBe(true)
     expect(tieneRegistro({ agradecimientos: ['Mi familia'] })).toBe(true)
     expect(tieneRegistro({ emociones: ['tranquilo'] })).toBe(true)
     expect(tieneRegistro({ ritualMananaCompletadoEn: '2026-08-05T07:00:00Z' })).toBe(true)
@@ -70,8 +79,8 @@ describe('¿quedó algo del día?', () => {
 describe('el mes del calendario', () => {
   it('solo trae los días con algo, con su color', async () => {
     const userId = getCurrentUserId()
-    await updateDailyEntry(userId, '2026-08-03', { animoCierre: 'Tranquilo' })
-    await updateDailyEntry(userId, '2026-08-04', { animoCierre: 'Inquieto' })
+    await updateDailyEntry(userId, '2026-08-03', { animoCierre: 'tranquilo' })
+    await updateDailyEntry(userId, '2026-08-04', { animoCierre: 'inquieto' })
     await updateDailyEntry(userId, '2026-08-10', { intencion: '' })   // vacío: no cuenta
 
     const dias = await loadMes(userId, 2026, 8)
@@ -92,9 +101,9 @@ describe('el mes del calendario', () => {
 
   it('no se cuela nada de otros meses', async () => {
     const userId = getCurrentUserId()
-    await updateDailyEntry(userId, '2026-07-31', { animoCierre: 'Tranquilo' })
-    await updateDailyEntry(userId, '2026-08-01', { animoCierre: 'Tranquilo' })
-    await updateDailyEntry(userId, '2026-09-01', { animoCierre: 'Tranquilo' })
+    await updateDailyEntry(userId, '2026-07-31', { animoCierre: 'tranquilo' })
+    await updateDailyEntry(userId, '2026-08-01', { animoCierre: 'tranquilo' })
+    await updateDailyEntry(userId, '2026-09-01', { animoCierre: 'tranquilo' })
 
     const dias = await loadMes(userId, 2026, 8)
     expect([...dias.keys()]).toEqual(['2026-08-01'])
@@ -116,7 +125,7 @@ describe('la vista de un día', () => {
       granDia: 'Sin prisas',
       agradecimientos: ['Mi familia', '   '],
       aprendizaje: 'Pedir ayuda antes',
-      animoCierre: 'Tranquilo',
+      animoCierre: 'tranquilo',
     })
     await saveVictory(victoriaDePrueba({ userId, fecha: HOY, estado: 'lograda' }))
     await saveHabit(habitoDePrueba({ id: 'h1', userId }))
@@ -132,7 +141,7 @@ describe('la vista de un día', () => {
     expect(dia.granDia).toBe('Sin prisas')
     expect(dia.agradecimientos).toEqual(['Mi familia'])   // los blancos fuera
     expect(dia.aprendizaje).toBe('Pedir ayuda antes')
-    expect(dia.animo).toBe('Tranquilo')
+    expect(dia.animo).toBe('tranquilo')
     expect(dia.victorias.map(v => v.estado)).toEqual(['lograda'])
     expect(dia.habitos.map(h => h.nombre)).toEqual(['Beber agua'])
     expect(dia.journal.map(e => e.texto)).toEqual(['Lo escribí aquí'])

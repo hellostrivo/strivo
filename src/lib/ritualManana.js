@@ -16,9 +16,9 @@ import {
 } from '@lib/db'
 import { getCurrentUserId } from '@lib/user'
 import { strivoDayKey, previousDayKey, getWeekDay } from '@lib/timeSlot'
-
-// Ánimos de cierre que hacen que la mañana salude distinto (copy.ritualNoche.n6)
-const ANIMOS_DIFICILES = ['Cansado', 'Inquieto']
+// Ánimos de cierre que hacen que la mañana salude distinto (@lib/animos).
+// Se comparan por id: el rótulo cambia con el género y esto dejaría de coincidir.
+import { ANIMOS_DIFICILES, idDeAnimo } from '@lib/animos'
 
 export function ritualMananaHecho(entry) {
   return !!entry?.ritualMananaCompletadoEn
@@ -47,9 +47,11 @@ export async function loadRitualManana() {
     habitos,
     hechos:    new Set(logs.map(log => log.habitId)),
     intencion: entradaHoy?.intencion ?? '',
-    // R2 saluda distinto si ayer se fue a dormir cansado o inquieto. Es un
-    // reconocimiento, no un diagnóstico: nunca se menciona lo que no se hizo.
-    diaDificil: ANIMOS_DIFICILES.includes(entradaAyer?.animoCierre),
+    // R2 saluda distinto si ayer el día se cerró con cansancio o inquietud. Es
+    // un reconocimiento, no un diagnóstico: nunca se menciona lo que no se hizo.
+    // Pasa por idDeAnimo por si la entrada de ayer es anterior a la migración v6
+    // y todavía guarda el rótulo.
+    diaDificil: ANIMOS_DIFICILES.includes(idDeAnimo(entradaAyer?.animoCierre)),
     areaDelDia: elegirAreaDelDia(areas, habitos, fecha),
   }
 }

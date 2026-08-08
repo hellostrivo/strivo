@@ -15,7 +15,9 @@ const DB_NAME    = 'strivo-local'
 // 3 → appFlags: banderas del dispositivo, no del usuario (§3.3, hasSeenIntro)
 // 4 → se retira lo que capturaba P5, que ya no existe (§14.4)
 // 5 → se deduplican las marcas de hábito y se recalcula su contador (§26.3)
-const DB_VERSION = 5
+// 6 → DailyEntry.animoCierre pasa del rótulo visible a un id estable, para que
+//     el estado de cierre pueda decirse en femenino sin dejar de reconocerse
+const DB_VERSION = 6
 
 // ─── Abrir / inicializar la base de datos ────────────────────────────────────
 export async function getDB() {
@@ -158,6 +160,38 @@ export function upgradeSchema(db, oldVersion, newVersion, tx) {
       return cursor.continue().then(siguiente)
     })
   }
+
+  // v6 — `animoCierre` guardaba el rótulo que se leía en pantalla ("Cansado"),
+  // que solo existía en masculino. Ahora guarda el id del estado (`cansado`),
+  // que no se flexiona, para que la app pueda decir "Cansada" sin dejar de
+  // reconocer lo que ya estaba escrito (§2.4 y la nota de @lib/animos).
+  //
+  // Nada se pierde ni se reinterpreta: es la misma respuesta con otro nombre
+  // interno. Lo que no esté en el mapa se queda tal cual, por si vino de una
+  // versión que no conocemos.
+  if (oldVersion > 0 && oldVersion < 6) {
+    const entradas = tx.objectStore('dailyEntries')
+    entradas.openCursor().then(function siguiente(cursor) {
+      if (!cursor) return
+      const actual = cursor.value.animoCierre
+      const comoId = ID_DE_ANIMO_ANTIGUO[actual]
+      if (comoId && comoId !== actual) {
+        cursor.update({ ...cursor.value, animoCierre: comoId })
+      }
+      return cursor.continue().then(siguiente)
+    })
+  }
+}
+
+// El mapa de la migración v6 vive aquí y no en @lib/animos porque `upgrade` de
+// idb es síncrono: no puede esperar a un import dinámico, y arrastrar el módulo
+// entero solo por cinco parejas ataría el esquema a una pantalla.
+const ID_DE_ANIMO_ANTIGUO = {
+  Tranquilo: 'tranquilo',
+  Pensativo: 'pensativo',
+  Cansado:   'cansado',
+  Inquieto:  'inquieto',
+  Otro:      'otro',
 }
 
 // ─── Banderas del dispositivo ─────────────────────────────────────────────────

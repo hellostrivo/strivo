@@ -109,13 +109,13 @@ describe('entrada del día', () => {
   it('cada bloque parchea sin pisar lo que escribieron los demás', async () => {
     await updateDailyEntry('u1', HOY, { intencion: 'Con calma' })
     await updateDailyEntry('u1', HOY, { agradecimientos: ['Mi familia'] })
-    await updateDailyEntry('u1', HOY, { animoCierre: 'Tranquilo' })
+    await updateDailyEntry('u1', HOY, { animoCierre: 'tranquilo' })
 
     const entrada = await getDailyEntry('u1', HOY)
     expect(entrada).toMatchObject({
       intencion: 'Con calma',
       agradecimientos: ['Mi familia'],
-      animoCierre: 'Tranquilo',
+      animoCierre: 'tranquilo',
     })
     expect(await filasDe('dailyEntries')).toHaveLength(1)
   })

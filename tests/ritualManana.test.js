@@ -62,7 +62,7 @@ describe('abrir el ritual', () => {
   it('saluda distinto si ayer se cerró el día cansado', async () => {
     const userId = await conUsuario()
     await saveUserProfile(perfil({ userId }))
-    await updateDailyEntry(userId, AYER, { animoCierre: 'Cansado' })
+    await updateDailyEntry(userId, AYER, { animoCierre: 'cansado' })
 
     expect((await loadRitualManana()).diaDificil).toBe(true)
   })
@@ -70,7 +70,7 @@ describe('abrir el ritual', () => {
   it('un cierre tranquilo no activa el día difícil', async () => {
     const userId = await conUsuario()
     await saveUserProfile(perfil({ userId }))
-    await updateDailyEntry(userId, AYER, { animoCierre: 'Tranquilo' })
+    await updateDailyEntry(userId, AYER, { animoCierre: 'tranquilo' })
 
     expect((await loadRitualManana()).diaDificil).toBe(false)
   })

@@ -2,7 +2,7 @@
 
 **Fecha:** 6 de agosto de 2026 · **Revisada:** 7 de agosto de 2026 (bloque 01)
 **Origen:** §2.6 del documento de cambios v2.2
-**Estado:** backlog parcial. Lo que sigue pendiente está en §2.
+**Estado:** backlog parcial. Lo que sigue pendiente está en §2.3 y §2.4.
 
 El motor de lenguaje adaptativo (§2) ya está en pie: `profile.gender` → `genderMode`
 (`m` / `f` / `n`), `resolveCopy()` y `useCopy()`. Lo que falta es pasar por él el copy
@@ -57,23 +57,37 @@ producto. Está autorizada en el propio copy y en la lista blanca de
 `tests/genero.test.js`, pero **contradice la regla D.1 del bloque 01**, que solo
 admite `mismo/a`. Es una decisión de producto abierta, no un descuido.
 
-### 2.2 Estados de sueño del ritual de noche — prioridad alta, lo toma el bloque 02
+### 2.2 Estados de sueño del ritual de noche — convertidos ✅ (8 ago 2026)
 
-`ritualNoche.n6.states` — `['Tranquilo', 'Pensativo', 'Cansado', 'Inquieto', 'Otro']`.
+`ritualNoche.n6.states` pasó de `['Tranquilo', …]` a un objeto con los cinco ids y
+sus tres variantes:
 
-**No se convirtió en el bloque 01 a propósito, y no es solo por alcance.** El valor
-que se guarda es la propia palabra visible: `SelectorAnimo` escribe `"Cansado"` en
-`dailyEntry.animo`, y `@lib/ritualManana` compara contra
-`ANIMOS_DIFICILES = ['Cansado', 'Inquieto']` para decidir cómo saluda la mañana
-siguiente. Convertir el copy sin separar antes el id del rótulo haría que a una
-usuaria en femenino se le guardara `"Cansada"`, que ya no coincide con nada: el
-saludo de día difícil dejaría de salir, en silencio.
+| id | m | f | n |
+|---|---|---|---|
+| `tranquilo` | Tranquilo | Tranquila | En calma |
+| `pensativo` | Pensativo | Pensativa | Con la mente activa |
+| `cansado` | Cansado | Cansada | Con cansancio |
+| `inquieto` | Inquieto | Inquieta | Con inquietud |
+| `otro` | Otro | Otra | De otra forma |
 
-Quien lo tome (bloque 02) necesita primero dar un id estable a cada estado y migrar
-lo que ya esté escrito en IndexedDB. Es un cambio de datos, no de copy.
+**No bastaba con tocar el copy.** El valor que se guardaba en
+`dailyEntry.animoCierre` era la propia palabra visible, y `@lib/ritualManana`
+comparaba contra ella para decidir cómo saluda la mañana siguiente. En femenino se
+habría guardado `"Cansada"`, que ya no coincidía con nada: el saludo de día difícil
+habría dejado de salir y el punto del calendario habría perdido su color, sin aviso.
 
-Fuera de `src/copy/index.js`, el mismo problema:
-`src/lib/ritualManana.js:21` — `ANIMOS_DIFICILES = ['Cansado', 'Inquieto']`.
+Por eso el cambio fue de datos y no solo de copy:
+
+- **`src/lib/animos.js`** (nuevo) — catálogo con los ids, su color y
+  `ANIMOS_DIFICILES`, al estilo de `@lib/emociones` y `@lib/areas`.
+- **Migración v6 de IndexedDB** — reescribe `animoCierre` del rótulo a su id. Nada
+  se pierde: es la misma respuesta con otro nombre interno.
+- **`idDeAnimo()`** — red de seguridad para lo que llegue tarde desde la
+  sincronización con el rótulo antiguo.
+- Consumidores que pintaban el valor crudo (`VistaDia`, `Calendario`) ahora resuelven
+  el nombre con `useCopy`.
+
+Cobertura en `tests/animos.test.js`.
 
 ### 2.3 Frases sueltas — prioridad media
 
@@ -102,7 +116,8 @@ variantes de género posibles, así que va la neutra. Los tres siguen hoy con la
 masculina: cambiarlos es trabajo de metadatos, no de copy de pantalla, y no entró en
 el bloque 01.
 
-`src/lib/ritualManana.js:21` — `ANIMOS_DIFICILES` (ver §2.2).
+~~`src/lib/ritualManana.js` — `ANIMOS_DIFICILES`~~ — resuelto: ahora vive en
+`@lib/animos` y compara por id (ver §2.2).
 
 ---
 

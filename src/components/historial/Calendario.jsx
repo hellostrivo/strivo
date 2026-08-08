@@ -11,10 +11,15 @@
 
 import { clsx } from 'clsx'
 import { copy, interpolate } from '@copy'
+import useCopy from '@hooks/useCopy'
 import { rejillaDelMes, mesEnPalabras, fechaEnPalabras } from '@lib/fechas'
+import { nombreDeAnimo } from '@lib/animos'
 import Button from '@components/ui/Button'
 
 export default function Calendario({ ano, mes, dias, hoy, onDia, onAnterior, onSiguiente }) {
+  // El ánimo se lee en voz alta en la etiqueta de cada día, así que también
+  // cambia con el género (§2.4)
+  const t = useCopy()
   const celdas = rejillaDelMes(ano, mes)
 
   return (
@@ -64,7 +69,7 @@ export default function Calendario({ ano, mes, dias, hoy, onDia, onAnterior, onS
               onClick={() => onDia(fecha)}
               aria-label={
                 dia?.animo
-                  ? `${fechaEnPalabras(fecha)}. ${copy.historial.moodLabel}: ${dia.animo}`
+                  ? `${fechaEnPalabras(fecha)}. ${copy.historial.moodLabel}: ${nombreDeAnimo(dia.animo, t)}`
                   : fechaEnPalabras(fecha)
               }
               className={clsx(

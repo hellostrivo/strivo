@@ -16,6 +16,7 @@ import useCopy from '@hooks/useCopy'
 import { fechaConDiaSemana } from '@lib/fechas'
 import { nombreDeEstado, colorDeAnimo } from '@lib/historial'
 import { nombreDeEmocion } from '@lib/emociones'
+import { nombreDeAnimo } from '@lib/animos'
 import BloqueDiario from '@components/diario/BloqueDiario'
 import Button from '@components/ui/Button'
 import Card from '@components/ui/Card'
@@ -138,7 +139,7 @@ export default function VistaDia({ dia, onVolver }) {
                   style={{ backgroundColor: colorDeAnimo(dia.animo) }}
                   aria-hidden="true"
                 />
-                {dia.animo}
+                {nombreDeAnimo(dia.animo, t)}
               </p>
             </BloqueDiario>
           )}

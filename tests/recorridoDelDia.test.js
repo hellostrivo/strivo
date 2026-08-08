@@ -95,7 +95,7 @@ describe('un día entero en Strivo', () => {
     await decidirVictoria(caminar, 'aManana')
     await anadirLogro(userId, DIA_1, 'Terminé el informe')
     await guardarAgradecimientos(userId, DIA_1, ['Mi familia', 'El silencio'])
-    await guardarAnimoCierre(userId, DIA_1, 'Cansado')
+    await guardarAnimoCierre(userId, DIA_1, 'cansado')
     await completarRitualNoche(userId, DIA_1)
 
     // La síntesis cuenta lo que hubo: 2 agradecimientos, 2 logros

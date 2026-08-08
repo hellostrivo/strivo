@@ -147,13 +147,13 @@ describe('los bloques no se pisan entre sí', () => {
 
     await guardarBloque(userId, HOY, { granDia: 'Sin prisas' })
     await guardarBloque(userId, HOY, { agradecimientos: ['Mi familia'] })
-    await guardarBloque(userId, HOY, { animoCierre: 'Tranquilo' })
+    await guardarBloque(userId, HOY, { animoCierre: 'tranquilo' })
 
     expect(await filasDe('dailyEntries')).toHaveLength(1)
     expect(await getDailyEntry(userId, HOY)).toMatchObject({
       granDia: 'Sin prisas',
       agradecimientos: ['Mi familia'],
-      animoCierre: 'Tranquilo',
+      animoCierre: 'tranquilo',
     })
   })
 })

@@ -718,7 +718,17 @@ export const copy = {
     },
     n6: {
       question: '¿Cómo te vas a dormir?',
-      states: ['Tranquilo', 'Pensativo', 'Cansado', 'Inquieto', 'Otro'],
+      // Los cinco llevan variante: es la última pregunta del día y contestarla
+      // en el género de otra persona la convierte en un formulario.
+      // Ids, orden y color en @lib/animos. La neutra es un sustantivo o una
+      // locución, nunca una barra.
+      states: {
+        tranquilo: { m: 'Tranquilo', f: 'Tranquila', n: 'En calma' },
+        pensativo: { m: 'Pensativo', f: 'Pensativa', n: 'Con la mente activa' },
+        cansado:   { m: 'Cansado',   f: 'Cansada',   n: 'Con cansancio' },
+        inquieto:  { m: 'Inquieto',  f: 'Inquieta',  n: 'Con inquietud' },
+        otro:      { m: 'Otro',      f: 'Otra',      n: 'De otra forma' },
+      },
       cta: 'Cerrar el día',
     },
     closing: {
