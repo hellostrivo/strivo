@@ -200,7 +200,7 @@ Gratitud y amabilidad. Se leen en el umbral, antes de cualquier pendiente.
   'Hoy es suficiente con avanzar un poco.',
   'Lo que decides no hacer también cuenta.',
   'Hoy puedes cuidar una sola cosa y estar bien.',
-  'La constancia se construye un día a la vez.',
+  'Las rachas se construyen un día a la vez.',
   'Hoy tienes lo necesario para empezar.',
   'Lo difícil de hoy será normal en un mes.',
   'Un día es tiempo suficiente para algo bueno.',
@@ -221,15 +221,6 @@ Gratitud y amabilidad. Se leen en el umbral, antes de cualquier pendiente.
   'Hoy termina, y eso también es un alivio.'
 ],
 ```
-
----
-
-## Corrección aplicada al implementar (07/08/2026)
-
-- **Repertorio B:** "Las rachas se construyen un día a la vez." → **"La constancia
-  se construye un día a la vez."** La palabra "racha" está en el léxico prohibido
-  del proyecto (§3.6.3 del blueprint: se usa "Constancia") y `npm run lint:copy`
-  la rechaza. La frase cumple las siete reglas con la palabra corregida.
 
 ---
 
