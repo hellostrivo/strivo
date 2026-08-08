@@ -1,17 +1,17 @@
 // src/lib/historial.js
 // Historial (§5.10): el calendario de ánimo y la vista de un día completo.
 //
-// COLOR DE ÁNIMO. Ningún estado es rojo y ninguno es "malo": los cinco de
-// copy.ritualNoche.n6 se reparten entre los acentos de la paleta, y clay —el
-// tono que el sistema reserva para errores— se queda fuera a propósito. Un día
-// inquieto se ve distinto de uno tranquilo, no peor (§6.3, RN-05).
+// COLOR DE ÁNIMO. Ningún estado es rojo y ninguno es "malo": los nueve de
+// @lib/animos se agrupan en cinco tonos de la paleta, y clay —el que el sistema
+// reserva para errores— se queda fuera a propósito. Un día inquieto se ve
+// distinto de uno en paz, no peor (§6.3, RN-05).
 //
 // UN DÍA SIN REGISTRO no se pinta. No hay hueco que llenar ni casilla vacía que
 // señale lo que no se hizo: los días sin nada escrito simplemente no tienen
 // punto.
 
 import { copy } from '@copy'
-import { ANIMOS, idDeAnimo, colorDeAnimoId } from '@lib/animos'
+import { ANIMOS, normalizarAnimos, colorDeAnimoId } from '@lib/animos'
 import {
   getDailyEntriesInRange,
   getVictoriesInRange,
@@ -23,7 +23,7 @@ import {
 import { loadEntradasDeFecha } from '@lib/journal'
 import { rangoDelMes } from '@lib/fechas'
 
-// Los cinco estados de @lib/animos, en orden. El color vive con el id porque el
+// Los nueve estados de @lib/animos, en orden. El color vive con el id porque el
 // rótulo cambia con el género y el punto del calendario no puede depender de él.
 export const COLOR_DE_ANIMO = Object.fromEntries(
   ANIMOS.map(({ id, color }) => [id, color])
@@ -33,10 +33,12 @@ export const COLOR_DE_ANIMO = Object.fromEntries(
 // inventarle un estado de ánimo
 export const COLOR_SIN_ANIMO = '#EDE7DC'   // surface.muted
 
-// Acepta tanto el id como el rótulo de antes de la migración v6: un mes viejo
-// del calendario sigue teniendo sus colores.
+// El punto del calendario es uno aunque se hayan elegido dos estados: manda el
+// primero, que es el que la persona nombró antes. Acepta la forma antigua (un
+// solo id, o el rótulo de antes de la v6): un mes viejo conserva sus colores.
 export function colorDeAnimo(animo) {
-  return colorDeAnimoId(idDeAnimo(animo)) ?? COLOR_SIN_ANIMO
+  const [primero] = normalizarAnimos(animo)
+  return colorDeAnimoId(primero) ?? COLOR_SIN_ANIMO
 }
 
 /**
@@ -49,7 +51,10 @@ export function tieneRegistro(entrada) {
     entrada.intencion ||
     entrada.granDia ||
     entrada.aprendizaje ||
-    entrada.animoCierre ||
+    // Por longitud y no por verdad: `animoCierre` es una lista, y una lista
+    // vacía es verdadera en JS. Sin esto, un día en el que no se eligió ningún
+    // estado aparecería con punto en el calendario.
+    normalizarAnimos(entrada.animoCierre).length ||
     entrada.agradecimientos?.some(t => t?.trim()) ||
     entrada.emociones?.length ||
     entrada.ritualMananaCompletadoEn ||
@@ -75,7 +80,8 @@ export async function loadMes(userId, ano, mes) {
     if (!tieneRegistro(entrada) && !conVictoria.has(entrada.fecha)) continue
     dias.set(entrada.fecha, {
       fecha: entrada.fecha,
-      animo: idDeAnimo(entrada.animoCierre) || null,
+      animo: normalizarAnimos(entrada.animoCierre),
+      animoOtroTexto: entrada.animoOtroTexto ?? '',
       color: colorDeAnimo(entrada.animoCierre),
     })
   }
@@ -83,7 +89,7 @@ export async function loadMes(userId, ano, mes) {
   // Un día en el que solo se escribió una victoria también estuvo
   for (const fecha of conVictoria) {
     if (dias.has(fecha)) continue
-    dias.set(fecha, { fecha, animo: null, color: COLOR_SIN_ANIMO })
+    dias.set(fecha, { fecha, animo: [], animoOtroTexto: '', color: COLOR_SIN_ANIMO })
   }
 
   return dias
@@ -116,7 +122,8 @@ export async function loadDia(userId, fecha) {
     intencion:   entrada?.intencion ?? '',
     granDia:     entrada?.granDia ?? '',
     aprendizaje: entrada?.aprendizaje ?? '',
-    animo:       idDeAnimo(entrada?.animoCierre) ?? '',
+    animo:          normalizarAnimos(entrada?.animoCierre),
+    animoOtroTexto: entrada?.animoOtroTexto ?? '',
     necesito:    entrada?.emocionesNecesito ?? '',
     agradecimientos,
     emociones,

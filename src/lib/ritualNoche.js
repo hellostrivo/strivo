@@ -22,6 +22,7 @@ import {
 import { interpolate } from '@copy'
 import { getCurrentUserId, newId } from '@lib/user'
 import { strivoDayKey, todayKey, getWeekDay } from '@lib/timeSlot'
+import { normalizarAnimos, seleccionParaGuardar } from '@lib/animos'
 
 export function ritualNocheHecho(entry) {
   return !!entry?.ritualNocheCompletadoEn
@@ -55,7 +56,8 @@ export async function loadRitualNoche() {
     logros:    victorias.filter(v => v.estado === 'lograda'),
     agradecimientos: entrada?.agradecimientos ?? [],
     aprendizaje:     entrada?.aprendizaje ?? '',
-    animoCierre:     entrada?.animoCierre ?? '',
+    animoCierre:     normalizarAnimos(entrada?.animoCierre),
+    animoOtroTexto:  entrada?.animoOtroTexto ?? '',
   }
 }
 
@@ -116,8 +118,15 @@ export async function guardarAprendizaje(userId, fecha, aprendizaje) {
   return updateDailyEntry(userId, fecha, { aprendizaje })
 }
 
-export async function guardarAnimoCierre(userId, fecha, animoCierre) {
-  return updateDailyEntry(userId, fecha, { animoCierre })
+/**
+ * El estado de cierre: hasta dos ids y, si se eligió "Algo más", su palabra.
+ *
+ * Se guarda lo que @lib/animos considera guardable: "Algo más" sin palabra no
+ * llega a escribirse, y su texto se va cuando se suelta el chip. Nada de eso se
+ * le comunica a nadie (D.4).
+ */
+export async function guardarAnimoCierre(userId, fecha, animos, otroTexto = '') {
+  return updateDailyEntry(userId, fecha, seleccionParaGuardar(animos, otroTexto))
 }
 
 // ─── Cierre ──────────────────────────────────────────────────────────────────

@@ -16,6 +16,10 @@ import { clsx } from 'clsx'
  *   aria-pressed por aria-checked y añade una marca, para que el estado no
  *   dependa solo del color
  * @param {boolean} [fullWidth] - fila a ancho completo en vez de etiqueta que fluye
+ * @param {boolean} [atenuado] - fuera de alcance por un límite ya alcanzado
+ *   (máximo de emociones, de áreas, de estados de cierre). Se apaga y deja de
+ *   responder, sin mensaje ni aviso: el límite se comunica atenuando, no
+ *   regañando. Por defecto false, así que ninguna pantalla existente cambia.
  */
 const Chip = forwardRef(function Chip({
   children,
@@ -24,6 +28,7 @@ const Chip = forwardRef(function Chip({
   size = 'md',
   role,
   fullWidth = false,
+  atenuado = false,
   onClick,
   className,
   ...props
@@ -48,10 +53,14 @@ const Chip = forwardRef(function Chip({
     <button
       ref={ref}
       type="button"
-      onClick={onClick}
+      // Atenuado sigue siendo enfocable y sigue anunciando su estado: se sale de
+      // la lista de tabulación solo lo que ya no existe, y esta opción existe,
+      // simplemente no cabe ahora mismo.
+      onClick={atenuado ? undefined : onClick}
       role={role}
       aria-pressed={esRadio ? undefined : selected}
       aria-checked={esRadio ? selected : undefined}
+      aria-disabled={atenuado || undefined}
       className={clsx(
         esRadio ? 'inline-flex items-center gap-3' : 'inline-flex items-center gap-1.5',
         fullWidth && 'w-full justify-start text-left',
@@ -69,6 +78,8 @@ const Chip = forwardRef(function Chip({
         // Estado con color de área → el tinte y el borde se aplican via style
         color && !selected && 'bg-surface border-border text-ink hover:bg-surface/80',
         color && selected  && 'text-ink',
+        // El límite se ve, no se explica
+        atenuado && 'opacity-40 hover:bg-surface',
         className
       )}
       style={selected && color ? selectedStyle : undefined}

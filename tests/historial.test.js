@@ -96,7 +96,7 @@ describe('el mes del calendario', () => {
 
     const dias = await loadMes(userId, 2026, 8)
     expect(dias.has('2026-08-07')).toBe(true)
-    expect(dias.get('2026-08-07').animo).toBeNull()
+    expect(dias.get('2026-08-07').animo).toEqual([])
   })
 
   it('no se cuela nada de otros meses', async () => {
@@ -141,7 +141,7 @@ describe('la vista de un día', () => {
     expect(dia.granDia).toBe('Sin prisas')
     expect(dia.agradecimientos).toEqual(['Mi familia'])   // los blancos fuera
     expect(dia.aprendizaje).toBe('Pedir ayuda antes')
-    expect(dia.animo).toBe('tranquilo')
+    expect(dia.animo).toEqual(['tranquilo'])
     expect(dia.victorias.map(v => v.estado)).toEqual(['lograda'])
     expect(dia.habitos.map(h => h.nombre)).toEqual(['Beber agua'])
     expect(dia.journal.map(e => e.texto)).toEqual(['Lo escribí aquí'])

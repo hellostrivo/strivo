@@ -150,14 +150,14 @@ describe('cerrar el día', () => {
 
     await guardarAgradecimientos(userId, HOY, ['Mi familia', 'El silencio'])
     await guardarAprendizaje(userId, HOY, 'Pedir ayuda antes')
-    await guardarAnimoCierre(userId, HOY, 'tranquilo')
+    await guardarAnimoCierre(userId, HOY, ['tranquilo'])
     await completarRitualNoche(userId, HOY)
 
     const entrada = await getDailyEntry(userId, HOY)
     expect(entrada).toMatchObject({
       agradecimientos: ['Mi familia', 'El silencio'],
       aprendizaje: 'Pedir ayuda antes',
-      animoCierre: 'tranquilo',
+      animoCierre: ['tranquilo'],
     })
     expect(ritualNocheHecho(entrada)).toBe(true)
   })

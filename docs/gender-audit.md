@@ -59,16 +59,9 @@ admite `mismo/a`. Es una decisión de producto abierta, no un descuido.
 
 ### 2.2 Estados de sueño del ritual de noche — convertidos ✅ (8 ago 2026)
 
-`ritualNoche.n6.states` pasó de `['Tranquilo', …]` a un objeto con los cinco ids y
-sus tres variantes:
-
-| id | m | f | n |
-|---|---|---|---|
-| `tranquilo` | Tranquilo | Tranquila | En calma |
-| `pensativo` | Pensativo | Pensativa | Con la mente activa |
-| `cansado` | Cansado | Cansada | Con cansancio |
-| `inquieto` | Inquieto | Inquieta | Con inquietud |
-| `otro` | Otro | Otra | De otra forma |
+`ritualNoche.n6.states` pasó de `['Tranquilo', …]` a un objeto con ids y variantes.
+El bloque 02 amplió el conjunto de cinco a nueve; la tabla vive en
+`docs/copy-library.md` (N6).
 
 **No bastaba con tocar el copy.** El valor que se guardaba en
 `dailyEntry.animoCierre` era la propia palabra visible, y `@lib/ritualManana`
@@ -82,6 +75,9 @@ Por eso el cambio fue de datos y no solo de copy:
   `ANIMOS_DIFICILES`, al estilo de `@lib/emociones` y `@lib/areas`.
 - **Migración v6 de IndexedDB** — reescribe `animoCierre` del rótulo a su id. Nada
   se pierde: es la misma respuesta con otro nombre interno.
+- **El bloque 02 no añadió migración.** `animoCierre` pasó de un id suelto a una
+  lista de hasta dos, pero lo anterior se lee, no se reescribe:
+  `normalizarAnimos()` acepta las tres formas (rótulo antiguo, id suelto, lista).
 - **`idDeAnimo()`** — red de seguridad para lo que llegue tarde desde la
   sincronización con el rótulo antiguo.
 - Consumidores que pintaban el valor crudo (`VistaDia`, `Calendario`) ahora resuelven

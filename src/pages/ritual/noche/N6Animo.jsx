@@ -1,9 +1,10 @@
 // src/pages/ritual/noche/N6Animo.jsx
-// N6 — Ánimo de cierre
+// N6 — Estado de cierre
 // Copy: docs/copy-library.md §2 → copy.ritualNoche.n6
 // Chips compartidos con la Vista de Noche: @components/diario/SelectorAnimo
 //
-// Elegir es opcional: "Cerrar el día" no espera a que se toque nada.
+// Elegir es opcional: "Cerrar el día" no espera a que se toque nada, y se puede
+// pasar con cero elegidos.
 //
 // Pendiente de §5.6: los chips de matiz debajo, que contrastan con cómo se
 // entró al día. Necesitan las emociones de la Vista de Mañana; ahora que
@@ -13,7 +14,7 @@ import { useEffect, useRef } from 'react'
 import { copy } from '@copy'
 import SelectorAnimo from '@components/diario/SelectorAnimo'
 
-export default function N6Animo({ animo, onChange }) {
+export default function N6Animo({ animos, otroTexto, onChange }) {
   const headingRef = useRef(null)
   useEffect(() => { headingRef.current?.focus() }, [])
 
@@ -28,8 +29,13 @@ export default function N6Animo({ animo, onChange }) {
         {copy.ritualNoche.n6.question}
       </h1>
 
-      <div className="mt-10">
-        <SelectorAnimo animo={animo} onChange={onChange} etiquetadoPor="n6-heading" />
+      <div className="mt-8">
+        <SelectorAnimo
+          animos={animos}
+          otroTexto={otroTexto}
+          onChange={onChange}
+          etiquetadoPor="n6-heading"
+        />
       </div>
     </>
   )

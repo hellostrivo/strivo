@@ -303,10 +303,31 @@ N5 (Reflexión):
 (Alt:) "¿Qué intentarías diferente mañana?"
 [Campo de texto]
 
-N6 (Ánimo de cierre):
+N6 (Estado de cierre):
 "¿Cómo te vas a dormir?"
-5 estados: Tranquilo · Pensativo · Cansado · Inquieto · Otro
-Chips de matiz debajo (contraste con cómo entraste al día)
+"Elige una o dos. No hay una forma correcta de cerrar el día"
+9 estados, se eligen hasta 2. Al llegar al máximo los demás se atenúan y dejan de
+responder: sin mensaje, sin alerta. Se puede cerrar el día sin elegir ninguno.
+
+| id | m | f | n |
+|---|---|---|---|
+| `en_paz` | En paz | En paz | En paz |
+| `agradecido` | Agradecido | Agradecida | Con gratitud |
+| `orgulloso` | Orgulloso | Orgullosa | Con orgullo |
+| `tranquilo` | Tranquilo | Tranquila | En calma |
+| `contento` | Contento | Contenta | Con alegría |
+| `pensativo` | Pensativo | Pensativa | Pensando |
+| `cansado` | Cansado | Cansada | Con cansancio |
+| `inquieto` | Inquieto | Inquieta | Con inquietud |
+| `otro` | Algo más | Algo más | Algo más |
+
+"Algo más" abre en línea un campo de **una sola palabra** (placeholder "Una
+palabra", máx. 20 caracteres). Cuenta dentro del límite de 2. Si queda elegido
+sin palabra, se descarta en silencio; si se suelta, su palabra se va con él.
+
+Ids, orden, colores y límite en `@lib/animos`. Se guardan ids, nunca rótulos.
+
+Chips de matiz debajo (contraste con cómo entraste al día) — pendiente de §5.6
 
 N7 (Checklist de hábitos noche):
 [Checklist de hábitos nocturnos]

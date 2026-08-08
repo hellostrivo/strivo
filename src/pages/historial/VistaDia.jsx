@@ -16,7 +16,7 @@ import useCopy from '@hooks/useCopy'
 import { fechaConDiaSemana } from '@lib/fechas'
 import { nombreDeEstado, colorDeAnimo } from '@lib/historial'
 import { nombreDeEmocion } from '@lib/emociones'
-import { nombreDeAnimo } from '@lib/animos'
+import { nombresDeAnimos } from '@lib/animos'
 import BloqueDiario from '@components/diario/BloqueDiario'
 import Button from '@components/ui/Button'
 import Card from '@components/ui/Card'
@@ -131,7 +131,7 @@ export default function VistaDia({ dia, onVolver }) {
             </BloqueDiario>
           )}
 
-          {dia.animo && (
+          {dia.animo.length > 0 && (
             <BloqueDiario id="h-animo" label={copy.historial.moodLabel}>
               <p className="flex items-center gap-2 font-display text-md text-ink">
                 <span
@@ -139,7 +139,9 @@ export default function VistaDia({ dia, onVolver }) {
                   style={{ backgroundColor: colorDeAnimo(dia.animo) }}
                   aria-hidden="true"
                 />
-                {nombreDeAnimo(dia.animo, t)}
+                {/* Se eligieron hasta dos: se leen seguidos, sin jerarquía entre
+                    ellos. El punto toma el color del primero. */}
+                {nombresDeAnimos(dia.animo, t, dia.animoOtroTexto).join(' · ')}
               </p>
             </BloqueDiario>
           )}

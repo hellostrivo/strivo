@@ -13,7 +13,7 @@ import { clsx } from 'clsx'
 import { copy, interpolate } from '@copy'
 import useCopy from '@hooks/useCopy'
 import { rejillaDelMes, mesEnPalabras, fechaEnPalabras } from '@lib/fechas'
-import { nombreDeAnimo } from '@lib/animos'
+import { nombresDeAnimos } from '@lib/animos'
 import Button from '@components/ui/Button'
 
 export default function Calendario({ ano, mes, dias, hoy, onDia, onAnterior, onSiguiente }) {
@@ -68,8 +68,8 @@ export default function Calendario({ ano, mes, dias, hoy, onDia, onAnterior, onS
               type="button"
               onClick={() => onDia(fecha)}
               aria-label={
-                dia?.animo
-                  ? `${fechaEnPalabras(fecha)}. ${copy.historial.moodLabel}: ${nombreDeAnimo(dia.animo, t)}`
+                dia?.animo?.length
+                  ? `${fechaEnPalabras(fecha)}. ${copy.historial.moodLabel}: ${nombresDeAnimos(dia.animo, t, dia.animoOtroTexto).join(', ')}`
                   : fechaEnPalabras(fecha)
               }
               className={clsx(

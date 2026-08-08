@@ -718,17 +718,31 @@ export const copy = {
     },
     n6: {
       question: '¿Cómo te vas a dormir?',
-      // Los cinco llevan variante: es la última pregunta del día y contestarla
-      // en el género de otra persona la convierte en un formulario.
+      // El subtítulo dice el límite y quita la nota al mismo tiempo: no hay
+      // respuesta correcta, así que tampoco hay forma de contestar mal.
+      subtitle: 'Elige una o dos. No hay una forma correcta de cerrar el día',
+      // Siete de los nueve llevan variante: es la última pregunta del día y
+      // contestarla en el género de otra persona la convierte en un formulario.
       // Ids, orden y color en @lib/animos. La neutra es un sustantivo o una
       // locución, nunca una barra.
       states: {
-        tranquilo: { m: 'Tranquilo', f: 'Tranquila', n: 'En calma' },
-        pensativo: { m: 'Pensativo', f: 'Pensativa', n: 'Con la mente activa' },
-        cansado:   { m: 'Cansado',   f: 'Cansada',   n: 'Con cansancio' },
-        inquieto:  { m: 'Inquieto',  f: 'Inquieta',  n: 'Con inquietud' },
-        otro:      { m: 'Otro',      f: 'Otra',      n: 'De otra forma' },
+        en_paz:     'En paz',
+        agradecido: { m: 'Agradecido', f: 'Agradecida', n: 'Con gratitud' },
+        orgulloso:  { m: 'Orgulloso',  f: 'Orgullosa',  n: 'Con orgullo' },
+        tranquilo:  { m: 'Tranquilo',  f: 'Tranquila',  n: 'En calma' },
+        contento:   { m: 'Contento',   f: 'Contenta',   n: 'Con alegría' },
+        pensativo:  { m: 'Pensativo',  f: 'Pensativa',  n: 'Pensando' },
+        cansado:    { m: 'Cansado',    f: 'Cansada',    n: 'Con cansancio' },
+        inquieto:   { m: 'Inquieto',   f: 'Inquieta',   n: 'Con inquietud' },
+        otro:       'Algo más',
       },
+      // Una palabra, no una frase: el campo es para nombrar lo que falta en la
+      // lista, no para explicarlo.
+      otherPlaceholder: 'Una palabra',
+      otherLabel: 'Tu palabra para hoy',
+      // Solo lo oye quien navega con lector de pantalla: en la pantalla, llegar
+      // al límite se ve porque las demás se atenúan, y nada más.
+      countTemplate: '{n} de {max} elegidas',
       cta: 'Cerrar el día',
     },
     closing: {

@@ -18,6 +18,7 @@ import {
   getVictoriesByDate,
 } from '@lib/db'
 import { getCurrentUserId } from '@lib/user'
+import { normalizarAnimos } from '@lib/animos'
 import { strivoDayKey, getWeekDay } from '@lib/timeSlot'
 import { ritualNocheHecho } from '@lib/ritualNoche'
 
@@ -45,7 +46,8 @@ export async function loadVistaNoche() {
     logros:    victorias.filter(v => v.estado === 'lograda'),
     agradecimientos: entrada?.agradecimientos ?? [],
     aprendizaje:     entrada?.aprendizaje ?? '',
-    animoCierre:     entrada?.animoCierre ?? '',
+    animoCierre:     normalizarAnimos(entrada?.animoCierre),
+    animoOtroTexto:  entrada?.animoOtroTexto ?? '',
     diaCerrado:      ritualNocheHecho(entrada),
   }
 }
