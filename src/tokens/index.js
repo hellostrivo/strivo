@@ -18,23 +18,15 @@ export const colors = {
 // La tarjeta que abre la pregunta de ánimo. Mañana y noche usan el mismo
 // componente y el mismo comportamiento; el tono es lo único que las distingue,
 // para que se lean como parte del mismo sistema y aun así cada una tenga su
-// identidad.
+// identidad. Plano, sin degradado: la tarjeta es un fondo para leer encima, no
+// un elemento que compita con los chips que vienen debajo.
 //
-// Un degradado y no un plano: el color se abre hacia la esquina clara, igual que
-// el fondo de la app, y evita que la tarjeta se lea como un bloque de color.
-// La tinta encima es ink en las dos, y aguanta todo el recorrido: el peor punto
-// es el extremo saturado, con 7.19:1 en la mañana y 7.65:1 en la noche
+// La tinta encima es ink en las dos: 9.83:1 en la mañana y 10.79:1 en la noche
 // (verificado en tests/contraste.test.js).
 export const momento = {
-  manana: { from: '#E49E6E', to: '#F0DEC4' },
-  noche:  { from: '#B8ADD8', to: '#EDEDF8' },
+  manana: '#E5C5A5',
+  noche:  '#D5D1E8',
 }
-
-// El mismo ángulo que la tarjeta del ritual de mañana (@components/diario/
-// EnlaceRitualManana), para que las superficies con degradado de la app se
-// inclinen todas igual.
-export const degradadoDeMomento = ({ from, to }) =>
-  `linear-gradient(140deg, ${from} 0%, ${to} 100%)`
 
 // ─── Tinta por superficie (§6.5) ─────────────────────────────────────────────
 // El color del texto se deriva del fondo sobre el que se pinta, no lo elige cada

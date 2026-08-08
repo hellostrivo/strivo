@@ -169,22 +169,8 @@ describe('Qué superficie declara la app a cada hora', () => {
 })
 
 describe('Las tarjetas de las preguntas de ánimo', () => {
-  // El degradado se recorre entero, no solo sus extremos: el punto más difícil
-  // podría estar en medio si algún día los tonos dejan de ir en la misma
-  // dirección de luminancia.
-  const recorrido = ({ from, to }) =>
-    Array.from({ length: 21 }, (_, i) => mezclar(from, to, i / 20))
-
-  const mezclar = (desde, hasta, t) => {
-    const canal = (a, b) => Math.round(a + (b - a) * t)
-    const aRGB = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16))
-    const [r1, g1, b1] = aRGB(desde)
-    const [r2, g2, b2] = aRGB(hasta)
-    return '#' + [canal(r1, r2), canal(g1, g2), canal(b1, b2)]
-      .map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase()
-  }
-
-  // ink al 80 %, que es como se pinta el subtítulo sobre estas tarjetas
+  // El subtítulo se pinta con ink al 80 %, así que lo que hay que medir no es la
+  // tinta sino la mezcla que de verdad acaba en pantalla.
   const subtitulo = fondo => {
     const aRGB = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16))
     const mezcla = aRGB(colors.ink).map((c, i) => c * 0.8 + aRGB(fondo)[i] * 0.2)
@@ -193,23 +179,19 @@ describe('Las tarjetas de las preguntas de ánimo', () => {
   }
 
   for (const [nombre, tono] of Object.entries(momento)) {
-    it(`${nombre}: la tinta cumple 4.5:1 en todo el degradado`, () => {
-      for (const punto of recorrido(tono)) {
-        expect(contraste(colors.ink, punto), `${nombre} en ${punto}`)
-          .toBeGreaterThanOrEqual(TEXTO_NORMAL)
-      }
+    it(`${nombre}: la pregunta cumple 4.5:1 sobre su tarjeta`, () => {
+      expect(contraste(colors.ink, tono), `${nombre} (${tono})`)
+        .toBeGreaterThanOrEqual(TEXTO_NORMAL)
     })
 
     it(`${nombre}: el subtítulo también`, () => {
-      for (const punto of recorrido(tono)) {
-        expect(contraste(subtitulo(punto), punto), `${nombre} en ${punto}`)
-          .toBeGreaterThanOrEqual(TEXTO_NORMAL)
-      }
+      expect(contraste(subtitulo(tono), tono), `${nombre} (${tono})`)
+        .toBeGreaterThanOrEqual(TEXTO_NORMAL)
     })
   }
 
   it('los dos momentos se distinguen entre sí', () => {
-    expect(momento.manana.from).not.toBe(momento.noche.from)
+    expect(momento.manana).not.toBe(momento.noche)
   })
 })
 

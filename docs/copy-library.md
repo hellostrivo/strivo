@@ -329,8 +329,8 @@ palabra (el espacio no llega a escribirse). Cuenta dentro del límite de 2.
 Las dos preguntas comparten componente (`@components/strivo/SelectorDeChips`):
 misma tarjeta, mismos chips, mismo límite, mismo campo de palabra propia. Solo
 cambian la pregunta, las opciones, los emojis, el color de la tarjeta y dónde se
-guarda. Tarjeta en degradado a 140deg (tokens `momento` en `design-tokens.json`):
-mañana `#E49E6E → #F0DEC4`, noche `#B8ADD8 → #EDEDF8`.
+guarda. Tarjeta plana (tokens `momento` en `design-tokens.json`): mañana
+`#E5C5A5`, noche `#D5D1E8`.
 
 Ids, orden, emojis, colores y límite en `@lib/animos`. Se guardan ids, nunca
 rótulos; la palabra propia viaja en la lista con el prefijo de `@lib/propias`.
