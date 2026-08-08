@@ -29,6 +29,49 @@
         "madrugada_start": "#C9C0C0",
         "madrugada_end": "#B8B0B0",
         "comment": "Varían sin saltos abruptos. Cambio suave cada 30 min."
+      },
+      "inicio": {
+        "comment": "Degradado horario de la pantalla de inicio (§18). Cada ancla es una hora del reloj con su paleta; entre dos anclas se interpola, así que a las 11:40 el fondo está a medio camino entre mañana y mediodía. Distinto del degradado del onboarding (`horarios`), que vive siempre sobre papel.",
+        "madrugada": {
+          "hora": "01:00",
+          "from": "#20263F",
+          "to": "#141122"
+        },
+        "previoAlAlba": {
+          "hora": "04:30",
+          "from": "#262E4A",
+          "to": "#171326"
+        },
+        "amanecer": {
+          "hora": "06:00",
+          "from": "#FBD9B4",
+          "to": "#FDF1E3"
+        },
+        "manana": {
+          "hora": "09:30",
+          "from": "#FDF0D2",
+          "to": "#FBF8F4"
+        },
+        "mediodia": {
+          "hora": "13:30",
+          "from": "#FBD9A5",
+          "to": "#FEF2DF"
+        },
+        "tarde": {
+          "hora": "18:00",
+          "from": "#EFAF95",
+          "to": "#F8DCC9"
+        },
+        "ocaso": {
+          "hora": "19:30",
+          "from": "#D98C7E",
+          "to": "#F0C4B4"
+        },
+        "noche": {
+          "hora": "21:00",
+          "from": "#2E3A5C",
+          "to": "#191428"
+        }
       }
     },
     "areaColors": {
@@ -140,7 +183,8 @@
       "pulse": "600ms",
       "slower": "700ms",
       "slowest": "900ms",
-      "comment": "Más lentas que UI estándar (Apple por defecto es 300ms). Cierre nocturno: 900ms."
+      "comment": "Más lentas que UI estándar (Apple por defecto es 300ms). Cierre nocturno: 900ms.",
+      "franja": "2000ms"
     },
     "easing": {
       "in": "cubic-bezier(0.4, 0, 1, 1)",
@@ -202,6 +246,20 @@
       "saltar": "250ms",
       "totalReducida": "2300ms",
       "fraseEntraReducida": "250ms"
+    },
+    "aperturaSesion": {
+      "comment": "Apertura de sesión al abrir la app (§17). Tercera excepción autorizada al rango 120–900ms, junto con la apertura de P1 y las transiciones del onboarding.",
+      "total": "3400ms",
+      "luzEntra": "700ms",
+      "fraseEntraDesde": "500ms",
+      "fraseEntra": "700ms",
+      "salidaDesde": "2900ms",
+      "salida": "500ms",
+      "saltar": "250ms",
+      "totalReducida": "2400ms",
+      "fraseEntraReducida": "300ms",
+      "escalaSalida": 1.06,
+      "opacidadLuz": 0.85
     }
   },
   "elevation": {

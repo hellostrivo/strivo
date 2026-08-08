@@ -24,6 +24,31 @@ export const gradientsBySlot = {
   madrugada:  { from: '#C9C0C0', to: '#B8B0B0' }, // 00:00–04:00
 }
 
+// Degradado horario de la pantalla de inicio (§18).
+//
+// Cada ancla es una hora del reloj con su paleta; entre dos anclas se interpola
+// (ver @lib/gradienteHorario), así que el color acompaña el paso del día en vez
+// de saltar a horas redondas. Es un juego distinto del de `gradientsBySlot`,
+// que vive siempre sobre papel y lo usa el onboarding.
+// El alba y el ocaso llevan anclas propias y juntas: el cielo cambia deprisa a
+// esas horas, y así el paso de tinta clara a oscura dura minutos en vez de
+// horas (ver la nota de contraste en @lib/gradienteHorario).
+export const gradientesInicio = [
+  { id: 'madrugada',    hora:  1,    from: '#20263F', to: '#141122' },
+  { id: 'previoAlAlba', hora:  4.5,  from: '#262E4A', to: '#171326' },
+  { id: 'amanecer',     hora:  6,    from: '#FBD9B4', to: '#FDF1E3' },
+  { id: 'manana',       hora:  9.5,  from: '#FDF0D2', to: '#FBF8F4' },
+  { id: 'mediodia',     hora: 13.5,  from: '#FBD9A5', to: '#FEF2DF' },
+  { id: 'tarde',        hora: 18,    from: '#EFAF95', to: '#F8DCC9' },
+  { id: 'ocaso',        hora: 19.5,  from: '#D98C7E', to: '#F0C4B4' },
+  { id: 'noche',        hora: 21,    from: '#2E3A5C', to: '#191428' },
+]
+
+// Lo que tarda el fondo en pasar de una franja a otra con la app abierta.
+// Excede el rango 120–900ms a propósito: no es una transición de interfaz sino
+// el paso del día, que no debe notarse como un cambio (§18.3.5).
+export const duracionFranja = 2000
+
 // Colores de cada área de identidad (usados en chips, puntos, etc.)
 export const areaColors = {
   salud:       '#7E9E86',
@@ -109,6 +134,22 @@ export const transicion = {
   // Con movimiento reducido: sin desplazamiento vertical y más corta
   totalReducida:      2300,
   fraseEntraReducida:  250,
+}
+
+// ─── Apertura de sesión (§17) ────────────────────────────────────────────────
+// La tercera excepción autorizada al rango 120–900 ms. Se repite en cada
+// entrada, así que es más corta que la de P1 y se salta con un toque.
+export const aperturaSesion = {
+  total:             3400,
+  luzEntra:           700,
+  fraseEntraDesde:    500,
+  fraseEntra:         700,
+  salidaDesde:       2900,
+  salida:             500,
+  saltar:             250,
+  // Con movimiento reducido: sin escala ni desplazamiento
+  totalReducida:     2400,
+  fraseEntraReducida: 300,
 }
 
 // Núcleo de luz de la apertura (px). El escalado máximo nunca toca los bordes.

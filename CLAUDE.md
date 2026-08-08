@@ -20,7 +20,7 @@ No es:
 
 ---
 
-## 2. Navegación de la app (estructura de 3 pestañas)
+## 2. Navegación de la app (estructura de 4 pestañas)
 
 ```
 ┌─────────────────────────────────┐
@@ -28,15 +28,16 @@ No es:
 │  (Ritual o Vista de Mañana/Noche│
 │   según la hora; o Hoy tranquilo)
 └─────────────────────────────────┘
-┌─ Hoy ─┬─ Journal ─┬─ Tú ────┐
-│       │           │  (Insights,
-│       │           │   Historial,
-│       │           │   Perfil)
-└───────┴───────────┴────────┘
+┌─ Hoy ─┬─ Journal ─┬─ Hábitos ─┬─ Tú ────┐
+│       │           │           │ (Insights,
+│       │           │           │  Historial,
+│       │           │           │  Perfil)
+└───────┴───────────┴───────────┴─────────┘
 ```
 
-- **Hoy:** pantalla raíz. Contiene Diario (Vista de Mañana o de Noche según hora) + Rituales (como overlays modales).
+- **Hoy:** pantalla raíz. Frase del día + botones Mañana/Noche (las dos secciones disponibles siempre) + Rituales (como overlays modales). Fondo con degradado horario.
 - **Journal:** escritura libre, sin estructura.
+- **Hábitos:** lista, detalle y creación. Salieron de "Tú" (§19).
 - **Tú:** espacio de autoconocimiento (Insights, Historial, Perfil, Descubre).
 
 El Diario **NO es una pestaña**; se accede desde Hoy en su momento.
@@ -112,6 +113,8 @@ El Diario **NO es una pestaña**; se accede desde Hoy en su momento.
 **Excepciones autorizadas al rango 120–900ms** (no marcarlas en el QA gate):
 - **Apertura de Strivo** (`AperturaStrivo`, antes de P1): 5000ms, o 1600ms con movimiento reducido. Es una descompresión, no una transición de interfaz. Tokens en `motion.apertura`.
 - **Pantallas de transición del onboarding** (`T4BTransicion`, entre P4B y P4C): 3000ms, o 2300ms con movimiento reducido. Tokens en `motion.transicion`.
+- **Apertura de sesión** (`AperturaSesion`, al abrir la app): 3400ms, o 2400ms con movimiento reducido. Tokens en `motion.aperturaSesion`.
+- **Cambio de franja del fondo** (`FondoHorario`): 2000ms. No es una transición de interfaz sino el paso del día, que no debe notarse.
 
 **Componentes:** radios 10–32px (ver tokens). Sin sombras de drop; usar elevación (2–8 dp). Haptics livianas, sin vibración en errores.
 
@@ -130,7 +133,7 @@ El Diario **NO es una pestaña**; se accede desde Hoy en su momento.
 | **RN-07** | Suscripción: paywall máx. 2×/semana. Lo escrito siempre exportable. Nada se bloquea al cancelar. |
 | **RN-08** | IA: ≤ 3 MXN por usuario premium/mes. Sin retención de datos, sin entrenar modelos con el contenido. |
 | **RN-09** | Privacidad: ningún dato identificable de usuario en analítica. Protocolo de contenido sensible (§5.3.16). |
-| **RN-10** | Acceso: 3 pestañas máximo en nav principal. Profundidad máxima 3 toques desde Hoy. |
+| **RN-10** | Acceso: 4 pestañas en nav principal (Hoy · Journal · Hábitos · Tú, §19). Profundidad máxima 3 toques desde Hoy. |
 
 **Verifica estas antes de cada feature:** si viola una regla, no entra al MVP.
 
