@@ -469,13 +469,19 @@ CIERRE:
 ### Crear/Editar
 
 ```
-Pantalla H3:
-"¿Cuál es tu nuevo hábito?"
+Pantalla H3 (la misma pantalla crea y edita):
+"¿Cuál es tu nuevo hábito?"        ← al editar: "Ajusta tu hábito"
 [Campo: nombre]
 [Chips de área]
-[Selector: Mañana / Noche / Noche]
+[Selector: Mañana / Noche]         ← "A lo largo del día" se retiró: era el
+                                     único momento que no proyectaba a ningún
+                                     ritual. Los que existían pasaron a Mañana.
 [Días de la semana, default all]
-[Opcional: hora de recordatorio]
+[Crear hábito]                     ← al editar: "Guardar cambios"
+
+Un hábito solo aparece los días que tiene marcados. En la lista, los que hoy no
+tocan bajan a "Otros días": siguen ahí y se pueden abrir y editar, pero no se
+ofrecen para marcar un día que no les corresponde.
 
 Sugerencias por área:
 - Salud: "Beber agua", "Estirar", "Dormir", "Mover", "Respirar"
@@ -488,8 +494,11 @@ Sugerencias por área:
 ```
 Pantalla H2:
 [Nombre del hábito]
-[Área + identidad de área]
-"En Salud eres alguien que cuida su cuerpo"
+[Nombre del área]                  ← solo el área, nunca la identidad de área:
+"Salud"                              emparejarla con cada hábito daba cosas como
+                                     "Dormir a tiempo · se mueve porque le hace
+                                     bien". Y si no hay área, no se pinta nada.
+[Editar]
 [Momento]
 [Días]
 "Lo has hecho 47 veces"
