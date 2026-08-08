@@ -24,22 +24,34 @@
 // suman al tono más cercano. Que varios compartan color no es un descuido: el
 // calendario cuenta de qué color fue el día, no diagnostica cuál fue (RN-05).
 
+// LOS EMOJIS son los mismos que los de la pregunta de la mañana cuando el
+// estado es el mismo sentimiento (en paz, gratitud, orgullo, serenidad,
+// alegría): las dos preguntas son el mismo gesto en dos momentos del día, y
+// compartir el símbolo es lo que lo hace evidente sin explicarlo. Los cuatro
+// que no tienen equivalente salen de naturaleza, no de caras.
 import { colors } from '@tokens'
+import { comoPropia, esPropia, textoDePropia } from '@lib/propias'
 
 export const ANIMOS = [
-  { id: 'en_paz',     color: colors.sage  },
-  { id: 'agradecido', color: colors.amber },
-  { id: 'orgulloso',  color: colors.plum  },
-  { id: 'tranquilo',  color: colors.sage  },   // el de siempre
-  { id: 'contento',   color: colors.amber },
-  { id: 'pensativo',  color: colors.mist  },   // el de siempre
-  { id: 'cansado',    color: colors.plum  },   // el de siempre
-  { id: 'inquieto',   color: colors.amber },   // el de siempre
-  { id: 'otro',       color: '#D9CFC4'    },   // el de siempre: border
+  { id: 'en_paz',     emoji: '☮️',  color: colors.sage  },
+  { id: 'agradecido', emoji: '🙏',  color: colors.amber },
+  { id: 'orgulloso',  emoji: '🦁',  color: colors.plum  },
+  { id: 'tranquilo',  emoji: '🌊',  color: colors.sage  },   // el color de siempre
+  { id: 'contento',   emoji: '😊',  color: colors.amber },
+  { id: 'pensativo',  emoji: '🌫️',  color: colors.mist  },   // el color de siempre
+  { id: 'cansado',    emoji: '🍂',  color: colors.plum  },   // el color de siempre
+  { id: 'inquieto',   emoji: '🌀',  color: colors.amber },   // el color de siempre
 ]
 
-// "Algo más" no es un estado del catálogo: es el hueco para una palabra propia.
+// "Algo más" no es un estado del catálogo ni un chip de la rejilla: es el botón
+// con el "+" que abre el campo para escribir una palabra propia, igual que
+// "Otra" en la pregunta de la mañana. Por eso queda fuera de ANIMOS.
 export const ANIMO_OTRO = 'otro'
+
+// Para buscar nombre y color hace falta contar también con "Algo más": los
+// registros anteriores al rediseño sí lo guardaban como un estado más, y el
+// historial tiene que poder seguir nombrándolos.
+const ANIMOS_TODOS = [...ANIMOS, { id: ANIMO_OTRO, color: '#D9CFC4' }]
 
 // Cuántos se pueden elegir a la vez ("Elige una o dos").
 export const MAX_ANIMOS = 2
@@ -51,9 +63,9 @@ export const OTRO_MAX_LENGTH = 20
 // siguen funcionando en cualquier género.
 export const ANIMOS_DIFICILES = ['cansado', 'inquieto']
 
-export const esAnimoConocido = id => ANIMOS.some(a => a.id === id)
+export const esAnimoConocido = id => ANIMOS_TODOS.some(a => a.id === id)
 
-export const colorDeAnimoId = id => ANIMOS.find(a => a.id === id)?.color ?? null
+export const colorDeAnimoId = id => ANIMOS_TODOS.find(a => a.id === id)?.color ?? null
 
 // ─── Lo escrito antes de que hubiera ids ─────────────────────────────────────
 // Las entradas más viejas guardaron el rótulo en masculino, que era el único que
@@ -83,19 +95,26 @@ export function idDeAnimo(valor) {
  *
  * Acepta las tres formas que puede tener un registro guardado, porque no se
  * migra nada: lo de antes se lee, no se reescribe.
- *   - `'cansado'`            un solo estado (lo que se guardaba hasta ahora)
- *   - `['cansado', 'en_paz']` la forma actual
- *   - `''` / `null`          sin respuesta
+ *   - `'cansado'`             un solo estado, o el rótulo de antes de la v6
+ *   - `['cansado', 'en_paz']`  la forma actual
+ *   - `['otro']` + `otroTexto` lo que guardó la primera versión de "Algo más"
+ *   - `''` / `null`            sin respuesta
+ *
+ * La palabra propia pasó a guardarse dentro de la propia lista, con el prefijo
+ * de @lib/propias, igual que en la pregunta de la mañana. Los registros que la
+ * llevaban en un campo aparte se leen y se convierten aquí: no se reescribe
+ * nada en el almacén.
  *
  * Los ids desconocidos se conservan: un registro de hace meses sigue contando
  * lo que contaba, aunque su estado ya no esté en el catálogo.
  */
-export function normalizarAnimos(valor) {
+export function normalizarAnimos(valor, otroTexto = '') {
   const lista = Array.isArray(valor) ? valor : [valor]
+  const palabra = typeof otroTexto === 'string' ? otroTexto.trim() : ''
   const vistos = new Set()
 
   return lista
-    .map(idDeAnimo)
+    .map(id => (id === ANIMO_OTRO || id === 'Otro') && palabra ? comoPropia(palabra) : idDeAnimo(id))
     .filter(id => {
       if (typeof id !== 'string' || !id.trim()) return false
       if (vistos.has(id)) return false
@@ -112,15 +131,15 @@ export function normalizarAnimos(valor) {
  * si la hay. Un id que ya no esté en el catálogo se devuelve tal cual en vez de
  * desaparecer de la pantalla.
  */
-export function nombreDeAnimo(id, t, otroTexto = '') {
+export function nombreDeAnimo(id, t) {
   if (!id) return ''
-  if (id === ANIMO_OTRO && otroTexto?.trim()) return otroTexto.trim()
+  if (esPropia(id)) return textoDePropia(id)
   return esAnimoConocido(id) ? t(`ritualNoche.n6.states.${id}`) : id
 }
 
 /** Los nombres de una selección entera, listos para leerse seguidos. */
 export function nombresDeAnimos(valor, t, otroTexto = '') {
-  return normalizarAnimos(valor).map(id => nombreDeAnimo(id, t, otroTexto))
+  return normalizarAnimos(valor, otroTexto).map(id => nombreDeAnimo(id, t))
 }
 
 /**
@@ -138,18 +157,14 @@ export function unaPalabra(texto) {
 /**
  * Lo que de verdad se guarda de un día.
  *
- * "Algo más" elegido pero sin palabra no se guarda: no se registra una elección
- * vacía y tampoco se avisa de ello (D.4). Y si no quedó seleccionado, su texto
- * se va con él.
+ * La palabra propia viaja dentro de la lista, así que "Algo más" ya no se
+ * guarda como un estado suelto: o hay palabra, o no hay nada. `animoOtroTexto`
+ * se limpia porque los registros nuevos ya no lo usan; los viejos se siguen
+ * leyendo desde normalizarAnimos.
  */
 export function seleccionParaGuardar(animos, otroTexto = '') {
-  const palabra = unaPalabra(otroTexto)
-  const limpios = normalizarAnimos(animos).filter(
-    id => id !== ANIMO_OTRO || palabra
-  )
+  const limpios = normalizarAnimos(animos, otroTexto)
+    .filter(id => id !== ANIMO_OTRO)
 
-  return {
-    animoCierre:     limpios,
-    animoOtroTexto:  limpios.includes(ANIMO_OTRO) ? palabra : '',
-  }
+  return { animoCierre: limpios, animoOtroTexto: '' }
 }

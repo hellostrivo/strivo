@@ -54,7 +54,7 @@ export function tieneRegistro(entrada) {
     // Por longitud y no por verdad: `animoCierre` es una lista, y una lista
     // vacía es verdadera en JS. Sin esto, un día en el que no se eligió ningún
     // estado aparecería con punto en el calendario.
-    normalizarAnimos(entrada.animoCierre).length ||
+    normalizarAnimos(entrada.animoCierre, entrada.animoOtroTexto).length ||
     entrada.agradecimientos?.some(t => t?.trim()) ||
     entrada.emociones?.length ||
     entrada.ritualMananaCompletadoEn ||
@@ -80,16 +80,15 @@ export async function loadMes(userId, ano, mes) {
     if (!tieneRegistro(entrada) && !conVictoria.has(entrada.fecha)) continue
     dias.set(entrada.fecha, {
       fecha: entrada.fecha,
-      animo: normalizarAnimos(entrada.animoCierre),
-      animoOtroTexto: entrada.animoOtroTexto ?? '',
-      color: colorDeAnimo(entrada.animoCierre),
+      animo: normalizarAnimos(entrada.animoCierre, entrada.animoOtroTexto),
+      color: colorDeAnimo(normalizarAnimos(entrada.animoCierre, entrada.animoOtroTexto)),
     })
   }
 
   // Un día en el que solo se escribió una victoria también estuvo
   for (const fecha of conVictoria) {
     if (dias.has(fecha)) continue
-    dias.set(fecha, { fecha, animo: [], animoOtroTexto: '', color: COLOR_SIN_ANIMO })
+    dias.set(fecha, { fecha, animo: [], color: COLOR_SIN_ANIMO })
   }
 
   return dias
@@ -122,8 +121,7 @@ export async function loadDia(userId, fecha) {
     intencion:   entrada?.intencion ?? '',
     granDia:     entrada?.granDia ?? '',
     aprendizaje: entrada?.aprendizaje ?? '',
-    animo:          normalizarAnimos(entrada?.animoCierre),
-    animoOtroTexto: entrada?.animoOtroTexto ?? '',
+    animo:       normalizarAnimos(entrada?.animoCierre, entrada?.animoOtroTexto),
     necesito:    entrada?.emocionesNecesito ?? '',
     agradecimientos,
     emociones,

@@ -48,7 +48,6 @@ export default function VistaNoche({ recarga = 0, onDiaCerrado }) {
   const [agradecimientos, setAgradecimientos] = useState([])
   const [aprendizaje, setAprendizaje]         = useState('')
   const [animos, setAnimos]                   = useState([])
-  const [animoOtro, setAnimoOtro]             = useState('')
   const [cerrando, setCerrando]               = useState(false)
   const [diaCerrado, setDiaCerrado]           = useState(false)
 
@@ -62,7 +61,6 @@ export default function VistaNoche({ recarga = 0, onDiaCerrado }) {
         setAgradecimientos(cargados.agradecimientos)
         setAprendizaje(cargados.aprendizaje)
         setAnimos(cargados.animoCierre)
-        setAnimoOtro(cargados.animoOtroTexto)
         setDiaCerrado(cargados.diaCerrado)
       })
       .catch(error => avisar('No se pudo abrir la Vista de Noche:', error))
@@ -81,7 +79,7 @@ export default function VistaNoche({ recarga = 0, onDiaCerrado }) {
   const cerrarElDia = () => {
     guardar(guardarAgradecimientos(datos.userId, datos.fecha, agradecimientos), 'Lo agradecido')
     guardar(guardarAprendizaje(datos.userId, datos.fecha, aprendizaje), 'La reflexión')
-    guardar(guardarAnimoCierre(datos.userId, datos.fecha, animos, animoOtro), 'El ánimo')
+    guardar(guardarAnimoCierre(datos.userId, datos.fecha, animos), 'El ánimo')
     guardar(completarRitualNoche(datos.userId, datos.fecha), 'El cierre')
     setCerrando(true)
   }
@@ -207,19 +205,15 @@ export default function VistaNoche({ recarga = 0, onDiaCerrado }) {
       </BloqueDiario>
 
       {/* 5 · Cómo te vas a dormir */}
-      <BloqueDiario id="animo" label={copy.ritualNoche.n6.question}>
+      {/* Sin `label`: la pregunta la pinta la tarjeta del selector, igual que
+          el bloque de emociones de la Vista de Mañana */}
+      <BloqueDiario id="animo">
         <SelectorAnimo
           animos={animos}
-          otroTexto={animoOtro}
-          onChange={({ animos: elegidos, otroTexto }) => {
+          onChange={({ animos: elegidos }) => {
             setAnimos(elegidos)
-            setAnimoOtro(otroTexto)
-            guardar(
-              guardarAnimoCierre(datos.userId, datos.fecha, elegidos, otroTexto),
-              'El ánimo'
-            )
+            guardar(guardarAnimoCierre(datos.userId, datos.fecha, elegidos), 'El ánimo')
           }}
-          etiquetadoPor="animo-label"
         />
       </BloqueDiario>
 

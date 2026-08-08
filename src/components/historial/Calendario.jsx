@@ -69,7 +69,7 @@ export default function Calendario({ ano, mes, dias, hoy, onDia, onAnterior, onS
               onClick={() => onDia(fecha)}
               aria-label={
                 dia?.animo?.length
-                  ? `${fechaEnPalabras(fecha)}. ${copy.historial.moodLabel}: ${nombresDeAnimos(dia.animo, t, dia.animoOtroTexto).join(', ')}`
+                  ? `${fechaEnPalabras(fecha)}. ${copy.historial.moodLabel}: ${nombresDeAnimos(dia.animo, t).join(', ')}`
                   : fechaEnPalabras(fecha)
               }
               className={clsx(

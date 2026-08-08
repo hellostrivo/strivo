@@ -13,6 +13,7 @@ import { copy } from '@copy'
 import { resolveCopy } from '@copy/resolve'
 import { upgradeSchema, updateDailyEntry, saveUserProfile, getDailyEntry } from '@lib/db'
 import { setGender, resetGenderStore } from '@lib/genderStore'
+import { comoPropia } from '@lib/propias'
 import { getCurrentUserId } from '@lib/user'
 import { loadRitualManana } from '@lib/ritualManana'
 import { guardarAnimoCierre, loadRitualNoche } from '@lib/ritualNoche'
@@ -39,19 +40,31 @@ beforeEach(() => resetGenderStore())
 const traductor = modo => path =>
   resolveCopy(path.split('.').reduce((nodo, clave) => nodo?.[clave], copy), modo)
 
-const nombres = modo => ANIMOS.map(({ id }) => nombreDeAnimo(id, traductor(modo)))
+// Los ocho chips de la rejilla más el rótulo del botón "+ Algo más"
+const TODAS = [...ANIMOS.map(a => a.id), ANIMO_OTRO]
+const nombres = modo => TODAS.map(id => nombreDeAnimo(id, traductor(modo)))
 
 describe('Las nueve opciones, en su orden', () => {
   it('están las nueve y en el orden de la spec', () => {
-    expect(ANIMOS.map(a => a.id)).toEqual([
+    expect(TODAS).toEqual([
       'en_paz', 'agradecido', 'orgulloso', 'tranquilo', 'contento',
       'pensativo', 'cansado', 'inquieto', 'otro',
     ])
   })
 
+  // "Algo más" no es un chip de la rejilla sino el botón con el "+", igual que
+  // "Otra" en la pregunta de la mañana. Por eso está fuera de ANIMOS.
+  it('"Algo más" queda fuera de la rejilla', () => {
+    expect(ANIMOS.map(a => a.id)).not.toContain(ANIMO_OTRO)
+    expect(ANIMOS).toHaveLength(8)
+  })
+
+  it('cada opción de la rejilla lleva su emoji', () => {
+    for (const { id, emoji } of ANIMOS) expect(emoji, id).toBeTruthy()
+  })
+
   it('el catálogo y el copy nombran exactamente los mismos estados', () => {
-    expect(ANIMOS.map(a => a.id).sort())
-      .toEqual(Object.keys(copy.ritualNoche.n6.states).sort())
+    expect([...TODAS].sort()).toEqual(Object.keys(copy.ritualNoche.n6.states).sort())
   })
 
   it('el encabezado dice lo que tiene que decir', () => {
@@ -103,10 +116,8 @@ describe('El estado de cierre se dice en el género del perfil', () => {
     expect(nombreDeAnimo('inventado', traductor('f'))).toBe('inventado')
   })
 
-  it('"Algo más" se lee con la palabra escrita, si la hay', () => {
-    const t = traductor('f')
-    expect(nombreDeAnimo(ANIMO_OTRO, t, 'serena')).toBe('serena')
-    expect(nombreDeAnimo(ANIMO_OTRO, t, '   ')).toBe('Algo más')
+  it('la palabra escrita se lee tal cual, como en la mañana', () => {
+    expect(nombreDeAnimo(comoPropia('serena'), traductor('f'))).toBe('serena')
   })
 
   it('una selección entera se lee de corrido', () => {
@@ -177,30 +188,25 @@ describe('"Algo más": una palabra, en silencio', () => {
     expect(unaPalabra(null)).toBe('')
   })
 
-  it('elegido con palabra, se guarda el id y la palabra aparte', () => {
-    expect(seleccionParaGuardar(['en_paz', ANIMO_OTRO], 'serena')).toEqual({
-      animoCierre: ['en_paz', 'otro'],
-      animoOtroTexto: 'serena',
+  it('la palabra viaja dentro de la lista, como en la mañana', () => {
+    expect(seleccionParaGuardar(['en_paz', comoPropia('serena')])).toEqual({
+      animoCierre: ['en_paz', 'propia:serena'],
+      animoOtroTexto: '',
     })
   })
 
-  it('elegido sin palabra, se descarta en silencio', () => {
-    expect(seleccionParaGuardar(['en_paz', ANIMO_OTRO], '')).toEqual({
+  it('"Algo más" sin palabra no llega a guardarse', () => {
+    expect(seleccionParaGuardar(['en_paz', ANIMO_OTRO])).toEqual({
       animoCierre: ['en_paz'],
       animoOtroTexto: '',
     })
   })
 
-  it('si se suelta "Algo más", su palabra se va con él', () => {
-    expect(seleccionParaGuardar(['en_paz'], 'serena')).toEqual({
-      animoCierre: ['en_paz'],
-      animoOtroTexto: '',
-    })
-  })
-
-  it('la palabra guardada nunca lleva espacios', () => {
-    const { animoOtroTexto } = seleccionParaGuardar([ANIMO_OTRO], 'dos palabras')
-    expect(animoOtroTexto).toBe('dos')
+  // Lo que guardó la primera versión de "Algo más": el id suelto y la palabra
+  // en un campo aparte. Se lee y se pliega, no se reescribe en el almacén.
+  it('un registro con la palabra en su campo aparte se pliega en la lista', () => {
+    expect(normalizarAnimos(['en_paz', 'otro'], 'serena'))
+      .toEqual(['en_paz', 'propia:serena'])
   })
 })
 
@@ -220,21 +226,20 @@ describe('Ida y vuelta por el almacén local', () => {
 
   it('dos estados y una palabra vuelven tal cual', async () => {
     const userId = await conPerfil()
-    await guardarAnimoCierre(userId, HOY, ['agradecido', ANIMO_OTRO], 'serena')
+    await guardarAnimoCierre(userId, HOY, ['agradecido', comoPropia('serena')])
 
     const datos = await loadRitualNoche()
-    expect(datos.animoCierre).toEqual(['agradecido', 'otro'])
-    expect(datos.animoOtroTexto).toBe('serena')
+    expect(datos.animoCierre).toEqual(['agradecido', 'propia:serena'])
   })
 
-  it('guardar de nuevo no deja restos de la palabra anterior', async () => {
+  it('un registro de la versión anterior vuelve ya plegado', async () => {
     const userId = await conPerfil()
-    await guardarAnimoCierre(userId, HOY, [ANIMO_OTRO], 'serena')
-    await guardarAnimoCierre(userId, HOY, ['cansado'], 'serena')
+    await updateDailyEntry(userId, HOY, {
+      animoCierre: ['cansado', 'otro'], animoOtroTexto: 'serena',
+    })
 
-    const entrada = await getDailyEntry(userId, HOY)
-    expect(entrada.animoCierre).toEqual(['cansado'])
-    expect(entrada.animoOtroTexto).toBe('')
+    const datos = await loadRitualNoche()
+    expect(datos.animoCierre).toEqual(['cansado', 'propia:serena'])
   })
 
   it('cerrar sin elegir nada no escribe una elección vacía', async () => {

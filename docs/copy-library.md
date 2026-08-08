@@ -321,11 +321,19 @@ responder: sin mensaje, sin alerta. Se puede cerrar el día sin elegir ninguno.
 | `inquieto` | Inquieto | Inquieta | Con inquietud |
 | `otro` | Algo más | Algo más | Algo más |
 
-"Algo más" abre en línea un campo de **una sola palabra** (placeholder "Una
-palabra", máx. 20 caracteres). Cuenta dentro del límite de 2. Si queda elegido
-sin palabra, se descarta en silencio; si se suelta, su palabra se va con él.
+"+ Algo más" funciona igual que "+ Otra" en la pregunta de la mañana: abre un
+campo, y al confirmar con Enter la palabra se convierte en un chip elegido más,
+arriba con los demás. Placeholder "Una palabra", máx. 20 caracteres y una sola
+palabra (el espacio no llega a escribirse). Cuenta dentro del límite de 2.
 
-Ids, orden, colores y límite en `@lib/animos`. Se guardan ids, nunca rótulos.
+Las dos preguntas comparten componente (`@components/strivo/SelectorDeChips`):
+misma tarjeta, mismos chips, mismo límite, mismo campo de palabra propia. Solo
+cambian la pregunta, las opciones, los emojis, el color de la tarjeta y dónde se
+guarda. Tarjeta: mañana `#E49E6E`, noche `#B8ADD8` (tokens `momento` en
+`design-tokens.json`).
+
+Ids, orden, emojis, colores y límite en `@lib/animos`. Se guardan ids, nunca
+rótulos; la palabra propia viaja en la lista con el prefijo de `@lib/propias`.
 
 Chips de matiz debajo (contraste con cómo entraste al día) — pendiente de §5.6
 

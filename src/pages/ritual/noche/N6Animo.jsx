@@ -11,32 +11,21 @@
 // existen (§5.3, bloque 3), es el siguiente paso natural de esta pantalla.
 
 import { useEffect, useRef } from 'react'
-import { copy } from '@copy'
 import SelectorAnimo from '@components/diario/SelectorAnimo'
 
-export default function N6Animo({ animos, otroTexto, onChange }) {
+export default function N6Animo({ animos, onChange }) {
+  // La pregunta la pinta la tarjeta del selector, así que el foco del paso va
+  // ahí: no hay dos títulos, y quien navega con lector de pantalla sigue
+  // aterrizando en el encabezado al entrar.
   const headingRef = useRef(null)
   useEffect(() => { headingRef.current?.focus() }, [])
 
   return (
-    <>
-      <h1
-        ref={headingRef}
-        tabIndex={-1}
-        id="n6-heading"
-        className="font-display text-xl leading-tight text-ink focus:outline-none"
-      >
-        {copy.ritualNoche.n6.question}
-      </h1>
-
-      <div className="mt-8">
-        <SelectorAnimo
-          animos={animos}
-          otroTexto={otroTexto}
-          onChange={onChange}
-          etiquetadoPor="n6-heading"
-        />
-      </div>
-    </>
+    <SelectorAnimo
+      animos={animos}
+      onChange={onChange}
+      tituloRef={headingRef}
+      tituloComo="h1"
+    />
   )
 }

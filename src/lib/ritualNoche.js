@@ -56,8 +56,10 @@ export async function loadRitualNoche() {
     logros:    victorias.filter(v => v.estado === 'lograda'),
     agradecimientos: entrada?.agradecimientos ?? [],
     aprendizaje:     entrada?.aprendizaje ?? '',
-    animoCierre:     normalizarAnimos(entrada?.animoCierre),
-    animoOtroTexto:  entrada?.animoOtroTexto ?? '',
+    // La palabra propia de los registros del bloque 02 vivía en un campo
+    // aparte; aquí se pliega dentro de la lista y las pantallas manejan un dato
+    // solo. En el almacén no se reescribe nada.
+    animoCierre:     normalizarAnimos(entrada?.animoCierre, entrada?.animoOtroTexto),
   }
 }
 

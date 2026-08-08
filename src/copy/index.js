@@ -740,6 +740,7 @@ export const copy = {
       // lista, no para explicarlo.
       otherPlaceholder: 'Una palabra',
       otherLabel: 'Tu palabra para hoy',
+      otherAdd: 'Añadir',
       // Solo lo oye quien navega con lector de pantalla: en la pantalla, llegar
       // al límite se ve porque las demás se atenúan, y nada más.
       countTemplate: '{n} de {max} elegidas',

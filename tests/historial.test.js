@@ -39,7 +39,7 @@ describe('colores de ánimo', () => {
   // El catálogo y el copy se leen por el mismo id: si uno gana una entrada que
   // el otro no tiene, el chip se queda sin nombre o el punto sin color.
   it('el catálogo y el copy nombran exactamente los mismos estados', () => {
-    expect(ANIMOS.map(a => a.id).sort())
+    expect([...ANIMOS.map(a => a.id), 'otro'].sort())
       .toEqual(Object.keys(copy.ritualNoche.n6.states).sort())
   })
 

@@ -37,13 +37,13 @@ export const EMOCIONES = [
 export const EMOCION_OTRA = 'otra'
 export const OTRA_MAX_LENGTH = 30
 
-// Las que se escriben a mano se guardan con este prefijo, para distinguirlas de
-// un id del catálogo sin perder lo que la persona escribió.
-export const PREFIJO_PROPIA = 'propia:'
-
-export const esPropia = id => typeof id === 'string' && id.startsWith(PREFIJO_PROPIA)
-export const textoDePropia = id => (esPropia(id) ? id.slice(PREFIJO_PROPIA.length) : null)
-export const comoPropia = texto => `${PREFIJO_PROPIA}${texto.trim()}`
+// Las que se escriben a mano se guardan con un prefijo, para distinguirlas de un
+// id del catálogo sin perder lo que la persona escribió. El mecanismo lo comparte
+// con el estado de cierre de la noche, así que vive en @lib/propias; se reexporta
+// aquí para que quien ya lo importaba de este módulo lo siga encontrando.
+export { PREFIJO_PROPIA, esPropia, textoDePropia, comoPropia } from '@lib/propias'
+// El reexport no trae los nombres a este módulo, y aquí abajo se usan.
+import { esPropia, textoDePropia } from '@lib/propias'
 
 export const emojiDe = id => EMOCIONES.find(e => e.id === id)?.emoji ?? null
 
@@ -57,6 +57,11 @@ export const emojiDe = id => EMOCIONES.find(e => e.id === id)?.emoji ?? null
  */
 export function nombreDeEmocion(id, t) {
   if (esPropia(id)) return textoDePropia(id)
-  if (EMOCIONES.some(e => e.id === id)) return t(`hoy.emociones.opciones.${id}`)
+  // "Otra" no está en EMOCIONES —no es una emoción del catálogo, es el atajo
+  // para escribir la propia— pero sí tiene nombre en @copy, y es el rótulo del
+  // botón que abre el campo.
+  if (id === EMOCION_OTRA || EMOCIONES.some(e => e.id === id)) {
+    return t(`hoy.emociones.opciones.${id}`)
+  }
   return id
 }

@@ -22,6 +22,11 @@
         "onDarkMuted": "6.15:1 sobre la misma"
       }
     },
+    "momento": {
+      "comment": "El color de la tarjeta que abre cada pregunta de ánimo. Mañana y noche comparten estructura y comportamiento; el tono es lo que las distingue: cálido para la mañana, sereno para la noche. Contraste de ink sobre cada uno: 7.19:1 y 7.65:1.",
+      "manana": "#E49E6E",
+      "noche": "#B8ADD8"
+    },
     "accents": {
       "amber": "#E5A25C",
       "plum": "#8B6BA8",

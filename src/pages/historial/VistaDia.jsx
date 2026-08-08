@@ -141,7 +141,7 @@ export default function VistaDia({ dia, onVolver }) {
                 />
                 {/* Se eligieron hasta dos: se leen seguidos, sin jerarquía entre
                     ellos. El punto toma el color del primero. */}
-                {nombresDeAnimos(dia.animo, t, dia.animoOtroTexto).join(' · ')}
+                {nombresDeAnimos(dia.animo, t).join(' · ')}
               </p>
             </BloqueDiario>
           )}

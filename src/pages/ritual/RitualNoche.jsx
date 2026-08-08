@@ -53,7 +53,6 @@ export default function RitualNoche({ onClose }) {
   const [agradecimientos, setAgradecimientos] = useState([])
   const [aprendizaje, setAprendizaje]         = useState('')
   const [animos, setAnimos]                   = useState([])
-  const [animoOtro, setAnimoOtro]             = useState('')
   const [cerrando, setCerrando]               = useState(false)
 
   useEffect(() => {
@@ -67,7 +66,6 @@ export default function RitualNoche({ onClose }) {
         setAgradecimientos(cargados.agradecimientos)
         setAprendizaje(cargados.aprendizaje)
         setAnimos(cargados.animoCierre)
-        setAnimoOtro(cargados.animoOtroTexto)
       })
       .catch(error => {
         avisar('No se pudo abrir el ritual de noche:', error)
@@ -91,9 +89,9 @@ export default function RitualNoche({ onClose }) {
       .catch(error => avisar('Los agradecimientos se guardan más tarde:', error))
     guardarAprendizaje(datos.userId, datos.fecha, aprendizaje)
       .catch(error => avisar('La reflexión se guarda más tarde:', error))
-    guardarAnimoCierre(datos.userId, datos.fecha, animos, animoOtro)
+    guardarAnimoCierre(datos.userId, datos.fecha, animos)
       .catch(error => avisar('El ánimo se guarda más tarde:', error))
-  }, [datos, agradecimientos, aprendizaje, animos, animoOtro])
+  }, [datos, agradecimientos, aprendizaje, animos])
 
   // Salir sin ceremonia (X, Escape): el día queda cerrado igual
   const salir = useCallback(() => {
@@ -235,11 +233,9 @@ export default function RitualNoche({ onClose }) {
       {paso === 'n6' && (
         <N6Animo
           animos={animos}
-          otroTexto={animoOtro}
-          onChange={({ animos: elegidos, otroTexto }) => {
+          onChange={({ animos: elegidos }) => {
             setAnimos(elegidos)
-            setAnimoOtro(otroTexto)
-            guardarAnimoCierre(datos.userId, datos.fecha, elegidos, otroTexto)
+            guardarAnimoCierre(datos.userId, datos.fecha, elegidos)
               .catch(error => avisar('El ánimo se guarda más tarde:', error))
           }}
         />

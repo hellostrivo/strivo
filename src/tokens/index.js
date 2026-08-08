@@ -14,6 +14,16 @@ export const colors = {
   mist:  '#93A9C4',
 }
 
+// ─── El color de cada momento del día ───────────────────────────────────────
+// La tarjeta que abre la pregunta de ánimo. Mañana y noche usan el mismo
+// componente y el mismo comportamiento; el tono es lo único que las distingue,
+// para que se lean como parte del mismo sistema y aun así cada una tenga su
+// identidad. La tinta encima es ink en las dos (7.19:1 y 7.65:1).
+export const momento = {
+  manana: '#E49E6E',
+  noche:  '#B8ADD8',
+}
+
 // ─── Tinta por superficie (§6.5) ─────────────────────────────────────────────
 // El color del texto se deriva del fondo sobre el que se pinta, no lo elige cada
 // componente. Un componente declara en qué superficie vive (`data-surface`) y
