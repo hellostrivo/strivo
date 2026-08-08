@@ -23,9 +23,9 @@
       }
     },
     "momento": {
-      "comment": "El color de la tarjeta que abre cada pregunta de ánimo. Mañana y noche comparten estructura y comportamiento; el tono es lo que las distingue: cálido para la mañana, sereno para la noche. Contraste de ink sobre cada uno: 7.19:1 y 7.65:1.",
-      "manana": "#E49E6E",
-      "noche": "#B8ADD8"
+      "comment": "El degradado de la tarjeta que abre cada pregunta de ánimo. Mañana y noche comparten estructura y comportamiento; el tono es lo que las distingue: cálido para la mañana, sereno para la noche. Se inclina 140deg, como la tarjeta del ritual de mañana. Ink encima aguanta todo el recorrido; el peor punto es el extremo saturado: 7.19:1 en la mañana y 7.65:1 en la noche.",
+      "manana": { "from": "#E49E6E", "to": "#F0DEC4" },
+      "noche": { "from": "#B8ADD8", "to": "#EDEDF8" }
     },
     "accents": {
       "amber": "#E5A25C",

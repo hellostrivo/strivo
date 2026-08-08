@@ -21,6 +21,7 @@ import { useEffect, useRef, useState } from 'react'
 import { clsx } from 'clsx'
 import { interpolate } from '@copy'
 import { comoPropia, esPropia } from '@lib/propias'
+import { degradadoDeMomento } from '@tokens'
 
 export default function SelectorDeChips({
   // Contenido
@@ -41,7 +42,7 @@ export default function SelectorDeChips({
   sanear = texto => texto,   // la noche admite una sola palabra; la mañana, una frase corta
   countTemplate,
   // Presentación
-  tono,                // color de la tarjeta (token de @tokens.momento)
+  tono,                // degradado de la tarjeta: { from, to } de @tokens.momento
   idBase,              // prefijo de los ids del DOM: 'emociones' | 'animo'
   tituloRef,
   tituloComo: Titulo = 'h3',
@@ -79,7 +80,7 @@ export default function SelectorDeChips({
   return (
     <>
       {/* La única superficie tintada del bloque: el título y su subtítulo */}
-      <div className="rounded-lg px-5 py-4" style={{ backgroundColor: tono }}>
+      <div className="rounded-lg px-5 py-4" style={{ background: degradadoDeMomento(tono) }}>
         <Titulo
           id={tituloId}
           ref={tituloRef}
