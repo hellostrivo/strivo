@@ -827,6 +827,14 @@ export const copy = {
       pausedGroup: 'En pausa',
       countTemplate: '{n} activos',
       open: 'Ver detalle',
+      // El progreso de la semana, en la fila del hábito. Discreto y sin juicio:
+      // ir por la mitad no es ir atrasado, es ir.
+      weekProgressTemplate: '{n} de {meta} esta semana',
+      weekDone: 'Meta cumplida',
+      // Cuando se hace una vez más de las que se propuso. Se celebra sin
+      // convertirlo en una carrera: el extra es un regalo, no un récord.
+      weekExtraTemplate: 'Meta cumplida · {n} de más',
+      weekExtraJustNow: 'Ya habías cumplido tu meta. Lo de hoy es un extra.',
     },
     create: {
       label: '¿Cuál es tu nuevo hábito?',
@@ -834,17 +842,16 @@ export const copy = {
       moments: ['Mañana', 'Noche'],
       momentLabel: '¿Cuándo?',
       areaLabel: '¿Dónde vive esto?',
-      daysLabel: '¿Qué días?',
-      everyDay: 'Todos los días',
+      // La pregunta ya no es qué días sino cuántas veces: una intención, no un
+      // horario. Los días concretos los decide la persona sobre la marcha.
+      frequencyLabel: '¿Cuántas veces quieres hacerlo por semana?',
+      frequencyOptions: ['1 vez', '2 veces', '3 veces', '4 veces', '5 veces', '6 veces', 'Todos los días'],
       suggestionsLabel: 'O empieza por una de estas:',
       save: 'Crear hábito',
       // Los mismos campos, en modo edición. El hábito no se recrea: se ajusta.
       editTitle: 'Ajusta tu hábito',
       editSave: 'Guardar cambios',
       edit: 'Editar',
-      // Los que hoy no tocan. Siguen ahí y se pueden abrir, pero no se ofrecen
-      // para marcar un día que no les corresponde.
-      otherDaysGroup: 'Otros días',
     },
     detail: {
       // Ya no se usa: el detalle de un hábito muestra el NOMBRE de su área, no
@@ -1039,6 +1046,10 @@ export const copy = {
   },
 
   // ─── Días de semana ───────────────────────────────────────────────────────
+  // Aparece bajo los hábitos del ritual en P7 y P8. Lo que se elige ahí no es
+  // una decisión definitiva, y saberlo quita el peso de acertar a la primera.
+  onboardingHabitosNota: 'Puedes editar esto posteriormente en la sección Hábitos.',
+
   days: {
     short: ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'],
     long:  ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],

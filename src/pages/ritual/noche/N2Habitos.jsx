@@ -13,7 +13,7 @@ import { useEffect, useRef } from 'react'
 import { copy, interpolate } from '@copy'
 import HabitRow from '@components/strivo/HabitRow'
 
-export default function N2Habitos({ habitos, areas, hechos, onToggle }) {
+export default function N2Habitos({ habitos, areas, hechos, progreso, onToggle }) {
   const headingRef = useRef(null)
   useEffect(() => { headingRef.current?.focus() }, [])
 
@@ -52,6 +52,7 @@ export default function N2Habitos({ habitos, areas, hechos, onToggle }) {
                 key={habito.id}
                 habit={habito}
                 area={areas.find(a => a.id === habito.areaId)}
+                  progreso={progreso?.get(habito.id)}
                 done={hechos.has(habito.id)}
                 onToggle={onToggle}
               />

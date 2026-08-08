@@ -22,6 +22,25 @@ export function diaDeLaSemana(fecha) {
   return dia === 0 ? 6 : dia - 1
 }
 
+/**
+ * La semana a la que pertenece una fecha, de lunes a domingo.
+ *
+ * La semana empieza en lunes en toda la app (§7.2, diasSemana 0 = lunes), así
+ * que el progreso semanal de un hábito se cuenta de lunes a domingo y vuelve a
+ * cero el lunes. Lo de la semana pasada no se borra: sigue en habitLogs, que es
+ * de donde saldrán las tendencias.
+ */
+export function semanaDe(fecha) {
+  const d       = aDate(fecha)
+  const desdeEl = new Date(d.getFullYear(), d.getMonth(), d.getDate() - diaDeLaSemana(fecha))
+  const hastaEl = new Date(desdeEl.getFullYear(), desdeEl.getMonth(), desdeEl.getDate() + 6)
+
+  return {
+    desde: clave(desdeEl.getFullYear(), desdeEl.getMonth() + 1, desdeEl.getDate()),
+    hasta: clave(hastaEl.getFullYear(), hastaEl.getMonth() + 1, hastaEl.getDate()),
+  }
+}
+
 /** "5 de agosto" · con el año si no es el actual */
 export function fechaEnPalabras(fecha, anoActual = new Date().getFullYear()) {
   const { ano, mes, dia } = partesDe(fecha)

@@ -19,7 +19,8 @@ const DB_NAME    = 'strivo-local'
 //     el estado de cierre pueda decirse en femenino sin dejar de reconocerse
 // 7 → se retira el momento 'dia' de los hábitos: los que lo tenían pasan a la
 //     mañana, que es donde ahora sí les toca un ritual
-const DB_VERSION = 7
+// 8 → los hábitos pasan de días fijos a una meta semanal de frecuencia
+const DB_VERSION = 8
 
 // ─── Abrir / inicializar la base de datos ────────────────────────────────────
 export async function getDB() {
@@ -179,6 +180,31 @@ export function upgradeSchema(db, oldVersion, newVersion, tx) {
       const comoId = ID_DE_ANIMO_ANTIGUO[actual]
       if (comoId && comoId !== actual) {
         cursor.update({ ...cursor.value, animoCierre: comoId })
+      }
+      return cursor.continue().then(siguiente)
+    })
+  }
+
+  // v8 — los hábitos dejan de atarse a días concretos y pasan a una meta
+  // semanal: "tres veces por semana, yo decido cuándo" en vez de "lunes,
+  // miércoles y viernes". Es una intención, no un horario.
+  //
+  // La meta se deriva de lo que ya había: quien marcó tres días quería hacerlo
+  // tres veces por semana. `diasSemana` se conserva en la fila —no estorba y es
+  // lo que la persona eligió en su momento— por si algún día quiere volver a
+  // mirarse; simplemente ya nadie lo consulta para decidir qué se muestra.
+  if (oldVersion > 0 && oldVersion < 8) {
+    const habitos = tx.objectStore('habits')
+    habitos.openCursor().then(function siguiente(cursor) {
+      if (!cursor) return
+      if (cursor.value.frecuenciaSemanal === undefined) {
+        const dias = Array.isArray(cursor.value.diasSemana)
+          ? cursor.value.diasSemana.length
+          : 7
+        cursor.update({
+          ...cursor.value,
+          frecuenciaSemanal: Math.min(7, Math.max(1, dias || 7)),
+        })
       }
       return cursor.continue().then(siguiente)
     })
@@ -348,22 +374,22 @@ export async function getHabits(userId) {
   return all
 }
 
-export async function getActiveHabitsForMoment(userId, momento, diaSemana) {
+export async function getActiveHabitsForMoment(userId, momento) {
   // momento: 'manana' | 'noche'
-  // diaSemana: 0 (lunes) – 6 (domingo)
   // Proyección automática a Rituales: §5.7.2, RN-HR-01
   //
-  // El día manda: un hábito de lunes, miércoles y viernes no se ofrece un
-  // sábado. Y `momento` se compara ya normalizado, por si queda alguno con el
-  // 'dia' retirado que la migración v7 no alcanzara (llegado tarde por
-  // sincronización, por ejemplo).
+  // Sin filtro por día: un hábito ya no se ata a lunes, miércoles y viernes sino
+  // a una intención semanal ("tres veces, yo decido cuándo"), así que está
+  // disponible todos los días. Cumplir la meta tampoco lo retira: quien quiera
+  // hacerlo una vez más puede.
+  //
+  // `momento` se compara normalizado por si queda alguno con el 'dia' retirado
+  // que la migración v7 no alcanzara (llegado tarde por sincronización).
   const db = await getDB()
   const all = await db.getAllFromIndex('habits', 'byUser', userId)
   return all.filter(h =>
     h.estado === 'activo' &&
-    (h.momento === momento || (h.momento === 'dia' && momento === 'manana')) &&
-    Array.isArray(h.diasSemana) &&
-    h.diasSemana.includes(diaSemana)
+    (h.momento === momento || (h.momento === 'dia' && momento === 'manana'))
   )
 }
 
@@ -401,6 +427,17 @@ export async function getHabitLogsInRange(habitId, desde, hasta) {
     'habitLogs',
     'byHabitDate',
     IDBKeyRange.bound([habitId, desde], [habitId, hasta])
+  )
+}
+
+// Todas las marcas de un usuario entre dos fechas, para el progreso semanal de
+// sus hábitos (§5.7). Rango inclusivo por ambos extremos.
+export async function getHabitLogsBetween(userId, desde, hasta) {
+  const db = await getDB()
+  return db.getAllFromIndex(
+    'habitLogs',
+    'byUserDate',
+    IDBKeyRange.bound([userId, desde], [userId, hasta])
   )
 }
 

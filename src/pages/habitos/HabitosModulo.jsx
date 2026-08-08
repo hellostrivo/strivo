@@ -12,12 +12,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { getAreas, getHabitLogsByDate, markHabit, unmarkHabit } from '@lib/db'
 import { getCurrentUserId } from '@lib/user'
-import { strivoDayKey, getWeekDay } from '@lib/timeSlot'
+import { strivoDayKey } from '@lib/timeSlot'
 import {
   loadHabitos,
   loadDetalleHabito,
   crearHabito,
   actualizarHabito,
+  cargarProgresoSemanal,
   pausarHabito,
   reanudarHabito,
 } from '@lib/habits'
@@ -45,6 +46,8 @@ export default function HabitosModulo({ onSalir }) {
       userId,
       fecha,
       habitos,
+      // Cuánto lleva cada uno esta semana, para la referencia de su fila
+      progreso: await cargarProgresoSemanal(userId, habitos, fecha),
       areas: areas.filter(a => a.estado !== 'archivada'),
       hechos: new Set(logs.map(log => log.habitId)),
     }
@@ -167,7 +170,7 @@ export default function HabitosModulo({ onSalir }) {
       habitos={datos.habitos}
       areas={datos.areas}
       hechos={datos.hechos}
-      diaSemana={getWeekDay(datos.fecha)}
+      progreso={datos.progreso}
       onToggle={alternarHabito}
       onAbrir={habito => { setAbierto(habito); setPantalla('detalle') }}
       onCrear={() => setPantalla('crear')}

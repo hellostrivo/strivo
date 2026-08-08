@@ -17,9 +17,10 @@ import {
   getDailyEntry,
   getVictoriesByDate,
 } from '@lib/db'
+import { cargarProgresoSemanal } from '@lib/habits'
 import { getCurrentUserId } from '@lib/user'
 import { normalizarAnimos } from '@lib/animos'
-import { strivoDayKey, getWeekDay } from '@lib/timeSlot'
+import { strivoDayKey } from '@lib/timeSlot'
 import { ritualNocheHecho } from '@lib/ritualNoche'
 
 export async function loadVistaNoche() {
@@ -29,7 +30,7 @@ export async function loadVistaNoche() {
 
   const [areas, habitos, logs, entrada, victorias] = await Promise.all([
     getAreas(userId),
-    getActiveHabitsForMoment(userId, 'noche', getWeekDay(fecha)),
+    getActiveHabitsForMoment(userId, 'noche'),
     getHabitLogsByDate(userId, fecha),
     getDailyEntry(userId, fecha),
     getVictoriesByDate(userId, fecha),
@@ -42,6 +43,7 @@ export async function loadVistaNoche() {
     areas: areas.filter(area => area.estado === 'activa'),
     habitos,
     hechos: new Set(logs.map(log => log.habitId)),
+    progreso: await cargarProgresoSemanal(userId, habitos, fecha),
     heredadas: victorias.filter(v => v.estado === 'pendiente'),
     logros:    victorias.filter(v => v.estado === 'lograda'),
     agradecimientos: entrada?.agradecimientos ?? [],

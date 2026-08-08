@@ -12,10 +12,10 @@
 import { getDB, saveUserProfile, saveArea, saveHabit } from '@lib/db'
 import { getLocalUserId, setAccountUserId } from '@lib/user'
 import { normalizeGender } from '@lib/gender'
+import { FRECUENCIA_POR_DEFECTO } from '@lib/habits'
 import { normalizarIdentidad } from '@lib/identidad'
 import { AREAS, limitarAreas } from '@lib/areas'
 
-const TODOS_LOS_DIAS = [0, 1, 2, 3, 4, 5, 6]
 const DIA_TERMINA_A  = '03:00'
 
 // Stores cuyas filas llevan userId. Antes de P10 no suele haber nada escrito
@@ -119,7 +119,9 @@ function habitoDesde(habito, userId) {
     // areaId apunta a la fila del área; null = "General" (§5.1.1)
     areaId: habito.areaId ? areaRowId(userId, habito.areaId) : null,
     momento: habito.momento,
-    diasSemana: TODOS_LOS_DIAS,
+    // La meta más abierta: al empezar, todos los días. Se ajusta después desde
+    // Hábitos, que es lo que dice la nota bajo P7 y P8.
+    frecuenciaSemanal: FRECUENCIA_POR_DEFECTO,
     estado: 'activo',
     totalCompletados: 0,
     origen: 'onboarding',

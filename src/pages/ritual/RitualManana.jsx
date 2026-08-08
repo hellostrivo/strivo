@@ -171,6 +171,7 @@ export default function RitualManana({ onClose }) {
           habitos={datos.habitos}
           areas={datos.areas}
           hechos={hechos}
+          progreso={datos.progreso}
           onToggle={alternarHabito}
         />
       )}

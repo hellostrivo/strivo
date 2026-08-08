@@ -76,13 +76,13 @@ describe('marcar hábitos', () => {
 })
 
 describe('proyección de hábitos a los rituales', () => {
-  it('devuelve solo los activos del momento y del día pedido', async () => {
+  // Sin filtro por día: la meta es semanal y el hábito está disponible siempre.
+  it('devuelve solo los activos del momento pedido', async () => {
     await saveHabit(habitoDePrueba({ id: 'manana', momento: 'manana' }))
     await saveHabit(habitoDePrueba({ id: 'noche', momento: 'noche' }))
     await saveHabit(habitoDePrueba({ id: 'pausado', momento: 'manana', estado: 'pausado' }))
-    await saveHabit(habitoDePrueba({ id: 'otro-dia', momento: 'manana', diasSemana: [] }))
 
-    const deManana = await getActiveHabitsForMoment('u1', 'manana', 2)
+    const deManana = await getActiveHabitsForMoment('u1', 'manana')
     expect(deManana.map(h => h.id)).toEqual(['manana'])
   })
 

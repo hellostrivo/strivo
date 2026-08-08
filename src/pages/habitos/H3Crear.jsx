@@ -19,7 +19,15 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { copy } from '@copy'
-import { MOMENTOS, DIAS_TODOS, sugerenciasPara, normalizarMomento } from '@lib/habits'
+import {
+  MOMENTOS,
+  FRECUENCIAS,
+  FRECUENCIA_POR_DEFECTO,
+  sugerenciasPara,
+  normalizarMomento,
+  metaSemanalDe,
+} from '@lib/habits'
+import SelectorEmoji, { BotonEmoji } from '@components/habitos/SelectorEmoji'
 import Button from '@components/ui/Button'
 import Chip from '@components/ui/Chip'
 
@@ -33,15 +41,18 @@ export default function H3Crear({ areas, habitos, habito, onCrear, onVolver }) {
   const [nombre, setNombre]   = useState(habito?.nombre ?? '')
   const [areaId, setAreaId]   = useState(habito?.areaId ?? null)
   const [momento, setMomento] = useState(() => normalizarMomento(habito?.momento))
-  const [dias, setDias]       = useState(habito?.diasSemana ?? DIAS_TODOS)
+  const [frecuencia, setFrecuencia] = useState(
+    () => (habito ? metaSemanalDe(habito) : FRECUENCIA_POR_DEFECTO)
+  )
+  const [emoji, setEmoji] = useState(habito?.emoji ?? null)
+  const [eligiendoEmoji, setEligiendoEmoji] = useState(false)
 
   useEffect(() => { headingRef.current?.focus() }, [])
 
   // Editando no se sugiere nada: el hábito ya tiene nombre y ofrecerle otro
   // invita a reemplazarlo, que no es lo que se vino a hacer.
   const sugerencias = editando ? [] : sugerenciasPara(areas, habitos)
-  const puedeCrear  = nombre.trim().length > 0 && dias.length > 0
-  const todosLosDias = dias.length === DIAS_TODOS.length
+  const puedeCrear = nombre.trim().length > 0
 
   const usarSugerencia = sugerencia => {
     setNombre(sugerencia.texto)
@@ -52,16 +63,9 @@ export default function H3Crear({ areas, habitos, habito, onCrear, onVolver }) {
   // Crear y editar escriben lo mismo; quién lo recibe lo decide el módulo.
   const guardar = () => {
     if (!puedeCrear) return
-    onCrear({ nombre, areaId, momento, diasSemana: dias })
+    onCrear({ nombre, areaId, emoji, momento, frecuenciaSemanal: frecuencia })
   }
 
-  const alternarDia = dia => {
-    setDias(previos =>
-      previos.includes(dia)
-        ? previos.filter(d => d !== dia)
-        : [...previos, dia].sort((a, b) => a - b)
-    )
-  }
 
   return (
     <div className="w-full max-w-md mx-auto px-6 py-10">
@@ -76,6 +80,11 @@ export default function H3Crear({ areas, habitos, habito, onCrear, onVolver }) {
       >
         {editando ? copy.habits.create.editTitle : copy.habits.create.label}
       </h1>
+
+      <div className="mt-6 flex items-start gap-3">
+        {/* El símbolo del hábito. Se sugiere uno y se cambia tocándolo: una vez
+            elegido es de la persona, no de su categoría (§16.4). */}
+        <BotonEmoji emoji={emoji} onClick={() => setEligiendoEmoji(true)} />
 
       <input
         id="habito-nombre"
@@ -94,7 +103,7 @@ export default function H3Crear({ areas, habitos, habito, onCrear, onVolver }) {
           }
         }}
         className={[
-          'mt-6 w-full min-h-touch',
+          'flex-1 min-w-0 min-h-touch',
           'rounded-md bg-surface border border-border',
           'px-4 py-4 text-md text-ink',
           'placeholder:text-ink/70',
@@ -102,6 +111,7 @@ export default function H3Crear({ areas, habitos, habito, onCrear, onVolver }) {
           'focus:outline-none focus:border-ink focus:ring-2 focus:ring-ink/20',
         ].join(' ')}
       />
+      </div>
 
       {sugerencias.length > 0 && (
         <div className="mt-6">
@@ -178,40 +188,28 @@ export default function H3Crear({ areas, habitos, habito, onCrear, onVolver }) {
         </div>
       )}
 
-      {/* Días */}
+      {/* Frecuencia semanal — la intención, no el horario */}
       <div className="mt-8">
-        <p id="h3-dias" className="text-base text-ink/80">
-          {copy.habits.create.daysLabel}
+        <p id="h3-frecuencia" className="text-base text-ink/80">
+          {copy.habits.create.frequencyLabel}
         </p>
 
         <div
           role="group"
-          aria-labelledby="h3-dias"
+          aria-labelledby="h3-frecuencia"
           className="mt-3 flex flex-wrap gap-2"
         >
-          {copy.days.short.map((etiqueta, indice) => (
+          {FRECUENCIAS.map(veces => (
             <Chip
-              key={etiqueta}
+              key={veces}
               size="sm"
-              selected={dias.includes(indice)}
-              aria-label={copy.days.long[indice]}
-              onClick={() => alternarDia(indice)}
+              selected={frecuencia === veces}
+              onClick={() => setFrecuencia(veces)}
             >
-              {etiqueta}
+              {copy.habits.create.frequencyOptions[veces - 1]}
             </Chip>
           ))}
         </div>
-
-        {!todosLosDias && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mt-3 -ml-4"
-            onClick={() => setDias(DIAS_TODOS)}
-          >
-            {copy.habits.create.everyDay}
-          </Button>
-        )}
       </div>
 
       <Button
@@ -224,6 +222,16 @@ export default function H3Crear({ areas, habitos, habito, onCrear, onVolver }) {
       >
         {editando ? copy.habits.create.editSave : copy.habits.create.save}
       </Button>
+
+      <SelectorEmoji
+        abierto={eligiendoEmoji}
+        onElegir={elegido => {
+          setEmoji(elegido)
+          setEligiendoEmoji(false)
+          campoRef.current?.focus()
+        }}
+        onCerrar={() => setEligiendoEmoji(false)}
+      />
     </div>
   )
 }

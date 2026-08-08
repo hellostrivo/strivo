@@ -13,9 +13,9 @@
 // porque le hace bien". La regla la resuelve @lib/areas, igual en todas las
 // pantallas.
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { clsx } from 'clsx'
-import { copy } from '@copy'
+import { copy, interpolate } from '@copy'
 import { areaColors } from '@tokens'
 import { EMOJI_POR_DEFECTO } from '@lib/emojis'
 import { etiquetaDeArea } from '@lib/areas'
@@ -36,14 +36,35 @@ import { etiquetaDeArea } from '@lib/areas'
 // parpadeo de marcar y desmarcar en el mismo gesto.
 const ESPERA_ENTRE_TOQUES = 300
 
-export default function HabitRow({ habit, done = false, onToggle, area, className, onOpen }) {
+// Lo que se queda en pantalla el guiño del extra. Suficiente para leerlo sin
+// convertirse en algo que hay que quitarse de encima.
+const DURACION_DEL_EXTRA = 5000
+
+export default function HabitRow({ habit, done = false, onToggle, area, progreso, className, onOpen }) {
   const [pressed, setPressed] = useState(false)
   const ultimoToque = useRef(0)
+  // El ✨ del extra: aparece al hacerlo una vez más de las que te propusiste, y
+  // se va solo. Es un guiño, no un aviso que haya que cerrar.
+  const [extraReciente, setExtraReciente] = useState(false)
+  const extraPrevio = useRef(progreso?.extra ?? 0)
   const Contenedor = onOpen ? 'button' : 'div'
 
   const color = area?.color ?? areaColors[area?.tipo] ?? '#D9CFC4'
   // El área a la que pertenece, y solo si la persona la tiene activa (@lib/areas)
   const etiqueta = etiquetaDeArea(area)
+
+  // Cómo va la semana. Tres estados y ninguno negativo: quedarse a mitad no se
+  // nombra como falta, solo se cuenta lo que sí ocurrió (§5.7, RN-05).
+  const textoDeProgreso = !progreso
+    ? null
+    : progreso.extra > 0
+      ? interpolate(copy.habits.list.weekExtraTemplate, { n: progreso.extra })
+      : progreso.cumplida
+        ? copy.habits.list.weekDone
+        : interpolate(copy.habits.list.weekProgressTemplate, {
+            n: progreso.hechas,
+            meta: progreso.meta,
+          })
 
   // Interruptor de dos estados, nunca un contador: tocarlo marca, volver a
   // tocarlo desmarca. En ningún caso suma (§26.3).
@@ -57,14 +78,28 @@ export default function HabitRow({ habit, done = false, onToggle, area, classNam
     setTimeout(() => setPressed(false), 260)
   }
 
+  // Solo cuando el extra crece: reabrir la pantalla con el extra ya hecho no
+  // vuelve a felicitar por algo de anteayer.
+  useEffect(() => {
+    const extra = progreso?.extra ?? 0
+    if (extra > extraPrevio.current) {
+      setExtraReciente(true)
+      const relevo = setTimeout(() => setExtraReciente(false), DURACION_DEL_EXTRA)
+      extraPrevio.current = extra
+      return () => clearTimeout(relevo)
+    }
+    extraPrevio.current = extra
+    return undefined
+  }, [progreso?.extra])
+
   return (
+    <div className={clsx('flex flex-col', className)}>
     <div
       className={clsx(
         'flex items-center gap-3 py-3 px-1',
         'transition-opacity duration-260 ease-smooth',
         done && 'opacity-70',   // Atenuar al 70% (sin tachar)
         'motion-reduce:transition-none',
-        className
       )}
     >
       {/* Casilla de verificación (custom para animar el trazo) */}
@@ -144,21 +179,38 @@ export default function HabitRow({ habit, done = false, onToggle, area, classNam
           </span>
         </div>
 
-        {/* El área a la que pertenece. Sin área, no se pinta nada: el bloque
-            entero desaparece y la fila queda del alto que le toca. */}
-        {etiqueta && (
+        {/* El área y cómo va la semana. Sin ninguna de las dos no se pinta
+            nada: el bloque entero desaparece y la fila queda del alto que le
+            toca. */}
+        {(etiqueta || textoDeProgreso) && (
           <p className="text-sm text-surface-fg-muted mt-0.5 ml-4">
-            {etiqueta.nombre}
+            {[etiqueta?.nombre, textoDeProgreso].filter(Boolean).join(' · ')}
           </p>
         )}
       </Contenedor>
 
-      {/* Total de veces (discreto, solo lectura) */}
-      {habit.totalCompletados > 0 && (
-        <span className="text-sm text-surface-fg-muted flex-shrink-0" aria-hidden="true">
-          {habit.totalCompletados}×
+      {/* La marca de meta cumplida. Es lo único que se añade al cumplirla: ni
+          confeti, ni sonido, ni un número más grande. */}
+      {progreso?.cumplida && (
+        <span
+          className="text-sm text-surface-fg-muted flex-shrink-0"
+          aria-hidden="true"
+        >
+          ✓
         </span>
       )}
+    </div>
+
+    {/* El guiño del extra. Debajo, pequeño y de paso: se va solo a los cinco
+        segundos y no deja nada que cerrar. */}
+    {extraReciente && (
+      <p
+        aria-live="polite"
+        className="ml-10 -mt-1 mb-2 text-sm text-surface-fg-muted animate-sugerencia-entra motion-reduce:animate-none"
+      >
+        ✨ {copy.habits.list.weekExtraJustNow}
+      </p>
+    )}
     </div>
   )
 }

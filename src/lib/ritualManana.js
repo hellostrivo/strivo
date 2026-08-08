@@ -14,8 +14,9 @@ import {
   getDailyEntry,
   updateDailyEntry,
 } from '@lib/db'
+import { cargarProgresoSemanal } from '@lib/habits'
 import { getCurrentUserId } from '@lib/user'
-import { strivoDayKey, previousDayKey, getWeekDay } from '@lib/timeSlot'
+import { strivoDayKey, previousDayKey } from '@lib/timeSlot'
 // Ánimos de cierre que hacen que la mañana salude distinto (@lib/animos).
 // Se comparan por id: el rótulo cambia con el género y esto dejaría de coincidir.
 import { ANIMOS_DIFICILES, normalizarAnimos } from '@lib/animos'
@@ -33,7 +34,7 @@ export async function loadRitualManana() {
 
   const [areas, habitos, logs, entradaHoy, entradaAyer] = await Promise.all([
     getAreas(userId),
-    getActiveHabitsForMoment(userId, 'manana', getWeekDay(fecha)),
+    getActiveHabitsForMoment(userId, 'manana'),
     getHabitLogsByDate(userId, fecha),
     getDailyEntry(userId, fecha),
     getDailyEntry(userId, ayer),
@@ -46,6 +47,7 @@ export async function loadRitualManana() {
     areas,
     habitos,
     hechos:    new Set(logs.map(log => log.habitId)),
+    progreso:  await cargarProgresoSemanal(userId, habitos, fecha),
     intencion: entradaHoy?.intencion ?? '',
     // R2 saluda distinto si ayer el día se cerró con cansancio o inquietud. Es
     // un reconocimiento, no un diagnóstico: nunca se menciona lo que no se hizo.

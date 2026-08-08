@@ -20,8 +20,9 @@ import {
   saveVictory,
 } from '@lib/db'
 import { interpolate } from '@copy'
+import { cargarProgresoSemanal } from '@lib/habits'
 import { getCurrentUserId, newId } from '@lib/user'
-import { strivoDayKey, todayKey, getWeekDay } from '@lib/timeSlot'
+import { strivoDayKey, todayKey } from '@lib/timeSlot'
 import { normalizarAnimos, seleccionParaGuardar } from '@lib/animos'
 
 export function ritualNocheHecho(entry) {
@@ -35,8 +36,8 @@ export async function loadRitualNoche() {
 
   const [areas, deNoche, deManana, logs, entrada, victorias] = await Promise.all([
     getAreas(userId),
-    getActiveHabitsForMoment(userId, 'noche', getWeekDay(fecha)),
-    getActiveHabitsForMoment(userId, 'manana', getWeekDay(fecha)),
+    getActiveHabitsForMoment(userId, 'noche'),
+    getActiveHabitsForMoment(userId, 'manana'),
     getHabitLogsByDate(userId, fecha),
     getDailyEntry(userId, fecha),
     getVictoriesByDate(userId, fecha),
@@ -51,6 +52,7 @@ export async function loadRitualNoche() {
     // editable por si se marcó de más o se hizo más tarde (copy-library, N2).
     habitos: [...deNoche, ...deManana],
     hechos:  new Set(logs.map(log => log.habitId)),
+    progreso: await cargarProgresoSemanal(userId, [...deNoche, ...deManana], fecha),
     // N3 hereda lo que se propuso por la mañana y sigue sin decidir
     heredadas: victorias.filter(v => v.estado === 'pendiente'),
     logros:    victorias.filter(v => v.estado === 'lograda'),

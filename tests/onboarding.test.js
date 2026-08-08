@@ -209,7 +209,7 @@ describe('P11 · materializar el borrador', () => {
       momento: 'manana',
       estado: 'activo',
       totalCompletados: 0,
-      diasSemana: [0, 1, 2, 3, 4, 5, 6],
+      frecuenciaSemanal: 7,
     })
   })
 

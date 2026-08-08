@@ -21,7 +21,7 @@ import {
   saveVictory,
 } from '@lib/db'
 import { getCurrentUserId, newId } from '@lib/user'
-import { strivoDayKey, getWeekDay } from '@lib/timeSlot'
+import { strivoDayKey } from '@lib/timeSlot'
 
 export async function loadVistaManana() {
   const userId = getCurrentUserId()
@@ -30,7 +30,7 @@ export async function loadVistaManana() {
 
   const [areas, habitos, logs, entrada, victorias] = await Promise.all([
     getAreas(userId),
-    getActiveHabitsForMoment(userId, 'manana', getWeekDay(fecha)),
+    getActiveHabitsForMoment(userId, 'manana'),
     getHabitLogsByDate(userId, fecha),
     getDailyEntry(userId, fecha),
     getVictoriesByDate(userId, fecha),

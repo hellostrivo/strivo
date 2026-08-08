@@ -240,6 +240,7 @@ export default function VistaNoche({ recarga = 0, onDiaCerrado }) {
                   key={habito.id}
                   habit={habito}
                   area={datos.areas.find(a => a.id === habito.areaId)}
+                  progreso={datos.progreso?.get(habito.id)}
                   done={datos.hechos.has(habito.id)}
                   onToggle={alternarHabito}
                 />

@@ -18,7 +18,6 @@ import {
   rangoDeCuadricula,
   sugerenciasPara,
   nombreDeMomento,
-  DIAS_TODOS,
 } from '@lib/habits'
 import { loadRitualManana } from '@lib/ritualManana'
 import { loadRitualNoche } from '@lib/ritualNoche'
@@ -72,7 +71,7 @@ describe('H1 · agrupar por momento', () => {
 })
 
 describe('H3 · crear', () => {
-  it('nace activo, todos los días y con su momento', async () => {
+  it('nace activo, con su momento y con la meta más abierta', async () => {
     const habito = await crearHabito('u1', { nombre: '  Estirar  ', momento: 'noche' })
 
     expect(habito).toMatchObject({
@@ -81,13 +80,13 @@ describe('H3 · crear', () => {
       estado: 'activo',
       totalCompletados: 0,
       areaId: null,
-      diasSemana: DIAS_TODOS,
+      frecuenciaSemanal: 7,     // todos los días, mientras no se diga otra cosa
     })
   })
 
-  it('guarda los días elegidos, ordenados', async () => {
-    const habito = await crearHabito('u1', { nombre: 'Correr', diasSemana: [4, 0, 2] })
-    expect(habito.diasSemana).toEqual([0, 2, 4])
+  it('guarda la meta semanal que se eligió', async () => {
+    const habito = await crearHabito('u1', { nombre: 'Correr', frecuenciaSemanal: 3 })
+    expect(habito.frecuenciaSemanal).toBe(3)
   })
 
   it('las sugerencias siguen a las áreas y no repiten lo que ya existe', () => {
@@ -140,14 +139,15 @@ describe('proyección automática a los rituales (RN-HR-01)', () => {
     expect((await loadRitualManana()).habitos.map(h => h.nombre)).toEqual(['Respirar'])
   })
 
-  it('solo aparece los días que le tocan', async () => {
+  // Ya no se ata a días concretos: la meta es semanal y la persona decide
+  // cuándo, así que está disponible todos los días.
+  it('aparece cualquier día, sea cual sea su meta semanal', async () => {
     const userId = getCurrentUserId()
-    // 5 ago 2026 es miércoles → índice 2 (0 = lunes)
-    await crearHabito(userId, { nombre: 'Solo lunes', momento: 'manana', diasSemana: [0] })
-    await crearHabito(userId, { nombre: 'Miércoles', momento: 'manana', diasSemana: [2] })
+    await crearHabito(userId, { nombre: 'Una vez', momento: 'manana', frecuenciaSemanal: 1 })
+    await crearHabito(userId, { nombre: 'Cada día', momento: 'manana', frecuenciaSemanal: 7 })
 
     const { habitos } = await loadRitualManana()
-    expect(habitos.map(h => h.nombre)).toEqual(['Miércoles'])
+    expect(habitos.map(h => h.nombre).sort()).toEqual(['Cada día', 'Una vez'])
   })
 
   it('pausar lo saca del ritual sin borrar su historial (RN-04)', async () => {

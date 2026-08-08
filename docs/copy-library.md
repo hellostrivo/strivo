@@ -476,12 +476,25 @@ Pantalla H3 (la misma pantalla crea y edita):
 [Selector: Mañana / Noche]         ← "A lo largo del día" se retiró: era el
                                      único momento que no proyectaba a ningún
                                      ritual. Los que existían pasaron a Mañana.
-[Días de la semana, default all]
+"¿Cuántas veces quieres hacerlo por semana?"
+[1 vez · 2 veces · 3 veces · 4 veces · 5 veces · 6 veces · Todos los días]
+[Emoji editable, junto al nombre]  ← se sugiere uno y se cambia tocándolo
 [Crear hábito]                     ← al editar: "Guardar cambios"
 
-Un hábito solo aparece los días que tiene marcados. En la lista, los que hoy no
-tocan bajan a "Otros días": siguen ahí y se pueden abrir y editar, pero no se
-ofrecen para marcar un día que no les corresponde.
+La frecuencia es una intención, no un horario: el hábito está disponible TODOS
+los días y la persona decide cuándo. Cumplir la meta no lo retira — quien quiera
+hacerlo una vez más, puede.
+
+Progreso en la fila del hábito (se cuenta de lunes a domingo y vuelve a cero el
+lunes; lo de semanas anteriores no se borra):
+- 0 de 2 · "0 de 2 esta semana"
+- 1 de 2 · "1 de 2 esta semana"
+- 2 de 2 · "Meta cumplida" + ✓
+- 3 de 2 · "Meta cumplida · 1 de más" + ✓
+Y al hacer el extra, un guiño que se va solo a los 5 s:
+  "✨ Ya habías cumplido tu meta. Lo de hoy es un extra."
+
+Nunca hay mensaje por no llegar: quedarse a mitad no se nombra como falta.
 
 Sugerencias por área:
 - Salud: "Beber agua", "Estirar", "Dormir", "Mover", "Respirar"

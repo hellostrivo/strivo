@@ -204,6 +204,12 @@ export default function SeleccionHabitos({
         </div>
       )}
 
+      {/* Lo que se elige aquí no queda cerrado. Va en el nivel más bajo de la
+          jerarquía: es un alivio, no una instrucción. */}
+      <p className="mt-10 text-center text-sm text-ink/70">
+        {copy.onboardingHabitosNota}
+      </p>
+
       <SelectorEmoji
         abierto={eligiendoEmoji}
         onElegir={elegido => {

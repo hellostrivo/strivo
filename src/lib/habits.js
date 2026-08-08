@@ -24,9 +24,11 @@ import {
   getHabit,
   saveHabit,
   getHabitLogsInRange,
+  getHabitLogsBetween,
 } from '@lib/db'
 import { newId } from '@lib/user'
 import { todayKey, previousDayKey } from '@lib/timeSlot'
+import { semanaDe } from '@lib/fechas'
 
 export const MOMENTOS = ['manana', 'noche']
 
@@ -37,7 +39,75 @@ export const MOMENTO_POR_DEFECTO = 'manana'
 export const normalizarMomento = momento =>
   MOMENTOS.includes(momento) ? momento : MOMENTO_POR_DEFECTO
 
-export const DIAS_TODOS = [0, 1, 2, 3, 4, 5, 6]
+// ─── La frecuencia semanal (§5.7) ────────────────────────────────────────────
+//
+// Un hábito ya no se ata a días concretos —"lunes, miércoles y viernes"— sino a
+// cuántas veces por semana se quiere hacer: "tres veces, y yo decido cuándo".
+// Es una intención, no un horario, y es lo que distingue acompañar de mandar.
+//
+// De ahí que el hábito esté disponible TODOS los días, y que cumplir la meta no
+// lo retire: quien quiera hacerlo una vez más, puede.
+export const FRECUENCIAS = [1, 2, 3, 4, 5, 6, 7]
+export const FRECUENCIA_TODOS_LOS_DIAS = 7
+export const FRECUENCIA_POR_DEFECTO = FRECUENCIA_TODOS_LOS_DIAS
+
+export function normalizarFrecuencia(valor) {
+  const n = Number(valor)
+  if (!Number.isFinite(n)) return FRECUENCIA_POR_DEFECTO
+  return Math.min(7, Math.max(1, Math.round(n)))
+}
+
+// La meta de un hábito, incluidos los que se guardaron antes de que existiera:
+// quien había marcado tres días quería hacerlo tres veces por semana.
+export function metaSemanalDe(habito) {
+  if (habito?.frecuenciaSemanal !== undefined) {
+    return normalizarFrecuencia(habito.frecuenciaSemanal)
+  }
+  return normalizarFrecuencia(habito?.diasSemana?.length ?? FRECUENCIA_POR_DEFECTO)
+}
+
+/**
+ * Cuánto llevas de tu intención esta semana.
+ *
+ * Tres estados y ninguno negativo: ir por la mitad no es ir atrasado, es ir. No
+ * hay "te falta", ni aviso, ni color de alarma — la ausencia es ausencia (§7.2,
+ * RN-05). Lo único que se celebra es lo que sí ocurrió.
+ */
+export function progresoSemanal(habito, hechas = 0) {
+  const meta = metaSemanalDe(habito)
+  const veces = Math.max(0, hechas)
+
+  return {
+    hechas: veces,
+    meta,
+    cumplida: veces >= meta,
+    // Lo que va por encima de lo que se propuso. No es "de más": es un extra.
+    extra: Math.max(0, veces - meta),
+  }
+}
+
+/**
+ * El progreso semanal de una lista de hábitos, leyendo las marcas de la semana
+ * a la que pertenece `fecha`. Lo usan la lista, los rituales y el Diario, para
+ * que el mismo hábito diga lo mismo en todas partes.
+ */
+export async function cargarProgresoSemanal(userId, habitos, fecha = todayKey()) {
+  const { desde, hasta } = semanaDe(fecha)
+  const logs = await getHabitLogsBetween(userId, desde, hasta)
+  return progresoDeLaSemana(habitos, logs)
+}
+
+/** El progreso de cada hábito a partir de las marcas de la semana. */
+export function progresoDeLaSemana(habitos, logsDeLaSemana) {
+  const porHabito = new Map()
+  for (const log of logsDeLaSemana) {
+    porHabito.set(log.habitId, (porHabito.get(log.habitId) ?? 0) + 1)
+  }
+
+  return new Map(
+    habitos.map(habito => [habito.id, progresoSemanal(habito, porHabito.get(habito.id) ?? 0)])
+  )
+}
 
 export function nombreDeMomento(momento) {
   const indice = MOMENTOS.indexOf(normalizarMomento(momento))
@@ -49,10 +119,6 @@ export function grupoDeMomento(momento) {
   return copy.habits.list.groups[indice] ?? momento
 }
 
-/** ¿Le toca a este hábito en este día de la semana? (0 = lunes) */
-export const leTocaHoy = (habito, diaSemana) =>
-  Array.isArray(habito.diasSemana) && habito.diasSemana.includes(diaSemana)
-
 // ─── Lista (H1) ──────────────────────────────────────────────────────────────
 
 /**
@@ -62,27 +128,18 @@ export const leTocaHoy = (habito, diaSemana) =>
  *
  * Los archivados no se listan.
  */
-export function agruparPorMomento(habitos, diaSemana = null) {
+export function agruparPorMomento(habitos) {
   const activos  = habitos.filter(h => h.estado === 'activo')
   const pausados = habitos.filter(h => h.estado === 'pausado')
-
-  // Con un día concreto, la lista es la de HOY: los que no tocan hoy salen de
-  // los grupos marcables. No desaparecen —se pueden abrir y editar desde su
-  // propia sección— pero no se ofrecen para marcar un día que no les toca.
-  const tocaHoy = habito => diaSemana === null || leTocaHoy(habito, diaSemana)
-  const deHoy   = activos.filter(tocaHoy)
-  const otrosDias = activos.filter(habito => !tocaHoy(habito))
 
   return {
     grupos: MOMENTOS.map(momento => ({
       momento,
       titulo: grupoDeMomento(momento),
-      habitos: deHoy.filter(h => normalizarMomento(h.momento) === momento),
+      habitos: activos.filter(h => normalizarMomento(h.momento) === momento),
     })).filter(grupo => grupo.habitos.length > 0),
-    otrosDias,
     pausados,
     totalActivos: activos.length,
-    totalHoy: deHoy.length,
   }
 }
 
@@ -98,14 +155,23 @@ export async function loadHabitos(userId) {
  * otra cosa. Desde ese momento ya le toca en su ritual: no hay que hacer nada
  * más (RN-HR-01).
  */
-export async function crearHabito(userId, { nombre, areaId = null, momento = MOMENTO_POR_DEFECTO, diasSemana = DIAS_TODOS }) {
+export async function crearHabito(userId, {
+  nombre,
+  areaId = null,
+  emoji = null,
+  momento = MOMENTO_POR_DEFECTO,
+  frecuenciaSemanal = FRECUENCIA_POR_DEFECTO,
+}) {
   const habito = {
     id: newId(),
     userId,
     nombre: nombre.trim(),
     areaId,
+    // Su símbolo (§16.4). null cuando no se eligió ninguno: la interfaz muestra
+    // el de por defecto, pero el hábito no lleva escrito uno que nadie escogió.
+    emoji,
     momento: normalizarMomento(momento),
-    diasSemana: [...diasSemana].sort((a, b) => a - b),
+    frecuenciaSemanal: normalizarFrecuencia(frecuenciaSemanal),
     estado: 'activo',
     totalCompletados: 0,
     creadoEn: new Date().toISOString(),
@@ -124,15 +190,16 @@ export async function crearHabito(userId, { nombre, areaId = null, momento = MOM
  * La nueva configuración manda desde ya: las vistas y los rituales preguntan por
  * momento y día en cada carga, así que no hay nada que sincronizar aparte.
  */
-export async function actualizarHabito(habito, { nombre, areaId, momento, diasSemana }) {
+export async function actualizarHabito(habito, { nombre, areaId, emoji, momento, frecuenciaSemanal }) {
   const actualizado = {
     ...habito,
     nombre: nombre !== undefined ? nombre.trim() : habito.nombre,
     areaId: areaId !== undefined ? areaId : habito.areaId,
+    emoji:  emoji  !== undefined ? emoji  : habito.emoji,
     momento: normalizarMomento(momento !== undefined ? momento : habito.momento),
-    diasSemana: diasSemana !== undefined
-      ? [...diasSemana].sort((a, b) => a - b)
-      : habito.diasSemana,
+    frecuenciaSemanal: normalizarFrecuencia(
+      frecuenciaSemanal !== undefined ? frecuenciaSemanal : metaSemanalDe(habito)
+    ),
     editadoEn: new Date().toISOString(),
   }
   await saveHabit(actualizado)
