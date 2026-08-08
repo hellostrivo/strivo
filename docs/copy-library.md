@@ -62,10 +62,29 @@ vive en un estado global reactivo, así que cambiar el género desde Ajustes ree
 lo que está en pantalla sin recargar la app.
 
 `npm run lint:copy` verifica las reglas 1 y 2 y que toda entrada con variantes
-declare las tres claves.
+declare las tres claves. `tests/genero.test.js` comprueba, además, que las tres
+resuelvan a un string en los tres modos y que ninguna neutra se resuelva con una
+barra fuera de la lista autorizada.
+
+**Cuidado al convertir una clave que ya se usaba.** Pasar un string a `{ m, f, n }`
+rompe a quien la lea con `copy.x` a pelo: pinta `[object Object]`. Antes de
+convertir, se busca quién la consume y se le pasa a `useCopy()` en el mismo cambio.
 
 El copy escrito antes de este sistema (emociones, rituales, diario) sigue en género
 fijo: el inventario de lo que falta convertir está en `docs/gender-audit.md`.
+
+**Convertidas en el bloque 01 (7 ago 2026):**
+
+| Clave | m | f | n |
+|---|---|---|---|
+| `tagline` | "…en paz contigo mismo." | "…contigo misma." | "…terminar cada día en paz." |
+| `insights.area.lowActivity` | "…un tiempo enfocado en…" | "…enfocada…" | "Llevas un tiempo en {áreaActiva}…" |
+| `profile.cancel.title` | "¿Seguro que quieres cancelar?" | "¿Segura…?" | "¿Quieres cancelar?" |
+
+Ninguna de las tres tenía consumidor todavía, así que la conversión no arrastró
+cambios de pantalla. `tagline` está duplicada en `package.json`, en el manifiesto de
+`vite.config.js` y en el `<meta>` de `index.html`: ahí no hay variantes posibles y va
+la neutra.
 
 ---
 

@@ -15,6 +15,19 @@ export default {
         paper: '#FBF8F4',  // Fondo claro
         night: '#191428',  // Fondo oscuro (índigo violáceo, NO puro negro)
 
+        // Tinta derivada de la superficie (§6.5). `text-surface-fg` en vez de
+        // `text-ink` cuando el bloque puede acabar sobre el degradado nocturno:
+        // la clase lee --color-text, que lo fija el data-surface más cercano.
+        'surface-fg': {
+          DEFAULT: 'var(--color-text)',
+          muted:   'var(--color-text-muted)',
+          // Las cuatro tintas absolutas, por si hace falta forzar una
+          'on-light':       'var(--color-text-on-light)',
+          'on-light-muted': 'var(--color-text-on-light-muted)',
+          'on-dark':        'var(--color-text-on-dark)',
+          'on-dark-muted':  'var(--color-text-on-dark-muted)',
+        },
+
         // Acentos
         amber: '#E5A25C',
         plum:  '#8B6BA8',

@@ -22,6 +22,18 @@ import { filasDe } from './helpers/db.js'
 
 beforeEach(() => resetGenderStore())
 
+// Todo lo que la persona puede llegar a leer, venga de una entrada plana o de
+// una variante de género.
+function todosLosTextos() {
+  const textos = []
+  const recorrer = node => {
+    if (typeof node === 'string') return textos.push(node)
+    if (node && typeof node === 'object') Object.values(node).forEach(recorrer)
+  }
+  recorrer(copy)
+  return textos
+}
+
 describe('Derivación del modo (§2.2)', () => {
   it('cada respuesta lleva a su modo', () => {
     expect(deriveGenderMode('masculino')).toBe('m')
@@ -98,18 +110,75 @@ describe('El copy del onboarding habla en el género contestado (§2.8)', () => 
   })
 
   it('ninguna variante usa "elle", "@" ni "x" como marca de género', () => {
-    const textos = []
-    const recorrer = node => {
-      if (typeof node === 'string') return textos.push(node)
-      if (node && typeof node === 'object') Object.values(node).forEach(recorrer)
-    }
-    recorrer(copy)
-
-    for (const texto of textos) {
+    for (const texto of todosLosTextos()) {
       expect(texto).not.toMatch(/\belles?\b/i)
       expect(texto).not.toMatch(/[a-záéíóúñ]+@s?\b/i)
       expect(texto).not.toMatch(/\b(?:todes|nosotres|amigues|chiques|niñes)\b/i)
     }
+  })
+
+  // La barra parte la lectura en dos y obliga a elegir en voz alta: la neutra se
+  // redacta sin marca de género (un sustantivo o una locución), no con un atajo
+  // tipográfico. Las excepciones son las que no tienen reformulación natural, y
+  // se listan aquí una a una para que añadir la siguiente sea una decisión y no
+  // un descuido.
+  const BARRAS_AUTORIZADAS = [
+    'mismo/a',   // no hay locución equivalente que conserve el reflexivo
+    'Amado/a',   // "Con amor" es amar a otros, no sentirse querido (§2.5.4)
+  ]
+
+  // Una barra de género es una palabra ya flexionada seguida de la otra
+  // terminación ("cansado/a"). Se pide que el tronco acabe en -o/-a para no
+  // confundirla con una barra de unidades ("99 MXN/año").
+  const BARRA_DE_GENERO = /\p{L}*[oa]\/[oa]s?(?!\p{L})/giu
+
+  it('ninguna forma neutra resuelve el género con una barra', () => {
+    for (const texto of todosLosTextos()) {
+      const conBarra = texto.match(BARRA_DE_GENERO) ?? []
+      const sinPermiso = conBarra.filter(
+        forma => !BARRAS_AUTORIZADAS.some(ok => ok.toLowerCase() === forma.toLowerCase())
+      )
+      expect(sinPermiso, `en "${texto}"`).toEqual([])
+    }
+  })
+
+  it('toda entrada con variantes resuelve a un string en los tres modos', () => {
+    const entradas = []
+    const recorrer = node => {
+      if (!node || typeof node !== 'object') return
+      if (hasVariants(node)) return entradas.push(node)
+      Object.values(node).forEach(recorrer)
+    }
+    recorrer(copy)
+
+    // Si esto llega a 0, la prueba dejó de comprobar nada
+    expect(entradas.length).toBeGreaterThan(0)
+
+    for (const entrada of entradas) {
+      for (const modo of ['m', 'f', 'n']) {
+        const resuelto = resolveCopy(entrada, modo)
+        expect(typeof resuelto, JSON.stringify(entrada)).toBe('string')
+        expect(resuelto.length).toBeGreaterThan(0)
+        expect(resuelto).not.toBe('[object Object]')
+      }
+    }
+  })
+
+  // Las tres que se convirtieron en el bloque 01. Se nombran para que quitarles
+  // una variante rompa aquí y no en la pantalla de alguien.
+  it('la promesa de la app se dice sin marca de género en neutro', () => {
+    expect(resolveCopy(copy.tagline, 'f')).toContain('contigo misma')
+    expect(resolveCopy(copy.tagline, 'n')).not.toMatch(/mism[oa]/)
+  })
+
+  it('el insight de desequilibrio habla en el género del perfil', () => {
+    expect(resolveCopy(copy.insights.area.lowActivity, 'f')).toContain('enfocada')
+    expect(resolveCopy(copy.insights.area.lowActivity, 'n')).not.toMatch(/enfocad[oa]/)
+  })
+
+  it('la confirmación de cancelar también', () => {
+    expect(resolveCopy(copy.profile.cancel.title, 'f')).toContain('Segura')
+    expect(resolveCopy(copy.profile.cancel.title, 'n')).not.toMatch(/Segur[oa]/)
   })
 })
 

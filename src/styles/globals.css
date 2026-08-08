@@ -27,8 +27,45 @@
   --color-clay:  #C9836B;
   --color-mist:  #93A9C4;
 
+  /* ─── Tinta por superficie (§6.5) ──────────────────────────────────────────
+     Los cuatro colores del sistema para escribir, según sobre qué se escribe.
+     Ningún componente elige entre negro y blanco: declara su superficie con
+     data-surface y hereda --color-text.
+     Ratios (peor caso de cada familia, verificados en tests/contraste.test.js):
+     on-light 13.04:1 · on-light-muted 5.00:1 · on-dark 10.57:1 · on-dark-muted 6.15:1
+  */
+  --color-text-on-light:       #241E33;
+  --color-text-on-light-muted: #655F6D;
+  --color-text-on-dark:        #FBF8F4;
+  --color-text-on-dark-muted:  #C3BFC1;
+
+  /* La tinta vigente. Por defecto la app vive sobre papel; cada superficie que
+     se aparte de eso lo declara. */
+  --color-text:       var(--color-text-on-light);
+  --color-text-muted: var(--color-text-on-light-muted);
+
   /* Safe area para iPhone notch */
   --sab: env(safe-area-inset-bottom, 0px);
+}
+
+/* ─── Propagación por superficie ─────────────────────────────────────────────
+   Quien pinta un fondo declara de qué familia es, y la tinta baja en cascada a
+   todo lo que tenga dentro. Los hijos consumen var(--color-text) sin saber en
+   qué franja del día están ni tener que recibirlo por props.
+
+   Se anida sin problema: una tarjeta clara dentro de una pantalla oscura
+   declara data-surface="light" y vuelve a la tinta oscura para su subárbol.
+*/
+[data-surface='light'] {
+  --color-text:       var(--color-text-on-light);
+  --color-text-muted: var(--color-text-on-light-muted);
+  color: var(--color-text);
+}
+
+[data-surface='dark'] {
+  --color-text:       var(--color-text-on-dark);
+  --color-text-muted: var(--color-text-on-dark-muted);
+  color: var(--color-text);
 }
 
 /* ─── Base ───────────────────────────────────────────────────────────────────
@@ -44,8 +81,9 @@
   }
 
   body {
-    background-color: #FBF8F4;
-    color: #241E33;
+    background-color: var(--color-paper);
+    /* La tinta sale de la superficie, nunca de un hex suelto (§6.5) */
+    color: var(--color-text);
     overscroll-behavior: none; /* Evitar bounce en PWA */
   }
 

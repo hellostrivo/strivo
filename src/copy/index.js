@@ -35,7 +35,15 @@ export const copy = {
     tu:      'Tú',
     label:   'Navegación principal',
   },
-  tagline: 'Refugio digital para terminar cada día en paz contigo mismo.',
+  // La neutra pierde el "contigo mismo" en vez de partirlo en barras: es la
+  // misma promesa y se lee sin tropiezo. Ojo, está duplicada fuera del copy
+  // (package.json, el manifiesto de vite.config y el <meta> de index.html), y
+  // ahí no hay variantes posibles: esos tres llevan la neutra.
+  tagline: {
+    m: 'Refugio digital para terminar cada día en paz contigo mismo.',
+    f: 'Refugio digital para terminar cada día en paz contigo misma.',
+    n: 'Refugio digital para terminar cada día en paz.',
+  },
 
   // ─── Áreas de identidad (§5.1.1) ─────────────────────────────────────────
   // Nombres visibles de cada tipo de área. El orden canónico y el color
@@ -898,7 +906,13 @@ export const copy = {
       // Template: "Eres alguien que crece. En {área} lo demostraste {n} de los últimos {total} días."
       evidenceTemplate: 'Eres alguien que {identidad}. En {área} lo demostraste {n} de los últimos {total} días.',
       // Desequilibrio (NUNCA acusatorio):
-      lowActivity: 'Llevas un tiempo enfocado en {áreaActiva}. Es natural. {áreaBaja} sigue aquí cuando quieras.',
+      // La neutra suelta el participio en vez de flexionarlo: "Llevas un tiempo
+      // en Salud" dice lo mismo sin marca de género.
+      lowActivity: {
+        m: 'Llevas un tiempo enfocado en {áreaActiva}. Es natural. {áreaBaja} sigue aquí cuando quieras.',
+        f: 'Llevas un tiempo enfocada en {áreaActiva}. Es natural. {áreaBaja} sigue aquí cuando quieras.',
+        n: 'Llevas un tiempo en {áreaActiva}. Es natural. {áreaBaja} sigue aquí cuando quieras.',
+      },
     },
     weekly: {
       // Template: "Cinco días esta semana. Tu palabra más repetida: calma."
@@ -916,7 +930,13 @@ export const copy = {
       addArea: 'Añadir área',
     },
     cancel: {
-      title: '¿Seguro que quieres cancelar?',
+      // La neutra pregunta por la decisión y no por la persona, que además es
+      // lo que de verdad se está preguntando.
+      title: {
+        m: '¿Seguro que quieres cancelar?',
+        f: '¿Segura que quieres cancelar?',
+        n: '¿Quieres cancelar?',
+      },
       body: 'Tu historial se queda. La suscripción termina al final del ciclo.',
       confirm: 'Cancelar suscripción',
       back: 'Volver',

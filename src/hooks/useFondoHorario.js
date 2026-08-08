@@ -34,3 +34,33 @@ export default function useFondoHorario() {
 
   return fondo
 }
+
+/**
+ * Solo si el fondo de ahora pide tinta clara.
+ *
+ * El degradado se interpola de continuo, así que `from`/`to` cambian cada minuto
+ * y quien se suscriba al fondo entero se re-renderiza a ese ritmo. Esto es lo
+ * que necesita quien únicamente decide de qué familia es la tinta: cruza dos
+ * veces al día, en el alba y en el ocaso, y el resto del tiempo no despierta a
+ * nadie.
+ */
+export function useSobreOscuro() {
+  const [sobreOscuro, setSobreOscuro] = useState(() => fondoHorario().sobreOscuro)
+
+  useEffect(() => {
+    const revisar = () => {
+      const ahora = fondoHorario().sobreOscuro
+      setSobreOscuro(previo => (previo === ahora ? previo : ahora))
+    }
+
+    const reloj = setInterval(revisar, UN_MINUTO)
+    document.addEventListener('visibilitychange', revisar)
+
+    return () => {
+      clearInterval(reloj)
+      document.removeEventListener('visibilitychange', revisar)
+    }
+  }, [])
+
+  return sobreOscuro
+}

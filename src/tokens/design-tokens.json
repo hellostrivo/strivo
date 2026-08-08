@@ -9,6 +9,19 @@
       "night": "#191428",
       "comment": "Índigo violáceo para noche, NO puro negro. Aumenta la lectura en oscuridad."
     },
+    "text": {
+      "comment": "Tinta derivada de la superficie, no del componente. Ningún componente decide si escribe en negro o en blanco: declara sobre qué superficie vive (data-surface) y hereda --color-text. Los ratios son el peor caso medido sobre todas las superficies de su familia (ver tests/contraste.test.js).",
+      "onLight": "#241E33",
+      "onLightMuted": "#655F6D",
+      "onDark": "#FBF8F4",
+      "onDarkMuted": "#C3BFC1",
+      "ratios": {
+        "onLight": "13.04:1 sobre superficie muted (#EDE7DC), la más oscura de las claras",
+        "onLightMuted": "5.00:1 sobre la misma",
+        "onDark": "10.57:1 sobre el ancla noche (#2E3A5C), la más clara de las oscuras",
+        "onDarkMuted": "6.15:1 sobre la misma"
+      }
+    },
     "accents": {
       "amber": "#E5A25C",
       "plum": "#8B6BA8",

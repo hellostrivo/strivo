@@ -1,8 +1,8 @@
 # Auditoría de género del copy existente
 
-**Fecha:** 6 de agosto de 2026
+**Fecha:** 6 de agosto de 2026 · **Revisada:** 7 de agosto de 2026 (bloque 01)
 **Origen:** §2.6 del documento de cambios v2.2
-**Estado:** backlog. **Nada de esta lista se cambia todavía.**
+**Estado:** backlog parcial. Lo que sigue pendiente está en §2.
 
 El motor de lenguaje adaptativo (§2) ya está en pie: `profile.gender` → `genderMode`
 (`m` / `f` / `n`), `resolveCopy()` y `useCopy()`. Lo que falta es pasar por él el copy
@@ -29,49 +29,80 @@ dependientes). Todo lo demás se queda como está hasta que se priorice.
 
 ---
 
+## 1-bis. Convertidas en el bloque 01 (7 ago 2026) ✅
+
+| Clave | Variantes |
+|---|---|
+| `tagline` | m: "…en paz contigo mismo." · f: "…contigo misma." · n: "…terminar cada día en paz." |
+| `insights.area.lowActivity` | m: "…un tiempo enfocado en…" · f: "…enfocada…" · n: "Llevas un tiempo en {áreaActiva}…" |
+| `profile.cancel.title` | m: "¿Seguro que quieres cancelar?" · f: "¿Segura…?" · n: "¿Quieres cancelar?" |
+
+`profile.cancel.title` no estaba en la lista original: apareció en el barrido del
+bloque 01. Las tres se convirtieron sin tocar pantalla porque ninguna tenía todavía
+consumidor.
+
+---
+
 ## 2. Pendientes de convertir
 
-### 2.1 Tabla de emociones (16 entradas) — prioridad alta
+### 2.1 Tabla de emociones — ya no aplica ✅
 
-`copy.emotions.*` — todas en masculino: `Tranquilo`, `Agradecido`, `Motivado`,
-`Ansioso`, `Cansado`, `Esperanzado`, `Irritable`, `Enfocado`, `Triste`, `Contento`,
-`Abrumado`, `Curioso`, `Presente`, `Inseguro`, `Aliviado`, `Nostálgico`.
+La lista original (`copy.emotions.*`) se retiró al reescribirse el bloque de
+emociones. Su sustituta, `hoy.emociones.opciones` (§22), nació ya con variantes: once
+de las quince las llevan y las otras cuatro son invariables (`En paz`, `Con energía`,
+`Alegre`, `Radiante`). No queda nada que convertir aquí.
 
-Es lo más visible de la app: se leen a diario en la Vista de Mañana y en el cierre de
-la noche. Tres son invariables (`Irritable`, `Triste`, `Presente`) y no necesitan
-variantes; las otras trece sí.
+Sobrevive un cabo suelto: `amor.n` es `"Amado/a"`, la única barra de género del
+producto. Está autorizada en el propio copy y en la lista blanca de
+`tests/genero.test.js`, pero **contradice la regla D.1 del bloque 01**, que solo
+admite `mismo/a`. Es una decisión de producto abierta, no un descuido.
 
-Nota para quien lo tome: la neutra de una emoción no siempre se puede reformular
-(“Cansado” → “Con cansancio” cambia el registro). Es uno de los casos donde §2.5.4
-autoriza `cansado/a`, pero conviene decidirlo entero de una vez y no entrada por
-entrada.
-
-### 2.2 Estados de sueño del ritual de noche — prioridad alta
+### 2.2 Estados de sueño del ritual de noche — prioridad alta, lo toma el bloque 02
 
 `ritualNoche.n6.states` — `['Tranquilo', 'Pensativo', 'Cansado', 'Inquieto', 'Otro']`.
-Mismo problema y misma decisión pendiente que la tabla de emociones. Conviene
-resolverlos juntos: quien elige “Tranquilo” a las once de la noche está eligiendo la
-misma palabra que en el diario.
+
+**No se convirtió en el bloque 01 a propósito, y no es solo por alcance.** El valor
+que se guarda es la propia palabra visible: `SelectorAnimo` escribe `"Cansado"` en
+`dailyEntry.animo`, y `@lib/ritualManana` compara contra
+`ANIMOS_DIFICILES = ['Cansado', 'Inquieto']` para decidir cómo saluda la mañana
+siguiente. Convertir el copy sin separar antes el id del rótulo haría que a una
+usuaria en femenino se le guardara `"Cansada"`, que ya no coincide con nada: el
+saludo de día difícil dejaría de salir, en silencio.
+
+Quien lo tome (bloque 02) necesita primero dar un id estable a cada estado y migrar
+lo que ya esté escrito en IndexedDB. Es un cambio de datos, no de copy.
+
+Fuera de `src/copy/index.js`, el mismo problema:
+`src/lib/ritualManana.js:21` — `ANIMOS_DIFICILES = ['Cansado', 'Inquieto']`.
 
 ### 2.3 Frases sueltas — prioridad media
 
 | Clave | Texto actual | Reformulación neutra sugerida |
 |---|---|---|
-| `tagline` | “…terminar cada día en paz contigo mismo.” | “…terminar cada día en paz.” |
-| `insights.area.lowActivity` | “Llevas un tiempo enfocado en {áreaActiva}…” | “Llevas un tiempo en {áreaActiva}…” |
+| ~~`tagline`~~ | — | convertida en el bloque 01 (ver §1-bis) |
+| ~~`insights.area.lowActivity`~~ | — | convertida en el bloque 01 (ver §1-bis) |
 | `onboarding.p10.ready` | “Tu cuenta está lista.” | invariable (concuerda con “cuenta”) — sin cambio |
 | `errors.generic.body` / `errors.syncFailed` | “Hemos guardado…”, “…sigue guardado.” | invariable (concuerda con “lo escrito”) — sin cambio |
 | `onboarding.p8.suggestions.trabajo[0]` | “Dejar mañana preparado” | invariable (concuerda con “mañana” como objeto) — sin cambio |
 
-Solo las dos primeras filas son trabajo real. Las demás se listan para que la próxima
-pasada no vuelva a abrirlas: ya se revisaron y concuerdan con un sustantivo, no con la
-persona.
+Las tres filas que quedan se listan para que la próxima pasada no vuelva a abrirlas:
+ya se revisaron y concuerdan con un sustantivo, no con la persona.
+
+El barrido del bloque 01 revisó además estos falsos positivos, todos por concordancia
+con un sustantivo y ninguno con la persona: `Solo`, `todo`, `mucho` (adverbios y
+pronombres invariables), “la mente más tranquila”, “la misma amabilidad”, “Tu cuenta
+está lista”, “Dejar mañana preparado”, “Si no sale solo”, y los valores de enum
+internos (`activa`, `activo`, `lista`) que nunca se muestran.
 
 ### 2.4 Fuera de `src/copy/index.js`
 
-`tagline` está duplicada en `package.json` (`description`) y en el manifiesto PWA de
-`vite.config.js`. Si se cambia, hay que cambiarla en los tres sitios; ahí no hay
-variantes de género posibles, así que la neutra debe ser la buena.
+`tagline` está duplicada en `package.json` (`description`), en el manifiesto PWA de
+`vite.config.js` y en el `<meta name="description">` de `index.html`. Ahí no hay
+variantes de género posibles, así que va la neutra. Los tres siguen hoy con la forma
+masculina: cambiarlos es trabajo de metadatos, no de copy de pantalla, y no entró en
+el bloque 01.
+
+`src/lib/ritualManana.js:21` — `ANIMOS_DIFICILES` (ver §2.2).
 
 ---
 

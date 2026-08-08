@@ -21,7 +21,7 @@ import { isOnboardingComplete, markOnboardingComplete } from '@lib/onboardingSto
 import { getUserProfile } from '@lib/db'
 import { getCurrentUserId } from '@lib/user'
 import { setGender } from '@lib/genderStore'
-import { fondoHorario } from '@lib/gradienteHorario'
+import { useSobreOscuro } from '@hooks/useFondoHorario'
 import { siguienteFrase } from '@lib/frases'
 import { debeMostrarApertura, ultimaApertura, anotarApertura, AUSENCIA_MINIMA } from '@lib/sesion'
 
@@ -37,6 +37,15 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('hoy')
   const [hideNav, setHideNav]     = useState(false)  // ocultar en rituales / escritura activa
   const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingComplete())
+
+  // De qué familia es el fondo ahora mismo. Se lee del hook y no de una llamada
+  // suelta a fondoHorario() para que cruzar el ocaso con la app abierta cambie
+  // la tinta sola: si no, se quedaría con la del momento en que se montó.
+  //
+  // Solo el booleano, no el degradado entero: el color se mueve cada minuto y la
+  // familia de la tinta cambia dos veces al día. Suscribir aquí el fondo completo
+  // re-renderizaría toda la app a cada minuto para nada.
+  const sobreOscuro = useSobreOscuro()
 
   // La frase del umbral (§17). null = no hay apertura en pantalla.
   const [fraseApertura, setFraseApertura] = useState(null)
@@ -127,14 +136,19 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen text-ink font-sans flex flex-col">
+    <div className="min-h-screen font-sans flex flex-col">
       {/* Una sola capa de fondo para toda la app: cruzar de pestaña no la
           desmonta, así que el degradado nunca parpadea (§18.3.4). */}
       <FondoHorario />
 
       {/* Contenido principal. Solo "Hoy" se apoya en el degradado; las demás
-          traen su propia superficie y se ven exactamente como antes. */}
+          traen su propia superficie y se ven exactamente como antes.
+
+          De ahí que la familia de la tinta se decida aquí: "Hoy" la hereda del
+          degradado —de noche el fondo es índigo y la tinta oscura daría 1.1:1,
+          que es texto invisible— y el resto vive siempre sobre papel. */}
       <main
+        data-surface={activeTab === 'hoy' && sobreOscuro ? 'dark' : 'light'}
         className={clsx(
           'flex-1 overflow-y-auto pb-20',
           activeTab !== 'hoy' && 'bg-paper',
@@ -149,6 +163,9 @@ export default function App() {
       {/* Barra de navegación inferior (se oculta en rituales y escritura activa) */}
       {!hideNav && (
         <nav
+          // Trae su propia superficie de papel, así que su tinta no sigue al
+          // degradado aunque "Hoy" esté de noche.
+          data-surface="light"
           className={clsx(
             'fixed bottom-0 left-0 right-0 z-50',
             'bg-paper/95 backdrop-blur-sm',
@@ -211,7 +228,7 @@ export default function App() {
       {fraseApertura && (
         <AperturaSesion
           frase={fraseApertura}
-          sobreOscuro={fondoHorario().sobreOscuro}
+          sobreOscuro={sobreOscuro}
           onEnd={() => setFraseApertura(null)}
         />
       )}

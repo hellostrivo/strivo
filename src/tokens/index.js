@@ -14,6 +14,25 @@ export const colors = {
   mist:  '#93A9C4',
 }
 
+// ─── Tinta por superficie (§6.5) ─────────────────────────────────────────────
+// El color del texto se deriva del fondo sobre el que se pinta, no lo elige cada
+// componente. Un componente declara en qué superficie vive (`data-surface`) y
+// hereda `--color-text`; así el mismo bloque se lee igual a las siete de la
+// mañana que a las once de la noche sin saber qué hora es.
+//
+// Por qué no basta con `text-ink`: sobre el degradado nocturno (#2E3A5C→#191428)
+// la tinta principal da 1.1–1.4:1, que es texto invisible. La regla no es
+// "oscurecer el fondo" sino cambiar la tinta.
+//
+// Los ratios son el peor caso sobre todas las superficies de cada familia y se
+// verifican en tests/contraste.test.js, no a ojo.
+export const textColors = {
+  onLight:      '#241E33',  // = ink,   13.04:1 en el peor claro
+  onLightMuted: '#655F6D',  //           5.00:1 en el peor claro
+  onDark:       '#FBF8F4',  // = paper, 10.57:1 en el peor oscuro
+  onDarkMuted:  '#C3BFC1',  //           6.15:1 en el peor oscuro
+}
+
 // Gradientes horarios (usados en la pantalla Hoy)
 // Se interpolan según la hora actual del usuario
 export const gradientsBySlot = {
