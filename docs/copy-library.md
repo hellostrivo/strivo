@@ -323,8 +323,14 @@ responder: sin mensaje, sin alerta. Se puede cerrar el día sin elegir ninguno.
 
 "+ Algo más" funciona igual que "+ Otra" en la pregunta de la mañana: abre un
 campo, y al confirmar con Enter la palabra se convierte en un chip elegido más,
-arriba con los demás. Placeholder "Una palabra", máx. 20 caracteres y una sola
-palabra (el espacio no llega a escribirse). Cuenta dentro del límite de 2.
+arriba con los demás. Placeholder "Una palabra", máx. 20 caracteres. Cuenta
+dentro del límite de 2.
+
+Aquí cabe una sola palabra, y se dice en vez de imponerse: se puede escribir el
+espacio, y al hacerlo aparece la pista "Sintetízalo en una palabra" mientras
+"Añadir" espera. Lo escrito no se toca. Recortarlo en silencio dejaba
+"muycontenta" en pantalla sin ninguna explicación. La mañana no lleva pista:
+ahí caben frases cortas.
 
 Las dos preguntas comparten componente (`@components/strivo/SelectorDeChips`):
 misma tarjeta, mismos chips, mismo límite, mismo campo de palabra propia. Solo

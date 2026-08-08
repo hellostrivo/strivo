@@ -30,7 +30,7 @@ import {
   nombresDeAnimos,
   esAnimoConocido,
   colorDeAnimoId,
-  unaPalabra,
+  esUnaPalabra,
   seleccionParaGuardar,
 } from '@lib/animos'
 
@@ -172,20 +172,34 @@ describe('Lo que se guarda es el id, no el rótulo', () => {
   })
 })
 
-describe('"Algo más": una palabra, en silencio', () => {
-  it('se queda con la primera palabra al pegar un párrafo', () => {
-    expect(unaPalabra('serena y en paz')).toBe('serena')
-    expect(unaPalabra('  con  espacios  ')).toBe('con')
+describe('"Algo más": una palabra, y se dice cuando no lo es', () => {
+  it('una palabra sola cabe', () => {
+    expect(esUnaPalabra('serena')).toBe(true)
+    expect(esUnaPalabra('  serena  ')).toBe(true)
   })
 
-  it('recorta a lo que cabe sin avisar', () => {
-    expect(unaPalabra('a'.repeat(50))).toHaveLength(OTRO_MAX_LENGTH)
+  // Lo que motivó el cambio: antes se recortaba en silencio y quien escribía
+  // "muy contenta" veía "muycontenta" sin ninguna explicación.
+  it('dos palabras no caben, y no se recortan a escondidas', () => {
+    expect(esUnaPalabra('muy contenta')).toBe(false)
+    expect(esUnaPalabra('serena y en paz')).toBe(false)
   })
 
-  it('lo vacío no se convierte en nada raro', () => {
-    expect(unaPalabra('')).toBe('')
-    expect(unaPalabra('   ')).toBe('')
-    expect(unaPalabra(null)).toBe('')
+  it('lo vacío tampoco cuenta como palabra', () => {
+    expect(esUnaPalabra('')).toBe(false)
+    expect(esUnaPalabra('   ')).toBe(false)
+    expect(esUnaPalabra(null)).toBe(false)
+  })
+
+  it('una palabra más larga de lo que cabe tampoco', () => {
+    expect(esUnaPalabra('a'.repeat(OTRO_MAX_LENGTH))).toBe(true)
+    expect(esUnaPalabra('a'.repeat(OTRO_MAX_LENGTH + 1))).toBe(false)
+  })
+
+  it('la pista existe y no regaña', () => {
+    const pista = copy.ritualNoche.n6.otherHint
+    expect(pista).toBe('Sintetízalo en una palabra')
+    expect(pista).not.toMatch(/error|inválid|incorrect|no puedes/i)
   })
 
   it('la palabra viaja dentro de la lista, como en la mañana', () => {

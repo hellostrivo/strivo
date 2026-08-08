@@ -143,15 +143,17 @@ export function nombresDeAnimos(valor, t, otroTexto = '') {
 }
 
 /**
- * Una sola palabra, en silencio.
+ * ¿Cabe esta palabra propia?
  *
- * Se queda con la primera y recorta a lo que cabe. No avisa de nada: pegar un
- * párrafo aquí no es un error de la persona, es un párrafo que no cabía (§3.6 —
- * la app no regaña).
+ * Aquí va una sola. No se recorta en silencio lo que alguien escribió —ver
+ * "muycontenta" después de teclear "muy contenta" no explica nada—: el campo
+ * deja escribir y avisa con una pista cuando sobra una palabra (copy
+ * `ritualNoche.n6.otherHint`).
  */
-export function unaPalabra(texto) {
-  if (typeof texto !== 'string') return ''
-  return (texto.trim().split(/\s+/)[0] ?? '').slice(0, OTRO_MAX_LENGTH)
+export function esUnaPalabra(texto) {
+  if (typeof texto !== 'string') return false
+  const palabras = texto.trim().split(/\s+/).filter(Boolean)
+  return palabras.length === 1 && palabras[0].length <= OTRO_MAX_LENGTH
 }
 
 /**

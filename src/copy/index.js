@@ -741,6 +741,10 @@ export const copy = {
       otherPlaceholder: 'Una palabra',
       otherLabel: 'Tu palabra para hoy',
       otherAdd: 'Añadir',
+      // Aparece solo si se escribe más de una palabra. No es un error ni un
+      // reproche: es la única pista de que aquí cabe una sola, y aparece cuando
+      // hace falta en vez de comerse las teclas en silencio.
+      otherHint: 'Sintetízalo en una palabra',
       // Solo lo oye quien navega con lector de pantalla: en la pantalla, llegar
       // al límite se ve porque las demás se atenúan, y nada más.
       countTemplate: '{n} de {max} elegidas',

@@ -27,7 +27,6 @@ import {
   OTRO_MAX_LENGTH,
   normalizarAnimos,
   nombreDeAnimo,
-  unaPalabra,
 } from '@lib/animos'
 import { momento } from '@tokens'
 import SelectorDeChips from '@components/strivo/SelectorDeChips'
@@ -54,13 +53,16 @@ export default function SelectorAnimo({ animos = [], onChange, tituloRef, titulo
       otraPlaceholder={copy.ritualNoche.n6.otherPlaceholder}
       otraAdd={copy.ritualNoche.n6.otherAdd}
       otraMaxLength={OTRO_MAX_LENGTH}
-      // Una palabra, en silencio: el espacio no llega a escribirse y pegar un
-      // párrafo se queda con la primera. La mañana no lo necesita, así que el
-      // saneado se pasa desde aquí en vez de cablearlo en el componente base.
-      sanear={unaPalabra}
+      // Aquí cabe una palabra, y se dice cuando hace falta en vez de comerse el
+      // espacio en silencio: escribir "muy contenta" y ver "muycontenta" no
+      // explica nada. La mañana admite una frase corta, así que no lleva pista.
+      otraPistaUnaPalabra={copy.ritualNoche.n6.otherHint}
       countTemplate={copy.ritualNoche.n6.countTemplate}
       tono={momento.noche}
       idBase="animo"
+      // Los ocho rótulos miden casi lo mismo y alineados a la izquierda se
+      // cuadran en dos columnas. Centrados vuelven a leerse como un grupo.
+      alineacion="centro"
       tituloRef={tituloRef}
       tituloComo={tituloComo}
     />

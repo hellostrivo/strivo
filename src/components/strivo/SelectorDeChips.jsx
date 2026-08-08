@@ -38,11 +38,19 @@ export default function SelectorDeChips({
   otraPlaceholder,
   otraAdd,
   otraMaxLength,
-  sanear = texto => texto,   // la noche admite una sola palabra; la mañana, una frase corta
+  // Copy opcional. Si se pasa, el campo solo admite una palabra: al escribir la
+  // segunda aparece esta pista y "Añadir" espera. Sin él, se admite una frase
+  // corta, que es lo que hace la pregunta de la mañana.
+  otraPistaUnaPalabra,
   countTemplate,
   // Presentación
   tono,                // color de la tarjeta (token de @tokens.momento)
   idBase,              // prefijo de los ids del DOM: 'emociones' | 'animo'
+  // Cuando los rótulos miden todos casi lo mismo, alinearlos a la izquierda los
+  // cuadra en columnas y el bloque se lee como una tabla. Centrar la fila
+  // deshace esa rejilla. Por defecto a la izquierda: la mañana tiene rótulos de
+  // ancho muy desigual y ya fluye sola.
+  alineacion = 'inicio',
   tituloRef,
   tituloComo: Titulo = 'h3',
 }) {
@@ -64,10 +72,15 @@ export default function SelectorDeChips({
     onChange([...selected, id])
   }
 
+  // Se cuenta lo escrito, no se recorta: comerse el espacio que alguien acaba de
+  // pulsar deja "muycontenta" en pantalla y ninguna explicación de por qué.
+  const palabras = propia.trim().split(/\s+/).filter(Boolean)
+  const sobranPalabras = Boolean(otraPistaUnaPalabra) && palabras.length > 1
+  const puedeAnadir = palabras.length > 0 && !sobranPalabras && !lleno
+
   const anadirPropia = () => {
-    const limpio = propia.trim()
-    if (!limpio || lleno) return
-    const id = comoPropia(limpio)
+    if (!puedeAnadir) return
+    const id = comoPropia(propia.trim())
     if (!selected.includes(id)) onChange([...selected, id])
     setPropia('')
     setEscribiendo(false)
@@ -97,7 +110,10 @@ export default function SelectorDeChips({
       <div
         role="group"
         aria-labelledby={tituloId}
-        className="mt-5 flex flex-wrap gap-2"
+        className={clsx(
+          'mt-5 flex flex-wrap gap-2',
+          alineacion === 'centro' && 'justify-center'
+        )}
       >
         {opciones.map(opcion => {
           const elegida  = selected.includes(opcion.id)
@@ -173,47 +189,62 @@ export default function SelectorDeChips({
       </div>
 
       {escribiendo && (
-        <div id={`${idBase}-otra`} className="mt-3 flex items-start gap-3 animate-sugerencia-entra motion-reduce:animate-none">
-          <label htmlFor={`${idBase}-propia`} className="sr-only">
-            {otraLabel}
-          </label>
-          <input
-            id={`${idBase}-propia`}
-            ref={campoRef}
-            type="text"
-            value={propia}
-            maxLength={otraMaxLength}
-            autoComplete="off"
-            enterKeyHint="done"
-            placeholder={otraPlaceholder}
-            onChange={evento => setPropia(sanear(evento.target.value))}
-            onKeyDown={evento => {
-              if (evento.key === 'Enter') {
-                evento.preventDefault()
-                anadirPropia()
-              }
-            }}
-            className={[
-              'flex-1 min-w-0 min-h-touch-sm',
-              'rounded-full bg-surface border border-border',
-              'px-4 py-2 text-base text-ink',
-              'placeholder:text-ink/70',
-              'focus:outline-none focus:border-ink focus:ring-2 focus:ring-ink/20',
-            ].join(' ')}
-          />
-          <button
-            type="button"
-            onClick={anadirPropia}
-            disabled={!propia.trim()}
-            className={clsx(
-              'min-h-touch-sm px-4 rounded-full text-base font-medium',
-              'bg-surface border border-border text-ink',
-              'disabled:opacity-40',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30'
-            )}
-          >
-            {otraAdd}
-          </button>
+        <div id={`${idBase}-otra`} className="mt-3 animate-sugerencia-entra motion-reduce:animate-none">
+          <div className="flex items-start gap-3">
+            <label htmlFor={`${idBase}-propia`} className="sr-only">
+              {otraLabel}
+            </label>
+            <input
+              id={`${idBase}-propia`}
+              ref={campoRef}
+              type="text"
+              value={propia}
+              maxLength={otraMaxLength}
+              autoComplete="off"
+              enterKeyHint="done"
+              placeholder={otraPlaceholder}
+              aria-describedby={sobranPalabras ? `${idBase}-pista` : undefined}
+              onChange={evento => setPropia(evento.target.value)}
+              onKeyDown={evento => {
+                if (evento.key === 'Enter') {
+                  evento.preventDefault()
+                  anadirPropia()
+                }
+              }}
+              className={[
+                'flex-1 min-w-0 min-h-touch-sm',
+                'rounded-full bg-surface border border-border',
+                'px-4 py-2 text-base text-ink',
+                'placeholder:text-ink/70',
+                'focus:outline-none focus:border-ink focus:ring-2 focus:ring-ink/20',
+              ].join(' ')}
+            />
+            <button
+              type="button"
+              onClick={anadirPropia}
+              disabled={!puedeAnadir}
+              className={clsx(
+                'min-h-touch-sm px-4 rounded-full text-base font-medium',
+                'bg-surface border border-border text-ink',
+                'disabled:opacity-40',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30'
+              )}
+            >
+              {otraAdd}
+            </button>
+          </div>
+
+          {/* La pista, no un error: mismo tono que el resto del texto, sin rojo
+              y sin icono de alarma. Lo escrito se queda en el campo. */}
+          {sobranPalabras && (
+            <p
+              id={`${idBase}-pista`}
+              aria-live="polite"
+              className="mt-2 px-4 text-sm text-ink/80"
+            >
+              {otraPistaUnaPalabra}
+            </p>
+          )}
         </div>
       )}
 
