@@ -27,6 +27,21 @@
       "manana": "#E5C5A5",
       "noche": "#D5D1E8"
     },
+    "temasHoy": {
+      "comment": "Los dos temas de la pantalla Hoy (§20). El fondo lo decide el botón Mañana/Noche, no el reloj. No retira el degradado horario del resto de la app: la capa compartida lo sigue pintando cuando nadie pide un tema, y el onboarding usa `gradients.horarios`, que es otro juego. Contrastes: mañana ink 11.99:1 en el extremo saturado; noche paper 10.57:1 en el extremo claro. La superficie de la noche va +12 de luminosidad HSL sobre su fondo.",
+      "manana": {
+        "bgFrom": "#FBD9B4",
+        "bgTo": "#FDF1E3",
+        "surface": "#FFFDF8",
+        "border": "#E8C79A"
+      },
+      "noche": {
+        "bgFrom": "#2E3A5C",
+        "bgTo": "#1B2440",
+        "surface": "#455383",
+        "border": "#55639A"
+      }
+    },
     "accents": {
       "amber": "#E5A25C",
       "plum": "#8B6BA8",

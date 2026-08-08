@@ -12,7 +12,7 @@ export default function BloqueDiario({ id, label, children, className = '' }) {
       {label && (
         <h2
           id={id ? `${id}-label` : undefined}
-          className="font-display text-md leading-snug text-ink"
+          className="font-display text-md leading-snug text-surface-fg"
         >
           {label}
         </h2>

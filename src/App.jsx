@@ -22,6 +22,7 @@ import { getUserProfile } from '@lib/db'
 import { getCurrentUserId } from '@lib/user'
 import { setGender } from '@lib/genderStore'
 import { useSobreOscuro } from '@hooks/useFondoHorario'
+import { temaInicialDeHoy, esTemaOscuro } from '@lib/temaHoy'
 import { siguienteFrase } from '@lib/frases'
 import { debeMostrarApertura, ultimaApertura, anotarApertura, AUSENCIA_MINIMA } from '@lib/sesion'
 
@@ -45,7 +46,21 @@ export default function App() {
   // Solo el booleano, no el degradado entero: el color se mueve cada minuto y la
   // familia de la tinta cambia dos veces al día. Suscribir aquí el fondo completo
   // re-renderizaría toda la app a cada minuto para nada.
+  //
+  // Es el fondo por defecto de la app: lo que ve la apertura de sesión y lo que
+  // hay detrás de las demás pestañas. La pantalla Hoy ya no depende de él.
   const sobreOscuro = useSobreOscuro()
+
+  // El tema que pidió "Hoy". El dueño del estado es HoyPage —es su botón el que
+  // lo cambia— y esto es el eco que necesita la capa de fondo, que vive aquí
+  // arriba. Arranca con el mismo cálculo que la pantalla, así que el primer
+  // fotograma ya sale con el tema bueno.
+  const [temaHoy, setTemaHoy] = useState(temaInicialDeHoy)
+
+  const enHoy = activeTab === 'hoy'
+  const temaActivo = enHoy ? temaHoy : null
+  // Fuera de Hoy manda la hora, que es lo que sigue pintando la capa compartida
+  const fondoOscuro = temaActivo ? esTemaOscuro(temaActivo) : sobreOscuro
 
   // La frase del umbral (§17). null = no hay apertura en pantalla.
   const [fraseApertura, setFraseApertura] = useState(null)
@@ -139,7 +154,7 @@ export default function App() {
     <div className="min-h-screen font-sans flex flex-col">
       {/* Una sola capa de fondo para toda la app: cruzar de pestaña no la
           desmonta, así que el degradado nunca parpadea (§18.3.4). */}
-      <FondoHorario />
+      <FondoHorario tema={temaActivo} />
 
       {/* Contenido principal. Solo "Hoy" se apoya en el degradado; las demás
           traen su propia superficie y se ven exactamente como antes.
@@ -148,13 +163,14 @@ export default function App() {
           degradado —de noche el fondo es índigo y la tinta oscura daría 1.1:1,
           que es texto invisible— y el resto vive siempre sobre papel. */}
       <main
-        data-surface={activeTab === 'hoy' && sobreOscuro ? 'dark' : 'light'}
+        data-surface={fondoOscuro && enHoy ? 'dark' : 'light'}
+        data-tema={temaActivo ?? undefined}
         className={clsx(
           'flex-1 overflow-y-auto pb-20',
           activeTab !== 'hoy' && 'bg-paper',
         )}
       >
-        {activeTab === 'hoy'     && <HoyPage     onHideNav={setHideNav} onIrAHabitos={() => setActiveTab('habitos')} />}
+        {activeTab === 'hoy'     && <HoyPage     onHideNav={setHideNav} onTema={setTemaHoy} onIrAHabitos={() => setActiveTab('habitos')} />}
         {activeTab === 'journal' && <JournalPage onHideNav={setHideNav} />}
         {activeTab === 'habitos' && <HabitosModulo />}
         {activeTab === 'tu'      && <TuPage />}
@@ -184,7 +200,14 @@ export default function App() {
                 key={tab.id}
                 role="tab"
                 aria-selected={isActive}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  // Volver a "Hoy" recalcula su tema: no se persiste entre
+                  // visitas (§20). Se hace aquí y no al montar la pantalla para
+                  // que el primer fotograma ya salga con el bueno, en vez de
+                  // cruzar desde el que quedó de la vez anterior.
+                  if (tab.id === 'hoy') setTemaHoy(temaInicialDeHoy())
+                  setActiveTab(tab.id)
+                }}
                 className={clsx(
                   'flex-1 flex flex-col items-center justify-center gap-1',
                   'py-3 min-h-touch',
@@ -228,7 +251,7 @@ export default function App() {
       {fraseApertura && (
         <AperturaSesion
           frase={fraseApertura}
-          sobreOscuro={sobreOscuro}
+          sobreOscuro={fondoOscuro}
           onEnd={() => setFraseApertura(null)}
         />
       )}

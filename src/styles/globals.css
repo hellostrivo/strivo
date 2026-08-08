@@ -44,6 +44,26 @@
   --color-text:       var(--color-text-on-light);
   --color-text-muted: var(--color-text-on-light-muted);
 
+  /* ─── Los dos temas de la pantalla Hoy (§20) ───────────────────────────────
+     El fondo de Hoy lo decide el botón Mañana/Noche, no el reloj. La superficie
+     es la de sus tarjetas: en la noche va un paso de luminosidad por encima del
+     fondo, que es lo que hace que la tarjeta del ritual se despegue.
+  */
+  --hoy-manana-bg-from: #FBD9B4;
+  --hoy-manana-bg-to:   #FDF1E3;
+  --hoy-manana-surface: #FFFDF8;
+  --hoy-manana-border:  #E8C79A;
+
+  --hoy-noche-bg-from:  #2E3A5C;
+  --hoy-noche-bg-to:    #1B2440;
+  --hoy-noche-surface:  #455383;
+  --hoy-noche-border:   #55639A;
+
+  /* La superficie del tema vigente. La fija el contenedor de Hoy junto con
+     data-surface, y la consumen sus tarjetas sin saber qué tema está puesto. */
+  --hoy-surface: var(--hoy-manana-surface);
+  --hoy-border:  var(--hoy-manana-border);
+
   /* Safe area para iPhone notch */
   --sab: env(safe-area-inset-bottom, 0px);
 }
@@ -66,6 +86,18 @@
   --color-text:       var(--color-text-on-dark);
   --color-text-muted: var(--color-text-on-dark-muted);
   color: var(--color-text);
+}
+
+/* El tema de Hoy: además de la tinta, decide de qué color son sus tarjetas.
+   Se declara junto a data-surface en el contenedor de la pantalla. */
+[data-tema='manana'] {
+  --hoy-surface: var(--hoy-manana-surface);
+  --hoy-border:  var(--hoy-manana-border);
+}
+
+[data-tema='noche'] {
+  --hoy-surface: var(--hoy-noche-surface);
+  --hoy-border:  var(--hoy-noche-border);
 }
 
 /* ─── Base ───────────────────────────────────────────────────────────────────

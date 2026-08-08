@@ -143,16 +143,16 @@ export default function VistaManana({ recarga = 0, onIrAlRitual }) {
       {/* 1 · Frase del día */}
       {datos.perfil?.identidadCentral && (
         <BloqueDiario className="animate-fade-up">
-          <p className="font-display text-xl leading-tight text-ink">
+          <p className="font-display text-xl leading-tight text-surface-fg">
             {interpolate(phrase.identityTemplate, {
               identidad: datos.perfil.identidadCentral,
             })}
           </p>
 
           {datos.intencion && (
-            <p className="mt-4 text-base text-ink/80">
+            <p className="mt-4 text-base text-surface-fg-muted">
               <span className="block">{phrase.intentionLabel}</span>
-              <span className="mt-1 block font-display text-md text-ink">
+              <span className="mt-1 block font-display text-md text-surface-fg">
                 {datos.intencion}
               </span>
             </p>
@@ -187,7 +187,7 @@ export default function VistaManana({ recarga = 0, onIrAlRitual }) {
         {/* La pregunta complementaria llega cuando ya hay algo que sostener */}
         {emociones.length > 0 && (
           <div className="mt-6 animate-fade-up">
-            <label htmlFor="vm-necesito" className="block text-base text-ink/80">
+            <label htmlFor="vm-necesito" className="block text-base text-surface-fg-muted">
               {emotions.complementary}
             </label>
             <input
@@ -257,7 +257,7 @@ export default function VistaManana({ recarga = 0, onIrAlRitual }) {
                       })}
                       className={[
                         'inline-flex items-center gap-1.5 rounded-full',
-                        'px-2 py-0.5 text-xs text-ink/70',
+                        'px-2 py-0.5 text-xs text-surface-fg-muted',
                         'animate-sugerencia-entra motion-reduce:animate-none',
                         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20',
                       ].join(' ')}

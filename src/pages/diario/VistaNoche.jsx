@@ -220,12 +220,12 @@ export default function VistaNoche({ recarga = 0, onDiaCerrado }) {
       {/* 6 · Hábitos de la noche */}
       <BloqueDiario id="habitos" label={copy.ritualNoche.n2.question}>
         {datos.habitos.length === 0 ? (
-          <p className="text-base leading-relaxed text-ink/80">
+          <p className="text-base leading-relaxed text-surface-fg-muted">
             {copy.ritualNoche.n2.empty}
           </p>
         ) : (
           <>
-            <p className="text-base text-ink/80" aria-live="polite">
+            <p className="text-base text-surface-fg-muted" aria-live="polite">
               {completo
                 ? copy.ritualNoche.n2.complete
                 : interpolate(copy.ritualNoche.n2.progressTemplate, {
@@ -261,7 +261,7 @@ export default function VistaNoche({ recarga = 0, onDiaCerrado }) {
       {/* 8 · Cierre */}
       <BloqueDiario>
         {diaCerrado ? (
-          <p className="text-center font-display text-md text-ink/80">
+          <p className="text-center font-display text-md text-surface-fg-muted">
             {copy.ritualNoche.closing.peace}
           </p>
         ) : (

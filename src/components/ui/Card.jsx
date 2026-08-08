@@ -8,6 +8,9 @@ export default function Card({ children, className, elevated = false, onClick, .
   const isClickable = !!onClick
   return (
     <div
+      // Trae su propio papel, así que dentro se escribe en tinta oscura aunque
+      // la pantalla que la contiene esté en tema de noche (§6.5).
+      data-surface="light"
       className={clsx(
         'rounded-md bg-paper',
         elevated ? 'shadow-elev-2' : 'shadow-elev-1',

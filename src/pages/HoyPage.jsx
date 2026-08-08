@@ -12,15 +12,21 @@
 // cierre a las 19:00, también. La franja solo decide cuál viene preseleccionada.
 //
 // El fondo es la capa compartida de la app (@components/strivo/FondoHorario):
-// aquí no se pinta ninguno, para que no parpadee al cambiar de pestaña.
+// aquí no se pinta ninguno, para que no parpadee al cambiar de pestaña. Lo que
+// sí se decide aquí es CUÁL de los dos temas pinta esa capa (§20): "Mañana" un
+// amanecer claro, "Noche" un azul profundo. El botón manda, no el reloj — quien
+// cierra su día a las siete de la tarde no tiene por qué mirar una pantalla que
+// insiste en que todavía es de día.
+//
+// La sección visible y el tema son el mismo estado, no dos: elegir "Noche" es
+// a la vez ver la noche y verla de noche.
 //
 // La fecha es la del día de Strivo, que termina a las 03:00 (§7.2): quien cierra
 // su día a la 1:30 no estrena un día nuevo, sigue en el de ayer.
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { clsx } from 'clsx'
 import {
-  getTimeSlot,
   isRitualMananaWindow,
   isRitualNocheWindow,
   strivoDayKey,
@@ -31,24 +37,17 @@ import { ritualMananaHecho } from '@lib/ritualManana'
 import { ritualNocheHecho } from '@lib/ritualNoche'
 import { fraseDelDia } from '@lib/frases'
 import { copy } from '@copy'
-import useFondoHorario from '@hooks/useFondoHorario'
+import { temaInicialDeHoy } from '@lib/temaHoy'
 import Button from '@components/ui/Button'
 import VistaManana from '@/pages/diario/VistaManana'
 import VistaNoche  from '@/pages/diario/VistaNoche'
 import RitualManana from '@/pages/ritual/RitualManana'
 import RitualNoche  from '@/pages/ritual/RitualNoche'
 
-// Qué sección viene sugerida según la franja (§4.3.3). Es una sugerencia: las
-// dos están siempre a un toque.
-const FRANJAS_DE_MANANA = ['amanecer', 'dia']
-
-export default function HoyPage({ onHideNav, onIrAHabitos }) {
-  const slot  = useMemo(() => getTimeSlot(), [])
-  const fondo = useFondoHorario()
-
-  const [seccion, setSeccion] = useState(
-    () => (FRANJAS_DE_MANANA.includes(slot) ? 'manana' : 'noche')
-  )
+export default function HoyPage({ onHideNav, onTema, onIrAHabitos }) {
+  // Qué sección viene sugerida al abrir (§4.3.3, @lib/temaHoy). Es una
+  // sugerencia: las dos están siempre a un toque, a cualquier hora.
+  const [seccion, setSeccion] = useState(temaInicialDeHoy)
   const [frase, setFrase]                 = useState(null)
   const [ritualAbierto, setRitualAbierto] = useState(null)   // 'manana' | 'noche' | null
   const [hechos, setHechos]               = useState(null)   // null mientras carga
@@ -82,6 +81,10 @@ export default function HoyPage({ onHideNav, onIrAHabitos }) {
     return () => { vivo = false }
   }, [])
 
+  // La capa de fondo vive en App, así que se le dice qué tema toca. El estado
+  // sigue siendo este: allí solo se hace eco de él.
+  useEffect(() => { onTema?.(seccion) }, [seccion, onTema])
+
   // La barra de pestañas no compite con el ritual
   useEffect(() => {
     onHideNav?.(!!ritualAbierto)
@@ -103,9 +106,9 @@ export default function HoyPage({ onHideNav, onIrAHabitos }) {
   const puedeVolver = ritualDeAhora && hechos && !ritualAbierto
 
   return (
-    <div className="min-h-screen" style={{ color: fondo.texto }}>
+    <div className="min-h-screen">
       <div className="w-full max-w-md mx-auto px-6 pt-safe pt-10">
-        <p className="text-center font-sans text-sm tracking-widest uppercase opacity-60">
+        <p className="text-center font-sans text-sm tracking-widest uppercase text-surface-fg-muted">
           {copy.appName}
         </p>
 
@@ -114,7 +117,12 @@ export default function HoyPage({ onHideNav, onIrAHabitos }) {
             la franja (§18.4). Sin icono, sin comillas, sin firma: se sostiene
             sola. */}
         {frase && (
-          <div className="mt-8 rounded-lg bg-surface/95 shadow-elev-2 px-6 py-8">
+          // Trae su propia superficie clara, así que dentro se vuelve a escribir
+          // en tinta oscura aunque el tema sea el de la noche.
+          <div
+            data-surface="light"
+            className="mt-8 rounded-lg bg-surface/95 shadow-elev-2 px-6 py-8"
+          >
             <p className="text-center font-display text-md leading-snug text-ink">
               {frase}
             </p>

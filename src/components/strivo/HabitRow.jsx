@@ -129,7 +129,7 @@ export default function HabitRow({ habit, done = false, onToggle, area, classNam
           </span>
 
           <span className={clsx(
-            'text-base text-ink font-sans',
+            'text-base text-surface-fg font-sans',
             // SIN tachar. El texto se atenúa por el padre (opacity-70)
           )}>
             {habit.nombre}
@@ -138,7 +138,7 @@ export default function HabitRow({ habit, done = false, onToggle, area, classNam
 
         {/* Identidad de área (si existe) — aparece debajo del nombre */}
         {area?.identidadArea && (
-          <p className="text-sm text-ink/50 mt-0.5 ml-4">
+          <p className="text-sm text-surface-fg-muted mt-0.5 ml-4">
             {area.identidadArea}
           </p>
         )}
@@ -146,7 +146,7 @@ export default function HabitRow({ habit, done = false, onToggle, area, classNam
 
       {/* Total de veces (discreto, solo lectura) */}
       {habit.totalCompletados > 0 && (
-        <span className="text-sm text-ink/40 flex-shrink-0" aria-hidden="true">
+        <span className="text-sm text-surface-fg-muted flex-shrink-0" aria-hidden="true">
           {habit.totalCompletados}×
         </span>
       )}

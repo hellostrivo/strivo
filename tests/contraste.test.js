@@ -8,7 +8,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { contraste, fondoHorario } from '@lib/gradienteHorario'
-import { colors, textColors, gradientesInicio, momento } from '@tokens'
+import { colors, textColors, gradientesInicio, momento, temasHoy } from '@tokens'
 
 // WCAG 2.2 AA
 const TEXTO_NORMAL = 4.5
@@ -192,6 +192,76 @@ describe('Las tarjetas de las preguntas de ánimo', () => {
 
   it('los dos momentos se distinguen entre sí', () => {
     expect(momento.manana).not.toBe(momento.noche)
+  })
+})
+
+describe('Los dos temas de la pantalla Hoy', () => {
+  // El degradado se recorre entero: el punto más difícil no tiene por qué estar
+  // en un extremo.
+  const recorrido = ({ bgFrom, bgTo }) => {
+    const aRGB = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16))
+    const [r1, g1, b1] = aRGB(bgFrom)
+    const [r2, g2, b2] = aRGB(bgTo)
+    return Array.from({ length: 21 }, (_, i) => {
+      const t = i / 20
+      return '#' + [r1 + (r2 - r1) * t, g1 + (g2 - g1) * t, b1 + (b2 - b1) * t]
+        .map(v => Math.round(v).toString(16).padStart(2, '0')).join('').toUpperCase()
+    })
+  }
+
+  const tinta = tema => (tema.oscuro ? textColors.onDark : textColors.onLight)
+  const tintaSecundaria = tema =>
+    (tema.oscuro ? textColors.onDarkMuted : textColors.onLightMuted)
+
+  for (const [nombre, tema] of Object.entries(temasHoy)) {
+    it(`${nombre}: la tinta cumple 4.5:1 en todo el fondo`, () => {
+      for (const punto of recorrido(tema)) {
+        expect(contraste(tinta(tema), punto), `${nombre} en ${punto}`)
+          .toBeGreaterThanOrEqual(TEXTO_NORMAL)
+      }
+    })
+
+    it(`${nombre}: la tinta secundaria también`, () => {
+      for (const punto of recorrido(tema)) {
+        expect(contraste(tintaSecundaria(tema), punto), `${nombre} en ${punto}`)
+          .toBeGreaterThanOrEqual(TEXTO_NORMAL)
+      }
+    })
+
+    it(`${nombre}: se lee sobre la superficie de sus tarjetas`, () => {
+      // La tarjeta de la mañana es clara y la de la noche también se aclara
+      // respecto a su fondo, así que en las dos se escribe con la tinta que
+      // corresponda a la propia tarjeta.
+      const sobreLaTarjeta = Math.max(
+        contraste(textColors.onLight, tema.surface),
+        contraste(textColors.onDark, tema.surface)
+      )
+      expect(sobreLaTarjeta, `${nombre} (${tema.surface})`)
+        .toBeGreaterThanOrEqual(TEXTO_NORMAL)
+    })
+  }
+
+  // El bug: la tarjeta del ritual tenía el mismo tono que el fondo y se perdía.
+  it('la tarjeta se despega del fondo en los dos temas', () => {
+    for (const [nombre, tema] of Object.entries(temasHoy)) {
+      const contra = Math.max(
+        contraste(tema.surface, tema.bgFrom),
+        contraste(tema.surface, tema.bgTo)
+      )
+      // No se pide 3:1 —entre dos claros es imposible sin virar a gris— pero sí
+      // un paso real, y el borde propio hace el resto (§20 D.2/D.3).
+      expect(contra, `${nombre}: superficie contra su fondo`).toBeGreaterThan(1.2)
+      expect(tema.border, `${nombre}: le falta el borde`).toBeTruthy()
+    }
+  })
+
+  it('la noche es oscura y la mañana clara, no al revés', () => {
+    expect(temasHoy.noche.oscuro).toBe(true)
+    expect(temasHoy.manana.oscuro).toBe(false)
+    expect(contraste(colors.paper, temasHoy.noche.bgFrom))
+      .toBeGreaterThan(contraste(colors.ink, temasHoy.noche.bgFrom))
+    expect(contraste(colors.ink, temasHoy.manana.bgFrom))
+      .toBeGreaterThan(contraste(colors.paper, temasHoy.manana.bgFrom))
   })
 })
 

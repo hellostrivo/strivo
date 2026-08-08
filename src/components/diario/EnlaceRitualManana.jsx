@@ -11,13 +11,15 @@
 // El progreso se muestra como "2 de 5 completados" y nada más. Ni barra ni
 // porcentaje: los dos convierten el ritual en una métrica, que es lo contrario
 // de lo que este producto defiende.
+//
+// La tarjeta se pintaba con el mismo degradado que el fondo y quedaba a un tono
+// de distancia: estaba puesta ahí y no se veía. Ahora usa la superficie del tema
+// (§20), que es justo el paso de luminosidad que la despega, más un borde propio
+// porque entre dos claros la luminosidad sola no basta.
 
 import { copy, interpolate } from '@copy'
-import useFondoHorario from '@hooks/useFondoHorario'
 
 export default function EnlaceRitualManana({ habitos = [], hechos, onIr }) {
-  const fondo = useFondoHorario()
-
   const total   = habitos.length
   const marcados = habitos.filter(h => hechos?.has(h.id)).length
   const completo = total > 0 && marcados === total
@@ -39,16 +41,14 @@ export default function EnlaceRitualManana({ habitos = [], hechos, onIr }) {
       className={[
         'w-full rounded-lg px-6 py-8',
         'flex items-center justify-between gap-4',
-        'shadow-elev-2 text-left',
+        'bg-surface-hoy border border-border-hoy shadow-elev-2 text-left',
         'transition-transform duration-260 ease-smooth motion-reduce:transition-none',
         'active:scale-[0.99]',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30',
       ].join(' ')}
-      style={{
-        // Del degradado del momento, para que pertenezca a la hora del día
-        background: `linear-gradient(140deg, ${fondo.from} 0%, ${fondo.to} 100%)`,
-        color: fondo.texto,
-      }}
+      // La superficie de la mañana es clara, así que dentro se escribe en tinta
+      // oscura aunque la pantalla cambie de tema.
+      data-surface="light"
     >
       <span className="flex-1">
         <span className="block text-base font-bold">

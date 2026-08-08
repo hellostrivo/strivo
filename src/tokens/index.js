@@ -47,6 +47,46 @@ export const textColors = {
   onDarkMuted:  '#C3BFC1',  //           6.15:1 en el peor oscuro
 }
 
+// ─── Los dos temas de la pantalla Hoy (§20) ─────────────────────────────────
+// El fondo de Hoy ya no lo decide el reloj sino el botón: "Mañana" pinta un
+// amanecer claro y "Noche" un azul profundo. Que lo elija la persona y no la
+// hora es lo que permite cerrar el día a las siete de la tarde sin que la
+// pantalla insista en que todavía es de día.
+//
+// Esto NO retira el degradado horario del resto de la app: la capa compartida
+// (@components/strivo/FondoHorario) lo sigue pintando cuando nadie le pide un
+// tema, y la apertura de sesión se dibuja sobre ella igual que antes. El
+// onboarding usa otro juego distinto (`gradientsBySlot`), que no se toca.
+//
+// Contrastes verificados en tests/contraste.test.js. Los peores casos:
+// mañana, ink sobre el extremo saturado 11.99:1; noche, paper sobre el extremo
+// claro 10.57:1. La superficie de la noche está +12 de luminosidad HSL sobre su
+// fondo, que es lo que hace que la tarjeta del ritual se despegue en vez de
+// perderse.
+export const temasHoy = {
+  manana: {
+    bgFrom:  '#FBD9B4',
+    bgTo:    '#FDF1E3',
+    surface: '#FFFDF8',
+    border:  '#E8C79A',
+    oscuro:  false,
+  },
+  noche: {
+    bgFrom:  '#2E3A5C',
+    bgTo:    '#1B2440',
+    surface: '#455383',
+    border:  '#55639A',
+    oscuro:  true,
+  },
+}
+
+export const degradadoDeTema = ({ bgFrom, bgTo }) =>
+  `linear-gradient(170deg, ${bgFrom} 0%, ${bgTo} 100%)`
+
+// Lo que tarda el fondo en cruzar de un tema a otro. Dentro del rango de la
+// app: es una transición de interfaz, no el paso del día.
+export const duracionTema = 320
+
 // Gradientes horarios (usados en la pantalla Hoy)
 // Se interpolan según la hora actual del usuario
 export const gradientsBySlot = {

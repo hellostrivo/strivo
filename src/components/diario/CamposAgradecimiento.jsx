@@ -160,7 +160,7 @@ export default function CamposAgradecimiento({
 
       {sugerenciasVisibles && !algoEscrito && sinUsar.length > 0 && (
         <div className="mt-6 animate-fade-up">
-          <p id={`${idBase}-sugerencias`} className="text-base text-ink/80">
+          <p id={`${idBase}-sugerencias`} className="text-base text-surface-fg-muted">
             {suggestionsLabel}
           </p>
           <div

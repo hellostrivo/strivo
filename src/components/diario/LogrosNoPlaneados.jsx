@@ -35,7 +35,7 @@ export default function LogrosNoPlaneados({
   return (
     <>
       {mostrarEtiqueta && (
-        <label htmlFor={idCampo} className="block text-base text-ink/80">
+        <label htmlFor={idCampo} className="block text-base text-surface-fg-muted">
           {copy.diarioNoche.unplanned.label}
         </label>
       )}

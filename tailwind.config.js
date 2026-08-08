@@ -60,10 +60,14 @@ export default {
           DEFAULT: '#FFFEF7',
           subtle:  '#F5F0E8',
           muted:   '#EDE7DC',
+          // La tarjeta del tema vigente de Hoy (§20). Cambia con el botón
+          // Mañana/Noche; los componentes no saben cuál está puesto.
+          hoy:     'var(--hoy-surface)',
         },
         border: {
           DEFAULT: '#D9CFC4',
           subtle:  '#EDE7DC',
+          hoy:     'var(--hoy-border)',
         },
       },
 
