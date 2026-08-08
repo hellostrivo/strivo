@@ -8,7 +8,7 @@
 // ✅ NUNCA rojo, ni porcentaje de incumplimiento, ni texto "fallaste"
 // ✅ El texto tachado NO se usa (connota tarea eliminada, no logro)
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { clsx } from 'clsx'
 import { copy } from '@copy'
 import { areaColors } from '@tokens'
@@ -25,13 +25,25 @@ import { EMOJI_POR_DEFECTO } from '@lib/emojis'
  *   tocable: en los rituales no hay a dónde ir y un botón que no lleva a
  *   ningún sitio solo estorba al recorrer con teclado.
  */
+// Un toque accidental repetido no puede escribir dos veces. La capa de datos ya
+// es idempotente (§26.3), pero absorber el doble toque aquí evita además el
+// parpadeo de marcar y desmarcar en el mismo gesto.
+const ESPERA_ENTRE_TOQUES = 300
+
 export default function HabitRow({ habit, done = false, onToggle, area, className, onOpen }) {
   const [pressed, setPressed] = useState(false)
+  const ultimoToque = useRef(0)
   const Contenedor = onOpen ? 'button' : 'div'
 
   const color = area?.color ?? areaColors[area?.tipo] ?? '#D9CFC4'
 
+  // Interruptor de dos estados, nunca un contador: tocarlo marca, volver a
+  // tocarlo desmarca. En ningún caso suma (§26.3).
   function handleToggle() {
+    const ahora = Date.now()
+    if (ahora - ultimoToque.current < ESPERA_ENTRE_TOQUES) return
+    ultimoToque.current = ahora
+
     setPressed(true)
     onToggle?.(habit.id, !done)
     setTimeout(() => setPressed(false), 260)

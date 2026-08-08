@@ -14,7 +14,8 @@ const DB_NAME    = 'strivo-local'
 // 2 → UserProfile.gender (§2.2 del documento de cambios): lenguaje adaptativo
 // 3 → appFlags: banderas del dispositivo, no del usuario (§3.3, hasSeenIntro)
 // 4 → se retira lo que capturaba P5, que ya no existe (§14.4)
-const DB_VERSION = 4
+// 5 → se deduplican las marcas de hábito y se recalcula su contador (§26.3)
+const DB_VERSION = 5
 
 // ─── Abrir / inicializar la base de datos ────────────────────────────────────
 export async function getDB() {
@@ -108,6 +109,52 @@ export function upgradeSchema(db, oldVersion, newVersion, tx) {
     victorias.openCursor().then(function siguiente(cursor) {
       if (!cursor) return
       if (cursor.value.origen === 'onboarding') cursor.delete()
+      return cursor.continue().then(siguiente)
+    })
+  }
+
+  // v5 — el contador de cada hábito iba por ×5 (§26). Se rehace desde los
+  // registros, que son la verdad: un hábito se ha hecho tantos días como marcas
+  // distintas tiene.
+  //
+  // Dos cosas, en este orden:
+  //   1. Si hubiera dos marcas del mismo hábito y día, se conserva la primera.
+  //      Con la clave actual (`habitId_fecha`) eso no puede pasar, pero podría
+  //      llegar de la sincronización, así que la migración lo contempla.
+  //   2. `totalCompletados` pasa a ser el número de marcas que quedan.
+  //
+  // Esto NO toca la Constancia: se calcula sobre `dailyEntries` y cuenta días
+  // con actividad, no marcas de hábito (RN-06). Deduplicar aquí no puede
+  // reiniciar la constancia de nadie.
+  if (oldVersion > 0 && oldVersion < 5) {
+    const logs    = tx.objectStore('habitLogs')
+    const habitos = tx.objectStore('habits')
+    const vistos  = new Set()
+    const porHabito = new Map()
+
+    logs.openCursor().then(function siguiente(cursor) {
+      if (!cursor) {
+        // Ya se sabe cuántos días quedan por hábito: se escribe el contador
+        return habitos.openCursor().then(function siguienteHabito(cursorHabito) {
+          if (!cursorHabito) return
+          const dias = porHabito.get(cursorHabito.value.id) ?? 0
+          if (cursorHabito.value.totalCompletados !== dias) {
+            cursorHabito.update({ ...cursorHabito.value, totalCompletados: dias })
+          }
+          return cursorHabito.continue().then(siguienteHabito)
+        })
+      }
+
+      const { habitId, fecha } = cursor.value
+      const pareja = `${habitId}__${fecha}`
+
+      if (vistos.has(pareja)) {
+        cursor.delete()
+      } else {
+        vistos.add(pareja)
+        porHabito.set(habitId, (porHabito.get(habitId) ?? 0) + 1)
+      }
+
       return cursor.continue().then(siguiente)
     })
   }
@@ -297,39 +344,75 @@ export async function getHabitLogsInRange(habitId, desde, hasta) {
   )
 }
 
+// Marcar es un interruptor, no un contador (§26.3). Toda la operación —mirar si
+// ya está marcado, escribir la fila y ajustar el contador— ocurre dentro de una
+// sola transacción. Fuera de ella, dos toques seguidos leían los dos "todavía no
+// está" y sumaban los dos: la fila seguía siendo una, pero el contador iba por
+// ×5. Ese era el error.
+//
+// La clave de la fila es `${habitId}_${fecha}`, así que la pareja (hábito, día)
+// es única por construcción: no puede haber dos marcas del mismo día.
 export async function markHabit(habitId, userId, fecha) {
-  // Idempotente: si ya existe la fila, no la duplica
-  const existing = await getHabitLog(habitId, fecha)
-  if (existing) return existing
-
-  const log = {
-    id:       `${habitId}_${fecha}`,
-    habitId,
-    userId,
-    fecha,
-    hora:     new Date().toISOString(),
-  }
   const db = await getDB()
-  await db.put('habitLogs', log)
-  enqueueSyncItem('habitLogs', log.id, log)
+  const id = `${habitId}_${fecha}`
+  const tx = db.transaction(['habitLogs', 'habits'], 'readwrite')
 
-  // Contador desnormalizado del hábito (§7.2). Sube solo cuando se crea una
-  // fila nueva, así que marcar dos veces el mismo día no lo infla. Al desmarcar
-  // NO baja: el modelo dice que solo crece, nunca se reinicia.
-  const habit = await db.get('habits', habitId)
-  if (habit) {
-    const actualizado = { ...habit, totalCompletados: (habit.totalCompletados ?? 0) + 1 }
-    await db.put('habits', actualizado)
-    enqueueSyncItem('habits', habit.id, actualizado)
+  const yaEstaba = await tx.objectStore('habitLogs').get(id)
+  if (yaEstaba) {
+    await tx.done
+    return yaEstaba
   }
+
+  const log = { id, habitId, userId, fecha, hora: new Date().toISOString() }
+  await tx.objectStore('habitLogs').put(log)
+
+  // Contador desnormalizado del hábito (§7.2): cuántos días se ha registrado.
+  // Sube solo cuando de verdad se creó la fila.
+  const habitos = tx.objectStore('habits')
+  const habit   = await habitos.get(habitId)
+  const actualizado = habit
+    ? { ...habit, totalCompletados: (habit.totalCompletados ?? 0) + 1 }
+    : null
+  if (actualizado) await habitos.put(actualizado)
+
+  await tx.done
+
+  enqueueSyncItem('habitLogs', log.id, log)
+  if (actualizado) enqueueSyncItem('habits', actualizado.id, actualizado)
 
   return log
 }
 
+// Desmarcar corrige un error de toque, así que devuelve el contador a donde
+// estaba: si no, marcar y desmarcar tres veces dejaría ×3 en un solo día. Nunca
+// baja de cero, y no toca ningún otro día.
+//
+// Ojo: esto no es la Constancia. La Constancia cuenta días con actividad en
+// `dailyEntries` y no depende de este contador (RN-06).
 export async function unmarkHabit(habitId, fecha) {
   const db = await getDB()
-  await db.delete('habitLogs', `${habitId}_${fecha}`)
-  enqueueSyncItem('habitLogs', `${habitId}_${fecha}`, null, 'delete')
+  const id = `${habitId}_${fecha}`
+  const tx = db.transaction(['habitLogs', 'habits'], 'readwrite')
+
+  const existia = await tx.objectStore('habitLogs').get(id)
+  if (!existia) {
+    await tx.done
+    return
+  }
+
+  await tx.objectStore('habitLogs').delete(id)
+
+  const habitos = tx.objectStore('habits')
+  const habit   = await habitos.get(habitId)
+  const actualizado = habit
+    ? { ...habit, totalCompletados: Math.max(0, (habit.totalCompletados ?? 0) - 1) }
+    : null
+  if (actualizado) await habitos.put(actualizado)
+
+  await tx.done
+
+  enqueueSyncItem('habitLogs', id, null, 'delete')
+  if (actualizado) enqueueSyncItem('habits', actualizado.id, actualizado)
 }
 
 // ─── Constancia ───────────────────────────────────────────────────────────────

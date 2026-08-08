@@ -129,7 +129,7 @@ El Diario **NO es una pestaña**; se accede desde Hoy en su momento.
 | **RN-03** | Cerrar un ritual sin marcar hábitos lo completa igual. Los hábitos nunca bloquean. |
 | **RN-04** | Pausar o quitar un área nunca borra sus hábitos/victorias/logros. Se preservan íntegros. |
 | **RN-05** | La app NUNCA sugiere "te falta un hábito en Salud" ni presenta un área con poco registro como problema. |
-| **RN-06** | Constancia = `count(distinct fecha)`. Solo sube. Nunca se reinicia. Nunca se genera un "fallo". |
+| **RN-06** | Constancia = `count(distinct fecha)` sobre `dailyEntries`. Solo sube. Nunca se reinicia. Nunca se genera un "fallo". No depende del contador de hábitos: marcar y desmarcar un hábito no la toca (§26.4). |
 | **RN-07** | Suscripción: paywall máx. 2×/semana. Lo escrito siempre exportable. Nada se bloquea al cancelar. |
 | **RN-08** | IA: ≤ 3 MXN por usuario premium/mes. Sin retención de datos, sin entrenar modelos con el contenido. |
 | **RN-09** | Privacidad: ningún dato identificable de usuario en analítica. Protocolo de contenido sensible (§5.3.16). |
@@ -235,7 +235,7 @@ Toda pantalla debe cumplir:
 ## 11. Los no-negociables
 
 1. **Identidad nunca se contradice:** un logro de trabajo confirma "alguien que crece", no lo viola.
-2. **Marcar es un toque:** no puede ser un modal con preguntas. Una casilla, más nada.
+2. **Marcar es un toque:** no puede ser un modal con preguntas. Una casilla, más nada. Y es un interruptor, nunca un contador: un hábito suma ×1 por día, por muchas veces que se toque (§26).
 3. **Cerrar el día es una ceremonia:** la secuencia de cierre (§3.3) nunca falla, ni siquiera si hay error.
 4. **Local-first siempre:** la app funciona completamente sin red. Sync es async.
 5. **Sin rachas, sin castigo:** Constancia solo sube. La no realización no genera notificación, alerta ni registro.

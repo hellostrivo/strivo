@@ -58,16 +58,20 @@ describe('marcar hábitos', () => {
     expect((await fila('habits', 'h-agua')).totalCompletados).toBe(2)
   })
 
-  // Decisión del modelo (§7.2): el contador solo crece. Desmarcar deja el
-  // número donde estaba, así que marcar por error e inmediatamente desmarcar
-  // lo deja una unidad alto para siempre.
-  it('desmarcar no baja el contador', async () => {
+  // Antes el contador solo crecía, y marcar por error y desmarcar lo dejaba una
+  // unidad alto para siempre. Peor: marcar, desmarcar y volver a marcar el
+  // mismo día sumaba dos. Era una de las vías del ×5 de §26, así que desmarcar
+  // devuelve el contador a donde estaba.
+  //
+  // Esto no toca la Constancia, que cuenta días con actividad en `dailyEntries`
+  // y nunca se reinicia (RN-06).
+  it('desmarcar devuelve el contador a donde estaba', async () => {
     await saveHabit(habitoDePrueba())
 
     await markHabit('h-agua', 'u1', HOY)
     await unmarkHabit('h-agua', HOY)
 
-    expect((await fila('habits', 'h-agua')).totalCompletados).toBe(1)
+    expect((await fila('habits', 'h-agua')).totalCompletados).toBe(0)
   })
 })
 
