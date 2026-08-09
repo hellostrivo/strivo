@@ -14,6 +14,96 @@ export const colors = {
   mist:  '#93A9C4',
 }
 
+// ─── El color de cada momento del día ───────────────────────────────────────
+// La tarjeta que abre la pregunta de ánimo. Mañana y noche usan el mismo
+// componente y el mismo comportamiento; el tono es lo único que las distingue,
+// para que se lean como parte del mismo sistema y aun así cada una tenga su
+// identidad. Plano, sin degradado: la tarjeta es un fondo para leer encima, no
+// un elemento que compita con los chips que vienen debajo.
+//
+// La tinta encima es ink en las dos: 9.83:1 en la mañana y 10.79:1 en la noche
+// (verificado en tests/contraste.test.js).
+export const momento = {
+  manana: '#E5C5A5',
+  noche:  '#D5D1E8',
+}
+
+// ─── Las tarjetas del Journal (bloque 06) ────────────────────────────────────
+// El Journal se leía como una hoja en blanco con un cursor: nada que mirar
+// mientras se decide qué escribir. Sus dos bloques se abren ahora con la misma
+// tarjeta tintada que las preguntas de ánimo, y con dos tonos distintos porque
+// piden dos cosas distintas: la arena abre "¿Cómo me siento?" y el azul claro
+// abre la escritura. Que no compartan tono es lo que separa las secciones sin
+// necesidad de una línea entre ellas.
+//
+// Son más claras que las de `momento` a propósito: aquí las tarjetas son
+// rótulos dentro de una pantalla larga, no la cabecera de un ritual.
+// La tinta encima es ink en las dos: 11.93:1 y 12.06:1, y el subtítulo al 80 %
+// da 6.94:1 y 6.95:1 (verificado en tests/contraste.test.js).
+export const superficieJournal = {
+  emociones: '#EDDCC2',
+  escritura: '#D6E0F0',
+}
+
+// ─── Tinta por superficie (§6.5) ─────────────────────────────────────────────
+// El color del texto se deriva del fondo sobre el que se pinta, no lo elige cada
+// componente. Un componente declara en qué superficie vive (`data-surface`) y
+// hereda `--color-text`; así el mismo bloque se lee igual a las siete de la
+// mañana que a las once de la noche sin saber qué hora es.
+//
+// Por qué no basta con `text-ink`: sobre el degradado nocturno (#2E3A5C→#191428)
+// la tinta principal da 1.1–1.4:1, que es texto invisible. La regla no es
+// "oscurecer el fondo" sino cambiar la tinta.
+//
+// Los ratios son el peor caso sobre todas las superficies de cada familia y se
+// verifican en tests/contraste.test.js, no a ojo.
+export const textColors = {
+  onLight:      '#241E33',  // = ink,   13.04:1 en el peor claro
+  onLightMuted: '#655F6D',  //           5.00:1 en el peor claro
+  onDark:       '#FBF8F4',  // = paper, 10.57:1 en el peor oscuro
+  onDarkMuted:  '#C3BFC1',  //           6.15:1 en el peor oscuro
+}
+
+// ─── Los dos temas de la pantalla Hoy (§20) ─────────────────────────────────
+// El fondo de Hoy ya no lo decide el reloj sino el botón: "Mañana" pinta un
+// amanecer claro y "Noche" un azul profundo. Que lo elija la persona y no la
+// hora es lo que permite cerrar el día a las siete de la tarde sin que la
+// pantalla insista en que todavía es de día.
+//
+// Esto NO retira el degradado horario del resto de la app: la capa compartida
+// (@components/strivo/FondoHorario) lo sigue pintando cuando nadie le pide un
+// tema, y la apertura de sesión se dibuja sobre ella igual que antes. El
+// onboarding usa otro juego distinto (`gradientsBySlot`), que no se toca.
+//
+// Contrastes verificados en tests/contraste.test.js. Los peores casos:
+// mañana, ink sobre el extremo saturado 11.99:1; noche, paper sobre el extremo
+// claro 10.57:1. La superficie de la noche está +12 de luminosidad HSL sobre su
+// fondo, que es lo que hace que la tarjeta del ritual se despegue en vez de
+// perderse.
+export const temasHoy = {
+  manana: {
+    bgFrom:  '#FBD9B4',
+    bgTo:    '#FDF1E3',
+    surface: '#FFFDF8',
+    border:  '#E8C79A',
+    oscuro:  false,
+  },
+  noche: {
+    bgFrom:  '#2E3A5C',
+    bgTo:    '#1B2440',
+    surface: '#455383',
+    border:  '#55639A',
+    oscuro:  true,
+  },
+}
+
+export const degradadoDeTema = ({ bgFrom, bgTo }) =>
+  `linear-gradient(170deg, ${bgFrom} 0%, ${bgTo} 100%)`
+
+// Lo que tarda el fondo en cruzar de un tema a otro. Dentro del rango de la
+// app: es una transición de interfaz, no el paso del día.
+export const duracionTema = 320
+
 // Gradientes horarios (usados en la pantalla Hoy)
 // Se interpolan según la hora actual del usuario
 export const gradientsBySlot = {
@@ -23,6 +113,31 @@ export const gradientsBySlot = {
   noche:      { from: '#E8DCC8', to: '#D9CFC4' }, // noche
   madrugada:  { from: '#C9C0C0', to: '#B8B0B0' }, // 00:00–04:00
 }
+
+// Degradado horario de la pantalla de inicio (§18).
+//
+// Cada ancla es una hora del reloj con su paleta; entre dos anclas se interpola
+// (ver @lib/gradienteHorario), así que el color acompaña el paso del día en vez
+// de saltar a horas redondas. Es un juego distinto del de `gradientsBySlot`,
+// que vive siempre sobre papel y lo usa el onboarding.
+// El alba y el ocaso llevan anclas propias y juntas: el cielo cambia deprisa a
+// esas horas, y así el paso de tinta clara a oscura dura minutos en vez de
+// horas (ver la nota de contraste en @lib/gradienteHorario).
+export const gradientesInicio = [
+  { id: 'madrugada',    hora:  1,    from: '#20263F', to: '#141122' },
+  { id: 'previoAlAlba', hora:  4.5,  from: '#262E4A', to: '#171326' },
+  { id: 'amanecer',     hora:  6,    from: '#FBD9B4', to: '#FDF1E3' },
+  { id: 'manana',       hora:  9.5,  from: '#FDF0D2', to: '#FBF8F4' },
+  { id: 'mediodia',     hora: 13.5,  from: '#FBD9A5', to: '#FEF2DF' },
+  { id: 'tarde',        hora: 18,    from: '#EFAF95', to: '#F8DCC9' },
+  { id: 'ocaso',        hora: 19.5,  from: '#D98C7E', to: '#F0C4B4' },
+  { id: 'noche',        hora: 21,    from: '#2E3A5C', to: '#191428' },
+]
+
+// Lo que tarda el fondo en pasar de una franja a otra con la app abierta.
+// Excede el rango 120–900ms a propósito: no es una transición de interfaz sino
+// el paso del día, que no debe notarse como un cambio (§18.3.5).
+export const duracionFranja = 2000
 
 // Colores de cada área de identidad (usados en chips, puntos, etc.)
 export const areaColors = {
@@ -51,8 +166,19 @@ export const areaIcons = {
 // Duraciones de animación (ms)
 export const durations = {
   fast:    120,
+  // Revelar un campo que aparece bajo una opción (§6.3.C)
+  reveal:  200,
+  // Sugerencias que aparecen tras 5s sin escribir (§21.3). Suave: a los cinco
+  // segundos, una aparición brusca sobresalta.
+  sugerencia: 250,
   base:    260,
   slow:    420,
+  // Cambio de área dentro de P4C: el bloque de contenido cruza en 280ms y el
+  // indicador de progreso en 180ms (§10.3)
+  areaSwap:      280,
+  areaIndicator: 180,
+  // Pulso de la instrucción de límite en P4B (§8.5)
+  pulse:   600,
   slower:  700,
   slowest: 900, // cierre nocturno
 }
@@ -61,4 +187,85 @@ export const durations = {
 export const touch = {
   min:  56,
   smMin: 48,
+}
+
+// ─── Apertura de Strivo (§3.3 del documento de cambios v2.2) ─────────────────
+// Excepción autorizada al rango 120–900 ms: la apertura es una descompresión,
+// no una transición de interfaz. Documentada como tal en CLAUDE.md.
+// En ms, para poder programar los relevos desde JS.
+export const apertura = {
+  total:               5000,
+  fondoEntra:           800,
+  nucleoEntraDesde:     800,
+  nucleoEntra:          600,
+  expansionDesde:      1400,
+  expansion:           1400,
+  contraccionDesde:    2800,
+  contraccion:         1400,
+  palabraEntraDesde:   1800,
+  palabraEntra:         800,
+  salidaDesde:         4200,
+  salida:               800,
+  entrarApareceEn:     1500,
+  saltar:               300,
+  // Con movimiento reducido: sin escala y mucho más corta
+  totalReducido:       1600,
+  palabraEntraReducida: 400,
+  easingRespiracion: 'cubic-bezier(0.37, 0, 0.63, 1)',
+}
+
+// ─── Pantallas de transición del onboarding (§9) ─────────────────────────────
+// La otra excepción autorizada al rango 120–900 ms. En ms, como la apertura.
+export const transicion = {
+  total:              3000,
+  fondoEntra:          400,
+  fraseEntraDesde:     300,
+  fraseEntra:          600,
+  fraseSaleDesde:     2600,
+  fraseSale:           400,
+  saltar:              250,
+  // Con movimiento reducido: sin desplazamiento vertical y más corta
+  totalReducida:      2300,
+  fraseEntraReducida:  250,
+}
+
+// ─── Apertura de sesión (§17) ────────────────────────────────────────────────
+// La tercera excepción autorizada al rango 120–900 ms. Se repite en cada
+// entrada, así que es más corta que la de P1 y se salta con un toque.
+export const aperturaSesion = {
+  total:             3400,
+  luzEntra:           700,
+  fraseEntraDesde:    500,
+  fraseEntra:         700,
+  salidaDesde:       2900,
+  salida:             500,
+  saltar:             250,
+  // Con movimiento reducido: sin escala ni desplazamiento
+  totalReducida:     2400,
+  fraseEntraReducida: 300,
+}
+
+// Núcleo de luz de la apertura (px). El escalado máximo nunca toca los bordes.
+export const aperturaNucleo = {
+  // El blanco de antes se leía como un foco encendido sobre el índigo: mucha
+  // luz y ninguna temperatura. El naranja cálido da 8.03:1 sobre night, así que
+  // no se pierde nada de presencia y se gana el tono de la casa.
+  color: '#E49E6E',
+
+  // Luz difusa, no una figura: el gradiente se desvanece antes del borde del
+  // elemento, así que no hay contorno que lo recorte.
+  luz: `radial-gradient(circle,
+    rgba(228, 158, 110, 0.95) 0%,
+    rgba(228, 158, 110, 0.62) 38%,
+    rgba(228, 158, 110, 0.26) 62%,
+    rgba(228, 158, 110, 0) 78%)`,
+  diametroCompacto:      96,
+  diametroBase:         120,
+  diametroAmplio:       140,
+  puntoDeCorteCompacto: 360,
+  puntoDeCorteAmplio:   430,
+  escalaMaxima:        1.32,
+  opacidadNucleo:       0.9,
+  opacidadPalabra:     0.75,
+  opacidadEntrar:      0.45,
 }

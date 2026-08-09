@@ -11,6 +11,80 @@
 4. ❌ Sin "Fallaste", "incumpliste", "debería", léxico de juicio.
 5. ❌ Sin emojis salvo los 24 de la tabla de emociones (§3.9).
 6. ❌ Sin "racha", "streak". Usar "Constancia", "días contigo".
+7. ✅ Si el string cambia según el género, se escribe en tres variantes (ver §0).
+
+---
+
+## 0. Lenguaje adaptativo por género
+
+Strivo le habla a cada persona en su propio género. No con barras para todos, sino
+con la forma correcta cuando se sabe cuál es, y con una redacción **naturalmente
+neutra** cuando no.
+
+En P2A se pregunta el género. De ahí sale `profile.gender`
+(`masculino` · `femenino` · `prefiero_no_contestar` · `otro` · `null`) y de ahí el
+modo que consume el copy:
+
+| `gender` | modo |
+|---|---|
+| `masculino` | `m` |
+| `femenino` | `f` |
+| `prefiero_no_contestar` · `otro` · sin respuesta | `n` |
+
+**Cómo se escribe un string con variantes** (`src/copy/index.js`):
+
+```js
+'onboarding.p4.chip.cuidado': {
+  m: 'cuida de sí mismo.',
+  f: 'cuida de sí misma.',
+  n: 'se cuida.',
+}
+```
+
+Los strings que no cambian se quedan como texto plano. Tres copias idénticas solo
+ensucian la biblioteca.
+
+**Reglas de redacción de la variante `n`:**
+
+1. ❌ Nunca "elle" ni sus derivados.
+2. ❌ Nunca la "e" inclusiva, la "@" ni la "x" (`todes`, `amig@s`, `nosotrxs`).
+3. ✅ Reformular para que el género no aparezca:
+   - "alguien que cuida de sí mismo/a" → **"alguien que se cuida."**
+   - "estoy orgulloso/a" → **"siento orgullo."**
+   - "estoy listo/a" → **"ya está."** / **"puedo empezar."**
+4. ⚠️ `mismo/a`, `listo/a` solo cuando la reformulación suene forzada. Es el último
+   recurso, no el primero.
+5. La variante `n` nunca debe leerse como una omisión: suena tan intencional como
+   las otras dos.
+
+**En código:** se consume con `useCopy()`, nunca leyendo `copy[...]` a mano. El modo
+vive en un estado global reactivo, así que cambiar el género desde Ajustes reescribe
+lo que está en pantalla sin recargar la app.
+
+`npm run lint:copy` verifica las reglas 1 y 2 y que toda entrada con variantes
+declare las tres claves. `tests/genero.test.js` comprueba, además, que las tres
+resuelvan a un string en los tres modos y que ninguna neutra se resuelva con una
+barra fuera de la lista autorizada.
+
+**Cuidado al convertir una clave que ya se usaba.** Pasar un string a `{ m, f, n }`
+rompe a quien la lea con `copy.x` a pelo: pinta `[object Object]`. Antes de
+convertir, se busca quién la consume y se le pasa a `useCopy()` en el mismo cambio.
+
+El copy escrito antes de este sistema (emociones, rituales, diario) sigue en género
+fijo: el inventario de lo que falta convertir está en `docs/gender-audit.md`.
+
+**Convertidas en el bloque 01 (7 ago 2026):**
+
+| Clave | m | f | n |
+|---|---|---|---|
+| `tagline` | "…en paz contigo mismo." | "…contigo misma." | "…terminar cada día en paz." |
+| `insights.area.lowActivity` | "…un tiempo enfocado en…" | "…enfocada…" | "Llevas un tiempo en {áreaActiva}…" |
+| `profile.cancel.title` | "¿Seguro que quieres cancelar?" | "¿Segura…?" | "¿Quieres cancelar?" |
+
+Ninguna de las tres tenía consumidor todavía, así que la conversión no arrastró
+cambios de pantalla. `tagline` está duplicada en `package.json`, en el manifiesto de
+`vite.config.js` y en el `<meta>` de `index.html`: ahí no hay variantes posibles y va
+la neutra.
 
 ---
 
@@ -19,62 +93,155 @@
 ### Onboarding
 
 ```
-Pantalla 1 (Bienvenida):
-"Refugio digital para terminar cada día en paz."
+Apertura (los 5 s previos a P1):
+"Respira."
+[Entrar]   ← salida explícita, aparece a los 1.5 s
 
-Pantalla P2 (Motivo):
-"¿Por qué estás aquí? (Elige los que resuenen)"
-- Ordenar mis emociones
-- Reconocer lo que sí logro
-- Conectar conmigo mismo
-- Establecer hábitos que duren
-- Preparar mi mente para dormir
+Pantalla P1 (Bienvenida):
+"Tu lugar para volver a ti."
+"Tres minutos para respirar, reconocer lo que sí lograste y seguir adelante con más calma."
+[Empezar]
 
-Pantalla P3 (Identidad central):
-"No preguntamos qué quieres lograr. 
-Preguntamos en quién te estás convirtiendo."
-[prefijo visible] "Alguien que…"
-Ejemplos rotatorios: "…crece cada día · …se respeta a sí misma · 
-…no se abandona · …termina lo que empieza · …vive con calma."
-
-Pantalla P3B (Áreas):
-"Nadie crece en una sola dirección. 
-Elige las que importan ahora. Podrás cambiarlas cuando quieras."
-
-Pantalla P3C (Identidad por área):
-"Si quieres, ponle palabras. Si no, lo dejamos para después."
-Prefijo dinámico: "En {área} soy alguien que…"
-
-Pantalla P4 (Nombre):
+Pantalla P2 (Nombre):
 "Solo tu nombre. Nada más."
+"Es para saludarte. Puedes dejarlo en blanco."
 
-Pantalla P5 (Primer valor):
-"Empecemos ahora"
-[Guardar] [Ahora no]
+Pantalla P2A (Género):
+"¿Con qué género te identificas?"
+"Solo lo usamos para hablarte como te corresponde."
+- Masculino · Femenino · Prefiero no contestar · Otro
+(Una sola respuesta. Continuar espera a que haya una; "Prefiero no contestar"
+ es la salida sin fricción. El subtítulo no se acorta: es lo que convierte un
+ campo de formulario en un gesto de atención.)
+
+Pantalla P3 (Qué te gustaría encontrar aquí):
+"¿Qué te gustaría encontrar aquí?"
+"Elige todo lo que resuene contigo. Puedes seleccionar varias opciones."
+- Terminar el día con más paz          (id: paz)
+- Sentir que sí estoy avanzando        (id: avance)
+- Volver a escucharme                  (id: escucha)
+- Dormir con la mente más tranquila    (id: sueno)
+- Construir hábitos que realmente duren (id: habitos)
+- Tener un espacio solo para mí        (id: espacio)
+- Otro                                 (id: otro → revela campo)
+Campo de "Otro": "¿Qué buscas?" · máx. 80 · contador desde el carácter 65
+(Se puede avanzar sin elegir nada, en silencio. Ninguna opción lleva marca
+ de género: funcionan igual en los tres modos.)
+
+Pantalla P4 (Identidad central):
+"La persona que quieres ser se construye un día a la vez."
+(cursiva) "No busques la frase perfecta. Solo escribe algo que quieras recordar
+cuando abras Strivo."
+[prefijo visible] "Soy alguien que..."
+
+Sugerencias (chips; se tocan y el campo sigue editable):
+- cuida de sí mismo. / cuida de sí misma. / neutro: "se cuida."   (id: cuidado)
+- encuentra paz incluso en días difíciles.                         (id: paz)
+- cumple lo que se promete.                                        (id: promesa)
+- vive con intención.                                              (id: intencion)
+- aprende de cada experiencia.                                     (id: aprendizaje)
+- celebra sus pequeños avances.                                    (id: avances)
+- Otro  → limpia el campo y le da el foco
+
+Bajo el botón primario, con la jerarquía más baja de la pantalla:
+"Esta frase será un recordatorio silencioso de la persona en la que quieres
+convertirte."
+
+(La frase se guarda sin el punto final: el resto de la app la interpola después
+ de "alguien que". Se puede dejar en blanco, sin ninguna advertencia.)
+
+Pantalla P4B (Áreas):
+"Elige dónde quieres poner más atención ahora."
+"No tienes que abarcarlo todo."
+"Elige hasta 3 áreas."            ← tercer nivel: información operativa
+(Solo lector de pantalla) "{n} de 3 áreas elegidas"
+Etiquetas: Salud · Trabajo · Relaciones · Finanzas · Espiritualidad ·
+Crecimiento personal · Creatividad
+(Etiquetas visibles. Los `id` internos no cambian: `espiritual` y `personal`.)
+Al tocar una cuarta: la instrucción pulsa. Ni error, ni aviso, ni sacudida.
+
+Fuera del onboarding, al intentar activar una cuarta área:
+"Puedes enfocarte en 3 áreas a la vez. Elige cuál sueltas para hacerle espacio
+a esta."
+(El verbo es "soltar": nada se pierde.)
+
+Transición T-4B (entre P4B y P4C, solo si hay ≥ 1 área):
+"Elegiste dónde quieres crecer. Ahora pongámosle una dirección."
+[Continuar]  ← invisible hasta recibir el foco; para teclado y lector
+
+Pantalla P4C (Identidad por área) — una área por pantalla:
+"{Área} · {n} de {total}"
+"En {Área}, quiero ser alguien que…"   ← nunca "soy alguien que…"
+"Algunas ideas"
+"No busques la frase perfecta. Solo una dirección que se sienta tuya."
+[Siguiente] / [Listo] en la última
+"Omitir por ahora"                     ← omite solo el área actual
+
+Ideas por área (4 por área, resueltas por `id` interno):
+- salud: cuida su cuerpo con cariño · hace espacio para descansar ·
+  se mueve porque le hace bien · escucha lo que necesita
+- trabajo: trabaja con intención · pone límites cuando los necesita ·
+  confía en sus capacidades · hace bien lo importante sin exigirse perfección
+- relaciones: está presente para las personas que ama · expresa lo que siente ·
+  cuida sus relaciones importantes · sabe poner límites con cariño
+- espiritual: hace espacio para su vida espiritual · vive con más gratitud ·
+  conecta con lo que cree · cultiva momentos de reflexión
+- personal: aprende algo nuevo sin prisa · se trata con la misma amabilidad que
+  a los demás · se anima a intentar cosas que le dan nervios · hace las paces
+  con sus errores
+- finanzas: sabe en qué se le va el dinero · gasta en lo que de verdad le
+  importa · guarda algo para su tranquilidad · toma decisiones de dinero con
+  calma
+- creatividad: hace cosas solo porque le gustan · se da permiso de empezar mal ·
+  guarda tiempo para crear · se deja llevar por su curiosidad
+
+(Todas en tercera persona, sin marca de género: no necesitan variantes.
+ Finanzas nunca menciona montos, plazos, deuda ni "controlar".)
 
 Pantalla P11 (Cierre onboarding):
 "Te estás convirtiendo en alguien que crece, en tu salud y en tu trabajo.
 Nos vemos mañana a las 6:45."
 ```
 
-### Saludos dinámicos (por franja horaria)
+### Apertura de sesión (§17)
+
+Lo primero que se lee al abrir la app, antes de cualquier pendiente.
 
 ```
-Amanecer (4:00–11:30):
-"Buenos días. ¿Cómo quieres sentirte hoy?"
-
-Día (fin de amanecer – 4h antes de dormir):
-"Tu día está en curso."
-
-Atardecer (4h antes de dormir):
-"Se va el día. Aún hay tiempo."
-
-Noche (19:00–03:00):
-"Buenas noches. Cerremos el día."
-
-Madrugada (03:00–04:00):
-"Aún de pie. Aquí está tu espacio."
+[una frase del Repertorio A]   ← 100 frases en docs/frases.md
+[Entrar]                       ← para teclado y lector de pantalla
 ```
+
+La frase sale por baraja: no se repite hasta agotar el repertorio, y el estado
+sobrevive a cerrar la app. Aparece en arranque en frío o tras 30 min fuera, y
+como mucho una vez por hora. Nunca justo después del onboarding.
+
+### Navegación principal (§19)
+
+```
+Hoy · Journal · Hábitos · Tú
+```
+
+### Cabecera de "Hoy" (§20)
+
+```
+[tarjeta con la frase del día]  ← 60 frases en docs/frases.md, Repertorio B
+                                   una por día natural, la misma todo el día
+[ Mañana ]  [ Noche ]           ← las dos secciones, disponibles siempre
+```
+
+Retirado en esta parte: los saludos por franja ("Tu día está en curso.").
+Informaban de algo que la persona ya sabe y devolvían su identidad como
+marcador de progreso.
+
+### Saludos dinámicos (por franja horaria) — retirados
+
+Los saludos por franja se retiraron de la app en §20: informaban de algo que la
+persona ya sabe y le devolvían su identidad como marcador de progreso. En su
+lugar, "Hoy" abre con la frase del día, que no habla de su desempeño.
+
+El saludo con nombre del ritual de la mañana sigue existiendo
+(`ritualManana.r2.greetingTemplate`); es otro momento y otra intención.
 
 ---
 
@@ -83,10 +250,6 @@ Madrugada (03:00–04:00):
 ### Ritual de Mañana
 
 ```
-R1 (Respiración):
-"Respira conmigo"
-[Pausa 6 segundos]
-
 R2 (Bienvenida dinámica):
 "Te espera tu día"
 (Si ánimo bajo ayer:) "Ayer fue difícil. Hoy es nuevo."
@@ -113,10 +276,6 @@ R5 (Intención):
 ### Ritual de Noche
 
 ```
-N1 (Respiración):
-"Respira conmigo"
-[Pausa 6 segundos]
-
 N2 (Revisión de hábitos):
 "¿Qué hábitos completaste?"
 [Checklist — heredado de mañana, editable]
@@ -136,10 +295,45 @@ N5 (Reflexión):
 (Alt:) "¿Qué intentarías diferente mañana?"
 [Campo de texto]
 
-N6 (Ánimo de cierre):
+N6 (Estado de cierre):
 "¿Cómo te vas a dormir?"
-5 estados: Tranquilo · Pensativo · Cansado · Inquieto · Otro
-Chips de matiz debajo (contraste con cómo entraste al día)
+"Elige una o dos. No hay una forma correcta de cerrar el día"
+9 estados, se eligen hasta 2. Al llegar al máximo los demás se atenúan y dejan de
+responder: sin mensaje, sin alerta. Se puede cerrar el día sin elegir ninguno.
+
+| id | m | f | n |
+|---|---|---|---|
+| `en_paz` | En paz | En paz | En paz |
+| `agradecido` | Agradecido | Agradecida | Con gratitud |
+| `orgulloso` | Orgulloso | Orgullosa | Con orgullo |
+| `tranquilo` | Tranquilo | Tranquila | En calma |
+| `contento` | Contento | Contenta | Con alegría |
+| `pensativo` | Pensativo | Pensativa | Pensando |
+| `cansado` | Cansado | Cansada | Con cansancio |
+| `inquieto` | Inquieto | Inquieta | Con inquietud |
+| `otro` | Algo más | Algo más | Algo más |
+
+"+ Algo más" funciona igual que "+ Otra" en la pregunta de la mañana: abre un
+campo, y al confirmar con Enter la palabra se convierte en un chip elegido más,
+arriba con los demás. Placeholder "Una palabra", máx. 20 caracteres. Cuenta
+dentro del límite de 2.
+
+Aquí cabe una sola palabra, y se dice en vez de imponerse: se puede escribir el
+espacio, y al hacerlo aparece la pista "Sintetízalo en una palabra" mientras
+"Añadir" espera. Lo escrito no se toca. Recortarlo en silencio dejaba
+"muycontenta" en pantalla sin ninguna explicación. La mañana no lleva pista:
+ahí caben frases cortas.
+
+Las dos preguntas comparten componente (`@components/strivo/SelectorDeChips`):
+misma tarjeta, mismos chips, mismo límite, mismo campo de palabra propia. Solo
+cambian la pregunta, las opciones, los emojis, el color de la tarjeta y dónde se
+guarda. Tarjeta plana (tokens `momento` en `design-tokens.json`): mañana
+`#E5C5A5`, noche `#D5D1E8`.
+
+Ids, orden, emojis, colores y límite en `@lib/animos`. Se guardan ids, nunca
+rótulos; la palabra propia viaja en la lista con el prefijo de `@lib/propias`.
+
+Chips de matiz debajo (contraste con cómo entraste al día) — pendiente de §5.6
 
 N7 (Checklist de hábitos noche):
 [Checklist de hábitos nocturnos]
@@ -165,45 +359,57 @@ N8 (Síntesis y cierre):
 ### Vista de Mañana — Bloque por bloque
 
 ```
-ENCABEZADO:
-Saludo dinámico + frase inspiradora variable
+Bloque 1 — Frase del día:
+"Te estás convirtiendo en alguien que {identidad}."
+"Hoy quieres vivirlo así: {intención}"
 
-BLOQUE 1 (Frase del día):
-"Empieza bien"
-[Frase con reglas: no se repite 365 días, filtrada por ánimo reciente,
- 20% alineada con Compromiso si existe]
-Interacción: "Guardar esta frase" (colección personal, visible en Tú)
-
-BLOQUE 2 (Agradecimientos):
+Bloque 2 — Agradecimientos (§21):
 "¿Qué agradeces?"
-[3 campos que crecen dinámicamente al escribir en el tercero, máx 10]
-[Emoji opcional de 24 de la paleta]
-Sugerencias tras 6s de inactividad: "Tu familia · Tu cuerpo · Este momento"
+[campo] "Algo por lo que dar gracias…"
+Sugerencias por campo, a los 5 s con el foco puesto y sin escribir:
+  tu familia · tu cuerpo · este momento · el silencio · lo que tienes
+(Sin encabezado: cinco chips bajo un campo vacío se explican solos, y una
+ etiqueta añadiría una voz más. En el ritual de noche siguen saliendo a los
+ 6 s, con "Si no sale solo:".)
 
-BLOQUE 3 (Emociones del día):
-"¿Cómo quieres sentirte hoy?"
-[16 tarjetas de emoción, máx 3 seleccionables con punto de color]
-Pregunta complementaria: "¿Qué necesitas para lograrlo?"
+Bloque 3 — Emociones (§22):
+"¿Cómo me quiero sentir hoy?"
+"Elige las emociones que quieres cultivar"
+🦁 Orgulloso/a de mí (n: Con orgullo de mí)   🙏 Agradecido/a (n: Con gratitud)
+💗 Amado/a          🤝 Acompañado/a (n: Con compañía)
+🕊️ Conectado/a con Dios (n: Cerca de Dios)   🌱 Próspero/a (n: En abundancia)
+☮️ En paz            ⚡ Con energía          😊 Alegre
+🌊 Sereno/a (n: Con serenidad)               🦋 Confiado/a (n: Con confianza)
+🌸 Pleno/a (n: En plenitud)                  💡 Inspirado/a (n: Con inspiración)
+🔥 Poderoso/a (n: Con fuerza)                ✨ Radiante
++ Otra  → campo de 30 caracteres, sin emoji
+(Solo lector de pantalla) "{n} de 3 emociones elegidas"
+"¿Qué necesitas para lograrlo?"
 
-BLOQUE 4 (Gran visión del día):
-"¿Cómo imaginas tu mejor día hoy?"
-[Campo amplio, se recupera en noche como contraste]
+(Once de las quince llevan variante de género. "Amado/a" es la ÚNICA entrada
+ con barra en todo el producto: cualquier reformulación neutra desplaza el
+ significado. Excepción autorizada; no se extiende.
+ Retiradas: irritable, abrumado, nostálgico y las demás negativas. La pregunta
+ es qué se quiere cultivar, no cómo se está.)
 
-BLOQUE 5 (Mis victorias):
-"Tres cosas que, si pasan hoy, el día valió la pena."
-[3+ campos, dinámicos, con área por victoria]
-Sugerencia inteligente de área si el texto lo sugiere
+Bloque 4 — El gran día (§23):
+"¿Qué haría que hoy sea un gran día?"
+[campo] "Imagina tu día ideal"
+(Un ideal es fácil de fallar; una condición concreta se reconoce cuando ocurre.
+ La pregunta aterriza y el marcador abre, a propósito en direcciones contrarias.)
 
-BLOQUE 6 (Checklist de Ritual):
-[Hábitos de mañana filtrados por día actual]
-"2 de 3"
+Bloque 5 — Victorias (§24):
+"Tres victorias que quisiera conseguir hoy"
+[campo] "Una victoria que quiero lograr hoy…"
+El área se deduce del texto y se muestra como una etiqueta diminuta; tocarla
+la retira. Sin selector, y sin etiqueta cuando no hay una respuesta clara.
+Retirado: "¿Dónde vive esto?"
 
-BOTONES:
-[Comenzar mi día]
-[Hoy voy con prisa]
-
-[Si vacío:]
-"Tu ritual de la mañana está libre. ¿Quieres añadir algo?"
+Bloque 6 — El cierre de la mañana (§25):
+[tarjeta] "Tu ritual de la mañana"
+          "2 de 5 completados"  ·  "Completado" cuando ya están todos
+(Sin hábitos configurados no aparece la línea de progreso: "0 de 0" sería un
+ reproche. Lleva a la pestaña "Hábitos", donde se registran.)
 ```
 
 ### Vista de Noche — Bloque por bloque
@@ -255,13 +461,32 @@ CIERRE:
 ### Crear/Editar
 
 ```
-Pantalla H3:
-"¿Cuál es tu nuevo hábito?"
+Pantalla H3 (la misma pantalla crea y edita):
+"¿Cuál es tu nuevo hábito?"        ← al editar: "Ajusta tu hábito"
 [Campo: nombre]
 [Chips de área]
-[Selector: Mañana / Noche / A lo largo del día]
-[Días de la semana, default all]
-[Opcional: hora de recordatorio]
+[Selector: Mañana / Noche]         ← "A lo largo del día" se retiró: era el
+                                     único momento que no proyectaba a ningún
+                                     ritual. Los que existían pasaron a Mañana.
+"¿Cuántas veces quieres hacerlo por semana?"
+[1 vez · 2 veces · 3 veces · 4 veces · 5 veces · 6 veces · Todos los días]
+[Emoji editable, junto al nombre]  ← se sugiere uno y se cambia tocándolo
+[Crear hábito]                     ← al editar: "Guardar cambios"
+
+La frecuencia es una intención, no un horario: el hábito está disponible TODOS
+los días y la persona decide cuándo. Cumplir la meta no lo retira — quien quiera
+hacerlo una vez más, puede.
+
+Progreso en la fila del hábito (se cuenta de lunes a domingo y vuelve a cero el
+lunes; lo de semanas anteriores no se borra):
+- 0 de 2 · "0 de 2 esta semana"
+- 1 de 2 · "1 de 2 esta semana"
+- 2 de 2 · "Meta cumplida" + ✓
+- 3 de 2 · "Meta cumplida · 1 de más" + ✓
+Y al hacer el extra, un guiño que se va solo a los 5 s:
+  "✨ Ya habías cumplido tu meta. Lo de hoy es un extra."
+
+Nunca hay mensaje por no llegar: quedarse a mitad no se nombra como falta.
 
 Sugerencias por área:
 - Salud: "Beber agua", "Estirar", "Dormir", "Mover", "Respirar"
@@ -274,8 +499,11 @@ Sugerencias por área:
 ```
 Pantalla H2:
 [Nombre del hábito]
-[Área + identidad de área]
-"En Salud eres alguien que cuida su cuerpo"
+[Nombre del área]                  ← solo el área, nunca la identidad de área:
+"Salud"                              emparejarla con cada hábito daba cosas como
+                                     "Dormir a tiempo · se mueve porque le hace
+                                     bien". Y si no hay área, no se pinta nada.
+[Editar]
 [Momento]
 [Días]
 "Lo has hecho 47 veces"
@@ -301,6 +529,25 @@ Acciones:
 [6 sugerencias tocables por área]
 ```
 
+### Símbolo del hábito (§16 de la Parte 4A)
+
+Cada hábito lleva un símbolo a la izquierda de su nombre. Es **decorativo**: el
+lector de pantalla oye el nombre, que es el identificador real.
+
+```
+Botón que abre la hoja:  (aria-label) "Elegir símbolo para este hábito"
+Título de la hoja:       "Elige un símbolo"
+Categorías:              Movimiento · Descanso · Mente · Casa · Comida ·
+                         Naturaleza · Símbolos
+Cada símbolo:            (aria-label) "Usar {nombre}"
+Por defecto:             ✨   ← se puede cambiar; elegir es opcional siempre
+```
+
+Los símbolos de las sugerencias de P7 y P8 viven junto a su texto en
+`copy.onboarding.p7.suggestions` y `p8.suggestions`. Objetos y naturaleza, nunca
+caras ni personas: una cara carga una emoción que puede chocar con cómo se
+siente la persona ese día. Uno por hábito, sin repetir dentro de una pantalla.
+
 ---
 
 ## 5. Journal
@@ -322,6 +569,69 @@ Búsqueda:
 Seleccionar entrada:
 [Vista de entrada]
 Botones: [Editar] [Compartir] [Archivar]
+```
+
+### PIN del Journal (bloque 07)
+
+`copy.journal.proteccion`
+
+**Regla dura de este bloque:** el PIN pide una clave antes de **abrir** el journal
+**en este dispositivo**. No cifra el contenido. Está **prohibido** escribir aquí
+"cifrado", "encriptado", "seguro" o cualquier variante que prometa una garantía
+técnica que la Fase 0 no tiene.
+
+Se dice **PIN** siempre. Nunca "clave" ni "contraseña" para referirse a él. La
+palabra "contraseña" solo aparece cuando se habla de la contraseña de la cuenta
+de Firebase, que es otra cosa.
+
+```
+Interruptor (en "Tú" y dentro del Journal):
+"Proteger mi journal"
+"Pide un PIN antes de abrir el journal en este dispositivo."
+[Switch] "Pedir un PIN al abrir"          ← apagado por defecto
+
+Estado:
+"Tu journal pide un PIN en este dispositivo."   (activo)
+"Tu journal se abre sin PIN."                    (inactivo)
+
+Sin cuenta con la que recuperarlo, el PIN no se ofrece. Y como P10 pasa una
+sola vez, el aviso no puede ser un callejón sin salida: la cuenta se crea ahí
+mismo, con los botones y el copy de P10 (`copy.onboarding.p10`).
+
+"El PIN necesita una cuenta: es lo que te deja volver a entrar si lo olvidas."
+"Lo que ya escribiste se queda contigo y pasa a tu cuenta entero."
+[Continuar con Google] [Continuar con Apple] [Usar mi correo]
+
+Si ni siquiera se puede crear cuenta (la app abre sin el servicio de cuentas):
+"Ahora mismo no se puede crear una cuenta desde aquí, así que el PIN queda
+ para más adelante. Tu journal se abre sin él."
+
+Crear:
+"Elige tu PIN" · "De 4 a 6 dígitos, los que tú quieras."
+"Tu PIN" · "Escríbelo otra vez" · [Guardar]
+"Los dos no coinciden. Escríbelo otra vez."      ← sin tono de error
+"Listo. Tu journal pedirá este PIN al abrirse."
+
+Cambiar / quitar:
+"Cambiar mi PIN" · "Quitar el PIN"
+"Escribe tu PIN para quitarlo. Todo lo que escribiste se queda donde está."
+
+Desbloquear:
+"Tu journal" · "Escribe tu PIN para entrar." · [Entrar]
+"Ese no es. Prueba otra vez."      ← sin contador, sin espera, sin reproche
+"Olvidé mi PIN"                    ← discreto, nunca destacado
+
+Recuperar (reautenticación con la cuenta de Firebase):
+"Volver a entrar"
+"Entra con tu cuenta y eliges un PIN nuevo. Lo que escribiste se queda entero."
+"Tu cuenta: {correo}" · "La contraseña de tu cuenta" · [Continuar]
+"También olvidé esa contraseña"
+"Te llegó un correo para elegir otra contraseña. Vuelve aquí cuando la tengas."
+"Elige un PIN nuevo"
+
+❌ NO "tu journal está cifrado" / "nadie puede leerlo" / "acceso seguro"
+❌ NO contadores de intentos ni bloqueos temporales
+❌ NO medidor de fortaleza ni avisos de "PIN débil" (1234 vale)
 ```
 
 ---

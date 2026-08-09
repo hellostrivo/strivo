@@ -2,38 +2,186 @@
 // Punto de entrada de la app Strivo
 // Navegación de 3 pestañas: Hoy · Journal · Tú (§4.3.1, Blueprint v3)
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { clsx } from 'clsx'
 import { copy } from '@copy'
 
 // Páginas (rutas)
 // En Fase 0 son stubs; se van completando en Fase 1
-import HoyPage     from '@/pages/HoyPage'
-import JournalPage from '@/pages/JournalPage'
-import TuPage      from '@/pages/TuPage'
+import HoyPage        from '@/pages/HoyPage'
+import JournalPage    from '@/pages/JournalPage'
+import HabitosModulo  from '@/pages/habitos/HabitosModulo'
+import TuPage         from '@/pages/TuPage'
+import FondoHorario   from '@components/strivo/FondoHorario'
+import AperturaSesion from '@components/strivo/AperturaSesion'
 
+// Onboarding (el flujo completo vive en OnboardingFlow)
+import OnboardingFlow from '@/pages/onboarding/OnboardingFlow'
+import { isOnboardingComplete, markOnboardingComplete } from '@lib/onboardingStorage'
+import { getUserProfile } from '@lib/db'
+import { getCurrentUserId } from '@lib/user'
+import { setGender } from '@lib/genderStore'
+import { useSobreOscuro } from '@hooks/useFondoHorario'
+import { temaInicialDeHoy, esTemaOscuro } from '@lib/temaHoy'
+import { siguienteFrase } from '@lib/frases'
+import { debeMostrarApertura, ultimaApertura, anotarApertura, AUSENCIA_MINIMA } from '@lib/sesion'
+
+// "Tú" se queda en el extremo: es el cajón de perfil y ajustes (§19.3)
 const TABS = [
-  { id: 'hoy',     label: 'Hoy',     icon: SunMoonIcon },
-  { id: 'journal', label: 'Journal', icon: PenIcon     },
-  { id: 'tu',      label: 'Tú',      icon: CircleIcon  },
+  { id: 'hoy',     label: copy.nav.hoy,     icon: SunMoonIcon },
+  { id: 'journal', label: copy.nav.journal, icon: PenIcon     },
+  { id: 'habitos', label: copy.nav.habitos, icon: LeafIcon    },
+  { id: 'tu',      label: copy.nav.tu,      icon: CircleIcon  },
 ]
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('hoy')
   const [hideNav, setHideNav]     = useState(false)  // ocultar en rituales / escritura activa
+  const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingComplete())
+
+  // De qué familia es el fondo ahora mismo. Se lee del hook y no de una llamada
+  // suelta a fondoHorario() para que cruzar el ocaso con la app abierta cambie
+  // la tinta sola: si no, se quedaría con la del momento en que se montó.
+  //
+  // Solo el booleano, no el degradado entero: el color se mueve cada minuto y la
+  // familia de la tinta cambia dos veces al día. Suscribir aquí el fondo completo
+  // re-renderizaría toda la app a cada minuto para nada.
+  //
+  // Es el fondo por defecto de la app: lo que ve la apertura de sesión y lo que
+  // hay detrás de las demás pestañas. La pantalla Hoy ya no depende de él.
+  const sobreOscuro = useSobreOscuro()
+
+  // El tema que pidió "Hoy". El dueño del estado es HoyPage —es su botón el que
+  // lo cambia— y esto es el eco que necesita la capa de fondo, que vive aquí
+  // arriba. Arranca con el mismo cálculo que la pantalla, así que el primer
+  // fotograma ya sale con el tema bueno.
+  const [temaHoy, setTemaHoy] = useState(temaInicialDeHoy)
+
+  const enHoy = activeTab === 'hoy'
+  const temaActivo = enHoy ? temaHoy : null
+  // Fuera de Hoy manda la hora, que es lo que sigue pintando la capa compartida
+  const fondoOscuro = temaActivo ? esTemaOscuro(temaActivo) : sobreOscuro
+
+  // La frase del umbral (§17). null = no hay apertura en pantalla.
+  const [fraseApertura, setFraseApertura] = useState(null)
+  const vieneDelOnboarding = useRef(false)
+  const ocultaDesde        = useRef(null)
+
+  // El copy de toda la app habla en el género del perfil (§2.4). Se lee al
+  // arrancar y otra vez al terminar el onboarding, cuando el perfil ya existe.
+  //
+  // Mientras el onboarding está en marcha manda el borrador (lo escribe la
+  // propia pantalla P2A): la lectura del perfil es asíncrona y llegaría después,
+  // pisando con un null lo que la persona acaba de contestar.
+  //
+  // Si no hay perfil todavía, o si la lectura falla, no se toca nada: el modo
+  // arranca en neutro, así que nunca hay pantalla sin copy que mostrar.
+  useEffect(() => {
+    if (showOnboarding) return undefined
+
+    let vigente = true
+    getUserProfile(getCurrentUserId())
+      .then(perfil => { if (vigente && perfil) setGender(perfil.gender) })
+      .catch(error => {
+        console.warn('[Strivo] El modo de lenguaje se queda en neutro:', error)
+      })
+    return () => { vigente = false }
+  }, [showOnboarding])
+
+  // La apertura de sesión se decide con las reglas de @lib/sesion: en frío sí,
+  // al cambiar de pestaña no, al volver de una interrupción breve tampoco, y
+  // como mucho una vez por hora. Justo después del onboarding tampoco: P11 ya
+  // es un cierre y dos ceremonias seguidas se devalúan.
+  useEffect(() => {
+    if (showOnboarding) return undefined
+
+    let vigente = true
+
+    const evaluar = async () => {
+      const ahora = Date.now()
+      const debe  = debeMostrarApertura({
+        ahora,
+        ultimaVez: await ultimaApertura(),
+        ocultaDesde: ocultaDesde.current,
+        vieneDelOnboarding: vieneDelOnboarding.current,
+      })
+      vieneDelOnboarding.current = false
+      if (!debe || !vigente) return
+
+      const frase = await siguienteFrase('apertura')
+      if (!vigente || !frase) return
+      setFraseApertura(frase)
+      await anotarApertura(ahora)
+    }
+
+    const alCambiarVisibilidad = () => {
+      if (document.hidden) {
+        ocultaDesde.current = Date.now()
+        return
+      }
+      // Solo se vuelve a evaluar si la ausencia fue larga: entrar y salir de la
+      // app cada dos minutos no puede convertir el umbral en un peaje.
+      if (ocultaDesde.current && Date.now() - ocultaDesde.current >= AUSENCIA_MINIMA) {
+        evaluar().catch(() => {})
+      }
+    }
+
+    evaluar().catch(error => {
+      console.warn('[Strivo] La apertura de sesión se queda para la próxima:', error)
+    })
+    document.addEventListener('visibilitychange', alCambiarVisibilidad)
+
+    return () => {
+      vigente = false
+      document.removeEventListener('visibilitychange', alCambiarVisibilidad)
+    }
+  }, [showOnboarding])
+
+  // Primera vez: el onboarding ocupa toda la pantalla, sin barra de pestañas.
+  if (showOnboarding) {
+    return (
+      <OnboardingFlow
+        onComplete={() => {
+          markOnboardingComplete()
+          vieneDelOnboarding.current = true
+          setShowOnboarding(false)
+        }}
+      />
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-paper text-ink font-sans flex flex-col">
-      {/* Contenido principal */}
-      <main className="flex-1 overflow-y-auto pb-20">
-        {activeTab === 'hoy'     && <HoyPage     onHideNav={setHideNav} />}
+    <div className="min-h-screen font-sans flex flex-col">
+      {/* Una sola capa de fondo para toda la app: cruzar de pestaña no la
+          desmonta, así que el degradado nunca parpadea (§18.3.4). */}
+      <FondoHorario tema={temaActivo} />
+
+      {/* Contenido principal. Solo "Hoy" se apoya en el degradado; las demás
+          traen su propia superficie y se ven exactamente como antes.
+
+          De ahí que la familia de la tinta se decida aquí: "Hoy" la hereda del
+          degradado —de noche el fondo es índigo y la tinta oscura daría 1.1:1,
+          que es texto invisible— y el resto vive siempre sobre papel. */}
+      <main
+        data-surface={fondoOscuro && enHoy ? 'dark' : 'light'}
+        data-tema={temaActivo ?? undefined}
+        className={clsx(
+          'flex-1 overflow-y-auto pb-20',
+          activeTab !== 'hoy' && 'bg-paper',
+        )}
+      >
+        {activeTab === 'hoy'     && <HoyPage     onHideNav={setHideNav} onTema={setTemaHoy} onIrAHabitos={() => setActiveTab('habitos')} />}
         {activeTab === 'journal' && <JournalPage onHideNav={setHideNav} />}
+        {activeTab === 'habitos' && <HabitosModulo />}
         {activeTab === 'tu'      && <TuPage />}
       </main>
 
       {/* Barra de navegación inferior (se oculta en rituales y escritura activa) */}
       {!hideNav && (
         <nav
+          // Trae su propia superficie de papel, así que su tinta no sigue al
+          // degradado aunque "Hoy" esté de noche.
+          data-surface="light"
           className={clsx(
             'fixed bottom-0 left-0 right-0 z-50',
             'bg-paper/95 backdrop-blur-sm',
@@ -41,7 +189,8 @@ export default function App() {
             'flex items-center',
             'pb-safe', // respeta safe area de iOS
           )}
-          aria-label="Navegación principal"
+          role="tablist"
+          aria-label={copy.nav.label}
         >
           {TABS.map(tab => {
             const Icon    = tab.icon
@@ -49,8 +198,16 @@ export default function App() {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                aria-current={isActive ? 'page' : undefined}
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => {
+                  // Volver a "Hoy" recalcula su tema: no se persiste entre
+                  // visitas (§20). Se hace aquí y no al montar la pantalla para
+                  // que el primer fotograma ya salga con el bueno, en vez de
+                  // cruzar desde el que quedó de la vez anterior.
+                  if (tab.id === 'hoy') setTemaHoy(temaInicialDeHoy())
+                  setActiveTab(tab.id)
+                }}
                 className={clsx(
                   'flex-1 flex flex-col items-center justify-center gap-1',
                   'py-3 min-h-touch',
@@ -70,8 +227,10 @@ export default function App() {
                   aria-hidden="true"
                 />
                 <span className={clsx(
-                  'text-xs font-medium',
-                  isActive ? 'opacity-100' : 'opacity-60',
+                  'text-xs',
+                  // En escala de grises la activa se sigue distinguiendo: pesa
+                  // más y su icono va relleno (§19.6).
+                  isActive ? 'font-bold opacity-100' : 'font-medium opacity-60',
                 )}>
                   {tab.label}
                 </span>
@@ -86,6 +245,15 @@ export default function App() {
             )
           })}
         </nav>
+      )}
+
+      {/* El umbral de cada entrada, sobre el mismo fondo que ya está puesto */}
+      {fraseApertura && (
+        <AperturaSesion
+          frase={fraseApertura}
+          sobreOscuro={fondoOscuro}
+          onEnd={() => setFraseApertura(null)}
+        />
       )}
     </div>
   )
@@ -107,6 +275,21 @@ function PenIcon({ className, filled }) {
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={filled ? 2.5 : 1.8}>
       <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"
         strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+// Hábitos: una hoja que crece. Mismo grosor de trazo y mismo tamaño óptico que
+// las otras tres; se rellena cuando la pestaña está activa (§19.3).
+function LeafIcon({ className, filled }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={filled ? 2.5 : 1.8}>
+      <path
+        d="M20 4c0 8-5 12-11 12a5 5 0 010-10c4 0 7-1 11-2z"
+        fill={filled ? 'currentColor' : 'none'}
+        strokeLinejoin="round"
+      />
+      <path d="M4 20c2-4 5-6 9-8" strokeLinecap="round" />
     </svg>
   )
 }

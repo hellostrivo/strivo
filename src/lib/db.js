@@ -7,67 +7,272 @@
 // Relaciones:           §7.3 del Blueprint v3
 
 import { openDB } from 'idb'
+import { areasActivas, cabeOtraArea, LimiteDeAreasError } from '@lib/areas'
 
 const DB_NAME    = 'strivo-local'
-const DB_VERSION = 1
+// 1 → esquema inicial (§7.2)
+// 2 → UserProfile.gender (§2.2 del documento de cambios): lenguaje adaptativo
+// 3 → appFlags: banderas del dispositivo, no del usuario (§3.3, hasSeenIntro)
+// 4 → se retira lo que capturaba P5, que ya no existe (§14.4)
+// 5 → se deduplican las marcas de hábito y se recalcula su contador (§26.3)
+// 6 → DailyEntry.animoCierre pasa del rótulo visible a un id estable, para que
+//     el estado de cierre pueda decirse en femenino sin dejar de reconocerse
+// 7 → se retira el momento 'dia' de los hábitos: los que lo tenían pasan a la
+//     mañana, que es donde ahora sí les toca un ritual
+// 8 → los hábitos pasan de días fijos a una meta semanal de frecuencia
+const DB_VERSION = 8
 
 // ─── Abrir / inicializar la base de datos ────────────────────────────────────
 export async function getDB() {
-  return openDB(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      // UserProfile (1 por usuario; key = userId)
-      if (!db.objectStoreNames.contains('userProfile')) {
-        db.createObjectStore('userProfile', { keyPath: 'userId' })
+  return openDB(DB_NAME, DB_VERSION, { upgrade: upgradeSchema })
+}
+
+// Se exporta para poder probar las migraciones contra una base desechable, sin
+// tocar la del navegador (ver tests/genero.test.js).
+export function upgradeSchema(db, oldVersion, newVersion, tx) {
+  // UserProfile (1 por usuario; key = userId)
+  if (!db.objectStoreNames.contains('userProfile')) {
+    db.createObjectStore('userProfile', { keyPath: 'userId' })
+  }
+
+  // Area (áreas de identidad; FK: userId)
+  if (!db.objectStoreNames.contains('areas')) {
+    const areas = db.createObjectStore('areas', { keyPath: 'id' })
+    areas.createIndex('byUser', 'userId')
+  }
+
+  // DailyEntry (una por fecha por usuario; FK: userId)
+  if (!db.objectStoreNames.contains('dailyEntries')) {
+    const de = db.createObjectStore('dailyEntries', { keyPath: 'id' })
+    de.createIndex('byUserDate', ['userId', 'fecha'])
+  }
+
+  // Victory (N por fecha; FK: userId, areaId opcional)
+  if (!db.objectStoreNames.contains('victories')) {
+    const v = db.createObjectStore('victories', { keyPath: 'id' })
+    v.createIndex('byUserDate', ['userId', 'fecha'])
+    v.createIndex('byUser', 'userId')
+  }
+
+  // Habit (hábitos del usuario; FK: userId, areaId)
+  if (!db.objectStoreNames.contains('habits')) {
+    const h = db.createObjectStore('habits', { keyPath: 'id' })
+    h.createIndex('byUser', 'userId')
+    h.createIndex('byUserArea', ['userId', 'areaId'])
+  }
+
+  // HabitLog (una fila = hábito marcado; NUNCA una fila de "falló")
+  // La ausencia de fila = no hecho. Decisión de modelo deliberada. (§7.2)
+  if (!db.objectStoreNames.contains('habitLogs')) {
+    const hl = db.createObjectStore('habitLogs', { keyPath: 'id' })
+    hl.createIndex('byHabitDate', ['habitId', 'fecha'])
+    hl.createIndex('byUserDate', ['userId', 'fecha'])
+  }
+
+  // JournalEntry (escritura libre; FK: userId)
+  if (!db.objectStoreNames.contains('journalEntries')) {
+    const je = db.createObjectStore('journalEntries', { keyPath: 'id' })
+    je.createIndex('byUser', 'userId')
+    je.createIndex('byUserDate', ['userId', 'fecha'])
+  }
+
+  // SyncQueue (cola de cambios pendientes de subir a Firebase)
+  if (!db.objectStoreNames.contains('syncQueue')) {
+    const sq = db.createObjectStore('syncQueue', { keyPath: 'id', autoIncrement: true })
+    sq.createIndex('byStatus', 'status')
+  }
+
+  // AppFlag (banderas de este dispositivo: si ya se vio la apertura, etc.)
+  // No llevan userId: describen la instalación, no a la persona.
+  if (!db.objectStoreNames.contains('appFlags')) {
+    db.createObjectStore('appFlags', { keyPath: 'key' })
+  }
+
+  // v2 — los perfiles escritos antes de P2A no tienen `gender`. Se les pone
+  // null explícito: la app lee esa ausencia como "sin respuesta" y usa la
+  // variante neutra (§2.2). Nadie tiene que volver a contestar nada.
+  if (oldVersion > 0 && oldVersion < 2) {
+    const perfiles = tx.objectStore('userProfile')
+    perfiles.openCursor().then(function siguiente(cursor) {
+      if (!cursor) return
+      if (cursor.value.gender === undefined) {
+        cursor.update({ ...cursor.value, gender: null })
+      }
+      return cursor.continue().then(siguiente)
+    })
+  }
+
+  // v4 — P5 pedía una primera cosa buena antes de que existiera cuenta y la
+  // guardaba como Victory con `origen: 'onboarding'`. La pantalla se retiró
+  // (§14) y con ella el dato: dejar filas de una pantalla que ya no existe
+  // sería arrastrar un campo muerto por el resto del desarrollo.
+  //
+  // Solo se borra lo que escribió esa pantalla. Todo lo demás que haya en
+  // `victories` es de la persona y no se toca.
+  if (oldVersion > 0 && oldVersion < 4) {
+    const victorias = tx.objectStore('victories')
+    victorias.openCursor().then(function siguiente(cursor) {
+      if (!cursor) return
+      if (cursor.value.origen === 'onboarding') cursor.delete()
+      return cursor.continue().then(siguiente)
+    })
+  }
+
+  // v5 — el contador de cada hábito iba por ×5 (§26). Se rehace desde los
+  // registros, que son la verdad: un hábito se ha hecho tantos días como marcas
+  // distintas tiene.
+  //
+  // Dos cosas, en este orden:
+  //   1. Si hubiera dos marcas del mismo hábito y día, se conserva la primera.
+  //      Con la clave actual (`habitId_fecha`) eso no puede pasar, pero podría
+  //      llegar de la sincronización, así que la migración lo contempla.
+  //   2. `totalCompletados` pasa a ser el número de marcas que quedan.
+  //
+  // Esto NO toca la Constancia: se calcula sobre `dailyEntries` y cuenta días
+  // con actividad, no marcas de hábito (RN-06). Deduplicar aquí no puede
+  // reiniciar la constancia de nadie.
+  if (oldVersion > 0 && oldVersion < 5) {
+    const logs    = tx.objectStore('habitLogs')
+    const habitos = tx.objectStore('habits')
+    const vistos  = new Set()
+    const porHabito = new Map()
+
+    logs.openCursor().then(function siguiente(cursor) {
+      if (!cursor) {
+        // Ya se sabe cuántos días quedan por hábito: se escribe el contador
+        return habitos.openCursor().then(function siguienteHabito(cursorHabito) {
+          if (!cursorHabito) return
+          const dias = porHabito.get(cursorHabito.value.id) ?? 0
+          if (cursorHabito.value.totalCompletados !== dias) {
+            cursorHabito.update({ ...cursorHabito.value, totalCompletados: dias })
+          }
+          return cursorHabito.continue().then(siguienteHabito)
+        })
       }
 
-      // Area (áreas de identidad; FK: userId)
-      if (!db.objectStoreNames.contains('areas')) {
-        const areas = db.createObjectStore('areas', { keyPath: 'id' })
-        areas.createIndex('byUser', 'userId')
+      const { habitId, fecha } = cursor.value
+      const pareja = `${habitId}__${fecha}`
+
+      if (vistos.has(pareja)) {
+        cursor.delete()
+      } else {
+        vistos.add(pareja)
+        porHabito.set(habitId, (porHabito.get(habitId) ?? 0) + 1)
       }
 
-      // DailyEntry (una por fecha por usuario; FK: userId)
-      if (!db.objectStoreNames.contains('dailyEntries')) {
-        const de = db.createObjectStore('dailyEntries', { keyPath: 'id' })
-        de.createIndex('byUserDate', ['userId', 'fecha'])
-      }
+      return cursor.continue().then(siguiente)
+    })
+  }
 
-      // Victory (N por fecha; FK: userId, areaId opcional)
-      if (!db.objectStoreNames.contains('victories')) {
-        const v = db.createObjectStore('victories', { keyPath: 'id' })
-        v.createIndex('byUserDate', ['userId', 'fecha'])
-        v.createIndex('byUser', 'userId')
+  // v6 — `animoCierre` guardaba el rótulo que se leía en pantalla ("Cansado"),
+  // que solo existía en masculino. Ahora guarda el id del estado (`cansado`),
+  // que no se flexiona, para que la app pueda decir "Cansada" sin dejar de
+  // reconocer lo que ya estaba escrito (§2.4 y la nota de @lib/animos).
+  //
+  // Nada se pierde ni se reinterpreta: es la misma respuesta con otro nombre
+  // interno. Lo que no esté en el mapa se queda tal cual, por si vino de una
+  // versión que no conocemos.
+  if (oldVersion > 0 && oldVersion < 6) {
+    const entradas = tx.objectStore('dailyEntries')
+    entradas.openCursor().then(function siguiente(cursor) {
+      if (!cursor) return
+      const actual = cursor.value.animoCierre
+      const comoId = ID_DE_ANIMO_ANTIGUO[actual]
+      if (comoId && comoId !== actual) {
+        cursor.update({ ...cursor.value, animoCierre: comoId })
       }
+      return cursor.continue().then(siguiente)
+    })
+  }
 
-      // Habit (hábitos del usuario; FK: userId, areaId)
-      if (!db.objectStoreNames.contains('habits')) {
-        const h = db.createObjectStore('habits', { keyPath: 'id' })
-        h.createIndex('byUser', 'userId')
-        h.createIndex('byUserArea', ['userId', 'areaId'])
+  // v8 — los hábitos dejan de atarse a días concretos y pasan a una meta
+  // semanal: "tres veces por semana, yo decido cuándo" en vez de "lunes,
+  // miércoles y viernes". Es una intención, no un horario.
+  //
+  // La meta se deriva de lo que ya había: quien marcó tres días quería hacerlo
+  // tres veces por semana. `diasSemana` se conserva en la fila —no estorba y es
+  // lo que la persona eligió en su momento— por si algún día quiere volver a
+  // mirarse; simplemente ya nadie lo consulta para decidir qué se muestra.
+  if (oldVersion > 0 && oldVersion < 8) {
+    const habitos = tx.objectStore('habits')
+    habitos.openCursor().then(function siguiente(cursor) {
+      if (!cursor) return
+      if (cursor.value.frecuenciaSemanal === undefined) {
+        const dias = Array.isArray(cursor.value.diasSemana)
+          ? cursor.value.diasSemana.length
+          : 7
+        cursor.update({
+          ...cursor.value,
+          frecuenciaSemanal: Math.min(7, Math.max(1, dias || 7)),
+        })
       }
+      return cursor.continue().then(siguiente)
+    })
+  }
 
-      // HabitLog (una fila = hábito marcado; NUNCA una fila de "falló")
-      // La ausencia de fila = no hecho. Decisión de modelo deliberada. (§7.2)
-      if (!db.objectStoreNames.contains('habitLogs')) {
-        const hl = db.createObjectStore('habitLogs', { keyPath: 'id' })
-        hl.createIndex('byHabitDate', ['habitId', 'fecha'])
-        hl.createIndex('byUserDate', ['userId', 'fecha'])
+  // v7 — "A lo largo del día" se retira (§5.7). Era el único momento que no
+  // proyectaba a ningún ritual: esos hábitos vivían sueltos en la lista, fuera
+  // de las dos ceremonias de las que este producto saca su sentido.
+  //
+  // Pasan a la mañana, que es donde antes se encontraban primero. No se pierde
+  // nada: el hábito conserva su id, sus días, su contador y sus marcas, que
+  // viven aparte en habitLogs y no se tocan.
+  if (oldVersion > 0 && oldVersion < 7) {
+    const habitos = tx.objectStore('habits')
+    habitos.openCursor().then(function siguiente(cursor) {
+      if (!cursor) return
+      if (cursor.value.momento === 'dia') {
+        cursor.update({ ...cursor.value, momento: 'manana' })
       }
+      return cursor.continue().then(siguiente)
+    })
+  }
+}
 
-      // JournalEntry (escritura libre; FK: userId)
-      if (!db.objectStoreNames.contains('journalEntries')) {
-        const je = db.createObjectStore('journalEntries', { keyPath: 'id' })
-        je.createIndex('byUser', 'userId')
-        je.createIndex('byUserDate', ['userId', 'fecha'])
-      }
+// El mapa de la migración v6 vive aquí y no en @lib/animos porque `upgrade` de
+// idb es síncrono: no puede esperar a un import dinámico, y arrastrar el módulo
+// entero solo por cinco parejas ataría el esquema a una pantalla.
+const ID_DE_ANIMO_ANTIGUO = {
+  Tranquilo: 'tranquilo',
+  Pensativo: 'pensativo',
+  Cansado:   'cansado',
+  Inquieto:  'inquieto',
+  Otro:      'otro',
+}
 
-      // SyncQueue (cola de cambios pendientes de subir a Firebase)
-      if (!db.objectStoreNames.contains('syncQueue')) {
-        const sq = db.createObjectStore('syncQueue', { keyPath: 'id', autoIncrement: true })
-        sq.createIndex('byStatus', 'status')
-      }
-    },
-  })
+// ─── Banderas del dispositivo ─────────────────────────────────────────────────
+// Lo que sabe esta instalación, no lo que sabe la persona: si ya se vio la
+// apertura, por ejemplo. No se sincronizan ni entran en la cola de subida.
+export async function getFlag(key, porDefecto = null) {
+  try {
+    const db   = await getDB()
+    const fila = await db.get('appFlags', key)
+    return fila ? fila.value : porDefecto
+  } catch {
+    // Sin almacén, la app sigue: la bandera vale su valor por defecto
+    return porDefecto
+  }
+}
+
+export async function setFlag(key, value) {
+  try {
+    const db = await getDB()
+    await db.put('appFlags', { key, value })
+  } catch {
+    // Guardar una bandera nunca puede interrumpir nada
+  }
+}
+
+// Borrar una bandera es distinto de ponerla a null: la fila desaparece del
+// almacén. Lo usa el PIN del Journal al retirarse (§07.D.2), para que quitar la
+// protección no deje su rastro guardado.
+export async function removeFlag(key) {
+  try {
+    const db = await getDB()
+    await db.delete('appFlags', key)
+  } catch {
+    // Ver arriba
+  }
 }
 
 // ─── UserProfile ──────────────────────────────────────────────────────────────
@@ -88,10 +293,30 @@ export async function getAreas(userId) {
   return db.getAllFromIndex('areas', 'byUser', userId)
 }
 
+// El máximo de 3 áreas activas se valida aquí y no solo en la interfaz (§8.5-bis):
+// ninguna ruta de escritura puede dejar un perfil con cuatro. Pausar o archivar
+// nunca se rechaza —soltar un área siempre tiene que ser posible— y lo que se
+// escribe conserva su identidad de área, sus hábitos y su historial.
 export async function saveArea(area) {
+  if (area.estado === 'activa') {
+    const yaActivas = areasActivas(await getAreas(area.userId))
+      .filter(otra => otra.id !== area.id)
+
+    if (!cabeOtraArea(yaActivas.length)) throw new LimiteDeAreasError()
+  }
+
   const db = await getDB()
   await db.put('areas', area)
   enqueueSyncItem('areas', area.id, area)
+}
+
+// Las identidades por área de una persona, con el `id` interno del área como
+// clave (§10.15: el `profile.areaIdentities` de la especificación). Se leen de
+// las filas de área, que es donde viven, e incluyen las de las áreas inactivas:
+// soltar un área no borra lo que se escribió sobre ella.
+export async function getAreaIdentities(userId) {
+  const areas = await getAreas(userId)
+  return Object.fromEntries(areas.map(area => [area.tipo, area.identidadArea ?? null]))
 }
 
 // ─── DailyEntry ───────────────────────────────────────────────────────────────
@@ -102,10 +327,43 @@ export async function getDailyEntry(userId, fecha) {
   return all[0] ?? null
 }
 
+// Todas las entradas de un usuario entre dos fechas (rango inclusivo).
+// La usa el Historial para pintar un mes de una sola lectura.
+export async function getDailyEntriesInRange(userId, desde, hasta) {
+  const db = await getDB()
+  return db.getAllFromIndex(
+    'dailyEntries',
+    'byUserDate',
+    IDBKeyRange.bound([userId, desde], [userId, hasta])
+  )
+}
+
+export async function getVictoriesInRange(userId, desde, hasta) {
+  const db = await getDB()
+  return db.getAllFromIndex(
+    'victories',
+    'byUserDate',
+    IDBKeyRange.bound([userId, desde], [userId, hasta])
+  )
+}
+
 export async function saveDailyEntry(entry) {
   const db = await getDB()
   await db.put('dailyEntries', entry)
   enqueueSyncItem('dailyEntries', entry.id, entry)
+}
+
+// Crea la entrada del día si no existe y le aplica el parche.
+// La usan los rituales y las vistas: cada bloque escribe lo suyo sin pisar el
+// resto de lo que ya se registró ese día.
+export async function updateDailyEntry(userId, fecha, patch) {
+  const existing = await getDailyEntry(userId, fecha)
+  const entry = {
+    ...(existing ?? { id: `${userId}_${fecha}`, userId, fecha }),
+    ...patch,
+  }
+  await saveDailyEntry(entry)
+  return entry
 }
 
 // ─── Victories ────────────────────────────────────────────────────────────────
@@ -128,17 +386,28 @@ export async function getHabits(userId) {
   return all
 }
 
-export async function getActiveHabitsForMoment(userId, momento, diaSemana) {
-  // momento: 'manana' | 'noche' | 'dia'
-  // diaSemana: 0 (lunes) – 6 (domingo)
+export async function getActiveHabitsForMoment(userId, momento) {
+  // momento: 'manana' | 'noche'
   // Proyección automática a Rituales: §5.7.2, RN-HR-01
+  //
+  // Sin filtro por día: un hábito ya no se ata a lunes, miércoles y viernes sino
+  // a una intención semanal ("tres veces, yo decido cuándo"), así que está
+  // disponible todos los días. Cumplir la meta tampoco lo retira: quien quiera
+  // hacerlo una vez más puede.
+  //
+  // `momento` se compara normalizado por si queda alguno con el 'dia' retirado
+  // que la migración v7 no alcanzara (llegado tarde por sincronización).
   const db = await getDB()
   const all = await db.getAllFromIndex('habits', 'byUser', userId)
   return all.filter(h =>
     h.estado === 'activo' &&
-    h.momento === momento &&
-    h.diasSemana.includes(diaSemana)
+    (h.momento === momento || (h.momento === 'dia' && momento === 'manana'))
   )
+}
+
+export async function getHabit(habitId) {
+  const db = await getDB()
+  return db.get('habits', habitId)
 }
 
 export async function saveHabit(habit) {
@@ -162,28 +431,97 @@ export async function getHabitLogsByDate(userId, fecha) {
   return db.getAllFromIndex('habitLogs', 'byUserDate', [userId, fecha])
 }
 
-export async function markHabit(habitId, userId, fecha) {
-  // Idempotente: si ya existe la fila, no la duplica
-  const existing = await getHabitLog(habitId, fecha)
-  if (existing) return existing
-
-  const log = {
-    id:       `${habitId}_${fecha}`,
-    habitId,
-    userId,
-    fecha,
-    hora:     new Date().toISOString(),
-  }
+// Todas las marcas de un hábito entre dos fechas, para la cuadrícula de 90 días
+// del detalle (§5.7). Rango inclusivo por ambos extremos.
+export async function getHabitLogsInRange(habitId, desde, hasta) {
   const db = await getDB()
-  await db.put('habitLogs', log)
+  return db.getAllFromIndex(
+    'habitLogs',
+    'byHabitDate',
+    IDBKeyRange.bound([habitId, desde], [habitId, hasta])
+  )
+}
+
+// Todas las marcas de un usuario entre dos fechas, para el progreso semanal de
+// sus hábitos (§5.7). Rango inclusivo por ambos extremos.
+export async function getHabitLogsBetween(userId, desde, hasta) {
+  const db = await getDB()
+  return db.getAllFromIndex(
+    'habitLogs',
+    'byUserDate',
+    IDBKeyRange.bound([userId, desde], [userId, hasta])
+  )
+}
+
+// Marcar es un interruptor, no un contador (§26.3). Toda la operación —mirar si
+// ya está marcado, escribir la fila y ajustar el contador— ocurre dentro de una
+// sola transacción. Fuera de ella, dos toques seguidos leían los dos "todavía no
+// está" y sumaban los dos: la fila seguía siendo una, pero el contador iba por
+// ×5. Ese era el error.
+//
+// La clave de la fila es `${habitId}_${fecha}`, así que la pareja (hábito, día)
+// es única por construcción: no puede haber dos marcas del mismo día.
+export async function markHabit(habitId, userId, fecha) {
+  const db = await getDB()
+  const id = `${habitId}_${fecha}`
+  const tx = db.transaction(['habitLogs', 'habits'], 'readwrite')
+
+  const yaEstaba = await tx.objectStore('habitLogs').get(id)
+  if (yaEstaba) {
+    await tx.done
+    return yaEstaba
+  }
+
+  const log = { id, habitId, userId, fecha, hora: new Date().toISOString() }
+  await tx.objectStore('habitLogs').put(log)
+
+  // Contador desnormalizado del hábito (§7.2): cuántos días se ha registrado.
+  // Sube solo cuando de verdad se creó la fila.
+  const habitos = tx.objectStore('habits')
+  const habit   = await habitos.get(habitId)
+  const actualizado = habit
+    ? { ...habit, totalCompletados: (habit.totalCompletados ?? 0) + 1 }
+    : null
+  if (actualizado) await habitos.put(actualizado)
+
+  await tx.done
+
   enqueueSyncItem('habitLogs', log.id, log)
+  if (actualizado) enqueueSyncItem('habits', actualizado.id, actualizado)
+
   return log
 }
 
+// Desmarcar corrige un error de toque, así que devuelve el contador a donde
+// estaba: si no, marcar y desmarcar tres veces dejaría ×3 en un solo día. Nunca
+// baja de cero, y no toca ningún otro día.
+//
+// Ojo: esto no es la Constancia. La Constancia cuenta días con actividad en
+// `dailyEntries` y no depende de este contador (RN-06).
 export async function unmarkHabit(habitId, fecha) {
   const db = await getDB()
-  await db.delete('habitLogs', `${habitId}_${fecha}`)
-  enqueueSyncItem('habitLogs', `${habitId}_${fecha}`, null, 'delete')
+  const id = `${habitId}_${fecha}`
+  const tx = db.transaction(['habitLogs', 'habits'], 'readwrite')
+
+  const existia = await tx.objectStore('habitLogs').get(id)
+  if (!existia) {
+    await tx.done
+    return
+  }
+
+  await tx.objectStore('habitLogs').delete(id)
+
+  const habitos = tx.objectStore('habits')
+  const habit   = await habitos.get(habitId)
+  const actualizado = habit
+    ? { ...habit, totalCompletados: Math.max(0, (habit.totalCompletados ?? 0) - 1) }
+    : null
+  if (actualizado) await habitos.put(actualizado)
+
+  await tx.done
+
+  enqueueSyncItem('habitLogs', id, null, 'delete')
+  if (actualizado) enqueueSyncItem('habits', actualizado.id, actualizado)
 }
 
 // ─── Constancia ───────────────────────────────────────────────────────────────

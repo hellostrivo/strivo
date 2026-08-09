@@ -9,6 +9,44 @@
       "night": "#191428",
       "comment": "Índigo violáceo para noche, NO puro negro. Aumenta la lectura en oscuridad."
     },
+    "text": {
+      "comment": "Tinta derivada de la superficie, no del componente. Ningún componente decide si escribe en negro o en blanco: declara sobre qué superficie vive (data-surface) y hereda --color-text. Los ratios son el peor caso medido sobre todas las superficies de su familia (ver tests/contraste.test.js).",
+      "onLight": "#241E33",
+      "onLightMuted": "#655F6D",
+      "onDark": "#FBF8F4",
+      "onDarkMuted": "#C3BFC1",
+      "ratios": {
+        "onLight": "13.04:1 sobre superficie muted (#EDE7DC), la más oscura de las claras",
+        "onLightMuted": "5.00:1 sobre la misma",
+        "onDark": "10.57:1 sobre el ancla noche (#2E3A5C), la más clara de las oscuras",
+        "onDarkMuted": "6.15:1 sobre la misma"
+      }
+    },
+    "momento": {
+      "comment": "El color de la tarjeta que abre cada pregunta de ánimo. Mañana y noche comparten estructura y comportamiento; el tono es lo que las distingue: cálido para la mañana, sereno para la noche. Plano, sin degradado. Contraste de ink encima: 9.83:1 y 10.79:1.",
+      "manana": "#E5C5A5",
+      "noche": "#D5D1E8"
+    },
+    "superficieJournal": {
+      "comment": "Las dos tarjetas que abren los bloques del Journal (bloque 06): arena cálida para '¿Cómo me siento?' y azul claro para 'Mi diario de hoy'. Dos tonos distintos porque separan dos secciones; más claros que los de `momento` porque aquí son rótulos dentro de una pantalla larga, no la cabecera de un ritual. Contraste de ink encima: 11.93:1 y 12.06:1; el subtítulo al 80 %, 6.94:1 y 6.95:1.",
+      "emociones": "#EDDCC2",
+      "escritura": "#D6E0F0"
+    },
+    "temasHoy": {
+      "comment": "Los dos temas de la pantalla Hoy (§20). El fondo lo decide el botón Mañana/Noche, no el reloj. No retira el degradado horario del resto de la app: la capa compartida lo sigue pintando cuando nadie pide un tema, y el onboarding usa `gradients.horarios`, que es otro juego. Contrastes: mañana ink 11.99:1 en el extremo saturado; noche paper 10.57:1 en el extremo claro. La superficie de la noche va +12 de luminosidad HSL sobre su fondo.",
+      "manana": {
+        "bgFrom": "#FBD9B4",
+        "bgTo": "#FDF1E3",
+        "surface": "#FFFDF8",
+        "border": "#E8C79A"
+      },
+      "noche": {
+        "bgFrom": "#2E3A5C",
+        "bgTo": "#1B2440",
+        "surface": "#455383",
+        "border": "#55639A"
+      }
+    },
     "accents": {
       "amber": "#E5A25C",
       "plum": "#8B6BA8",
@@ -29,6 +67,49 @@
         "madrugada_start": "#C9C0C0",
         "madrugada_end": "#B8B0B0",
         "comment": "Varían sin saltos abruptos. Cambio suave cada 30 min."
+      },
+      "inicio": {
+        "comment": "Degradado horario de la pantalla de inicio (§18). Cada ancla es una hora del reloj con su paleta; entre dos anclas se interpola, así que a las 11:40 el fondo está a medio camino entre mañana y mediodía. Distinto del degradado del onboarding (`horarios`), que vive siempre sobre papel.",
+        "madrugada": {
+          "hora": "01:00",
+          "from": "#20263F",
+          "to": "#141122"
+        },
+        "previoAlAlba": {
+          "hora": "04:30",
+          "from": "#262E4A",
+          "to": "#171326"
+        },
+        "amanecer": {
+          "hora": "06:00",
+          "from": "#FBD9B4",
+          "to": "#FDF1E3"
+        },
+        "manana": {
+          "hora": "09:30",
+          "from": "#FDF0D2",
+          "to": "#FBF8F4"
+        },
+        "mediodia": {
+          "hora": "13:30",
+          "from": "#FBD9A5",
+          "to": "#FEF2DF"
+        },
+        "tarde": {
+          "hora": "18:00",
+          "from": "#EFAF95",
+          "to": "#F8DCC9"
+        },
+        "ocaso": {
+          "hora": "19:30",
+          "from": "#D98C7E",
+          "to": "#F0C4B4"
+        },
+        "noche": {
+          "hora": "21:00",
+          "from": "#2E3A5C",
+          "to": "#191428"
+        }
       }
     },
     "areaColors": {
@@ -132,10 +213,16 @@
   "motion": {
     "durations": {
       "fast": "120ms",
+      "reveal": "200ms",
+      "sugerencia": "250ms",
       "base": "260ms",
+      "areaIndicator": "180ms",
+      "areaSwap": "280ms",
       "slow": "420ms",
+      "pulse": "600ms",
       "slower": "700ms",
       "slowest": "900ms",
+      "franja": "2000ms",
       "comment": "Más lentas que UI estándar (Apple por defecto es 300ms). Cierre nocturno: 900ms."
     },
     "easing": {
@@ -160,7 +247,58 @@
         "duration": "900ms",
         "easing": "smooth",
         "comment": "Secuencia de cierre nocturno. Recorrido de luz por la pantalla."
+      },
+      "pulsoLimite": {
+        "duration": "600ms",
+        "easing": "inOut",
+        "comment": "P4B: al tocar una área atenuada, la instrucción del límite pulsa (0.55 → 1 → 0.55). Sin error, sin aviso, sin sacudida (§8.5)."
       }
+    },
+    "apertura": {
+      "comment": "Secuencia de apertura de Strivo (§3.3 del documento de cambios v2.2). Excepción autorizada al rango 120–900ms: es una descompresión, no una transición de interfaz.",
+      "total": "5000ms",
+      "fondoEntra": "800ms",
+      "nucleoEntra": "600ms",
+      "nucleoEntraDesde": "800ms",
+      "expansion": "1400ms",
+      "expansionDesde": "1400ms",
+      "contraccion": "1400ms",
+      "contraccionDesde": "2800ms",
+      "palabraEntra": "800ms",
+      "palabraEntraDesde": "1800ms",
+      "salida": "800ms",
+      "salidaDesde": "4200ms",
+      "entrarApareceEn": "1500ms",
+      "saltar": "300ms",
+      "totalReducido": "1600ms",
+      "palabraEntraReducida": "400ms",
+      "easingRespiracion": "cubic-bezier(0.37, 0, 0.63, 1)"
+    },
+    "transicion": {
+      "comment": "Pantallas de transición del onboarding (T-4B, §9). Segunda excepción autorizada al rango 120–900ms.",
+      "total": "3000ms",
+      "fondoEntra": "400ms",
+      "fraseEntra": "600ms",
+      "fraseEntraDesde": "300ms",
+      "fraseSale": "400ms",
+      "fraseSaleDesde": "2600ms",
+      "saltar": "250ms",
+      "totalReducida": "2300ms",
+      "fraseEntraReducida": "250ms"
+    },
+    "aperturaSesion": {
+      "comment": "Apertura de sesión al abrir la app (§17). Tercera excepción autorizada al rango 120–900ms, junto con la apertura de P1 y las transiciones del onboarding.",
+      "total": "3400ms",
+      "luzEntra": "700ms",
+      "fraseEntraDesde": "500ms",
+      "fraseEntra": "700ms",
+      "salidaDesde": "2900ms",
+      "salida": "500ms",
+      "saltar": "250ms",
+      "totalReducida": "2400ms",
+      "fraseEntraReducida": "300ms",
+      "escalaSalida": 1.06,
+      "opacidadLuz": 0.85
     }
   },
   "elevation": {
@@ -201,6 +339,32 @@
       "borderRadius": "16px",
       "fontSize": "14px",
       "comment": "Etiquetas seleccionables (áreas, emociones, etc.). Cambio visual claro al tocar."
+    },
+    "aperturaNucleo": {
+      "diametroCompacto": "96px",
+      "diametroBase": "120px",
+      "diametroAmplio": "140px",
+      "puntoDeCorteCompacto": "360px",
+      "puntoDeCorteAmplio": "430px",
+      "escalaMaxima": 1.32,
+      "opacidadNucleo": 0.9,
+      "opacidadPalabra": 0.75,
+      "opacidadEntrar": 0.45,
+      "color": "#E49E6E",
+      "luz": {
+        "centro": "rgba(228, 158, 110, 0.95)",
+        "medio": "rgba(228, 158, 110, 0.62)",
+        "borde": "rgba(228, 158, 110, 0.26)",
+        "fuera": "rgba(228, 158, 110, 0)",
+        "paradas": [
+          "0%",
+          "38%",
+          "62%",
+          "78%"
+        ],
+        "comment": "Gradiente radial del núcleo. Luz difusa que se desvanece: sin borde ni contorno que la recorte. El blanco de antes se leía como un foco encendido sobre el índigo; el naranja cálido (#E49E6E) tiene temperatura y sigue dando 6.7:1 sobre night."
+      },
+      "comment": "Luz difusa, sin borde ni figura sólida. El escalado máximo nunca toca los bordes de la pantalla (verificado a 320px)."
     }
   },
   "contrast": {

@@ -9,27 +9,31 @@
     "preview": "vite preview",
     "lint": "eslint src --ext .js,.jsx --report-unused-disable-directives --max-warnings 0",
     "lint:copy": "node scripts/lint-copy.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "format": "prettier --write src/**/*.{js,jsx,css}"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.0",
+    "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
     "firebase": "^10.13.0",
     "idb": "^8.0.0",
-    "date-fns": "^3.6.0",
-    "clsx": "^2.1.1"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
-    "vite": "^5.4.0",
-    "vite-plugin-pwa": "^0.20.0",
-    "tailwindcss": "^3.4.10",
     "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.41",
     "eslint": "^9.9.0",
     "eslint-plugin-react": "^7.35.0",
     "eslint-plugin-react-hooks": "^5.1.0",
-    "prettier": "^3.3.3"
+    "fake-indexeddb": "^6.2.5",
+    "postcss": "^8.4.41",
+    "prettier": "^3.3.3",
+    "tailwindcss": "^3.4.10",
+    "vite": "^5.4.0",
+    "vite-plugin-pwa": "^0.20.0",
+    "vitest": "^4.1.10"
   }
 }

@@ -49,9 +49,9 @@
 
 | Módulo | Estado | Criterios |
 |---|---|---|
-| Onboarding (P1–P11) | 🔴 Pendiente | 3 capas: P1–P5, P6–P10, día 2–7. P3 crea identidad central, P3B áreas, P3C identidad de área. |
+| Onboarding (P1–P11) | 🔴 Pendiente | 3 capas: P1–P4C, P6–P10, día 2–7. P4 crea identidad central, P4B áreas, P4C identidad de área. |
 | Hoy (Pantalla raíz) | 🔴 Pendiente | Degradados horarios (5 franjas). Tarjeta de acción principal liga a Diario (mañana o noche según hora). |
-| Ritual de Mañana | 🔴 Pendiente | 5 pantallas (respiración, identidad, compromiso, hábitos, intención). Pop-up horario 4:00–11:30. |
+| Ritual de Mañana | 🔴 Pendiente | 4 pantallas (bienvenida, identidad, hábitos, intención). Pop-up horario 4:00–11:30. |
 | Vista de Mañana (Diario) | 🔴 Pendiente | 6 bloques: frase, agradecimientos, emociones, gran visión, victorias, checklist ritual. |
 | Ritual de Noche | 🔴 Pendiente | 6 pantallas (herencia de victorias, nuevos logros, agradecimientos, aprendizaje, ánimo de cierre, checklist). |
 | Vista de Noche (Diario) | 🔴 Pendiente | 8 bloques: victorias heredadas con decisión, logros nuevos, agradecimientos, aprendizaje, ánimo, cierre. |
@@ -64,7 +64,7 @@
 
 ### Checklist de aceptación MVP
 
-- [ ] Usuarios nuevos completan P1–P11 sin abandonar (P5 crea primer registro, captura identidad y áreas).
+- [ ] Usuarios nuevos completan P1–P11 sin abandonar (captura identidad y áreas).
 - [ ] Ritual de Mañana visible diariamente en ventana horaria; marca persiste.
 - [ ] Ritual de Noche hereda victorias automáticamente; marca persiste.
 - [ ] Hábitos creados se proyectan a ambos rituales al instante; marcar en ritual → refleja en lista.

@@ -35,6 +35,13 @@ export default defineConfig({
       }
     })
   ],
+  // Pruebas de la capa de datos (@lib/*) con IndexedDB de mentira.
+  // Entorno node: no hacen falta ni DOM ni componentes. Ver tests/setup.js
+  test: {
+    environment: 'node',
+    setupFiles: ['./tests/setup.js'],
+    include: ['tests/**/*.test.js'],
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

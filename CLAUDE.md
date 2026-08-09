@@ -20,7 +20,7 @@ No es:
 
 ---
 
-## 2. Navegación de la app (estructura de 3 pestañas)
+## 2. Navegación de la app (estructura de 4 pestañas)
 
 ```
 ┌─────────────────────────────────┐
@@ -28,15 +28,16 @@ No es:
 │  (Ritual o Vista de Mañana/Noche│
 │   según la hora; o Hoy tranquilo)
 └─────────────────────────────────┘
-┌─ Hoy ─┬─ Journal ─┬─ Tú ────┐
-│       │           │  (Insights,
-│       │           │   Historial,
-│       │           │   Perfil)
-└───────┴───────────┴────────┘
+┌─ Hoy ─┬─ Journal ─┬─ Hábitos ─┬─ Tú ────┐
+│       │           │           │ (Insights,
+│       │           │           │  Historial,
+│       │           │           │  Perfil)
+└───────┴───────────┴───────────┴─────────┘
 ```
 
-- **Hoy:** pantalla raíz. Contiene Diario (Vista de Mañana o de Noche según hora) + Rituales (como overlays modales).
+- **Hoy:** pantalla raíz. Frase del día + botones Mañana/Noche (las dos secciones disponibles siempre) + Rituales (como overlays modales). Fondo con degradado horario.
 - **Journal:** escritura libre, sin estructura.
+- **Hábitos:** lista, detalle y creación. Salieron de "Tú" (§19).
 - **Tú:** espacio de autoconocimiento (Insights, Historial, Perfil, Descubre).
 
 El Diario **NO es una pestaña**; se accede desde Hoy en su momento.
@@ -74,7 +75,7 @@ El Diario **NO es una pestaña**; se accede desde Hoy en su momento.
 - "Fallaste", "incumpliste", "abandonaste", "deberías", "debilidades".
 - "Racha", "streak" (usamos "Constancia").
 - "Tarea" (usamos "Hábito", "Victoria", "Logro" según contexto).
-- Emojis del sistema (solo los 24 de §3.9 en tabla de emociones).
+- Emojis del sistema (solo los 24 de §3.9 en tabla de emociones y el símbolo de cada hábito, §16 de la Parte 4A: objetos y naturaleza, nunca caras ni personas).
 - Signos de exclamación, salvo en confirmaciones muy especiales.
 
 **§3.6.4 — Tono:** cálido, cercano, sin condescendencia. Tuteo. Brevedad sin frialdad.
@@ -109,6 +110,12 @@ El Diario **NO es una pestaña**; se accede desde Hoy en su momento.
 
 **Motion:** duraciones **más lentas que lo normal**. Min 120ms, máx 900ms para cierre nocturno. Preferir easing smooth (ease-in-out).
 
+**Excepciones autorizadas al rango 120–900ms** (no marcarlas en el QA gate):
+- **Apertura de Strivo** (`AperturaStrivo`, antes de P1): 5000ms, o 1600ms con movimiento reducido. Es una descompresión, no una transición de interfaz. Tokens en `motion.apertura`.
+- **Pantallas de transición del onboarding** (`T4BTransicion`, entre P4B y P4C): 3000ms, o 2300ms con movimiento reducido. Tokens en `motion.transicion`.
+- **Apertura de sesión** (`AperturaSesion`, al abrir la app): 3400ms, o 2400ms con movimiento reducido. Tokens en `motion.aperturaSesion`.
+- **Cambio de franja del fondo** (`FondoHorario`): 2000ms. No es una transición de interfaz sino el paso del día, que no debe notarse.
+
 **Componentes:** radios 10–32px (ver tokens). Sin sombras de drop; usar elevación (2–8 dp). Haptics livianas, sin vibración en errores.
 
 ---
@@ -122,11 +129,11 @@ El Diario **NO es una pestaña**; se accede desde Hoy en su momento.
 | **RN-03** | Cerrar un ritual sin marcar hábitos lo completa igual. Los hábitos nunca bloquean. |
 | **RN-04** | Pausar o quitar un área nunca borra sus hábitos/victorias/logros. Se preservan íntegros. |
 | **RN-05** | La app NUNCA sugiere "te falta un hábito en Salud" ni presenta un área con poco registro como problema. |
-| **RN-06** | Constancia = `count(distinct fecha)`. Solo sube. Nunca se reinicia. Nunca se genera un "fallo". |
+| **RN-06** | Constancia = `count(distinct fecha)` sobre `dailyEntries`. Solo sube. Nunca se reinicia. Nunca se genera un "fallo". No depende del contador de hábitos: marcar y desmarcar un hábito no la toca (§26.4). |
 | **RN-07** | Suscripción: paywall máx. 2×/semana. Lo escrito siempre exportable. Nada se bloquea al cancelar. |
 | **RN-08** | IA: ≤ 3 MXN por usuario premium/mes. Sin retención de datos, sin entrenar modelos con el contenido. |
 | **RN-09** | Privacidad: ningún dato identificable de usuario en analítica. Protocolo de contenido sensible (§5.3.16). |
-| **RN-10** | Acceso: 3 pestañas máximo en nav principal. Profundidad máxima 3 toques desde Hoy. |
+| **RN-10** | Acceso: 4 pestañas en nav principal (Hoy · Journal · Hábitos · Tú, §19). Profundidad máxima 3 toques desde Hoy. |
 
 **Verifica estas antes de cada feature:** si viola una regla, no entra al MVP.
 
@@ -228,7 +235,7 @@ Toda pantalla debe cumplir:
 ## 11. Los no-negociables
 
 1. **Identidad nunca se contradice:** un logro de trabajo confirma "alguien que crece", no lo viola.
-2. **Marcar es un toque:** no puede ser un modal con preguntas. Una casilla, más nada.
+2. **Marcar es un toque:** no puede ser un modal con preguntas. Una casilla, más nada. Y es un interruptor, nunca un contador: un hábito suma ×1 por día, por muchas veces que se toque (§26).
 3. **Cerrar el día es una ceremonia:** la secuencia de cierre (§3.3) nunca falla, ni siquiera si hay error.
 4. **Local-first siempre:** la app funciona completamente sin red. Sync es async.
 5. **Sin rachas, sin castigo:** Constancia solo sube. La no realización no genera notificación, alerta ni registro.
@@ -252,6 +259,11 @@ Toda pantalla debe cumplir:
 Antes de hacer commit:
 
 ```bash
+# Pruebas de la capa de datos (IndexedDB de mentira, entorno node)
+# Cubren: almacén local, onboarding → perfil, rituales, vistas y el
+# recorrido de un día entero (tests/recorridoDelDia.test.js)
+npm test
+
 # Verifica que no haya léxico prohibido en strings
 grep -r "Fallaste\|Racha\|debería" src/ || echo "✅ Léxico limpio"
 

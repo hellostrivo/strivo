@@ -81,14 +81,62 @@ export function isRitualNocheWindow() {
  * Día de la semana en formato 0=Lun, 6=Dom
  * (Los hábitos usan este formato en diasSemana[])
  */
-export function getWeekDay() {
-  const d = new Date().getDay() // 0=Dom en JS
+/**
+ * Día de la semana en el formato del modelo: 0 = lunes, 6 = domingo.
+ *
+ * Acepta la clave del día de Strivo, que es la que decide a qué fecha pertenece
+ * lo que se registra. Importa: el día de Strivo termina a las 03:00, así que a
+ * la 1:30 de un domingo todavía se está cerrando el sábado, y los hábitos que
+ * tocan son los del sábado. Leerlo del reloj a secas adelantaba el cambio de día
+ * tres horas y hacía aparecer y desaparecer hábitos en mitad de la madrugada.
+ *
+ * Sin argumento se comporta como antes, con la fecha de hoy.
+ */
+export function getWeekDay(fecha) {
+  const d = fecha
+    ? new Date(...fecha.split('-').map((v, i) => (i === 1 ? Number(v) - 1 : Number(v)))).getDay()
+    : new Date().getDay()   // 0=Dom en JS
   return d === 0 ? 6 : d - 1   // convertir a 0=Lun
 }
 
 /**
  * Fecha actual en formato 'YYYY-MM-DD' (clave de DailyEntry)
+ *
+ * Se compone a mano en hora local, no con toISOString(): eso da UTC y en
+ * México (UTC-6) todo lo escrito después de las 18:00 —justo la franja del
+ * cierre nocturno— caía en la fecha del día siguiente.
+ *
+ * Pendiente para el Ritual de Noche: el día de Strivo termina a `diaTerminaA`
+ * (03:00 por defecto), así que de madrugada la entrada pertenece aún al día
+ * anterior. Eso lo resuelve quien tenga el perfil a mano.
  */
-export function todayKey() {
-  return new Date().toISOString().split('T')[0]
+export function todayKey(date = new Date()) {
+  const mes = String(date.getMonth() + 1).padStart(2, '0')
+  const dia = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${mes}-${dia}`
+}
+
+/**
+ * La fecha del "día de Strivo", que no termina a medianoche sino a
+ * `diaTerminaA` (§7.2, 03:00 por defecto).
+ *
+ * Quien cierra su día a la 1:30 de la madrugada lo está cerrando *ayer*: sus
+ * agradecimientos y su ánimo pertenecen a esa fecha, y el Ritual de Noche no
+ * debe volver a aparecer como si fuera un día nuevo sin registrar.
+ */
+export function strivoDayKey(diaTerminaA = '03:00', date = new Date()) {
+  const minutosAhora = date.getHours() * 60 + date.getMinutes()
+  if (minutosAhora >= timeToMinutes(diaTerminaA)) return todayKey(date)
+
+  const ayer = new Date(date)
+  ayer.setDate(ayer.getDate() - 1)
+  return todayKey(ayer)
+}
+
+/**
+ * La fecha anterior a una clave 'YYYY-MM-DD'.
+ */
+export function previousDayKey(fecha) {
+  const [ano, mes, dia] = fecha.split('-').map(Number)
+  return todayKey(new Date(ano, mes - 1, dia - 1))
 }

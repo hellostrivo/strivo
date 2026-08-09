@@ -1,0 +1,206 @@
+// src/lib/onboardingProfile.js
+// Convierte el borrador del onboarding en las entidades reales de §7.2:
+// UserProfile + Area(s) + Habit(s). Ocurre al llegar a P11.
+//
+// Todo se escribe con id determinista, así que volver atrás y llegar otra vez
+// actualiza las mismas filas en vez de duplicarlas (criterio 3).
+//
+// Si en P10 se creó cuenta, el id de la cuenta pasa a ser el vigente y lo que
+// se escribió antes bajo el id local se reasigna: lo registrado sigue siendo
+// suyo, con su fecha, sin pedir nada otra vez.
+
+import { getDB, getUserProfile, saveUserProfile, saveArea, saveHabit } from '@lib/db'
+import { getCurrentUserId, getLocalUserId, setAccountUserId } from '@lib/user'
+import { normalizeGender } from '@lib/gender'
+import { FRECUENCIA_POR_DEFECTO } from '@lib/habits'
+import { normalizarIdentidad } from '@lib/identidad'
+import { AREAS, limitarAreas } from '@lib/areas'
+
+const DIA_TERMINA_A  = '03:00'
+
+// Stores cuyas filas llevan userId. Antes de P10 no suele haber nada escrito
+// todavía, pero la lista está completa para cuando el registro llegue más tarde.
+const STORES_CON_USUARIO = [
+  'victories',
+  'dailyEntries',
+  'habits',
+  'habitLogs',
+  'journalEntries',
+]
+
+const areaRowId = (userId, tipo) => `${userId}_area_${tipo}`
+
+export async function finishOnboarding(draft) {
+  const localUserId = getLocalUserId()
+  const uid         = draft.cuenta?.uid ?? null
+  const userId      = uid ?? localUserId
+
+  if (uid) {
+    setAccountUserId(uid)
+    await reasignarFilas(localUserId, uid)
+    // El perfil se vuelve a escribir entero unas líneas más abajo bajo el id de
+    // la cuenta. Lo que se borra aquí es la fila a medias que P2A dejó bajo el
+    // id local: su clave es el userId, así que no se reasigna sola.
+    await borrarPerfilLocal(localUserId)
+  }
+
+  await saveUserProfile(perfilDesde(draft, userId))
+
+  // Recortar es defensivo: P4B ya no deja elegir una cuarta. Si un borrador
+  // viejo trae más, se cierra el onboarding igual con las tres primeras en vez
+  // de dejar que la escritura falle (§3.3 — el cierre nunca falla).
+  for (const tipo of limitarAreas(draft.areas)) {
+    await saveArea(areaDesde(draft, userId, tipo))
+  }
+
+  for (const habito of [...draft.habitosManana, ...draft.habitosNoche]) {
+    await saveHabit(habitoDesde(habito, userId))
+  }
+
+  return userId
+}
+
+/**
+ * Vincular una cuenta cuando el onboarding ya se cerró.
+ *
+ * P10 pasa una sola vez. Quien dijo "Ahora no" —o quien llegó cuando Firebase
+ * todavía no estaba configurado— se quedaba sin ninguna forma de crear cuenta
+ * después, y con ella sin el PIN del Journal, que necesita una cuenta para poder
+ * recuperarse (§07.D.5). Esto es esa segunda puerta.
+ *
+ * Hace lo mismo que hace `finishOnboarding` con la cuenta de P10 y por el mismo
+ * camino: el id de la cuenta pasa a ser el vigente y TODO lo escrito antes bajo
+ * el id local se reasigna. Si no se reasignara, el journal, los hábitos y el
+ * historial de esa persona quedarían bajo un dueño que ya nadie consulta y la
+ * app se vería vacía. Nada se borra en ningún punto.
+ *
+ * `finishOnboarding` no se toca: aquella escribe el perfil desde el borrador y
+ * esta mueve el que ya existe. Lo que comparten —reasignar las filas— es la
+ * misma función, no dos copias.
+ */
+export async function vincularCuenta(cuenta) {
+  const uid = cuenta?.uid
+  if (!uid) return null
+
+  const anterior = getCurrentUserId()
+
+  // Ya era el dueño (volver a entrar con la misma cuenta): solo se refresca lo
+  // que se sabe de ella, sin mover una sola fila.
+  if (anterior === uid) {
+    const actual = await getUserProfile(uid)
+    await saveUserProfile({ ...(actual ?? {}), userId: uid, cuenta })
+    return uid
+  }
+
+  const perfil = await getUserProfile(anterior)
+
+  setAccountUserId(uid)
+  await reasignarFilas(anterior, uid)
+
+  // El perfil no se reasigna solo: su clave ES el userId, así que se reescribe
+  // bajo el id nuevo y se retira el viejo. Lo que contenía —el género, la
+  // identidad, los horarios— viaja entero.
+  await borrarPerfilLocal(anterior)
+  await saveUserProfile({ ...(perfil ?? {}), userId: uid, cuenta })
+
+  return uid
+}
+
+function perfilDesde(draft, userId) {
+  const ahora = new Date().toISOString()
+  return {
+    userId,
+    nombre:           draft.nombre,
+    // Lo contestado en P2A. Se guarda tal cual; `genderMode` no se persiste
+    // porque se deriva (§2.2) y guardarlo duplicaría la fuente de verdad.
+    gender:           normalizeGender(draft.gender),
+    // §7.8 — `identidadCentral` es el `coreIdentity` de la especificación y
+    // `identidadCentralFuente` su `coreIdentitySource` (solo para analítica:
+    // no se muestra nunca). Se conservan estos nombres porque ya están escritos
+    // en los perfiles guardados y en el historial de versiones.
+    identidadCentral: normalizarIdentidad(draft.identidadCentral),
+    identidadCentralFuente: draft.identidadCentralFuente ?? null,
+    // El historial arranca con la primera versión abierta (§5.1.1): editar la
+    // identidad cierra esta entrada y abre otra, nunca sobrescribe. Sin frase
+    // todavía no hay nada que versionar: la primera entrada se abrirá el día
+    // que se escriba.
+    identidadCentralHistorial: normalizarIdentidad(draft.identidadCentral)
+      ? [{ texto: normalizarIdentidad(draft.identidadCentral), desde: ahora, hasta: null }]
+      : [],
+    horaDespertar: draft.horaDespertar,
+    horaDormir:    draft.horaDormir,
+    diaTerminaA:   DIA_TERMINA_A,
+    // Lo que se vino a buscar (§6.8): ids de @lib/reasons, y el texto libre
+    // aparte. Guardar el id y no la etiqueta permite reescribir el copy sin
+    // tocar los perfiles ya guardados.
+    reasons:       [...draft.reasons],
+    reasonOther:   draft.reasonOther?.trim() || null,
+    recordatorios: draft.recordatorios ?? { activos: false, permiso: 'default' },
+    cuenta:        draft.cuenta ?? null,
+    creadoEn:      ahora,
+  }
+}
+
+function areaDesde(draft, userId, tipo) {
+  const area = AREAS.find(a => a.tipo === tipo)
+  return {
+    id:     areaRowId(userId, tipo),
+    userId,
+    tipo,
+    nombre: area?.nombre ?? tipo,
+    color:  area?.color,
+    identidadArea: draft.identidadesArea[tipo] ?? null,
+    estado: 'activa',
+  }
+}
+
+function habitoDesde(habito, userId) {
+  return {
+    id:     `${userId}_habito_${habito.id}`,
+    userId,
+    nombre: habito.texto,
+    // Su símbolo (§16.4). null cuando no se eligió ninguno: la interfaz muestra
+    // el de por defecto, pero el hábito no lleva escrito uno que nadie escogió.
+    emoji:  habito.emoji ?? null,
+    // areaId apunta a la fila del área; null = "General" (§5.1.1)
+    areaId: habito.areaId ? areaRowId(userId, habito.areaId) : null,
+    momento: habito.momento,
+    // La meta más abierta: al empezar, todos los días. Se ajusta después desde
+    // Hábitos, que es lo que dice la nota bajo P7 y P8.
+    frecuenciaSemanal: FRECUENCIA_POR_DEFECTO,
+    estado: 'activo',
+    totalCompletados: 0,
+    origen: 'onboarding',
+  }
+}
+
+async function borrarPerfilLocal(localUserId) {
+  const db = await getDB()
+  await db.delete('userProfile', localUserId)
+}
+
+// Mueve las filas del id local al id de la cuenta. Se hace con transacción por
+// store y no con las funciones de @lib/db porque hay que borrar la fila vieja:
+// el id la contiene y quedaría apuntando a un dueño que ya no existe.
+async function reasignarFilas(desde, hacia) {
+  if (desde === hacia) return
+  const db = await getDB()
+
+  for (const store of STORES_CON_USUARIO) {
+    const tx    = db.transaction(store, 'readwrite')
+    const filas = await tx.store.getAll()
+
+    for (const fila of filas) {
+      if (fila.userId !== desde) continue
+      await tx.store.delete(fila.id)
+      await tx.store.put({
+        ...fila,
+        id: String(fila.id).replace(desde, hacia),
+        userId: hacia,
+      })
+    }
+    await tx.done
+  }
+  // La cola de sincronización conserva las entradas con el id viejo. Todavía no
+  // hay worker que las suba; cuando lo haya, tendrá que reasignarlas también.
+}
