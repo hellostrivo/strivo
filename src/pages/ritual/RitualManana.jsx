@@ -68,8 +68,8 @@ export default function RitualManana({ onClose }) {
     [datos]
   )
 
-  // Estables a propósito: R1 avanza con un temporizador de 6s y un onNext que
-  // cambiara en cada render se lo reiniciaría a media respiración.
+  // Estables a propósito: R1 avanza con el ciclo de 13s de la respiración y un
+  // onNext que cambiara en cada render se lo reiniciaría a media respiración.
   const siguiente = useCallback(
     () => setStepIndex(i => Math.min(steps.length - 1, i + 1)),
     [steps.length]

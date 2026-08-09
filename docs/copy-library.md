@@ -252,7 +252,8 @@ El saludo con nombre del ritual de la mañana sigue existiendo
 ```
 R1 (Respiración):
 "Respira conmigo"
-[Pausa 6 segundos]
+[Ciclo de 13 segundos: "Inhala" 5s · "Exhala" 5s · "Reposo" 3s]
+[Control de sonido: "Silenciar el sonido" / "Activar el sonido"]
 
 R2 (Bienvenida dinámica):
 "Te espera tu día"
@@ -282,7 +283,8 @@ R5 (Intención):
 ```
 N1 (Respiración):
 "Respira conmigo"
-[Pausa 6 segundos]
+[Ciclo de 13 segundos: "Inhala" 5s · "Exhala" 5s · "Reposo" 3s]
+[Control de sonido: "Silenciar el sonido" / "Activar el sonido"]
 
 N2 (Revisión de hábitos):
 "¿Qué hábitos completaste?"

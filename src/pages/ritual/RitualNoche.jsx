@@ -74,7 +74,7 @@ export default function RitualNoche({ onClose }) {
     return () => { vivo = false }
   }, [onClose])
 
-  // Estable: N1 avanza con un temporizador de 6s (ver @components/ritual/Respiracion)
+  // Estable: N1 avanza con el ciclo de 13s (ver @components/ritual/Respiracion)
   const siguiente = useCallback(
     () => setStepIndex(i => Math.min(STEPS.length - 1, i + 1)),
     []
