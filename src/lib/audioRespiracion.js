@@ -21,12 +21,15 @@ const GANANCIA     = 0.18
 // Web Audio no admite rampas exponenciales hacia cero: este es el "silencio".
 const CASI_CERO    = 0.0001
 // Corta los armónicos duros del oscilador y deja el aire de abajo
-const CORTE_HZ     = 900
-// Fa3 y Do4: una cuarta justa, grave y sin tensión
-const GRAVE_HZ     = 174.61
-const ALTA_HZ      = 261.63
-// La octava, muy por debajo de la fundamental: da cuerpo, no melodía
-const MEZCLA_OCTAVA = 0.22
+const CORTE_HZ     = 1400
+// Sol3 y Re4: una quinta justa, grave y sin tensión. Un tono más abajo (Fa3)
+// suena mejor con auriculares y desaparece en el altavoz de un portátil, que es
+// donde se va a escuchar casi siempre.
+const GRAVE_HZ     = 196.00
+const ALTA_HZ      = 293.66
+// La octava, por debajo de la fundamental: da cuerpo, no melodía. Pesa lo que
+// pesa porque es la que de verdad se oye en un altavoz pequeño.
+const MEZCLA_OCTAVA = 0.45
 // Lo que tarda en apagarse un tono que se interrumpe (s)
 const DESVANECIDO  = 0.25
 // Lo que tarda en apagarse todo al cerrar (s). Más corto: nadie lo oye.

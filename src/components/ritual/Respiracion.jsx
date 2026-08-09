@@ -42,6 +42,9 @@ const FASES = [
 // inhalación tenga desde dónde crecer en vez de aparecer ya expandida.
 const QUIETO = { id: 'quieto', ms: respiracion.cruce, escala: 1, halo: 0.3 }
 
+// Por debajo de esto a una fase ya no le queda tono que merezca la pena
+const MINIMO_AUDIBLE = 800
+
 export default function Respiracion({
   textos,                              // { prompt, breatheIn, breatheOut, rest }
   onNext,
@@ -59,6 +62,19 @@ export default function Respiracion({
   // almacén dijo que estaba silenciado.
   const [sonido, setSonido] = useState(SONIDO_POR_DEFECTO)
   const [leida, setLeida]   = useState(false)
+
+  // El ritual de la mañana se abre solo al entrar en Hoy, así que aquí se llega
+  // muchas veces sin haber tocado la página, y sin gesto el navegador no deja
+  // sonar nada.
+  //
+  // 0 = ni intentarlo: Chrome dice que la página no ha recibido ningún gesto, y
+  // abrir el contexto ahí solo sirve para dejar un aviso en consola. Cualquier
+  // otro número es un intento; el primer toque lo sube, así que la fase en curso
+  // lo reintenta desde donde va en vez de esperar a la siguiente. Donde no
+  // existe userActivation (Safari) se empieza intentándolo, que es lo de antes.
+  const [intento, setIntento] = useState(
+    () => (typeof navigator !== 'undefined' && navigator.userActivation?.hasBeenActive === false ? 0 : 1)
+  )
 
   // El AudioContext no se crea aquí: crearVozDeRespiracion() solo prepara el
   // objeto y espera a despertar(), que es quien lo abre tras el gesto.
@@ -90,12 +106,29 @@ export default function Respiracion({
     }
   }, [])
 
+  useEffect(() => {
+    const armar = () => setIntento(n => n + 1)
+    document.addEventListener('pointerdown', armar, { once: true })
+    document.addEventListener('keydown', armar, { once: true })
+
+    return () => {
+      document.removeEventListener('pointerdown', armar)
+      document.removeEventListener('keydown', armar)
+    }
+  }, [])
+
   // Dos fotogramas de reposo y arranca. Sin esta espera el círculo se pintaría
   // ya expandido y no habría inhalación que ver.
   useEffect(() => {
     const relevo = setTimeout(() => setIndice(0), respiracion.arranque)
     return () => clearTimeout(relevo)
   }, [])
+
+  // Cuándo empezó la fase que está en curso, para que un tono que llega tarde
+  // —porque se armó el audio a media inhalación— dure lo que le queda y no se
+  // meta en la fase siguiente.
+  const inicioFase = useRef(0)
+  useEffect(() => { inicioFase.current = Date.now() }, [indice])
 
   // Cada fase programa su relevo. Al acabar la última el ciclo se da por hecho.
   useEffect(() => {
@@ -119,20 +152,27 @@ export default function Respiracion({
     const voz  = vozRef.current
     const fase = indice < 0 ? null : FASES[indice]
 
-    if (!leida || !sonido || terminado || !fase || fase.id === 'reposo') return undefined
+    if (!intento || !leida || !sonido || terminado || !fase || fase.id === 'reposo') {
+      return undefined
+    }
+
+    // Lo que le queda a la fase. Si es un suspiro, no vale la pena empezar: se
+    // espera a la siguiente en vez de colar medio tono.
+    const restante = fase.ms - (Date.now() - inicioFase.current)
+    if (restante < MINIMO_AUDIBLE) return undefined
 
     let vigente = true
     voz.despertar().then(disponible => {
       // Bloqueado por el navegador: el ejercicio sigue igual, en silencio y sin
       // avisos ni errores en consola
       if (!vigente || !disponible) return
-      const segundos = fase.ms / 1000
+      const segundos = restante / 1000
       if (fase.id === 'inhalar') voz.inhalar(segundos)
       else                       voz.exhalar(segundos)
     })
 
     return () => { vigente = false }
-  }, [indice, sonido, leida, terminado])
+  }, [indice, sonido, leida, intento, terminado])
 
   // Se declara después del efecto que suena para que, al silenciar, primero se
   // invalide el tono en vuelo y luego se apague lo que ya sonaba.
@@ -150,7 +190,10 @@ export default function Respiracion({
     const siguiente = !sonido
     setSonido(siguiente)
     guardarSonido(siguiente)
-    if (siguiente) vozRef.current.despertar()
+    if (siguiente) {
+      setIntento(n => n + 1)
+      vozRef.current.despertar()
+    }
   }
 
   const fase      = indice < 0 || terminado ? QUIETO : FASES[indice]
