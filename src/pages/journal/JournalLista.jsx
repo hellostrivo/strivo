@@ -20,7 +20,7 @@ import { fechaConDiaSemana } from '@lib/fechas'
 import Button from '@components/ui/Button'
 import Card from '@components/ui/Card'
 
-export default function JournalLista({ entradas, onAbrir, onNueva }) {
+export default function JournalLista({ entradas, onAbrir, onNueva, onProteger }) {
   const headingRef = useRef(null)
   const t = useCopy()
   const [consulta, setConsulta] = useState('')
@@ -108,6 +108,17 @@ export default function JournalLista({ entradas, onAbrir, onNueva }) {
       <Button variant="primary" size="lg" fullWidth className="mt-10" onClick={onNueva}>
         {copy.journal.new}
       </Button>
+
+      {/* El PIN también se pone desde aquí (§07.D.2): es en el journal donde a
+          alguien se le ocurre que este espacio podría cerrarse, no en Ajustes.
+          Discreto y al final: quien no lo busque no se lo encuentra encima. */}
+      {onProteger && (
+        <div className="mt-6 flex justify-center">
+          <Button variant="ghost" size="sm" onClick={onProteger}>
+            {copy.journal.proteccion.titulo}
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

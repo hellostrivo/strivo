@@ -263,6 +263,18 @@ export async function setFlag(key, value) {
   }
 }
 
+// Borrar una bandera es distinto de ponerla a null: la fila desaparece del
+// almacén. Lo usa el PIN del Journal al retirarse (§07.D.2), para que quitar la
+// protección no deje su rastro guardado.
+export async function removeFlag(key) {
+  try {
+    const db = await getDB()
+    await db.delete('appFlags', key)
+  } catch {
+    // Ver arriba
+  }
+}
+
 // ─── UserProfile ──────────────────────────────────────────────────────────────
 export async function getUserProfile(userId) {
   const db = await getDB()

@@ -1139,6 +1139,89 @@ export const copy = {
     noResults: 'Nada con esa palabra.',
     resultsTemplate: '{n} entradas',
     resultsSingular: '1 entrada',
+
+    // ─── El PIN del Journal (bloque 07) ───────────────────────────────────
+    // OJO CON LO QUE SE PROMETE. Esto pide un PIN antes de abrir el journal en
+    // este dispositivo. No cifra nada. Ninguna línea de aquí puede decir
+    // "cifrado", "encriptado" ni "seguro": sería prometer una garantía técnica
+    // que la Fase 0 no tiene.
+    //
+    // Se dice "PIN" siempre. Ni "clave" ni "contraseña" en esta experiencia,
+    // salvo cuando de verdad se habla de la contraseña de la cuenta de Firebase,
+    // que es otra cosa y se nombra como lo que es.
+    proteccion: {
+      titulo: 'Proteger mi journal',
+      descripcion: 'Pide un PIN antes de abrir el journal en este dispositivo.',
+      volver: 'Listo',
+
+      interruptor: 'Pedir un PIN al abrir',
+      activo: 'Tu journal pide un PIN en este dispositivo.',
+      inactivo: 'Tu journal se abre sin PIN.',
+      cambiar: 'Cambiar mi PIN',
+      cancelar: 'Ahora no',
+
+      // Sin cuenta no hay forma de volver a entrar si el PIN se olvida, así que
+      // no se ofrece. Se explica en una línea, sin alarma y sin insistir.
+      sinCuenta: 'El PIN necesita una cuenta con correo: es lo que te deja volver a entrar si lo olvidas. Puedes crear la tuya cuando quieras.',
+      sinCripto: 'Este navegador no puede guardar un PIN. Tu journal se abre sin él.',
+
+      crear: {
+        titulo: 'Elige tu PIN',
+        ayuda: 'De 4 a 6 dígitos, los que tú quieras.',
+        campo: 'Tu PIN',
+        confirmar: 'Escríbelo otra vez',
+        guardar: 'Guardar',
+        noCoinciden: 'Los dos no coinciden. Escríbelo otra vez.',
+        listo: 'Listo. Tu journal pedirá este PIN al abrirse.',
+      },
+
+      cambio: {
+        titulo: 'Cambiar mi PIN',
+        actual: 'Tu PIN de ahora',
+        nuevo: 'Tu PIN nuevo',
+        confirmar: 'Escribe el nuevo otra vez',
+        guardar: 'Guardar',
+        listo: 'Listo. Tu journal pedirá el PIN nuevo.',
+      },
+
+      retirar: {
+        titulo: 'Quitar el PIN',
+        ayuda: 'Escribe tu PIN para quitarlo. Todo lo que escribiste se queda donde está.',
+        campo: 'Tu PIN',
+        confirmar: 'Quitar el PIN',
+        listo: 'Quitado. Tu journal se abre sin PIN.',
+      },
+
+      // La pantalla de entrada. Ni candado ni tono de vigilancia: es tu casa y
+      // solo se te pregunta quién eres en la puerta.
+      desbloqueo: {
+        titulo: 'Tu journal',
+        ayuda: 'Escribe tu PIN para entrar.',
+        campo: 'Tu PIN',
+        entrar: 'Entrar',
+        // Sin contador de intentos, sin espera, sin reproche
+        incorrecto: 'Ese no es. Prueba otra vez.',
+        olvide: 'Olvidé mi PIN',
+      },
+
+      recuperar: {
+        titulo: 'Volver a entrar',
+        ayuda: 'Entra con tu cuenta y eliges un PIN nuevo. Lo que escribiste se queda entero.',
+        cuentaTemplate: 'Tu cuenta: {correo}',
+        contrasena: 'La contraseña de tu cuenta',
+        continuar: 'Continuar',
+        google: 'Continuar con Google',
+        apple: 'Continuar con Apple',
+        enviarEnlace: 'También olvidé esa contraseña',
+        enviado: 'Te llegó un correo para elegir otra contraseña. Vuelve aquí cuando la tengas.',
+        errorEnvio: 'El correo no salió. Puedes intentarlo otra vez.',
+        credenciales: 'Esa contraseña no es la de tu cuenta. Prueba otra vez.',
+        otraCuenta: 'Esa es otra cuenta. Entra con la que usaste al empezar.',
+        error: 'No se pudo entrar ahora. Puedes intentarlo otra vez.',
+        nuevoTitulo: 'Elige un PIN nuevo',
+        volver: 'Volver',
+      },
+    },
   },
 
   // ─── Historial ────────────────────────────────────────────────────────────

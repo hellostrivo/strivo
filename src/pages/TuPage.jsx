@@ -10,6 +10,7 @@
 import { useState } from 'react'
 import { copy } from '@copy'
 import HistorialModulo from '@/pages/historial/HistorialModulo'
+import ProteccionJournal from '@components/journal/ProteccionJournal'
 import Button from '@components/ui/Button'
 
 export default function TuPage() {
@@ -32,6 +33,13 @@ export default function TuPage() {
         >
           {copy.historial.title}
         </Button>
+      </div>
+
+      {/* El interruptor del PIN del Journal (bloque 07). Aquí y no en el
+          Journal a secas: este es el cajón de ajustes de la app. El mismo
+          componente se abre también desde el propio Journal. */}
+      <div className="mt-12 border-t border-border pt-8">
+        <ProteccionJournal />
       </div>
 
       <p className="mt-10 text-sm text-ink/40">

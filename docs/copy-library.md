@@ -581,6 +581,61 @@ Seleccionar entrada:
 Botones: [Editar] [Compartir] [Archivar]
 ```
 
+### PIN del Journal (bloque 07)
+
+`copy.journal.proteccion`
+
+**Regla dura de este bloque:** el PIN pide una clave antes de **abrir** el journal
+**en este dispositivo**. No cifra el contenido. Está **prohibido** escribir aquí
+"cifrado", "encriptado", "seguro" o cualquier variante que prometa una garantía
+técnica que la Fase 0 no tiene.
+
+Se dice **PIN** siempre. Nunca "clave" ni "contraseña" para referirse a él. La
+palabra "contraseña" solo aparece cuando se habla de la contraseña de la cuenta
+de Firebase, que es otra cosa.
+
+```
+Interruptor (en "Tú" y dentro del Journal):
+"Proteger mi journal"
+"Pide un PIN antes de abrir el journal en este dispositivo."
+[Switch] "Pedir un PIN al abrir"          ← apagado por defecto
+
+Estado:
+"Tu journal pide un PIN en este dispositivo."   (activo)
+"Tu journal se abre sin PIN."                    (inactivo)
+
+Sin cuenta con la que recuperarlo, el PIN no se ofrece:
+"El PIN necesita una cuenta con correo: es lo que te deja volver a entrar
+ si lo olvidas. Puedes crear la tuya cuando quieras."
+
+Crear:
+"Elige tu PIN" · "De 4 a 6 dígitos, los que tú quieras."
+"Tu PIN" · "Escríbelo otra vez" · [Guardar]
+"Los dos no coinciden. Escríbelo otra vez."      ← sin tono de error
+"Listo. Tu journal pedirá este PIN al abrirse."
+
+Cambiar / quitar:
+"Cambiar mi PIN" · "Quitar el PIN"
+"Escribe tu PIN para quitarlo. Todo lo que escribiste se queda donde está."
+
+Desbloquear:
+"Tu journal" · "Escribe tu PIN para entrar." · [Entrar]
+"Ese no es. Prueba otra vez."      ← sin contador, sin espera, sin reproche
+"Olvidé mi PIN"                    ← discreto, nunca destacado
+
+Recuperar (reautenticación con la cuenta de Firebase):
+"Volver a entrar"
+"Entra con tu cuenta y eliges un PIN nuevo. Lo que escribiste se queda entero."
+"Tu cuenta: {correo}" · "La contraseña de tu cuenta" · [Continuar]
+"También olvidé esa contraseña"
+"Te llegó un correo para elegir otra contraseña. Vuelve aquí cuando la tengas."
+"Elige un PIN nuevo"
+
+❌ NO "tu journal está cifrado" / "nadie puede leerlo" / "acceso seguro"
+❌ NO contadores de intentos ni bloqueos temporales
+❌ NO medidor de fortaleza ni avisos de "PIN débil" (1234 vale)
+```
+
 ---
 
 ## 6. Insights
