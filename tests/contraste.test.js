@@ -8,7 +8,14 @@
 
 import { describe, it, expect } from 'vitest'
 import { contraste, fondoHorario } from '@lib/gradienteHorario'
-import { colors, textColors, gradientesInicio, momento, temasHoy } from '@tokens'
+import {
+  colors,
+  textColors,
+  gradientesInicio,
+  momento,
+  superficieJournal,
+  temasHoy,
+} from '@tokens'
 
 // WCAG 2.2 AA
 const TEXTO_NORMAL = 4.5
@@ -192,6 +199,25 @@ describe('Las tarjetas de las preguntas de ánimo', () => {
 
   it('los dos momentos se distinguen entre sí', () => {
     expect(momento.manana).not.toBe(momento.noche)
+  })
+
+  // Las dos del Journal (bloque 06) se miden igual: mismo componente, mismas
+  // tintas encima, dos tonos propios.
+  for (const [nombre, tono] of Object.entries(superficieJournal)) {
+    it(`journal/${nombre}: el título cumple 4.5:1 sobre su tarjeta`, () => {
+      expect(contraste(colors.ink, tono), `${nombre} (${tono})`)
+        .toBeGreaterThanOrEqual(TEXTO_NORMAL)
+    })
+
+    it(`journal/${nombre}: el subtítulo también`, () => {
+      expect(contraste(subtitulo(tono), tono), `${nombre} (${tono})`)
+        .toBeGreaterThanOrEqual(TEXTO_NORMAL)
+    })
+  }
+
+  it('las dos tarjetas del Journal se distinguen entre sí', () => {
+    // Es lo que separa "¿Cómo me siento?" de "Mi diario de hoy" sin una línea
+    expect(superficieJournal.emociones).not.toBe(superficieJournal.escritura)
   })
 })
 

@@ -11,6 +11,7 @@ import {
   normalizar,
   resumen,
 } from '@lib/journal'
+import { comoPropia } from '@lib/emocionesJournal'
 import { getCurrentUserId } from '@lib/user'
 import { filasDe } from './helpers/db.js'
 
@@ -75,6 +76,66 @@ describe('escribir', () => {
 
     const deHoy = await loadEntradasDeFecha(userId, HOY)
     expect(deHoy.map(e => e.texto)).toEqual(['De hoy'])
+  })
+})
+
+describe('cómo me siento (bloque 06)', () => {
+  it('una entrada nueva nace sin emociones elegidas', () => {
+    expect(entradaNueva('u1').emociones).toEqual([])
+  })
+
+  it('se guardan como ids, no como rótulos', async () => {
+    const guardada = await guardarEntrada({
+      ...entradaNueva('u1'),
+      texto: 'Un día raro',
+      emociones: ['cansancio', 'esperanza'],
+    })
+
+    expect(guardada.emociones).toEqual(['cansancio', 'esperanza'])
+    const filas = await filasDe('journalEntries')
+    expect(filas[0].emociones).toEqual(['cansancio', 'esperanza'])
+  })
+
+  it('elegir una emoción y no escribir nada también se guarda', async () => {
+    // La emoción no es un adorno del texto: registrar cómo fue el día cuenta
+    const guardada = await guardarEntrada({
+      ...entradaNueva('u1'),
+      emociones: ['tristeza'],
+    })
+
+    expect(guardada).not.toBeNull()
+    expect(guardada.texto).toBe('')
+    expect(await filasDe('journalEntries')).toHaveLength(1)
+  })
+
+  it('sin texto y sin emociones sigue sin dejar rastro', async () => {
+    expect(await guardarEntrada({ ...entradaNueva('u1'), emociones: [] })).toBeNull()
+    expect(await filasDe('journalEntries')).toHaveLength(0)
+  })
+
+  it('la palabra propia se guarda dentro de la lista y también en claro', async () => {
+    const guardada = await guardarEntrada({
+      ...entradaNueva('u1'),
+      texto: 'Hoy',
+      emociones: ['feliz', comoPropia('nostálgica')],
+    })
+
+    expect(guardada.emociones).toEqual(['feliz', 'propia:nostálgica'])
+    expect(guardada.emocionOtra).toBe('nostálgica')
+  })
+
+  it('una entrada de antes del bloque 06 se abre sin emociones y sin errores', async () => {
+    // No se migra nada: lo viejo se lee, no se reescribe
+    const vieja = { ...entradaNueva('u1'), texto: 'De hace meses' }
+    delete vieja.emociones
+    delete vieja.emocionOtra
+
+    const guardada = await guardarEntrada(vieja)
+    expect(guardada.emociones).toEqual([])
+    expect(guardada.texto).toBe('De hace meses')
+
+    const [leida] = await loadEntradas('u1')
+    expect(leida.emociones).toEqual([])
   })
 })
 

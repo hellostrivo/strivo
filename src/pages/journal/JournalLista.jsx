@@ -9,13 +9,20 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { copy, interpolate } from '@copy'
+import useCopy from '@hooks/useCopy'
 import { buscar, resumen } from '@lib/journal'
+import {
+  normalizarEmocionesJournal,
+  nombreDeEmocionJournal,
+  emojiDeEmocionJournal,
+} from '@lib/emocionesJournal'
 import { fechaConDiaSemana } from '@lib/fechas'
 import Button from '@components/ui/Button'
 import Card from '@components/ui/Card'
 
 export default function JournalLista({ entradas, onAbrir, onNueva }) {
   const headingRef = useRef(null)
+  const t = useCopy()
   const [consulta, setConsulta] = useState('')
 
   useEffect(() => { headingRef.current?.focus() }, [])
@@ -73,16 +80,28 @@ export default function JournalLista({ entradas, onAbrir, onNueva }) {
         </p>
       ) : (
         <div className="mt-6 flex flex-col gap-3">
-          {resultados.map(entrada => (
-            <Card key={entrada.id} onClick={() => onAbrir(entrada)}>
-              <p className="text-sm text-ink/70">
-                {fechaConDiaSemana(entrada.fecha)}
-              </p>
-              <p className="mt-2 text-base text-ink leading-relaxed">
-                {resumen(entrada.texto)}
-              </p>
-            </Card>
-          ))}
+          {resultados.map(entrada => {
+            // Se puede guardar un día solo con cómo se sintió. Cuando no hay
+            // texto, la tarjeta enseña eso en vez de quedarse en blanco.
+            const emociones = normalizarEmocionesJournal(entrada.emociones)
+            const texto = resumen(entrada.texto)
+            return (
+              <Card key={entrada.id} onClick={() => onAbrir(entrada)}>
+                <p className="text-sm text-ink/70">
+                  {fechaConDiaSemana(entrada.fecha)}
+                </p>
+                <p className="mt-2 text-base text-ink leading-relaxed">
+                  {texto || emociones
+                    .map(id => {
+                      const emoji = emojiDeEmocionJournal(id)
+                      const nombre = nombreDeEmocionJournal(id, t)
+                      return emoji ? `${emoji} ${nombre}` : nombre
+                    })
+                    .join(' · ')}
+                </p>
+              </Card>
+            )
+          })}
         </div>
       )}
 

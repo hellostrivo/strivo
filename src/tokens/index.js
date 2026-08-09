@@ -28,6 +28,23 @@ export const momento = {
   noche:  '#D5D1E8',
 }
 
+// ─── Las tarjetas del Journal (bloque 06) ────────────────────────────────────
+// El Journal se leía como una hoja en blanco con un cursor: nada que mirar
+// mientras se decide qué escribir. Sus dos bloques se abren ahora con la misma
+// tarjeta tintada que las preguntas de ánimo, y con dos tonos distintos porque
+// piden dos cosas distintas: la arena abre "¿Cómo me siento?" y el azul claro
+// abre la escritura. Que no compartan tono es lo que separa las secciones sin
+// necesidad de una línea entre ellas.
+//
+// Son más claras que las de `momento` a propósito: aquí las tarjetas son
+// rótulos dentro de una pantalla larga, no la cabecera de un ritual.
+// La tinta encima es ink en las dos: 11.93:1 y 12.06:1, y el subtítulo al 80 %
+// da 6.94:1 y 6.95:1 (verificado en tests/contraste.test.js).
+export const superficieJournal = {
+  emociones: '#EDDCC2',
+  escritura: '#D6E0F0',
+}
+
 // ─── Tinta por superficie (§6.5) ─────────────────────────────────────────────
 // El color del texto se deriva del fondo sobre el que se pinta, no lo elige cada
 // componente. Un componente declara en qué superficie vive (`data-surface`) y

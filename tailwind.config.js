@@ -281,6 +281,9 @@ export default {
       minHeight: {
         'touch': '56px',  // mín para elementos tocables
         'touch-sm': '48px',
+        // La hoja del Journal (bloque 06). Alta desde el principio: un campo de
+        // tres líneas se lee como una casilla de formulario, y esto es una hoja.
+        'hoja': '240px',
       },
       minWidth: {
         'touch': '56px',

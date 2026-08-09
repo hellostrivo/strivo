@@ -27,6 +27,11 @@
       "manana": "#E5C5A5",
       "noche": "#D5D1E8"
     },
+    "superficieJournal": {
+      "comment": "Las dos tarjetas que abren los bloques del Journal (bloque 06): arena cálida para '¿Cómo me siento?' y azul claro para 'Mi diario de hoy'. Dos tonos distintos porque separan dos secciones; más claros que los de `momento` porque aquí son rótulos dentro de una pantalla larga, no la cabecera de un ritual. Contraste de ink encima: 11.93:1 y 12.06:1; el subtítulo al 80 %, 6.94:1 y 6.95:1.",
+      "emociones": "#EDDCC2",
+      "escritura": "#D6E0F0"
+    },
     "temasHoy": {
       "comment": "Los dos temas de la pantalla Hoy (§20). El fondo lo decide el botón Mañana/Noche, no el reloj. No retira el degradado horario del resto de la app: la capa compartida lo sigue pintando cuando nadie pide un tema, y el onboarding usa `gradients.horarios`, que es otro juego. Contrastes: mañana ink 11.99:1 en el extremo saturado; noche paper 10.57:1 en el extremo claro. La superficie de la noche va +12 de luminosidad HSL sobre su fondo.",
       "manana": {

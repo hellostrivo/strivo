@@ -1082,12 +1082,59 @@ export const copy = {
   journal: {
     title: 'Journal',
     new: 'Escribir',
-    // El editor abre con el cursor puesto: el marcador es una invitación,
-    // no una pregunta que haya que contestar
-    placeholder: 'Lo que sea que estés pensando…',
+    // El marcador es una invitación, no una pregunta que haya que contestar.
+    // Nombra las tres cosas que caben (pensamientos, reflexiones, lo que se
+    // quiera recordar) porque una hoja en blanco no las sugiere sola.
+    placeholder: 'Escribe aquí tus pensamientos, reflexiones, lo que quieras recordar de hoy…',
     back: 'Listo',
+
+    // ─── Cómo me siento (bloque 06) ───────────────────────────────────────
+    // OJO: esta pregunta NO es la de la Vista de Mañana (hoy.emociones). Allí
+    // se pregunta cómo se quiere uno sentir, y solo se ofrece lo que se puede
+    // cultivar; aquí se pregunta cómo se siente ahora, y caben las difíciles.
+    // Son dos catálogos y dos títulos: cambiar uno no cambia el otro.
+    emociones: {
+      titulo: '¿Cómo me siento?',
+      subtitulo: 'Elige las emociones que reflejan tu momento',
+      countTemplate: '{n} de {max} emociones elegidas',
+      otraLabel: 'En tus palabras',
+      otraPlaceholder: 'Una emoción tuya',
+      otraAdd: 'Añadir',
+      // Aquí cabe una palabra, y se dice cuando hace falta en vez de comerse el
+      // espacio en silencio: ver "muytriste" tras teclear "muy triste" no
+      // explica nada.
+      otraHint: 'Con una palabra basta',
+      // Ids, orden y emojis en @lib/emocionesJournal. Nueve llevan variante de
+      // género; las seis que no cambian se quedan como string plano.
+      opciones: {
+        feliz:        'Feliz',
+        en_paz:       'En paz',
+        gratitud:     { m: 'Agradecido',   f: 'Agradecida',   n: 'Con gratitud' },
+        energia:      'Con energía',
+        amor:         { m: 'Amado',        f: 'Amada',        n: 'Con amor' },
+        fuerza:       'Fuerte',
+        emocion:      { m: 'Emocionado',   f: 'Emocionada',   n: 'Con emoción' },
+        esperanza:    { m: 'Esperanzado',  f: 'Esperanzada',  n: 'Con esperanza' },
+        neutral:      'Neutral',
+        tristeza:     'Triste',
+        ansiedad:     { m: 'Ansioso',      f: 'Ansiosa',      n: 'Con ansiedad' },
+        cansancio:    { m: 'Cansado',      f: 'Cansada',      n: 'Con cansancio' },
+        frustracion:  { m: 'Frustrado',    f: 'Frustrada',    n: 'Con frustración' },
+        preocupacion: { m: 'Preocupado',   f: 'Preocupada',   n: 'Con preocupación' },
+        melancolia:   { m: 'Melancólico',  f: 'Melancólica',  n: 'Con melancolía' },
+        otra:         { m: 'Otro',         f: 'Otra',         n: 'Otra emoción' },
+      },
+    },
+
+    // El rótulo del bloque de escritura. No dice "obligatorio" ni "opcional":
+    // dice qué es y qué cabe dentro.
+    escritura: {
+      titulo: 'Mi diario de hoy',
+      subtitulo: 'Escribe libremente lo que sientas',
+    },
+
     search: 'Buscar una palabra',
-    searchPlaceholder: 'Una palabra',
+    searchPlaceholder: 'Escribe aquí para buscar en tus entradas',
     clearSearch: 'Quitar la búsqueda',
     noResults: 'Nada con esa palabra.',
     resultsTemplate: '{n} entradas',

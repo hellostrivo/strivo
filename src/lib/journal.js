@@ -9,6 +9,7 @@
 import { getJournalEntries, saveJournalEntry, getDB } from '@lib/db'
 import { newId } from '@lib/user'
 import { strivoDayKey } from '@lib/timeSlot'
+import { normalizarEmocionesJournal, palabraPropiaDe } from '@lib/emocionesJournal'
 
 export function entradaNueva(userId, fecha = strivoDayKey()) {
   const ahora = new Date().toISOString()
@@ -17,21 +18,39 @@ export function entradaNueva(userId, fecha = strivoDayKey()) {
     userId,
     fecha,
     texto: '',
+    // Cómo me siento (bloque 06). Ids, no rótulos: el rótulo cambia con el
+    // género y el id no. La palabra escrita a mano viaja dentro de la lista con
+    // el prefijo de @lib/propias.
+    emociones: [],
+    emocionOtra: '',
     creadoEn: ahora,
     actualizadoEn: ahora,
   }
 }
 
 /**
- * Guarda si hay algo que guardar. Devuelve la entrada guardada, o null si el
- * texto está en blanco: así el editor puede llamar a esto cuantas veces quiera
- * sin llenar el historial de entradas vacías.
+ * Guarda si hay algo que guardar. Devuelve la entrada guardada, o null si no
+ * hay ni texto ni emociones: así el editor puede llamar a esto cuantas veces
+ * quiera sin llenar el historial de entradas vacías.
+ *
+ * Elegir una emoción y no escribir nada también es haber registrado el día, así
+ * que eso sí se guarda: la emoción no es un adorno del texto.
  */
 export async function guardarEntrada(entrada) {
-  const texto = entrada.texto.trim()
-  if (!texto) return null
+  const texto     = (entrada.texto ?? '').trim()
+  const emociones = normalizarEmocionesJournal(entrada.emociones)
+  if (!texto && emociones.length === 0) return null
 
-  const guardada = { ...entrada, texto, actualizadoEn: new Date().toISOString() }
+  const guardada = {
+    ...entrada,
+    texto,
+    emociones,
+    // La palabra propia ya viaja dentro de `emociones`; esto es su copia en
+    // claro, para poder leerla sin conocer el prefijo. Se recalcula siempre a
+    // partir de la lista, que es la fuente.
+    emocionOtra: palabraPropiaDe(emociones),
+    actualizadoEn: new Date().toISOString(),
+  }
   await saveJournalEntry(guardada)
   return guardada
 }

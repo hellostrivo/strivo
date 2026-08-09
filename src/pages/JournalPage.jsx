@@ -52,6 +52,7 @@ export default function JournalPage({ onHideNav }) {
       <JournalEditor
         entrada={abierta}
         onChange={texto => setAbierta(actual => ({ ...actual, texto }))}
+        onEmociones={emociones => setAbierta(actual => ({ ...actual, emociones }))}
         onGuardar={guardar}
         onSalir={salir}
       />
