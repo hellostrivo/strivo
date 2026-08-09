@@ -9,8 +9,8 @@
 // se escribió antes bajo el id local se reasigna: lo registrado sigue siendo
 // suyo, con su fecha, sin pedir nada otra vez.
 
-import { getDB, saveUserProfile, saveArea, saveHabit } from '@lib/db'
-import { getLocalUserId, setAccountUserId } from '@lib/user'
+import { getDB, getUserProfile, saveUserProfile, saveArea, saveHabit } from '@lib/db'
+import { getCurrentUserId, getLocalUserId, setAccountUserId } from '@lib/user'
 import { normalizeGender } from '@lib/gender'
 import { FRECUENCIA_POR_DEFECTO } from '@lib/habits'
 import { normalizarIdentidad } from '@lib/identidad'
@@ -58,6 +58,52 @@ export async function finishOnboarding(draft) {
   }
 
   return userId
+}
+
+/**
+ * Vincular una cuenta cuando el onboarding ya se cerró.
+ *
+ * P10 pasa una sola vez. Quien dijo "Ahora no" —o quien llegó cuando Firebase
+ * todavía no estaba configurado— se quedaba sin ninguna forma de crear cuenta
+ * después, y con ella sin el PIN del Journal, que necesita una cuenta para poder
+ * recuperarse (§07.D.5). Esto es esa segunda puerta.
+ *
+ * Hace lo mismo que hace `finishOnboarding` con la cuenta de P10 y por el mismo
+ * camino: el id de la cuenta pasa a ser el vigente y TODO lo escrito antes bajo
+ * el id local se reasigna. Si no se reasignara, el journal, los hábitos y el
+ * historial de esa persona quedarían bajo un dueño que ya nadie consulta y la
+ * app se vería vacía. Nada se borra en ningún punto.
+ *
+ * `finishOnboarding` no se toca: aquella escribe el perfil desde el borrador y
+ * esta mueve el que ya existe. Lo que comparten —reasignar las filas— es la
+ * misma función, no dos copias.
+ */
+export async function vincularCuenta(cuenta) {
+  const uid = cuenta?.uid
+  if (!uid) return null
+
+  const anterior = getCurrentUserId()
+
+  // Ya era el dueño (volver a entrar con la misma cuenta): solo se refresca lo
+  // que se sabe de ella, sin mover una sola fila.
+  if (anterior === uid) {
+    const actual = await getUserProfile(uid)
+    await saveUserProfile({ ...(actual ?? {}), userId: uid, cuenta })
+    return uid
+  }
+
+  const perfil = await getUserProfile(anterior)
+
+  setAccountUserId(uid)
+  await reasignarFilas(anterior, uid)
+
+  // El perfil no se reasigna solo: su clave ES el userId, así que se reescribe
+  // bajo el id nuevo y se retira el viejo. Lo que contenía —el género, la
+  // identidad, los horarios— viaja entero.
+  await borrarPerfilLocal(anterior)
+  await saveUserProfile({ ...(perfil ?? {}), userId: uid, cuenta })
+
+  return uid
 }
 
 function perfilDesde(draft, userId) {

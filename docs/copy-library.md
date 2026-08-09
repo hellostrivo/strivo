@@ -604,9 +604,17 @@ Estado:
 "Tu journal pide un PIN en este dispositivo."   (activo)
 "Tu journal se abre sin PIN."                    (inactivo)
 
-Sin cuenta con la que recuperarlo, el PIN no se ofrece:
-"El PIN necesita una cuenta con correo: es lo que te deja volver a entrar
- si lo olvidas. Puedes crear la tuya cuando quieras."
+Sin cuenta con la que recuperarlo, el PIN no se ofrece. Y como P10 pasa una
+sola vez, el aviso no puede ser un callejón sin salida: la cuenta se crea ahí
+mismo, con los botones y el copy de P10 (`copy.onboarding.p10`).
+
+"El PIN necesita una cuenta: es lo que te deja volver a entrar si lo olvidas."
+"Lo que ya escribiste se queda contigo y pasa a tu cuenta entero."
+[Continuar con Google] [Continuar con Apple] [Usar mi correo]
+
+Si ni siquiera se puede crear cuenta (la app abre sin el servicio de cuentas):
+"Ahora mismo no se puede crear una cuenta desde aquí, así que el PIN queda
+ para más adelante. Tu journal se abre sin él."
 
 Crear:
 "Elige tu PIN" · "De 4 a 6 dígitos, los que tú quieras."

@@ -25,22 +25,27 @@ import {
 } from '@lib/journalPin'
 import Button from '@components/ui/Button'
 import CampoPin from '@components/journal/CampoPin'
+import CuentaParaPin from '@components/journal/CuentaParaPin'
 
 const c = copy.journal.proteccion
 
 export default function ProteccionJournal({ onCambio }) {
   const [cargando, setCargando] = useState(true)
-  const [puede, setPuede]       = useState(false)   // hay cuenta para recuperar
+  const [hayCuenta, setHayCuenta] = useState(false)  // con qué recuperarlo
   const [activo, setActivo]     = useState(false)
   const [vista, setVista]       = useState(null)    // null|'crear'|'cambio'|'retirar'
   const [aviso, setAviso]       = useState(null)
+
+  // Sin WebCrypto no hay forma de guardar un PIN sin guardarlo en claro, y eso
+  // no se hace. Pasa en contextos no seguros (http fuera de localhost).
+  const conCripto = hayCripto()
 
   useEffect(() => {
     let vigente = true
     Promise.all([metodoDeRecuperacion(), hayPin()])
       .then(([metodo, tiene]) => {
         if (!vigente) return
-        setPuede(!!metodo && hayCripto())
+        setHayCuenta(!!metodo)
         setActivo(tiene)
       })
       .catch(error => console.warn('[Strivo] El PIN del Journal se consulta luego:', error))
@@ -64,10 +69,15 @@ export default function ProteccionJournal({ onCambio }) {
       </h2>
       <p className="mt-1 text-sm text-ink/80">{c.descripcion}</p>
 
-      {!puede ? (
-        <p className="mt-4 text-sm text-ink/80">
-          {hayCripto() ? c.sinCuenta : c.sinCripto}
-        </p>
+      {!conCripto ? (
+        <p className="mt-4 text-sm text-ink/80">{c.sinCripto}</p>
+      ) : !hayCuenta ? (
+        // Ya no es un aviso sin salida: aquí mismo se crea la cuenta que hace
+        // falta, y al terminar aparece el interruptor sin recargar nada.
+        <>
+          <p className="mt-4 text-sm text-ink/80">{c.cuenta.titulo}</p>
+          <CuentaParaPin onVinculada={() => setHayCuenta(true)} />
+        </>
       ) : (
         <>
           <Interruptor

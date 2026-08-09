@@ -1160,10 +1160,18 @@ export const copy = {
       cambiar: 'Cambiar mi PIN',
       cancelar: 'Ahora no',
 
-      // Sin cuenta no hay forma de volver a entrar si el PIN se olvida, así que
-      // no se ofrece. Se explica en una línea, sin alarma y sin insistir.
-      sinCuenta: 'El PIN necesita una cuenta con correo: es lo que te deja volver a entrar si lo olvidas. Puedes crear la tuya cuando quieras.',
+      // Sin cuenta no hay forma de volver a entrar si el PIN se olvida. En vez
+      // de un aviso sin salida, la cuenta se crea aquí mismo.
+      cuenta: {
+        titulo: 'El PIN necesita una cuenta: es lo que te deja volver a entrar si lo olvidas.',
+        ayuda: 'Lo que ya escribiste se queda contigo y pasa a tu cuenta entero.',
+      },
+      // Solo cuando la app se abre sin conexión con el servicio de cuentas. No
+      // se promete lo que no se puede hacer ni se pide algo que no está.
+      sinConexionDeCuenta: 'Ahora mismo no se puede crear una cuenta desde aquí, así que el PIN queda para más adelante. Tu journal se abre sin él.',
       sinCripto: 'Este navegador no puede guardar un PIN. Tu journal se abre sin él.',
+      // Si la cuenta se pierde entre medias (cambió de cuenta, se desvinculó)
+      sinCuenta: 'El PIN necesita una cuenta: es lo que te deja volver a entrar si lo olvidas.',
 
       crear: {
         titulo: 'Elige tu PIN',
