@@ -245,52 +245,6 @@ export const aperturaSesion = {
   fraseEntraReducida: 300,
 }
 
-// ─── Respiración guiada (R1 y N1) ────────────────────────────────────────────
-// La cuarta excepción autorizada al rango 120–900 ms, y la única en la que la
-// duración no es una transición sino el contenido: el ciclo 5-5-3 ES el
-// ejercicio. Con movimiento reducido se retira la escala, nunca la calma.
-//
-// La pausa de 3 s va AL FINAL, después de exhalar. No es una retención entre
-// inhalar y exhalar (decisión de producto cerrada el 7 ago 2026).
-//
-// El núcleo se pinta siempre a opacidad plena: rebajarla lo mezcla con el
-// degradado del ritual y se lleva por delante la cota de 3:1. Lo que respira es
-// la escala, y el halo —que es decorativo— acompaña con su opacidad.
-export const respiracion = {
-  // Colores (también en globals.css como --color-breath-*)
-  core:     '#B0640F', // 4.24:1 sobre papel · 3.32:1 en el peor fondo del ritual
-  coreDeep: '#8E4A0C', // 6.33:1 sobre papel · 4.95:1 en el peor
-  glow:     '#E5A25C', // = amber; solo se usa translúcido, en el halo
-
-  nucleo: 'radial-gradient(circle at 50% 38%, #B0640F 0%, #8E4A0C 100%)',
-  halo: `radial-gradient(circle,
-    rgba(229, 162, 92, 0.42) 0%,
-    rgba(229, 162, 92, 0.16) 45%,
-    rgba(229, 162, 92, 0) 70%)`,
-
-  // Duraciones del ciclo (ms)
-  inhalar: 5000,
-  exhalar: 5000,
-  reposo:  3000,
-  ciclo:  13000,
-  // El cruce de "Inhala"/"Exhala": dentro del rango del sistema, porque eso sí
-  // es una transición de interfaz
-  cruce:    420,
-  // Dos fotogramas de reposo antes de arrancar, para que el círculo tenga un
-  // primer pintado desde el que crecer en vez de aparecer ya expandido
-  arranque:  32,
-
-  easing:       'cubic-bezier(0.4, 0, 0.2, 1)',
-  escalaMaxima: 1.35,
-  // 160 × 1.35 = 216 px: cabe con aire en 360 px menos los márgenes del ritual
-  diametro:     160,
-  // Cuánto sobresale la caja del halo por cada lado, en tanto por uno del
-  // diámetro. Lo que se pinta se apaga mucho antes del borde, pero la caja sí
-  // cuenta para el desbordamiento: 160 × 1.4 × 1.35 = 302 px, dentro de los
-  // 312 que deja una pantalla de 360 con los márgenes del ritual.
-  haloSobresale: 0.2,
-}
-
 // Núcleo de luz de la apertura (px). El escalado máximo nunca toca los bordes.
 export const aperturaNucleo = {
   // El blanco de antes se leía como un foco encendido sobre el índigo: mucha

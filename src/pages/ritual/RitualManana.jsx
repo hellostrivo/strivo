@@ -1,6 +1,12 @@
 // src/pages/ritual/RitualManana.jsx
-// Ritual de Mañana (§5.5) — R1 respiración · R2 bienvenida · R3 identidad y
-// área del día · R4 hábitos · R5 intención.
+// Ritual de Mañana (§5.5) — R2 bienvenida · R3 identidad y área del día ·
+// R4 hábitos · R5 intención.
+//
+// El ejercicio de respiración que abría el ritual se retiró: el círculo vive
+// ahora solo en las dos aperturas —la del onboarding y la de cada sesión—, que
+// es donde hace falta separar el ruido de afuera del espacio de adentro. Entrar
+// al ritual ya es estar dentro. Los nombres R2–R5 se conservan porque son los
+// del blueprint y los del copy.
 //
 // Se abre como overlay sobre Hoy en la franja de amanecer y se cierra dejando
 // el día empezado. Salir por donde sea —la X, Escape, "Hoy voy con prisa" o
@@ -22,7 +28,6 @@ import {
 } from '@lib/ritualManana'
 import Button from '@components/ui/Button'
 import RitualLayout from '@components/ritual/RitualLayout'
-import R1Respiracion from './manana/R1Respiracion'
 import R2Bienvenida  from './manana/R2Bienvenida'
 import R3Identidad   from './manana/R3Identidad'
 import R4Habitos     from './manana/R4Habitos'
@@ -31,7 +36,6 @@ import R5Intencion   from './manana/R5Intencion'
 const BACKGROUND = `linear-gradient(160deg, ${gradientsBySlot.amanecer.from} 0%, ${colors.paper} 62%)`
 
 const STEPS = [
-  { id: 'r1' },
   { id: 'r2' },
   // Sin identidad central no hay nada que devolver: el paso desaparece en vez
   // de mostrarse a medias. (Solo pasa si se saltó el onboarding.)
@@ -68,13 +72,8 @@ export default function RitualManana({ onClose }) {
     [datos]
   )
 
-  // Estables a propósito: R1 avanza con el ciclo de 13s de la respiración y un
-  // onNext que cambiara en cada render se lo reiniciaría a media respiración.
-  const siguiente = useCallback(
-    () => setStepIndex(i => Math.min(steps.length - 1, i + 1)),
-    [steps.length]
-  )
-  const atras = useCallback(() => setStepIndex(i => Math.max(0, i - 1)), [])
+  const siguiente = () => setStepIndex(i => Math.min(steps.length - 1, i + 1))
+  const atras     = () => setStepIndex(i => Math.max(0, i - 1))
 
   const cerrar = useCallback(async intencionFinal => {
     if (datos) {
@@ -150,8 +149,6 @@ export default function RitualManana({ onClose }) {
       onBack={index > 0 ? atras : undefined}
       footer={footer}
     >
-      {paso.id === 'r1' && <R1Respiracion onNext={siguiente} />}
-
       {paso.id === 'r2' && (
         <R2Bienvenida
           nombre={datos.perfil?.nombre}

@@ -64,16 +64,6 @@
   --hoy-surface: var(--hoy-manana-surface);
   --hoy-border:  var(--hoy-manana-border);
 
-  /* ─── El círculo de la respiración guiada (bloque 05) ──────────────────────
-     El amber del sistema al 30 % se perdía sobre el degradado del ritual. El
-     núcleo baja a un dorado tostado que aguanta 3:1 contra el fondo y se pinta
-     siempre opaco: rebajarle la opacidad lo mezcla con el papel y se lleva la
-     cota por delante. El halo sí es decorativo y va translúcido.
-     Ratios verificados en tests/respiracion.test.js. */
-  --color-breath-core:      #B0640F;
-  --color-breath-core-deep: #8E4A0C;
-  --color-breath-glow:      #E5A25C;
-
   /* Safe area para iPhone notch */
   --sab: env(safe-area-inset-bottom, 0px);
 }
@@ -134,16 +124,6 @@
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
-    }
-
-    /* Excepción del ejercicio de respiración (bloque 05, D.4).
-       Con movimiento reducido el círculo deja de escalar, pero el ritmo 5-5-3
-       se sigue comunicando con opacidad, y un fundido de opacidad no es
-       movimiento. Cortarlo a 0.01ms convertiría la respiración en parpadeo.
-       Gana por especificidad dentro de la misma capa; la duración de cada fase
-       la pone el componente en --respiracion-fase. */
-    .respiracion-fase {
-      transition-duration: var(--respiracion-fase) !important;
     }
   }
 

@@ -645,27 +645,12 @@ export const copy = {
       close: 'Cerrar',
       progressTemplate: 'Paso {n} de {total}',
     },
-    // Control de sonido de la respiración guiada. Son nombres accesibles: el
-    // botón enseña un altavoz y estos son los que lee el lector de pantalla.
-    sonido: {
-      silenciar: 'Silenciar el sonido',
-      activar:   'Activar el sonido',
-    },
   },
 
   ritualManana: {
     // Nombre accesible del overlay y vuelta desde Hoy
     title: 'Ritual de la mañana',
     reopen: 'Volver al ritual',
-    // El ciclo es 5-5-3: inhalar, exhalar y una pausa de reposo al final. El
-    // reposo lleva palabra propia y no una orden, porque ahí no hay nada que
-    // hacer; sin ella el hueco entre ciclos se lee como un fallo de la app.
-    r1: {
-      prompt: 'Respira conmigo',
-      breatheIn: 'Inhala',
-      breatheOut: 'Exhala',
-      rest: 'Reposo',
-    },
     r2: {
       normal: 'Te espera tu día',
       difficultDay: 'Ayer fue difícil. Hoy es nuevo.',
@@ -696,12 +681,6 @@ export const copy = {
   ritualNoche: {
     title: 'Ritual de la noche',
     reopen: 'Volver al ritual',
-    n1: {
-      prompt: 'Respira conmigo',
-      breatheIn: 'Inhala',
-      breatheOut: 'Exhala',
-      rest: 'Reposo',
-    },
     n2: {
       question: '¿Qué hábitos completaste?',
       progressTemplate: '{hecho} de {total}',

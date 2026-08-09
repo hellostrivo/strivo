@@ -250,11 +250,6 @@ El saludo con nombre del ritual de la mañana sigue existiendo
 ### Ritual de Mañana
 
 ```
-R1 (Respiración):
-"Respira conmigo"
-[Ciclo de 13 segundos: "Inhala" 5s · "Exhala" 5s · "Reposo" 3s]
-[Control de sonido: "Silenciar el sonido" / "Activar el sonido"]
-
 R2 (Bienvenida dinámica):
 "Te espera tu día"
 (Si ánimo bajo ayer:) "Ayer fue difícil. Hoy es nuevo."
@@ -281,11 +276,6 @@ R5 (Intención):
 ### Ritual de Noche
 
 ```
-N1 (Respiración):
-"Respira conmigo"
-[Ciclo de 13 segundos: "Inhala" 5s · "Exhala" 5s · "Reposo" 3s]
-[Control de sonido: "Silenciar el sonido" / "Activar el sonido"]
-
 N2 (Revisión de hábitos):
 "¿Qué hábitos completaste?"
 [Checklist — heredado de mañana, editable]

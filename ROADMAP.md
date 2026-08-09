@@ -51,7 +51,7 @@
 |---|---|---|
 | Onboarding (P1–P11) | 🔴 Pendiente | 3 capas: P1–P4C, P6–P10, día 2–7. P4 crea identidad central, P4B áreas, P4C identidad de área. |
 | Hoy (Pantalla raíz) | 🔴 Pendiente | Degradados horarios (5 franjas). Tarjeta de acción principal liga a Diario (mañana o noche según hora). |
-| Ritual de Mañana | 🔴 Pendiente | 5 pantallas (respiración, identidad, compromiso, hábitos, intención). Pop-up horario 4:00–11:30. |
+| Ritual de Mañana | 🔴 Pendiente | 4 pantallas (bienvenida, identidad, hábitos, intención). Pop-up horario 4:00–11:30. |
 | Vista de Mañana (Diario) | 🔴 Pendiente | 6 bloques: frase, agradecimientos, emociones, gran visión, victorias, checklist ritual. |
 | Ritual de Noche | 🔴 Pendiente | 6 pantallas (herencia de victorias, nuevos logros, agradecimientos, aprendizaje, ánimo de cierre, checklist). |
 | Vista de Noche (Diario) | 🔴 Pendiente | 8 bloques: victorias heredadas con decisión, logros nuevos, agradecimientos, aprendizaje, ánimo, cierre. |

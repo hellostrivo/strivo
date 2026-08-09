@@ -54,12 +54,6 @@
       "clay": "#C9836B",
       "mist": "#93A9C4"
     },
-    "respiracion": {
-      "comment": "El círculo del ejercicio de respiración guiada (R1/N1). El amber del sistema al 30 % se perdía sobre el degradado del ritual, que donde vive el círculo es casi papel. El núcleo baja a un dorado tostado y NUNCA se pinta a media opacidad: bajarle la opacidad lo mezcla con el fondo y se lleva por delante la cota de 3:1. El ritmo lo llevan la escala y el halo, que sí es decorativo. Ratios verificados en tests/respiracion.test.js: core 4.24:1 sobre papel, 3.73:1 sobre el extremo más claro del amanecer y 3.32:1 sobre el de la noche, que es el peor caso.",
-      "core": "#B0640F",
-      "coreDeep": "#8E4A0C",
-      "glow": "#E5A25C"
-    },
     "gradients": {
       "horarios": {
         "amanecer_start": "#FEE8B6",
@@ -305,19 +299,6 @@
       "fraseEntraReducida": "300ms",
       "escalaSalida": 1.06,
       "opacidadLuz": 0.85
-    },
-    "respiracion": {
-      "comment": "Ejercicio de respiración guiada (R1/N1). Cuarta excepción autorizada al rango 120–900ms: aquí la duración no es una transición de interfaz sino el contenido. Ciclo 5-5-3 = 13000ms, con la pausa de reposo AL FINAL, después de exhalar (no es una retención entre inhalar y exhalar). Con movimiento reducido las duraciones se mantienen: lo que se retira es la escala, no la calma.",
-      "inhalar": "5000ms",
-      "exhalar": "5000ms",
-      "reposo": "3000ms",
-      "ciclo": "13000ms",
-      "cruce": "420ms",
-      "arranque": "32ms",
-      "easing": "cubic-bezier(0.4, 0, 0.2, 1)",
-      "escalaMaxima": 1.35,
-      "diametro": 160,
-      "haloSobresale": 0.2
     }
   },
   "elevation": {

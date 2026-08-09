@@ -1,10 +1,15 @@
 // src/pages/ritual/RitualNoche.jsx
-// Ritual de Noche (§5.6) — N1 respiración · N2 hábitos del día · N3 victorias
-// heredadas y logros no planeados · N4 agradecimientos · N5 reflexión ·
-// N6 ánimo de cierre → ceremonia de cierre.
+// Ritual de Noche (§5.6) — N2 hábitos del día · N3 victorias heredadas y logros
+// no planeados · N4 agradecimientos · N5 reflexión · N6 ánimo de cierre →
+// ceremonia de cierre.
+//
+// El ejercicio de respiración que abría el ritual se retiró: el círculo vive
+// ahora solo en las dos aperturas —la del onboarding y la de cada sesión—, que
+// es donde hace falta separar el ruido de afuera del espacio de adentro. Los
+// nombres N2–N6 se conservan porque son los del blueprint y los del copy.
 //
 // Nota de reparto: copy-library describe el ritual en ocho bloques (N1–N8) y el
-// ROADMAP en seis. Aquí van los seis pedidos, juntando en N3 las victorias
+// ROADMAP en seis. Aquí van los que quedan, juntando en N3 las victorias
 // heredadas con los logros no planeados —son la misma pregunta, "qué pasó hoy",
 // y así se presentan en la Vista de Noche— y dejando el cierre (N8) fuera de la
 // cuenta de pantallas, porque es una ceremonia y no un paso que se recorre.
@@ -30,7 +35,6 @@ import {
 } from '@lib/ritualNoche'
 import Button from '@components/ui/Button'
 import RitualLayout from '@components/ritual/RitualLayout'
-import N1Respiracion     from './noche/N1Respiracion'
 import N2Habitos         from './noche/N2Habitos'
 import N3Victorias       from './noche/N3Victorias'
 import N4Agradecimientos from './noche/N4Agradecimientos'
@@ -40,7 +44,7 @@ import CierreNoche       from './noche/CierreNoche'
 
 const BACKGROUND = `linear-gradient(160deg, ${gradientsBySlot.noche.from} 0%, ${colors.paper} 62%)`
 
-const STEPS = ['n1', 'n2', 'n3', 'n4', 'n5', 'n6']
+const STEPS = ['n2', 'n3', 'n4', 'n5', 'n6']
 
 const avisar = (mensaje, error) => console.warn(`[Strivo] ${mensaje}`, error)
 
@@ -74,12 +78,8 @@ export default function RitualNoche({ onClose }) {
     return () => { vivo = false }
   }, [onClose])
 
-  // Estable: N1 avanza con el ciclo de 13s (ver @components/ritual/Respiracion)
-  const siguiente = useCallback(
-    () => setStepIndex(i => Math.min(STEPS.length - 1, i + 1)),
-    []
-  )
-  const atras = useCallback(() => setStepIndex(i => Math.max(0, i - 1)), [])
+  const siguiente = () => setStepIndex(i => Math.min(STEPS.length - 1, i + 1))
+  const atras     = () => setStepIndex(i => Math.max(0, i - 1))
 
   // Guardar lo que aún esté solo en pantalla. No se espera: si el almacén
   // tarda, la ceremonia no se queda mirando.
@@ -191,8 +191,6 @@ export default function RitualNoche({ onClose }) {
         </Button>
       }
     >
-      {paso === 'n1' && <N1Respiracion onNext={siguiente} />}
-
       {paso === 'n2' && (
         <N2Habitos
           habitos={datos.habitos}

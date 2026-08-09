@@ -47,8 +47,9 @@ https://github.com/hellostrivo/strivo
 - ✅ Cabecera de "Hoy" — frase del día + Mañana/Noche siempre disponibles (§20)
 
 ### Rituales
-- ✅ **Ritual de Mañana** — 5 pantallas (R1–R5): respiración, bienvenida, identidad+área, hábitos, intención
-- ✅ **Ritual de Noche** — 6 pantallas (N1–N6): respiración, herencia de victorias, nuevos logros, agradecimientos, reflexión, ánimo de cierre, hábitos, síntesis con animación de luz 900ms
+- ✅ **Ritual de Mañana** — 4 pantallas (R2–R5): bienvenida, identidad+área, hábitos, intención
+- ✅ **Ritual de Noche** — 5 pantallas (N2–N6): hábitos, herencia de victorias y nuevos logros, agradecimientos, reflexión, ánimo de cierre, y síntesis con animación de luz 900ms
+- El círculo de respiración vive solo en las dos aperturas (onboarding y sesión); los rituales entran directos
 
 ### Diario
 - ✅ **Vista de Mañana** — 6 bloques: frase, agradecimientos con sugerencias por inactividad (§21), 15 emociones a cultivar con variantes de género (§22), el gran día (§23), victorias con área deducida (§24) y el enlace al ritual (§25)
