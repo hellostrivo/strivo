@@ -1,7 +1,8 @@
 # CLAUDE.md — Consola ejecutiva de Strivo
 
-**Última actualización:** 4 ago 2026 (v3 del blueprint)  
-**Ubicación del blueprint completo:** `/docs/blueprint/`  
+**Última actualización:** 10 ago 2026 (v4.1 del blueprint — Fase 1: División Lumia/Formia)  
+**Ubicación del blueprint completo:** `/docs/blueprint/Strivo_Blueprint_de_Producto_v4_1.md`  
+**Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO_LUMIA_FORMIA.md`  
 **Referencia rápida:** este archivo es para sesiones de desarrollo. Si una decisión no está aquí, busca en los archivos de `docs/blueprint/`.
 
 ---
@@ -9,6 +10,14 @@
 ## 1. La esencia (lee esto primero)
 
 **Strivo es un refugio digital donde el usuario termina cada día sintiéndose orgulloso, agradecido, en paz, regulado y esperanzado.**
+
+**Fase 1:** Strivo se divide en dos espacios conceptualmente distintos bajo una marca paraguas:
+
+- **Lumia** (Reflexión · hacia dentro): journal, rituales de introspección, diario del día. Pregunta central: ¿Cómo estoy?
+- **Formia** (Acción · hacia delante): identidad, hábitos, construcción. Pregunta central: ¿Quién quiero ser?
+- **Strivo** (marca madre): el puente inteligente que integra ambos.
+
+**Una sola app con dos espacios navegables** — no dos apps en tiendas.
 
 No es:
 - Un rastreador de hábitos (no gamifica ni penaliza).
@@ -20,48 +29,54 @@ No es:
 
 ---
 
-## 2. Navegación de la app (estructura de 3 pestañas)
+## 2. Navegación de la app (estructura de 2 espacios + transversales)
 
 ```
-┌─────────────────────────────────┐
-│  CONTENIDO DINÁMICO             │  (cambia por franja horaria)
-│  (Ritual o Vista de Mañana/Noche│
-│   según la hora; o Hoy tranquilo)
-└─────────────────────────────────┘
-┌─ Hoy ─┬─ Journal ─┬─ Tú ────┐
-│       │           │  (Insights,
-│       │           │   Historial,
-│       │           │   Perfil)
-└───────┴───────────┴────────┘
+┌──────────────────────────────────────┐
+│  LUMIA o FORMIA (contenido dinámico) │
+└──────────────────────────────────────┘
+┌─ Lumia · Reflexión ─┬─ Formia · Acción ─┐
+│  • Hoy (ritual)     │ • Identidad       │
+│  • Journal          │ • Hábitos (H1)    │
+│  • Historial        │ • Progreso        │
+└─────────────────────┴───────────────────┘
 ```
 
-- **Hoy:** pantalla raíz. Contiene Diario (Vista de Mañana o de Noche según hora) + Rituales (como overlays modales).
-- **Journal:** escritura libre, sin estructura.
-- **Tú:** espacio de autoconocimiento (Insights, Historial, Perfil, Descubre).
+**Lumia** (pestaña izquierda):
+- **Hoy:** pantalla raíz. Contiene Ritual de Mañana + Ritual de Noche (modales) + Vista del Diario.
+- **Journal:** escritura libre, sin estructura. Privable con PIN.
+- **Historial:** calendario con puntos de ánimo, vista de día completo.
 
-El Diario **NO es una pestaña**; se accede desde Hoy en su momento.
+**Formia** (pestaña derecha):
+- **Identidad:** gestión de identidad central y áreas (0..3 elegidas).
+- **Hábitos (H1):** lista de hábitos activos por identidad.
+- **Progreso:** constancia acumulativa, vista por identidad.
+
+**Restricción arquitectónica (RN-DB4-01):** Lumia no lee `formia/`; Formia no lee `lumia/`. Solo Strivo Intelligence puede cruzarlos (Fase 2).
 
 ---
 
-## 3. El modelo de identidad (§5.1.1)
+## 3. El modelo de identidad (§5.1.1 del blueprint v4.1)
 
-**Regla de oro:** todo registrado pertenece a un **área** y confirma la **identidad central**, nunca la contradice.
+**Regla de oro:** todo registrado pertenece a un **área** (o la central) y confirma la **identidad**, nunca la contradice.
 
 ```
-┌─ Identidad central (1)   ─────────────────────────┐
-│  "Alguien que crece"                              │
-│  · Amplia, estable, emocional                     │
-│  · No es una tarea ni un objetivo                 │
-│  · Se edita, con historial de versiones           │
-└─ Áreas (0..N) ──────────────────────────────────┘
-│  Salud · Trabajo · Relaciones · Finanzas · Espiritual · Personal · Creatividad
+┌─ Identidad central (1, siempre existe) ────────┐
+│  "Alguien que crece"                           │
+│  · Amplia, estable, emocional                  │
+│  · No es una tarea ni un objetivo              │
+│  · Se edita, con historial de versiones        │
+└─ Áreas (0..3 elegidas en P3B) ───────────────┘
+│  Salud · Trabajo · Relaciones · Espiritualidad
+│  Crecimiento Personal · Finanzas · Creatividad
 │  Cada área tiene:
 │  - Ícono + color propio (§6.3)
 │  - Identidad de área OPCIONAL ("En Salud, alguien que cuida su cuerpo")
 │  - Puede pausarse/reanudarse sin perder historial
-└─ Hábitos, Victorias, Logros ─────────────────────┘
-   Cada uno pertenece a exactamente 1 área
-   (o "General" si `areaId = null`)
+└─ Hábitos (RN-FO-H3) ─────────────────────────┘
+   Cada hábito SIEMPRE tiene `identityRef` (obligatorio, nunca null)
+   - "central" (identidad central)
+   - areaId (una de las 3 áreas elegidas)
 ```
 
 **Implicación arquitectónica:** ningún insight, reporte o feedback puede presentar "bajo registro en Salud" como fracaso (RN-ID-05).
@@ -81,7 +96,7 @@ El Diario **NO es una pestaña**; se accede desde Hoy en su momento.
 
 **Ejemplos que SÍ:**
 - "Pausado. Aquí estará cuando lo quieras de vuelta."
-- "Tu ritual de la mañana está libre. ¿Quieres añadir algo?"
+- "Tu ritual de reflexión está libre. ¿Quieres escribir algo?"
 - "Eres alguien que crece. En Salud lo demostraste 11 de los últimos 14 días."
 
 **Ejemplos que NO:**
@@ -97,9 +112,17 @@ El Diario **NO es una pestaña**; se accede desde Hoy en su momento.
 
 **Tipografía:**
 - Display: `Fraunces` (variable, soft, cálida) — títulos grandes.
-- Interfaz: `Satoshi` (Satoshi Regular / Medium) — cuerpo, botones, labels.
+- Interfaz: `Inter` (Regular / Medium / Semibold) — cuerpo, botones, labels.
 
-**Colores (de `design-tokens.json`):**
+**Colores de marca Lumia (mañana/noche):**
+- Lumia Mañana: paleta clara, degradado amanecer dorado → naranja
+- Lumia Noche: azul oscuro, punto de convergencia cromática con Formia
+
+**Colores de marca Formia:**
+- Formia Mañana: paleta clara y directa
+- Formia Noche: púrpura/índigo
+
+**Paleta compartida (ver §6 del BRAND_MANUAL):**
 - Ink (texto principal): `#241E33`
 - Paper (fondo claro): `#FBF8F4`
 - Night (fondo oscuro): `#191428` (índigo violáceo, NO puro negro)
@@ -107,7 +130,7 @@ El Diario **NO es una pestaña**; se accede desde Hoy en su momento.
 
 **Espaciado:** base 4px. Escala 1,25× (4, 5, 6, 8, 10, 12, 16, 20, 24, 32, 40, 48, 56, 64, 80, 100).
 
-**Motion:** duraciones **más lentas que lo normal**. Min 120ms, máx 900ms para cierre nocturno. Preferir easing smooth (ease-in-out).
+**Motion:** duraciones **más lentas que lo normal**. Min 120ms, máx 900ms para cierre nocturno. Preferir easing smooth (ease-in-out). Respiración diaria: 5-5-3 ×3 ciclos (~39s), completamente saltable.
 
 **Componentes:** radios 10–32px (ver tokens). Sin sombras de drop; usar elevación (2–8 dp). Haptics livianas, sin vibración en errores.
 
@@ -126,7 +149,9 @@ El Diario **NO es una pestaña**; se accede desde Hoy en su momento.
 | **RN-07** | Suscripción: paywall máx. 2×/semana. Lo escrito siempre exportable. Nada se bloquea al cancelar. |
 | **RN-08** | IA: ≤ 3 MXN por usuario premium/mes. Sin retención de datos, sin entrenar modelos con el contenido. |
 | **RN-09** | Privacidad: ningún dato identificable de usuario en analítica. Protocolo de contenido sensible (§5.3.16). |
-| **RN-10** | Acceso: 3 pestañas máximo en nav principal. Profundidad máxima 3 toques desde Hoy. |
+| **RN-10** | Acceso: 2 pestañas máximo en nav principal. Profundidad máxima 3 toques desde cualquier punto. |
+| **RN-DB4-01** | Separación Lumia/Formia: Lumia no lee `formia/`; Formia no lee `lumia/`. |
+| **RN-DB4-05** | Regla de datos: `identityRef` NUNCA es null en hábitos nuevos. Solo permitido en heredados de Fase 0. |
 
 **Verifica estas antes de cada feature:** si viola una regla, no entra al MVP.
 
@@ -142,86 +167,70 @@ Toda pantalla debe cumplir:
 4. ✅ Estado vacío muestra invitación suave, no acusación (e.g. "Tu ritual está libre" no "Sin hábitos").
 5. ✅ Error muestra copy amable + botón reintento, nunca código de error.
 6. ✅ Offline: se guarda localmente, funciona sin red.
-7. ✅ QA emocional (Anexo A): 15 checks específicos según el módulo.
+7. ✅ QA emocional (Anexo A del blueprint): 15 checks específicos según el módulo.
 
 ---
 
-## 8. Estructura de datos (§7.2)
+## 8. Estructura de datos (§C5 del blueprint v4.1)
 
-**Entidades principales:**
+**Árbol canónico `users/{uid}/`:**
 
 ```javascript
-// UserProfile (1 por usuario)
-{
-  identidadCentral: "alguien que crece",
-  identidadCentralHistorial: [{texto, desde, hasta}],
-  horaDespertar, horaDormir, diaTerminaA: time
+shared/ {
+  profile: { name, gender, diaTerminaA, wakeTime, sleepTime, createdAt },
+  auth: { uid, email, phone },
+  onboarding: { completedSteps, currentStep }
 }
 
-// Area (0..N por usuario)
-{
-  id, tipo: enum(...), nombre, color, icono,
-  identidadArea?: "alguien que cuida su cuerpo",
-  estado: enum(activa, pausada, archivada)
+lumia/ {
+  journal/{entryId}: { date, text, emotions[], otherText, createdAt, updatedAt },
+  dailyIntention/{date}: { intentionText },  // ex-R5
+  nightRitual/{date}: { inheritedWins, newWins, gratitude, learning, sleepState },
+  pinConfig: { salt, hash, iterations, algorithm, enabled }
 }
 
-// Habit
-{
-  nombre, areaId, momento: enum(mañana, noche, dia),
-  diasSemana: [0-6], estado: enum(activo, pausado, archivado),
-  totalCompletados: int  // desnormalizado, solo crece
-}
-
-// HabitLog (un registro = hábito marcado en una fecha)
-{
-  habitId, fecha, hora
-  // NO existe fila "falló" — la ausencia es ausencia
-}
-
-// Victory (logro del día, luego heredado a la noche)
-{
-  texto, areaId?, estado: enum(pendiente, lograda, no_se_dio, soltada),
-  origenId?: uuid  // si viene de otro día
-}
-
-// DailyEntry (central: guarda todo el día)
-{
-  fecha, userId,
-  // contiene referencias a sus Victories, Habits del día, ánimo, etc.
-}
-
-// Insight
-{
-  tipo: enum(...), areaId?, texto, evidencia: [{refId, fecha}],
-  generadoPor: enum(reglas, ia)
+formia/ {
+  identity/central: string,
+  identity/areas: { [areaId]: { selected, identityText, color, icon, order, state } },
+  habits/{habitId}: { name, identityRef, context, emoji, createdAt },
+  habitLogs/{logId}: { habitId, date, completedAt }
 }
 ```
 
-**Regla:** `areaId = null` significa "General" (hereda identidad central).
+**Regla clave:** `habits.identityRef` es OBLIGATORIO: "central" | areaId. Nunca null (RN-DB4-05).
 
 ---
 
-## 9. Fases del desarrollo (§8.12 en detalle)
+## 9. Fases del desarrollo
 
-| Fase | Duración | Salida | Criterio para avanzar |
+| Fase | Duración | Salida | Estado |
 |---|---|---|---|
-| **Fase 0** | 4 sem (24 jul – 21 ago) | Sistema de diseño + prototipo navegable de 3 flujos clave | 5 personas describen el prototipo con palabras del campo "calma / cuidado" |
-| **MVP** | 7 sem (22 ago – 9 oct) | Diario + Rituales + Hábitos + Journal, sin IA ni suscripción | 40 % con 4+ días en semana 2 |
-| **Beta** | 9 sem (10 oct – 11 dic) | Insights (reglas) + Suscripción + Recordatorios inteligentes | D30 ≥ 25 %, conversión a prueba ≥ 8 % |
-| **V1** | 18 sem (ene – abr 2027) | IA + Contenido + Nativo | 5k usuarios, D90 ≥ 15 % |
-
-**MVP es lo que entra a la calle primero. Contiene SOLO lo que demuestra el valor central (cerrar el día con evidencia + hábitos que fluyen a rituales). Nada más.**
+| **Fase 0** | 4 sem | Sistema de diseño + prototipo (8 bloques implementados) | ✅ Completada (5 testers validados) |
+| **Fase 1** | 4–5 sem | División Lumia/Formia limpia, código nuevo, 12 specs | 🔄 EN CURSO (specs en generación) |
+| **Fase 2** | 8 sem | Strivo Intelligence, Insights cruzados, Suscripción | Planificada |
 
 ---
 
-## 10. Cómo navegar los archivos de blueprint
+## 10. Fase 1 — Especificaciones de implementación
 
-- **§5.1.1 — El modelo de identidad:** léelo antes de tocar onboarding, hábitos o insights.
-- **§5.3, §5.5, §5.6 — Vista de Mañana/Noche + Rituales:** todos los bloques, criterios, examples.
-- **§5.7 — Hábitos:** ciclo de vida completo, diagrama de proyección ritual, 7 reglas RN-HR-*.
-- **§5.9 — Insights:** tipos, reglas de generación, coste de IA.
-- **§6.3–6.9 — Sistema de diseño:** tokens de color, tipografía, motion, radios, contraste.
-- **Anexo A — QA emocional:** 15 checks por pantalla; corres antes de considerar "terminada".
+**Estrategia:** Borrón y cuenta nueva (limpio, no incremental). Se descarta el código de Fase 0; se reutiliza stack, estructura, skills, CLAUDE.md.
+
+**12 specs documentadas en `/docs/specs/`:**
+
+1. **SPEC_00** — Guía de lectura (meta-spec)
+2. **SPEC_02** — Capa de datos: `shared/lumia/formia` + RN-DB4
+3. **SPEC_03** — Formia: espacio de identidad
+4. **SPEC_04** — Formia: H1/H2/H3 + sugerencia por texto
+5. **SPEC_05** — Formia: progreso y constancia
+6. **SPEC_06** — Lumia: eliminar bloques Diario
+7. **SPEC_07** — Lumia: disolver Ritual de Mañana
+8. **SPEC_08** — Lumia: respiración diaria (5-5-3 ×3)
+9. **SPEC_09** — Lumia: intención en Hoy → Mañana
+10. **SPEC_10** — Lumia: entrada a Mañana (transición)
+11. **SPEC_11** — Navegación: "Lumia · Reflexión" / "Formia · Acción"
+12. **SPEC_12** — Aplicación de marca por producto
+
+**Tiempo estimado:** 18 horas de código limpio, ~4 semanas a 10 h/semana.
 
 ---
 
@@ -229,21 +238,23 @@ Toda pantalla debe cumplir:
 
 1. **Identidad nunca se contradice:** un logro de trabajo confirma "alguien que crece", no lo viola.
 2. **Marcar es un toque:** no puede ser un modal con preguntas. Una casilla, más nada.
-3. **Cerrar el día es una ceremonia:** la secuencia de cierre (§3.3) nunca falla, ni siquiera si hay error.
+3. **Cerrar el día es una ceremonia:** la secuencia de cierre (Ritual de Noche, N1–N6) nunca falla, ni siquiera si hay error.
 4. **Local-first siempre:** la app funciona completamente sin red. Sync es async.
 5. **Sin rachas, sin castigo:** Constancia solo sube. La no realización no genera notificación, alerta ni registro.
+6. **Separación Lumia/Formia:** Los dos espacios viven en la misma app. No hay puente directo entre ellos (solo la barra). RN-DB4-01 se respeta siempre.
 
 **Si una feature los violaría, no entra.**
 
 ---
 
-## 12. Stack recomendado (a confirmar contigo)
+## 12. Stack (sin cambios respecto a Fase 0)
 
-- **Frontend:** React o React Native (el blueprint es agnóstico, pero ambos son buenos para PWA+nativo).
-- **Almacén local:** IndexedDB (web) o SQLite (nativo).
-- **Backend:** API serverless (Vercel Functions, Firebase, etc.) para onboarding, suscripción, sync.
-- **Design tokens:** consumir desde `design-tokens.json` (copiar a src/tokens/ del proyecto).
-- **Copy:** importar desde `copy-library.md` (o JSON si prefieres).
+- **Frontend:** React + Vite (PWA como prioridad).
+- **Almacén local:** IndexedDB + Firebase Firestore para sync.
+- **Auth:** Firebase Authentication.
+- **Hospedaje:** Netlify + CI/CD automático desde GitHub.
+- **Design tokens:** `/src/design-tokens.json` (consumir desde ahí, nunca hardcodear).
+- **Copy:** `/src/copy/index.js` (biblioteca centralizada, no hardcodear).
 
 ---
 
@@ -253,24 +264,27 @@ Antes de hacer commit:
 
 ```bash
 # Verifica que no haya léxico prohibido en strings
-grep -r "Fallaste\|Racha\|debería" src/ || echo "✅ Léxico limpio"
+npm run lint:copy
 
-# Verifica que todo Hábito tenga areaId
+# Verifica que todo Hábito tenga identityRef
 # (depende de tu schema, pero la idea es que nada quede huérfano)
 
-# Corre QA emocional para la pantalla modificada
-# (manual por ahora; en Fase 1 lo automati zamos)
+# Corre pruebas locales
+npm run dev
+
+# Verifica que no haya conflictos de merge
+git status
 ```
 
 ---
 
 ## 14. Próximos pasos después de este archivo
 
-1. **Paso 1:** Extrae los capítulos 5, 6, 7 del blueprint a `/docs/blueprint/` como .md citables.
-2. **Paso 2:** Crea `design-tokens.json` desde §6.3–6.9.
-3. **Paso 3:** Crea `copy-library.md` desde §3.7–3.11 + Anexo B.
-4. **Paso 4:** Crea `.claude/skills/strivo-*.md` con las 4 skills.
-5. **Paso 5:** Confirm a tu stack (React? React Native? qué host?) y empezamos Paso 1 del desarrollo.
+1. **Ahora:** Ejecutar PASO 2 del checklist (ya estás aquí).
+2. **PASO 3:** Copiar documentos v4.1 a `/docs/blueprint/`.
+3. **PASO 4:** Commit de preparación.
+4. **PASO 5:** Yo genero las 12 specs, tú las bajas y subes al repo.
+5. **Semana 1:** Claude Code ejecuta SPEC_02 (capa de datos).
 
 Este archivo es **vivo**. Cada decisión nueva se añade aquí, no en otro lado. Así Claude siempre encuentra la fuente única de verdad.
 
