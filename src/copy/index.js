@@ -236,6 +236,80 @@ export const copy = {
     },
   },
 
+  // ─── Formia ───────────────────────────────────────────────────────────────
+  // Vocabulario de Formia: construcción, dirección, hacia delante.
+  // Nunca el de Lumia (ritual, reflexión, calma, cierre) — §C3.0, principio 1.
+  formia: {
+    identidad: {
+      title: 'Quién estás construyendo',
+      lead: 'Esto es lo que te propusiste ser. Cámbialo cuando cambies tú.',
+
+      central: {
+        label: 'Tu identidad',
+        lead: 'Te estás convirtiendo en',
+        edit: 'Cambiar esto',
+        editorTitle: 'Quién quieres ser',
+        prefix: 'Alguien que',
+        placeholder: 'crece cada día',
+        hint: 'Amplia y estable. No es algo que se termine.',
+        restored: 'Esta parte siempre está contigo. Dejamos la que tenías.',
+        history: 'Ver cómo ha cambiado',
+        historyHide: 'Cerrar el historial',
+        historyTitle: 'Quién has sido',
+        historyCurrent: 'Ahora',
+        historyUntilTemplate: 'Hasta el {hasta}',
+        historyEmpty: 'Cuando cambies esto, lo anterior se queda aquí.',
+      },
+
+      areas: {
+        title: 'Dónde lo estás construyendo',
+        lead: 'Hasta tres áreas a la vez. Las que importan ahora.',
+        empty: 'Todavía no has elegido áreas. Tu identidad se sostiene igual.',
+        open: 'Elegir áreas',
+        close: 'Listo',
+        pickerTitle: 'Elige hasta tres',
+        pickerLead: 'Podrás cambiarlas cuando quieras.',
+        max: 'Tres a la vez es el tope, para que quepan de verdad. Quita una y hay sitio para otra.',
+        identityPrefixTemplate: 'En {area} soy alguien que',
+        identityTemplate: 'En {area}, alguien que {identidad}.',
+        identityPlaceholder: 'cuida su cuerpo',
+        identityEmpty: 'Si quieres, ponle palabras a esta área. Si no, así está bien.',
+        identityAdd: 'Ponerle palabras',
+        identityEdit: 'Cambiar esto',
+        pause: 'Pausar',
+        pausedTitle: 'En pausa',
+        pausedNote: 'Aquí está todo, tal como lo dejaste.',
+        resume: 'Reanudar',
+        remove: 'Quitar',
+        names: {
+          salud:          'Salud',
+          trabajo:        'Trabajo',
+          relaciones:     'Relaciones',
+          espiritualidad: 'Espiritualidad',
+          crecimiento:    'Crecimiento personal',
+          finanzas:       'Finanzas',
+          creatividad:    'Creatividad',
+        },
+      },
+
+      editor: {
+        save: 'Guardar',
+        cancel: 'Cancelar',
+      },
+
+      error: {
+        load: {
+          body: 'No pudimos abrir esto. Lo que escribiste sigue guardado.',
+          retry: 'Reintentar',
+        },
+        save: {
+          body: 'No pudimos guardar ese cambio. Lo tenemos aquí.',
+          retry: 'Reintentar',
+        },
+      },
+    },
+  },
+
   // ─── Estados vacíos ───────────────────────────────────────────────────────
   empty: {
     journal: 'Aquí vive tu escritura libre. Toca + para empezar.',

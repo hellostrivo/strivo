@@ -278,13 +278,29 @@ git status
 
 ---
 
-## 14. Próximos pasos después de este archivo
+## 14. Progreso de Fase 1
 
-1. **Ahora:** Ejecutar PASO 2 del checklist (ya estás aquí).
-2. **PASO 3:** Copiar documentos v4.1 a `/docs/blueprint/`.
-3. **PASO 4:** Commit de preparación.
-4. **PASO 5:** Yo genero las 12 specs, tú las bajas y subes al repo.
-5. **Semana 1:** Claude Code ejecuta SPEC_02 (capa de datos).
+| Spec | Estado | Fecha |
+|---|---|---|
+| **SPEC_02** | ✅ Completa y comiteada | 10 ago |
+| **SPEC_03** | ✅ Completa y comiteada | 10 ago |
+| SPEC_04 | → Siguiente | — |
+| SPEC_05–12 | Pendientes | — |
+
+**Notas:**
+- SPEC_02 pasó 7 criterios de aceptación
+- SPEC_03 pasó sus 7 criterios (5 con prueba automática, 2 verificados en navegador)
+- npm run lint, test y build verdes
+- npm run lint:copy tiene 7 avisos preexistentes (Fase 0), se resuelven en SPEC_06/SPEC_11
+
+**Deuda consciente de Fase 1 (se salda en su spec):**
+- `SesionProvisional.jsx` y la entrada por la pestaña "Tú" son andamios: los sustituyen el onboarding y SPEC_11.
+- `src/tokens/index.js` mapea las áreas con ids viejos (`espiritual`, `personal`) y con emoji. El catálogo bueno es `AREA_CATALOG` de SPEC_02; la limpieza es SPEC_12.
+- Los grises de texto van a `text-ink/80` como mínimo: por debajo no llegan a AAA sobre `paper`.
+
+---
+
+Este archivo es **vivo**. Cada spec que cierre actualiza la tabla. Así Claude siempre ve dónde estamos.
 
 Este archivo es **vivo**. Cada decisión nueva se añade aquí, no en otro lado. Así Claude siempre encuentra la fuente única de verdad.
 

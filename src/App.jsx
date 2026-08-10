@@ -9,7 +9,13 @@ import { clsx } from 'clsx'
 // En Fase 0 son stubs; se van completando en Fase 1
 import HoyPage     from '@/pages/HoyPage'
 import JournalPage from '@/pages/JournalPage'
-import TuPage      from '@/pages/TuPage'
+
+// ⚠ PROVISIONAL — SPEC_03 construye el espacio de identidad de Formia, pero la
+// barra de dos espacios ("Lumia · Reflexión" / "Formia · Acción") es SPEC_11 y
+// no se adelanta. Mientras tanto, la pestaña "Tú" del stub de Fase 0 sirve de
+// entrada para poder verificar la pantalla. SPEC_11 sustituye esto entero.
+import SesionProvisional from '@/components/SesionProvisional'
+import Identidad         from '@/pages/formia/Identidad'
 
 const TABS = [
   { id: 'hoy',     label: 'Hoy',     icon: SunMoonIcon },
@@ -27,7 +33,11 @@ export default function App() {
       <main className="flex-1 overflow-y-auto pb-20">
         {activeTab === 'hoy'     && <HoyPage     onHideNav={setHideNav} />}
         {activeTab === 'journal' && <JournalPage onHideNav={setHideNav} />}
-        {activeTab === 'tu'      && <TuPage />}
+        {activeTab === 'tu'      && (
+          <SesionProvisional>
+            {(uid) => <Identidad uid={uid} />}
+          </SesionProvisional>
+        )}
       </main>
 
       {/* Barra de navegación inferior (se oculta en rituales y escritura activa) */}
