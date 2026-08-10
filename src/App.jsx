@@ -4,7 +4,6 @@
 
 import { useState } from 'react'
 import { clsx } from 'clsx'
-import { copy } from '@copy'
 
 // Páginas (rutas)
 // En Fase 0 son stubs; se van completando en Fase 1

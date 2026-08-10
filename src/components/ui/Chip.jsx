@@ -25,8 +25,6 @@ export default function Chip({
     ? { backgroundColor: color + '22', borderColor: color, color }   // área con color propio
     : undefined
 
-  const defaultSelected = !color && selected
-
   return (
     <button
       type="button"

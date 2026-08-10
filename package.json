@@ -7,8 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint src --ext .js,.jsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint src --report-unused-disable-directives --max-warnings 0",
     "lint:copy": "node scripts/lint-copy.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "format": "prettier --write src/**/*.{js,jsx,css}"
   },
   "dependencies": {
@@ -30,6 +32,8 @@
     "eslint": "^9.9.0",
     "eslint-plugin-react": "^7.35.0",
     "eslint-plugin-react-hooks": "^5.1.0",
-    "prettier": "^3.3.3"
+    "fake-indexeddb": "^6.0.0",
+    "prettier": "^3.3.3",
+    "vitest": "^2.0.5"
   }
 }

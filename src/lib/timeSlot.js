@@ -33,7 +33,10 @@ export function getTimeSlot(horaDespertar = '07:00', horaDormir = '23:00', diaTe
 
   const despertar  = timeToMinutes(horaDespertar)
   const dormir     = timeToMinutes(horaDormir)
-  const termina    = timeToMinutes(diaTerminaA)
+  // `diaTerminaA` cierra la franja de noche, pero la rama de noche es la
+  // devolución por defecto y todavía no lo consulta. Se conserva en la firma
+  // porque quien llama ya lo pasa; resolverlo es trabajo de SPEC_10.
+  const _termina   = timeToMinutes(diaTerminaA)
 
   // Amanecer: [max(04:00, despertar - 60) .. min(11:30, despertar + 300)]
   const amanecerStart = Math.max(4 * 60, despertar - 60)
