@@ -577,7 +577,11 @@ git status
 - **La reautenticación real no se puede ejercitar** hasta que exista el onboarding con sesión de
   Firebase. Lo que sí está probado es que reestablecer el PIN no toca ni una entrada.
 - `SesionProvisional.jsx` y la entrada por la pestaña "Tú" (con su conmutador Identidad/Hábitos) son andamios: los sustituyen el onboarding y SPEC_11.
-- `src/tokens/index.js` mapea las áreas con ids viejos (`espiritual`, `personal`) y con emoji. El catálogo bueno es `AREA_CATALOG` de SPEC_02; la limpieza es SPEC_12.
+- ~~`src/tokens/index.js` mapea las áreas con ids viejos.~~ **Resuelto al cerrar SPEC_12: se borró.**
+  No lo importaba nadie, así que la limpieza correcta no era corregirle los ids sino retirarlo. Con él
+  se fueron `src/pages/TuPage.jsx` y `src/components/ui/Chip.jsx`, los otros dos restos de Fase 0 sin
+  un solo importador. El catálogo bueno de áreas sigue siendo `AREA_CATALOG` de SPEC_02, que es el que
+  usa todo el código.
 - Los grises de texto van a `text-ink/80` como mínimo: por debajo no llegan a AAA sobre `paper`.
 - El contorno de los días sin marca en la cuadrícula de constancia se mantiene tenue (~2.4:1) por decisión de §5.7. Lo que informa son los días llenos (5.4:1) y el resumen en texto que los acompaña.
 - ~~**No correr `npm run format`.**~~ **Resuelto en SPEC_12:** ya hay `.prettierrc` con el estilo del repo (sin punto y coma, comillas simples, ancho 100) y `format:check` está en verde. El CSS y `design-tokens.json` quedan fuera a propósito; el motivo está en `.prettierignore`.
