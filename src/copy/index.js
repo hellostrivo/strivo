@@ -4,9 +4,15 @@
 //
 // REGLAS:
 // ✅ Tuteo, cálido, breve
-// ❌ Sin "Fallaste", "Racha", "Debería", exclamaciones innecesarias
-// ❌ Sin emojis del sistema (solo los 24 de la tabla de emociones)
+// ❌ Sin léxico de castigo, sin vocabulario de rendimiento, sin lenguaje
+//    prescriptivo y sin exclamaciones innecesarias (§3.6.2, §3.6.3)
+// ❌ Sin emojis en la voz de la app. Los chips de emoción son vocabulario de
+//    quien escribe, no voz del producto (§3.6.2, punto 5 · §5.8.1)
 // Cambios de copy → editar AQUÍ, no en los componentes.
+//
+// Las cadenas con marca de género van en formato `{ m, f, n }` y se resuelven
+// al pintar con `resolveGender` de `src/copy/gender.js` (§3.6.5). Ningún
+// componente lee `.m` ni `.f` (RN-GEN-01).
 
 export const copy = {
 
@@ -68,139 +74,268 @@ export const copy = {
     },
   },
 
-  // ─── Saludos dinámicos (por franja horaria) ──────────────────────────────
-  greetings: {
-    amanecer:  '¿Cómo quieres sentirte hoy?',
-    dia:       'Tu día está en curso.',
-    atardecer: 'Se va el día. Aún hay tiempo.',
-    noche:     'Buenas noches. Cerremos el día.',
-    madrugada: 'Aún de pie. Aquí está tu espacio.',
-    // Con nombre: "Buenos días, {nombre}. ¿Cómo quieres sentirte hoy?"
-    withName: {
-      amanecer:  'Buenos días, {nombre}. ¿Cómo quieres sentirte hoy?',
-      noche:     'Buenas noches, {nombre}. Cerremos el día.',
-    },
-  },
+  // ─── Lumia ────────────────────────────────────────────────────────────────
+  // Vocabulario de Lumia: hacia dentro, reflexión, calma, cierre. Nunca el de
+  // Formia (construcción, identidad, hábitos) — §C2.0.
+  //
+  // Aquí no hay una sola palabra de hábitos: ni "hábito", ni "constancia", ni
+  // "progreso", ni "ritual" referido a un checklist (§C2.6, criterio 3). La
+  // palabra "ritual" solo aparece para el Ritual de Noche, que es de Lumia.
+  lumia: {
+    hoy: {
+      // §5.3, Bloque 1 — saludo por hora local, con el nombre si lo hay.
+      saludo: {
+        manana: 'Buenos días',
+        tarde: 'Buenas tardes',
+        noche: 'Buenas noches',
+        conNombreTemplate: '{saludo}, {nombre}',
+      },
 
-  // ─── Rituales ─────────────────────────────────────────────────────────────
-  ritualManana: {
-    r1: { prompt: 'Respira conmigo', duration: '6 segundos' },
-    r2: {
-      normal: 'Te espera tu día',
-      difficultDay: 'Ayer fue difícil. Hoy es nuevo.',
-    },
-    r3: {
-      template: 'Te estás convirtiendo en alguien que {identidad}.',
-      areaLabel: 'Hoy toca sobre todo:',
-      commitmentLabel: 'Y estás cultivando:',
-      commitmentDays: '(día {n} de {total})',
-      editLink: 'Cambiar esto',
-    },
-    r4: {
-      progressTemplate: '{hecho} de {total}',
-      complete: 'Ritual completo. Buen comienzo.',
-      empty: 'Tu ritual de la mañana está libre. ¿Quieres añadir algo?',
-    },
-    r5: {
-      question: '¿Cómo quieres vivir hoy?',
-      placeholder: 'Una intención para el día',
-    },
-    cta: 'Comenzar mi día',
-    ctaExpress: 'Hoy voy con prisa',
-  },
+      // §5.2.1 — el conmutador es el único origen del tema de la pantalla.
+      momento: {
+        label: 'Sección del día',
+        manana: 'Mañana',
+        noche: 'Noche',
+      },
 
-  ritualNoche: {
-    n1: { prompt: 'Respira conmigo', duration: '6 segundos' },
-    n6: {
-      question: '¿Cómo te vas a dormir?',
-      states: ['Tranquilo', 'Pensativo', 'Cansado', 'Inquieto', 'Otro'],
-    },
-    closing: {
-      summaryTemplate: 'Hoy agradeciste {n} cosas. Lograste {m}.',
-      peace: 'En paz con tu día.',
-      goodnight: 'Buenas noches.',
-      nothingWritten: 'Hoy solo viniste. También cuenta.',
-    },
-  },
+      // §5.2, "Comportamiento". La tarjeta de acción no nombra ningún ritual
+      // de mañana: ese envoltorio ya no existe (§C0.5, §C7.7.3).
+      tarjeta: {
+        manana: {
+          titulo: 'Empieza tu día',
+          duracion: 'Dos minutos',
+          accion: 'Abrir',
+        },
+        noche: {
+          titulo: 'Cerrar tu día',
+          duracion: 'Tres minutos',
+          accion: 'Abrir',
+        },
+      },
 
-  // ─── Vistas de Diario ────────────────────────────────────────────────────
-  diarioManana: {
-    gratitude: {
-      label: '¿Qué agradeces?',
-      suggestions: ['Tu familia', 'Tu cuerpo', 'Este momento', 'El silencio', 'Lo que tienes'],
-      suggestionsDelay: 6000, // ms
-    },
-    emotions: {
-      label: '¿Cómo quieres sentirte hoy?',
-      max: 3,
-      complementary: '¿Qué necesitas para lograrlo?',
-    },
-    bigDay: {
-      label: '¿Cómo imaginas tu mejor día hoy?',
-      placeholder: 'Descríbelo como quieras…',
-    },
-    victories: {
-      label: 'Tres cosas que, si pasan hoy, el día valió la pena.',
-      placeholder: 'Una victoria que quiero lograr hoy…',
-    },
-  },
+      // RN-HOY-03 — Lo hecho se dice con lenguaje, nunca con un tic verde.
+      hecho: {
+        manana: 'Ya definiste tu día. Míralo cuando quieras.',
+        noche: 'Tu día está cerrado. Descansa.',
+        accion: 'Ver',
+      },
 
-  diarioNoche: {
-    victories: {
-      label: '¿Qué lograste de esto?',
-      achieved: 'Lo lograste',
-      notAchieved: 'No se dio',
-      passToTomorrow: 'Pasarla a mañana',
-      letItGo: 'Dejarla ir',
+      frase: { label: 'Frase de hoy' },
     },
-    unplanned: {
-      label: '¿Algo más?',
-      placeholder: 'Un logro que no habías planeado…',
-    },
-    learning: {
-      label: '¿Qué fue lo menos difícil de hoy?',
-      altLabel: '¿Qué intentarías diferente mañana?',
-      placeholder: 'Con curiosidad, no con juicio…',
-    },
-  },
 
-  // ─── Hábitos ─────────────────────────────────────────────────────────────
-  habits: {
-    create: {
-      label: '¿Cuál es tu nuevo hábito?',
-      placeholder: 'Beber agua, leer, estirar…',
-      moments: ['Mañana', 'Noche', 'A lo largo del día'],
-    },
-    detail: {
-      identityTemplate: 'En {área} eres alguien que {identidad}.',
-      totalTemplate: 'Lo has hecho {n} veces',
-      last30Template: '{n} de los últimos 30 días',
-    },
-    pause: {
-      confirm: 'Pausado. Aquí estará cuando lo quieras de vuelta.',
-      resume: 'Reanudar',
-    },
-    empty: 'Tu ritual está vacío por ahora. Un solo hábito es un buen comienzo.',
-    progress: {
-      complete: 'Ritual completo.',
-      template: '{hecho} de {total}',
-    },
-    // Sugerencias por área
-    suggestions: {
-      salud:       ['Beber agua', 'Estirar', 'Caminar 10 min', 'Dormir a tiempo', 'Respirar'],
-      trabajo:     ['Revisar prioridades', 'Escribir una idea', 'Pausar 5 min', 'Revisar feedback'],
-      relaciones:  ['Mensajear a alguien', 'Llamada sin agenda', 'Escuchar de verdad'],
-      finanzas:    ['Revisar gastos', 'Ahorrar algo', 'Aprender una cosa'],
-      espiritual:  ['Meditar', 'Agradecer en voz alta', 'Tiempo en silencio'],
-      personal:    ['Leer 10 páginas', 'Escribir', 'Aprender algo nuevo'],
-      creatividad: ['Dibujar', 'Tocar', 'Crear algo pequeño'],
-    },
-  },
+    diario: {
+      volver: 'Volver',
+      // §5.3, "Estado offline" — solo si hay algo pendiente de subir.
+      pendiente: 'Se guardará en la nube más tarde',
 
-  // ─── Constancia ──────────────────────────────────────────────────────────
-  constancia: {
-    template: '{n} días contigo',
-    // NUNCA: "días seguidos"
+      error: {
+        load: {
+          body: 'No pudimos abrir tu día. Lo que escribiste sigue guardado.',
+          retry: 'Reintentar',
+        },
+        save: {
+          body: 'No pudimos guardar eso. Tu texto sigue aquí.',
+          retry: 'Reintentar',
+        },
+      },
+
+      // Filas dinámicas de agradecimientos, logros y victorias (§5.3, Bloque 2).
+      filas: {
+        anadir: 'Añadir otra',
+        quitar: 'Quitar',
+        // Solo se pregunta si hay texto de sobra que perder (§5.3, B2).
+        quitarConfirmar: '¿Quitar esto?',
+        // El tope no reprende: celebra en voz baja y deja de crecer.
+        tope: 'Diez cosas. Nada mal.',
+      },
+
+      manana: {
+        titulo: 'Tu mañana',
+        volver: 'Volver a Hoy',
+
+        gratitud: {
+          titulo: '¿Qué agradezco esta mañana?',
+          // Estado vacío del primer día: tres ayudas distintas, una por fila.
+          ayudas: ['algo pequeño', 'alguien', 'algo que ya tienes'],
+          placeholder: 'algo más',
+          sugerencias: {
+            titulo: '¿Te ayudo con una idea?',
+            // RN dura de §5.3: tocar una idea NUNCA rellena el campo. Abre una
+            // pregunta detonante; escribir sigue siendo cosa de la persona.
+            descartar: 'Ahora no',
+            opciones: [
+              { id: 'familia', label: 'tu familia', pregunta: '¿Quién de tu familia te hizo bien esta semana?' },
+              { id: 'cuerpo', label: 'tu cuerpo', pregunta: '¿Qué te permite hacer tu cuerpo esta mañana?' },
+              { id: 'momento', label: 'este momento', pregunta: '¿Qué tiene de bueno este momento?' },
+              { id: 'silencio', label: 'el silencio', pregunta: '¿Dónde encuentras silencio en tu día?' },
+              { id: 'tienes', label: 'lo que tienes', pregunta: '¿Qué tienes hoy que hace un año esperabas?' },
+            ],
+          },
+        },
+
+        emociones: {
+          titulo: '¿Cómo me quiero sentir hoy?',
+          lead: 'Elige las emociones que quieres cultivar',
+          // Al intentar la cuarta se suelta la más antigua. No es un error y no
+          // se dice como tal (§5.3, Bloque 3).
+          max: 'Tres es un buen número.',
+          // Las 15 emociones de la mañana: todas positivas, en futuro, en orden
+          // fijo. Se persiste el `id`, nunca la etiqueta (RN-GEN-04).
+          //
+          // "Conectado con Dios" se conserva por su relevancia cultural (§5.3).
+          // El ajuste que lo cambia por "Conectado conmigo" es §5.12, fuera de
+          // esta spec: aquí está siempre presente.
+          catalogo: [
+            { id: 'agradecido',     emoji: '🙏', label: { m: 'Agradecido',        f: 'Agradecida',        n: 'Con gratitud' } },
+            { id: 'en_paz',         emoji: '🕊️', label: { m: 'En paz',            f: 'En paz',            n: 'En paz' } },
+            { id: 'enfocado',       emoji: '🎯', label: { m: 'Enfocado',          f: 'Enfocada',          n: 'Con foco' } },
+            { id: 'orgulloso',      emoji: '✨', label: { m: 'Orgulloso de mí',   f: 'Orgullosa de mí',   n: 'Con orgullo' } },
+            { id: 'pleno',          emoji: '🌕', label: { m: 'Pleno',             f: 'Plena',             n: 'En plenitud' } },
+            { id: 'inspirado',      emoji: '💡', label: { m: 'Inspirado',         f: 'Inspirada',         n: 'Con inspiración' } },
+            { id: 'feliz',          emoji: '😊', label: { m: 'Feliz',             f: 'Feliz',             n: 'Feliz' } },
+            { id: 'conectado_dios', emoji: '🕯️', label: { m: 'Conectado con Dios', f: 'Conectada con Dios', n: 'En conexión con Dios' } },
+            { id: 'amado',          emoji: '💛', label: { m: 'Amado',             f: 'Amada',             n: 'Con amor' } },
+            { id: 'seguro',         emoji: '🛡️', label: { m: 'Seguro',            f: 'Segura',            n: 'Con seguridad' } },
+            { id: 'valiente',       emoji: '🦁', label: { m: 'Valiente',          f: 'Valiente',          n: 'Valiente' } },
+            { id: 'creativo',       emoji: '🎨', label: { m: 'Creativo',          f: 'Creativa',          n: 'Con creatividad' } },
+            { id: 'paciente',       emoji: '🌱', label: { m: 'Paciente',          f: 'Paciente',          n: 'Paciente' } },
+            { id: 'generoso',       emoji: '🤲', label: { m: 'Generoso',          f: 'Generosa',          n: 'Con generosidad' } },
+            { id: 'prospero',       emoji: '🌾', label: { m: 'Próspero',          f: 'Próspera',          n: 'Con prosperidad' } },
+          ],
+        },
+
+        granVision: {
+          titulo: '¿Qué haría que hoy sea un gran día?',
+          placeholder: 'Imagina tu día ideal',
+          // Aparece tras 8 s sin escribir (§5.3, Bloque 4).
+          sugerencia: '¿Cómo te gustaría sentirte a las diez de la noche?',
+        },
+
+        victorias: {
+          titulo: 'Tres victorias que quisiera conseguir hoy',
+          ayuda: 'Tres cosas que, si pasan hoy, el día valió la pena.',
+          placeholder: 'Algo que quieres que pase hoy',
+        },
+
+        // §C2.4 — "Comenzar mi día" sobrevive como cierre de esta vista, no
+        // como final de una secuencia. Sin nada escrito, es solo una salida.
+        cta: 'Comenzar mi día',
+        ctaVacio: 'Salir',
+      },
+
+      noche: {
+        titulo: 'Tu noche',
+        volver: 'Volver a Hoy',
+        // §5.4, Bloque 1 — frase de apertura con el día de la semana.
+        aperturaTemplate: 'Vamos a cerrar el {dia}.',
+
+        victorias: {
+          titulo: 'Mis logros de hoy',
+          // Sin victorias por la mañana, el bloque cambia de pregunta. Nunca se
+          // muestra un vacío que recuerde una omisión (§5.4, Bloque 2).
+          tituloVacio: '¿Qué lograste hoy?',
+          placeholder: 'Algo que sí pasó hoy',
+          lograda: 'Lo lograste',
+          marcar: 'Marcar como lograda',
+          noSeDio: 'No se dio hoy',
+          pasar: 'Pasarla a mañana',
+          soltar: 'Dejarla ir',
+          soltada: 'Soltar también es avanzar.',
+          pasada: 'Mañana estará esperándote.',
+          deAyer: 'Viene de ayer',
+        },
+
+        logros: {
+          titulo: '¿Qué más logré hoy que no había planeado?',
+          placeholder: 'Algo que no estaba en el plan',
+          sugerencia: '¿Ayudaste a alguien? ¿Resolviste algo pequeño? ¿Te sostuviste en un momento difícil?',
+        },
+
+        gratitud: {
+          titulo: '¿Qué agradezco de este día?',
+          placeholder: 'algo de hoy',
+          // §5.4, Bloque 4 — lo de la mañana se muestra plegado y no se vuelve
+          // a pedir.
+          mananaTemplate: 'Esta mañana agradeciste: {textos}',
+          ver: 'Ver',
+          ocultar: 'Cerrar',
+          sugerencias: {
+            titulo: '¿Te ayudo con una idea?',
+            descartar: 'Ahora no',
+            opciones: [
+              { id: 'alguien', label: 'alguien de hoy', pregunta: '¿Quién te hizo el día más fácil?' },
+              { id: 'inesperado', label: 'algo que no esperabas', pregunta: '¿Qué te sorprendió hoy?' },
+              { id: 'cuerpo', label: 'tu cuerpo', pregunta: '¿Qué te sostuvo hoy sin que lo pidieras?' },
+              { id: 'pequeno', label: 'algo pequeño', pregunta: '¿Qué momento de hoy duró poco y valió la pena?' },
+              { id: 'tuyo', label: 'algo tuyo', pregunta: '¿Qué hiciste hoy que agradeces haber hecho?' },
+            ],
+          },
+        },
+
+        aprendizaje: {
+          tituloTemplate: 'Reflexiones del {fecha}',
+          pregunta: '¿Qué aprendí hoy de mí, de los demás o de la vida?',
+          placeholder: 'Lo que se te ocurra',
+          otraPregunta: 'Otra pregunta',
+          // §5.4, Bloque 6 — banco de preguntas, distinto cada día.
+          preguntas: [
+            '¿Qué momento de hoy te gustaría recordar dentro de un año?',
+            '¿Qué te sorprendió?',
+            '¿Qué necesitaste hoy y no pediste?',
+            '¿Dónde te reconociste?',
+            '¿A quién le debes un gracias?',
+          ],
+          // Contraste amable con la gran visión de la mañana. Nunca se pregunta
+          // si se cumplió (§5.3, Bloque 4).
+          granVisionTitulo: 'Esta mañana escribiste esto',
+          granVisionPregunta: '¿Cómo se parece a lo que pasó?',
+        },
+
+        // §5.4.1 — Bloque 7 rediseñado. El subtítulo es la única defensa de la
+        // pantalla contra la sensación de examen: no se acorta ni se reescribe.
+        sueno: {
+          titulo: '¿Cómo te vas a dormir?',
+          lead: 'Elige una o dos. No hay una forma correcta de cerrar el día',
+          guardadoTemplate: 'Te fuiste a dormir: {estados}',
+          separador: ' · ',
+          otro: {
+            label: 'Una palabra',
+            placeholder: 'Como quieras decirlo',
+          },
+          opciones: [
+            { id: 'en_paz',     label: { m: 'En paz',     f: 'En paz',     n: 'En paz' } },
+            { id: 'agradecido', label: { m: 'Agradecido', f: 'Agradecida', n: 'Con gratitud' } },
+            { id: 'orgulloso',  label: { m: 'Orgulloso',  f: 'Orgullosa',  n: 'Con orgullo' } },
+            { id: 'tranquilo',  label: { m: 'Tranquilo',  f: 'Tranquila',  n: 'En calma' } },
+            { id: 'contento',   label: { m: 'Contento',   f: 'Contenta',   n: 'Con alegría' } },
+            { id: 'pensativo',  label: { m: 'Pensativo',  f: 'Pensativa',  n: 'Pensando' } },
+            { id: 'cansado',    label: { m: 'Cansado',    f: 'Cansada',    n: 'Con cansancio' } },
+            { id: 'inquieto',   label: { m: 'Inquieto',   f: 'Inquieta',   n: 'Con inquietud' } },
+            { id: 'otro',       label: { m: 'Algo más',   f: 'Algo más',   n: 'Algo más' } },
+          ],
+        },
+
+        // §5.4, "Secuencia de cierre" + §3.3 (etapa 4).
+        cierre: {
+          cta: 'Cerrar mi día',
+          unLogro: 'un logro',
+          logrosTemplate: '{n} logros',
+          unaGracia: 'una cosa',
+          graciasTemplate: '{m} cosas',
+          ambosTemplate: 'Hoy reconociste {logros} y agradeciste {gracias}.',
+          soloGraciasTemplate: 'Hoy encontraste {gracias} que agradecer.',
+          soloLogrosTemplate: 'Hoy reconociste {logros} que lograste.',
+          // Uno de los mensajes más importantes del producto (§5.4).
+          nada: 'Hoy solo viniste. También cuenta.',
+          // Frase de cierre del día normal, y la del día que pesó.
+          paz: 'En paz con tu día.',
+          despedida: 'Buenas noches.',
+          // RN-VN-04 — Con un estado pesado no hay celebración de ningún tipo.
+          compasivo: 'Hoy pesó. Cerrarlo ya es bastante.',
+          reabrir: 'Puedes volver y cambiar lo que quieras.',
+        },
+      },
+    },
   },
 
   // ─── Insights ─────────────────────────────────────────────────────────────

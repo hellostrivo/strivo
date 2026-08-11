@@ -163,10 +163,19 @@ function victorySpec(uid, victoryId) {
   }
 }
 
-export async function createVictory(uid, victory) {
+/**
+ * @param {string} uid
+ * @param {object} victory
+ * @param {string} [victoryId] - Id propuesto por quien llama. Existe porque las
+ *   victorias son la única colección que se presenta **en el orden en que se
+ *   escribió** (§5.4, criterio 1) y no tiene campo de orden ni marca de tiempo
+ *   en el modelo canónico. `src/lumia/victorias.js` compone ids ordenables por
+ *   fecha y posición; quien no lo necesite recibe un id aleatorio como siempre.
+ */
+export async function createVictory(uid, victory, victoryId = newId()) {
   assertUid(uid)
+  assertId(victoryId, 'victoryId')
   validateVictory(victory)
-  const victoryId = newId()
   await writePath({ ...victorySpec(uid, victoryId), data: victory })
   return { id: victoryId, ...victory }
 }
@@ -194,6 +203,17 @@ export async function listVictoriesByDate(uid, date) {
   assertUid(uid)
   assertDateKey(date)
   return readCollectionByDate(uid, COLLECTIONS.victories, date)
+}
+
+/**
+ * Borra una victoria. Es para deshacer lo que nunca llegó a ser una victoria
+ * —una fila que se escribió y se vació— y no para renunciar a una: eso es
+ * "dejarla ir", que la archiva con estado `soltada` y conserva su historia.
+ */
+export async function deleteVictory(uid, victoryId) {
+  assertUid(uid)
+  assertId(victoryId, 'victoryId')
+  await deletePath({ uid, path: paths.lumiaItem(uid, 'victories', victoryId) })
 }
 
 // ─── dayState ─────────────────────────────────────────────────────────────────

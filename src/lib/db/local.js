@@ -164,10 +164,35 @@ export async function writePath({ uid, path, collection, id = null, data, sync =
  * Aplica cambios sobre lo que ya hay en una ruta y lo guarda.
  * `merge` es superficial y solo escribe las claves recibidas: no reconstruye
  * el registro ni inventa las que falten.
+ *
+ * **Leer y escribir ocurren dentro de la misma transacción**, y no es un
+ * detalle de eficiencia. Una pantalla escribe varios campos del mismo día a la
+ * vez —marcar una emoción mientras el autoguardado de un texto va en camino— y
+ * con dos transacciones separadas la segunda parte de una copia vieja y borra
+ * lo que acababa de guardar la primera. IndexedDB serializa las transacciones
+ * de escritura sobre el mismo almacén, así que dentro de una sola nunca se
+ * pierde una actualización.
  */
 export async function mergePath({ uid, path, collection, id = null, patch, sync = true }) {
-  const current = (await readPath(path)) ?? {}
-  return writePath({ uid, path, collection, id, data: { ...current, ...patch }, sync })
+  assertUid(uid)
+  const db = await getLocalDB()
+  const tx = db.transaction(STORE_RECORDS, 'readwrite')
+  const store = tx.objectStore(STORE_RECORDS)
+
+  const row = await store.get(path)
+  const data = { ...(row?.data ?? {}), ...patch }
+  await store.put({
+    path,
+    uid,
+    collection,
+    id,
+    data,
+    updatedAt: new Date().toISOString(),
+  })
+  await tx.done
+
+  if (sync) await enqueue({ uid, path, op: 'put', data })
+  return data
 }
 
 /** Borra una ruta en local y encola el borrado. */

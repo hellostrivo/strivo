@@ -286,16 +286,20 @@ git status
 | **SPEC_03** | ✅ Completa y comiteada | 10 ago |
 | **SPEC_04** | ✅ Completa y comiteada | 10 ago |
 | **SPEC_05** | ✅ Completa y comiteada | 10 ago |
-| SPEC_06 | → Siguiente | — |
-| SPEC_07–12 | Pendientes | — |
+| **SPEC_06** | ✅ Completa | 10 ago |
+| SPEC_07 | → Siguiente | — |
+| SPEC_08–12 | Pendientes | — |
 
 **Notas:**
 - SPEC_02 pasó 7 criterios de aceptación
 - SPEC_03 pasó sus 7 criterios (5 con prueba automática, 2 verificados en navegador)
 - SPEC_04 pasó sus 10 criterios (9 con prueba automática, el de "marcar es un toque" verificado en navegador)
 - SPEC_05 pasó sus 7 criterios, todos con prueba automática
-- npm run lint, test y build verdes · 116 pruebas
-- npm run lint:copy tiene 7 avisos preexistentes (Fase 0), se resuelven en SPEC_06/SPEC_11
+- SPEC_06 pasó sus 10 criterios: 7 con prueba automática y 3 verificados en navegador
+  (tema por botón con las dos secciones a cualquier hora, contraste del tema Noche,
+  y los 5 s de las sugerencias de gratitud)
+- npm run lint, test y build verdes · 208 pruebas
+- npm run lint:copy limpio: los 7 avisos de Fase 0 desaparecieron con SPEC_06
 
 **Decisiones tomadas al implementar (no estaban escritas en ningún sitio):**
 - **H1 agrupa por identidad** (SPEC_04 §4) y el momento del día sobrevive como etiqueta de fila y barra de progreso. §C3.5 hablaba de cabeceras por momento en H1; se leyó como lo heredado, no como lo vigente.
@@ -308,12 +312,29 @@ git status
 - **Umbral del insight de evidencia:** `MINIMO_DIAS_CON_EVIDENCIA = 10` (de §5.9, criterio 1) sobre `DIAS_VENTANA_EVIDENCIA = 28` (del ejemplo de §C4.3). Por debajo no se muestra nada — ni una versión reducida, ni cuánto falta.
 - **Las páginas de Formia usan `<div>`, no `<main>`:** el `<main>` lo pone el contenedor de la app. Dos anidados son HTML inválido y rompen el punto de referencia del lector de pantalla.
 
+**Decisiones de SPEC_06 (Lumia: Hoy y Diario), 10 ago:**
+- **Emociones de la mañana: 15 chips tipo píldora con emoji** (SPEC_06 §4.2). §5.3, §5.3.2 y §5.8.1 describen 16 tarjetas con ícono propio y "nunca emojis", y §5.8.1 dice expresamente que las ilustraciones "siguen siendo obligatorias en el Diario". Se decidió a favor de SPEC_06 con ese dato encima de la mesa. **Consecuencia para SPEC_07:** la mañana y el Journal comparten representación, así que el párrafo de §5.8.1 y la fila "Representación" de §5.3.2 quedan derogados. El catálogo baja a 15 retirando **"Abundante"**, el más cercano a "Próspero".
+- **Sugerencias de gratitud a los 5 s**, no a los 6 de §5.3 (SPEC_06, criterio 7). Se descartan por sesión: dos descartes y no vuelven. Guardarlo por día necesitaría un campo que el modelo canónico no tiene.
+- **Dos campos del blueprint no se construyen** porque no existen en el modelo canónico y SPEC_06 tampoco los nombra: la "acción pequeña" tras elegir emoción (§5.3, B3) y "¿Qué podría intentar diferente mañana?" (§5.4, B5). Si se recuperan en Fase 2, hay que ampliar `FIELDS` de SPEC_02 primero.
+- **`nightRitual.inheritedWins` no se escribe.** Las victorias ya son registros con su propio estado; copiar aquí sus ids daría dos respuestas a la misma pregunta. El campo sigue en el modelo, sin uso.
+- **`dayState.mood` tampoco se escribe.** `animoDerivado` es una vista de solo lectura (§5.4.1) y vive en `src/lumia/estadoSueno.js`. Lo consumirá el Historial de SPEC_07.
+- **El id de una victoria es `fecha-posición-azar`.** §5.4 (criterio 1) exige presentarlas en el orden en que se escribieron y el modelo no les da ni campo de orden ni marca de tiempo: ordenar por id lo resuelve sin inventar un campo, y el sufijo evita colisiones entre dispositivos sin red.
+- **El vínculo de una victoria con una identidad se deduce del texto y no se pinta.** §5.3 pedía un chip con las áreas de P3B, pero viven en `formia/` (RN-DB4-01). Se guarda para Strivo Intelligence (§C7.7.5) y en Lumia no se ve.
+- **`mergePath` es atómico desde SPEC_06.** Leía y escribía en transacciones distintas, así que dos escrituras del mismo día se pisaban: marcar una emoción borraba el agradecimiento que iba en camino. Ahora lee y escribe dentro de una transacción, y `useDiario` además encola las escrituras para que la pantalla refleje siempre la última.
+- **Tokens de superficie (§6.3.7):** las utilidades se llaman `text-on-surface`, `text-on-surface-soft` y `border-on-surface`. **No** `text-surface`: Tailwind ya genera esa clase desde el color `surface` y la que ganara dependía del orden del CSS, con texto casi blanco sobre fondo claro como premio. El token secundario sobre claro vale `#4F4A5A` y no el `#5B5470` de §6.3.7, que sobre `paper` se queda en 6,7:1 y no llega a AAA.
+- **`Button variant="surface"`** para las pantallas que cambian de tema: `primary` sobre el fondo nocturno es tinta sobre tinta y `secondary` es un rectángulo blanco a las once de la noche.
+- **60 frases del día**, con el mecanismo entero montado; se amplía en SPEC_12. RN-HOY-02 (365 sin repetir) se cumple hasta donde llega el repertorio, y `diasSinRepetir()` lo dice en voz alta.
+- **`lint-copy` ya no revisa `__tests__`:** una prueba que comprueba que el léxico prohibido no aparece tiene que poder nombrarlo.
+
 **Deuda consciente de Fase 1 (se salda en su spec):**
 - `SesionProvisional.jsx` y la entrada por la pestaña "Tú" (con su conmutador Identidad/Hábitos) son andamios: los sustituyen el onboarding y SPEC_11.
 - `src/tokens/index.js` mapea las áreas con ids viejos (`espiritual`, `personal`) y con emoji. El catálogo bueno es `AREA_CATALOG` de SPEC_02; la limpieza es SPEC_12.
 - Los grises de texto van a `text-ink/80` como mínimo: por debajo no llegan a AAA sobre `paper`.
 - El contorno de los días sin marca en la cuadrícula de constancia se mantiene tenue (~2.4:1) por decisión de §5.7. Lo que informa son los días llenos (5.4:1) y el resumen en texto que los acompaña.
 - **No correr `npm run format`:** prettier no tiene configuración y sus valores por defecto (punto y coma, comillas dobles) contradicen el estilo de todo el repo.
+- **De §5.3 y §5.4 quedan fuera, y no por olvido:** la ruta express "Hoy voy con prisa", el modo día difícil (§5.14.1, RN-VM-06), el selector de 24 emojis por fila de agradecimiento, guardar una frase manteniéndola pulsada, y la oferta de partir en algo más pequeño una victoria aplazada tres veces. Ninguno aparece en el alcance de SPEC_06.
+- **RN-VN-05 se cumple a medias:** reabrir y volver a cerrar el día no duplica ningún registro, pero la celebración sí se repite tras recargar. Saberlo exigiría un estado `cerrado` que §C5 no recoge; §4.8 lo describía en v3.1.
+- **La pestaña "Hoy" también entra por `SesionProvisional`.** Es el mismo andamio que ya usaba Formia y lo sustituyen el onboarding y SPEC_11.
 
 ---
 

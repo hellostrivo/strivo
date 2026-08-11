@@ -1,0 +1,154 @@
+// src/pages/lumia/Hoy.jsx
+// Pantalla raíz de Lumia (§5.2 + §5.2.1 + §5.2.3).
+//
+// Orienta en menos de dos segundos: qué momento es, qué hay, cómo estoy. Nunca
+// es un panel de control: no hay gráficas, ni contadores, ni insignias, ni una
+// segunda acción principal.
+//
+// **Sin enlace a Formia** (§C7.7.3). Los dos espacios se cruzan solo por la
+// barra de navegación, así que aquí no hay puente, ni etiqueta, ni vocabulario
+// de hábitos. Tampoco está el texto "Tu día está en curso…" de Fase 0.
+//
+// El tema lo elige el conmutador y solo el conmutador (RN-HOY-05). La hora del
+// sistema decide con cuál se abre la pantalla y nada más.
+
+import { useState } from 'react'
+import { clsx } from 'clsx'
+import DiarioManana from '@components/lumia/DiarioManana'
+import DiarioNoche from '@components/lumia/DiarioNoche'
+import FraseDelDia from '@components/lumia/FraseDelDia'
+import SelectorMomento from '@components/lumia/SelectorMomento'
+import Button from '@components/ui/Button'
+import { copy, interpolate } from '@copy'
+import { getTimeSlot } from '@lib/timeSlot'
+import { mananaEscrita, nocheEscrita } from '@/lumia/diario'
+import { fechaLarga, franjaDelSaludo } from '@/lumia/fechas'
+import { useDiario } from '@/lumia/useDiario'
+
+const textos = copy.lumia.hoy
+
+/** Con cuál se abre la pantalla (§5.2.1). A partir de ahí manda el conmutador. */
+function momentoInicial() {
+  const franja = getTimeSlot()
+  return franja === 'amanecer' || franja === 'dia' ? 'manana' : 'noche'
+}
+
+function Fondo({ momento }) {
+  return (
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0">
+      {['manana', 'noche'].map((id) => (
+        <div
+          key={id}
+          data-lumia={id}
+          className={clsx('absolute inset-0 bg-lumia transicion-fondo')}
+          style={{ opacity: momento === id ? 1 : 0 }}
+        />
+      ))}
+    </div>
+  )
+}
+
+export default function Hoy({ uid, onHideNav }) {
+  const { estado, carga, error, acciones, reintentar } = useDiario(uid)
+  const [momento, setMomento] = useState(momentoInicial)
+  const [vista, setVista] = useState('hoy')
+
+  const superficie = momento === 'manana' ? 'light' : 'dark'
+
+  const abrir = (siguiente) => {
+    setVista(siguiente)
+    onHideNav?.(true)
+  }
+
+  const cerrar = () => {
+    setVista('hoy')
+    onHideNav?.(false)
+  }
+
+  const marco = (contenido) => (
+    <div data-lumia={momento} className="relative min-h-screen bg-lumia-base transicion-tema">
+      <Fondo momento={momento} />
+      <div
+        data-surface={superficie}
+        data-lumia={momento}
+        className="relative transicion-tema text-on-surface"
+      >
+        {contenido}
+      </div>
+    </div>
+  )
+
+  if (carga === 'cargando') {
+    return marco(<div className="min-h-screen" aria-busy="true" />)
+  }
+
+  if (carga === 'error') {
+    return marco(
+      <div className="flex min-h-screen flex-col justify-center gap-4 px-5">
+        <p className="text-base text-on-surface">{copy.lumia.diario.error.load.body}</p>
+        <div>
+          <Button size="sm" variant="surface" onClick={reintentar}>
+            {copy.lumia.diario.error.load.retry}
+          </Button>
+        </div>
+      </div>,
+    )
+  }
+
+  if (vista === 'manana') {
+    return marco(<DiarioManana estado={estado} acciones={acciones} onSalir={cerrar} />)
+  }
+
+  if (vista === 'noche') {
+    return marco(<DiarioNoche estado={estado} acciones={acciones} onSalir={cerrar} />)
+  }
+
+  const hecho =
+    momento === 'manana'
+      ? mananaEscrita(estado.morning)
+      : nocheEscrita(estado.night, estado.victorias)
+  const tarjeta = textos.tarjeta[momento]
+  const saludo = copy.lumia.hoy.saludo[franjaDelSaludo()]
+
+  return marco(
+    <div className="flex min-h-screen flex-col gap-8 px-5 pb-24 pt-10">
+      <header className="flex flex-col gap-2">
+        <h1 className="font-display text-lg text-on-surface">
+          {estado.nombre
+            ? interpolate(textos.saludo.conNombreTemplate, { saludo, nombre: estado.nombre })
+            : saludo}
+        </h1>
+        <p className="text-sm text-on-surface-soft">{fechaLarga(estado.fecha)}</p>
+      </header>
+
+      <FraseDelDia frase={estado.frase} />
+
+      <SelectorMomento momento={momento} onCambiar={setMomento} />
+
+      {/* RN-HOY-07 — La tarjeta se distingue del fondo por luminancia, no solo
+          por el borde. Es la única acción principal de la pantalla. */}
+      <section className="flex flex-col gap-3 rounded-lg border border-on-surface bg-lumia-tarjeta p-5 shadow-elev-2 transicion-tema">
+        <div className="flex flex-col gap-1">
+          <h2 className="font-display text-md text-on-surface">{tarjeta.titulo}</h2>
+          <p className="text-sm text-on-surface-soft">
+            {hecho ? textos.hecho[momento] : tarjeta.duracion}
+          </p>
+        </div>
+        <div>
+          <Button size="sm" variant="surface" onClick={() => abrir(momento)}>
+            {hecho ? textos.hecho.accion : tarjeta.accion}
+          </Button>
+        </div>
+      </section>
+
+      {error && (
+        <p className="flex flex-wrap items-center gap-3 text-sm text-on-surface-soft" role="status">
+          {copy.lumia.diario.error.save.body}
+          <Button size="sm" variant="surface" onClick={error.reintentar}>
+            {copy.lumia.diario.error.save.retry}
+          </Button>
+        </p>
+      )}
+    </div>,
+  )
+}

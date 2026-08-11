@@ -31,6 +31,73 @@
   --sab: env(safe-area-inset-bottom, 0px);
 }
 
+/* ─── Tokens de contraste por superficie (§6.3.7) ────────────────────────────
+   Tokens de **rol**, no de color. El contenedor declara sobre qué está pintado
+   y los hijos heredan el color correcto sin saber en qué tema están. Es lo que
+   evita la clase de defecto del Bloque 03: texto oscuro sobre fondo nocturno.
+
+   RN-SURF-01 — Ningún componente fija un color de texto literal ni lee
+   --color-ink. Usa var(--color-text) y hereda.
+   RN-SURF-02 — Toda pantalla o sección con fondo propio declara data-surface.
+   RN-SURF-03 — Es independiente del modo claro/oscuro del sistema.
+
+   Desviación anotada: §6.3.7 fija #5B5470 para el texto secundario sobre
+   claro. Sobre `paper` se queda en 6,7:1 y Fase 1 pide AAA, así que aquí vale
+   #4F4A5A (8,1:1) — que es exactamente `ink` al 80 % sobre `paper`, la regla
+   que ya seguía el resto del repositorio.
+*/
+:root {
+  --color-text-on-light:       #241E33;
+  --color-text-on-light-soft:  #4F4A5A;
+  --color-text-on-light-faint: #8E88A0;
+  --color-text-on-dark:        #F2EEF7;
+  --color-text-on-dark-soft:   #B4ACC6;
+  --color-text-on-dark-faint:  #8F87A6;
+  --color-border-on-light:     rgba(36, 30, 51, .12);
+  --color-border-on-dark:      rgba(242, 238, 247, .16);
+
+  /* Cambio de tema de la pantalla Hoy (§5.2.1, token dur-theme). */
+  --dur-theme: 320ms;
+}
+
+[data-surface='light'] {
+  --color-text:       var(--color-text-on-light);
+  --color-text-soft:  var(--color-text-on-light-soft);
+  --color-text-faint: var(--color-text-on-light-faint);
+  --color-border:     var(--color-border-on-light);
+  --color-raised:     rgba(255, 255, 255, .72);
+}
+
+[data-surface='dark'] {
+  --color-text:       var(--color-text-on-dark);
+  --color-text-soft:  var(--color-text-on-dark-soft);
+  --color-text-faint: var(--color-text-on-dark-faint);
+  --color-border:     var(--color-border-on-dark);
+  --color-raised:     rgba(242, 238, 247, .12);
+}
+
+/* ─── Superficies de Lumia ───────────────────────────────────────────────────
+   Mañana: claridad suave. Noche: azul oscuro (§5.2.1, comportamiento vigente).
+   La tarjeta va en un tono distinto del fondo para que destaque por luminancia
+   y no solo por borde (RN-HOY-07).
+
+   Los degradados se definen aquí, en un solo sitio, porque SPEC_12 los
+   sustituye por los de la paleta de marca sin tocar ningún componente.
+*/
+[data-lumia='manana'] {
+  --lumia-base: #F6F2E9;
+  --lumia-fondo: linear-gradient(168deg, #F6F2E9 0%, #F6DDE8 62%, #DCCFF1 100%);
+  --lumia-tarjeta: rgba(255, 255, 255, .72);
+  --lumia-campo: rgba(255, 255, 255, .58);
+}
+
+[data-lumia='noche'] {
+  --lumia-base: #191428;
+  --lumia-fondo: linear-gradient(168deg, #191428 0%, #221B3A 58%, #2C2350 100%);
+  --lumia-tarjeta: rgba(242, 238, 247, .10);
+  --lumia-campo: rgba(242, 238, 247, .07);
+}
+
 /* ─── Base ───────────────────────────────────────────────────────────────────
    Reset mínimo que respeta las preferencias del sistema.
 */
@@ -66,6 +133,42 @@
 /* ─── Utilidades personalizadas ─────────────────────────────────────────────
 */
 @layer utilities {
+  /* Color heredado de la superficie (§6.3.7). Nunca un color literal. */
+  .text-on-surface       { color: var(--color-text); }
+  .text-on-surface-soft  { color: var(--color-text-soft); }
+  .text-on-surface-faint { color: var(--color-text-faint); }
+  .border-on-surface     { border-color: var(--color-border); }
+  /* Elemento elevado sobre la superficie: se distingue por luminancia, no solo
+     por el borde (RN-HOY-07). Sirve en los dos temas sin invertir nada. */
+  .bg-raised             { background-color: var(--color-raised); }
+
+  /* Fondo y tarjetas del momento activo de Lumia.
+     `bg-lumia-base` es el color plano del momento, debajo del degradado: si el
+     degradado se queda corto —rebote de scroll, captura larga, un contenedor
+     más alto que la ventana— lo que asoma es el tono del tema, no el papel de
+     la app. Sin él, un rebote en la noche enseña una franja crema. */
+  .bg-lumia-base    { background-color: var(--lumia-base); }
+  .bg-lumia         { background-image: var(--lumia-fondo); }
+  .bg-lumia-tarjeta { background-color: var(--lumia-tarjeta); }
+  .bg-lumia-campo   { background-color: var(--lumia-campo); }
+
+  /* Cross-fade de 320 ms al cambiar de momento (§5.2.1).
+     Con "reducir movimiento" el cambio es inmediato: lo resuelve la regla
+     global de prefers-reduced-motion de más arriba, que anula la transición.
+
+     Los degradados no interpolan, así que el fondo son dos capas superpuestas
+     que se cruzan por opacidad (.transicion-fondo). El color del texto sí
+     interpola y acompaña al cruce sin salto intermedio (.transicion-tema). */
+  .transicion-fondo {
+    transition: opacity var(--dur-theme) cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .transicion-tema {
+    transition: background-color var(--dur-theme) cubic-bezier(0.4, 0, 0.2, 1),
+                color var(--dur-theme) cubic-bezier(0.4, 0, 0.2, 1),
+                border-color var(--dur-theme) cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   /* Safe area para barra de navegación inferior */
   .pb-safe { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
   .pt-safe { padding-top: max(16px, env(safe-area-inset-top)); }

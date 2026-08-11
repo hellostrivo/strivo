@@ -6,9 +6,8 @@ import { useState } from 'react'
 import { clsx } from 'clsx'
 
 // Páginas (rutas)
-// En Fase 0 son stubs; se van completando en Fase 1
-import HoyPage     from '@/pages/HoyPage'
-import JournalPage from '@/pages/JournalPage'
+import Hoy         from '@/pages/lumia/Hoy'
+import JournalPage from '@/pages/JournalPage'  // stub de Fase 0, lo sustituye SPEC_07
 
 // ⚠ PROVISIONAL — SPEC_03 y SPEC_04 construyen los dos espacios de Formia
 // (Identidad y Hábitos), pero la barra de dos espacios ("Lumia · Reflexión" /
@@ -41,7 +40,11 @@ export default function App() {
     <div className="min-h-screen bg-paper text-ink font-sans flex flex-col">
       {/* Contenido principal */}
       <main className="flex-1 overflow-y-auto pb-20">
-        {activeTab === 'hoy'     && <HoyPage     onHideNav={setHideNav} />}
+        {activeTab === 'hoy'     && (
+          <SesionProvisional>
+            {(uid) => <Hoy uid={uid} onHideNav={setHideNav} />}
+          </SesionProvisional>
+        )}
         {activeTab === 'journal' && <JournalPage onHideNav={setHideNav} />}
         {activeTab === 'tu'      && (
           <SesionProvisional>

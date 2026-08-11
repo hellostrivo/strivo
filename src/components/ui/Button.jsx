@@ -42,6 +42,11 @@ export default function Button({
     secondary: 'bg-paper border border-border text-ink hover:bg-surface active:scale-[0.98]',
     ghost:     'bg-transparent text-ink hover:bg-surface active:scale-[0.98]',
     danger:    'bg-clay/10 text-clay border border-clay/30 hover:bg-clay/20 active:scale-[0.98]',
+    // Hereda el color de la superficie en la que está (§6.3.7). Es la variante
+    // de las pantallas que cambian de tema: un botón `primary` sobre el fondo
+    // nocturno es tinta sobre tinta, y uno `secondary` es un rectángulo blanco
+    // a las once de la noche.
+    surface:   'bg-raised border border-on-surface text-on-surface active:scale-[0.98]',
   }
 
   const sizes = {

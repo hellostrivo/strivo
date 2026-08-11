@@ -27,8 +27,11 @@ const FORBIDDEN = [
 // Extensiones a revisar (excluye assets, binarios, etc.)
 const EXTENSIONS = ['.js', '.jsx', '.ts', '.tsx', '.json', '.md']
 
-// Carpetas a excluir
-const EXCLUDE_DIRS = ['node_modules', 'dist', '.git', 'scripts']
+// Carpetas a excluir.
+// `__tests__` queda fuera desde SPEC_06: las pruebas que comprueban que el
+// léxico prohibido NO aparece tienen que poder nombrarlo. Lo que se revisa aquí
+// es el copy que alguien va a leer en pantalla.
+const EXCLUDE_DIRS = ['node_modules', 'dist', '.git', 'scripts', '__tests__']
 
 let issues = 0
 

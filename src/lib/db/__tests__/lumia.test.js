@@ -66,6 +66,24 @@ describe('registros por fecha', () => {
     expect(ritual.sleepState).toBe('tranquilo')
   })
 
+  // La Vista de Mañana escribe dos campos del mismo día casi a la vez: marcar
+  // una emoción se guarda al instante mientras el autoguardado de un texto va
+  // en camino. Cuando `mergePath` leía y escribía en transacciones distintas,
+  // la segunda partía de una copia vieja y borraba lo de la primera.
+  it('dos escrituras simultáneas del mismo día no se pisan', async () => {
+    await Promise.all([
+      lumia.saveMorningEntry(UID, DATE, { gratitude: ['El café'] }),
+      lumia.saveMorningEntry(UID, DATE, { emotions: ['en_paz'] }),
+      lumia.saveMorningEntry(UID, DATE, { granVision: 'Un día sin prisa.' }),
+    ])
+
+    expect(await lumia.getMorningEntry(UID, DATE)).toEqual({
+      gratitude: ['El café'],
+      emotions: ['en_paz'],
+      granVision: 'Un día sin prisa.',
+    })
+  })
+
   it('morningEntry solo admite los tres campos de SPEC_02 §5', async () => {
     await expect(
       lumia.saveMorningEntry(UID, DATE, { smallAction: 'x' }),
