@@ -12,15 +12,17 @@
 // El tema lo elige el conmutador y solo el conmutador (RN-HOY-05). La hora del
 // sistema decide con cuál se abre la pantalla y nada más.
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { clsx } from 'clsx'
 import DiarioManana from '@components/lumia/DiarioManana'
 import DiarioNoche from '@components/lumia/DiarioNoche'
 import RitualNoche from '@components/lumia/RitualNoche'
 import FraseDelDia from '@components/lumia/FraseDelDia'
 import SelectorMomento from '@components/lumia/SelectorMomento'
+import Respiracion from '@components/shared/Respiracion'
 import Button from '@components/ui/Button'
 import { copy, interpolate } from '@copy'
+import { shared } from '@/lib/db'
 import { getTimeSlot } from '@lib/timeSlot'
 import { mananaEscrita, nocheEscrita } from '@/lumia/diario'
 import { fechaLarga, franjaDelSaludo } from '@/lumia/fechas'
@@ -53,6 +55,23 @@ export default function Hoy({ uid, onHideNav }) {
   const { estado, carga, error, acciones, reintentar } = useDiario(uid)
   const [momento, setMomento] = useState(momentoInicial)
   const [vista, setVista] = useState('hoy')
+  // §6.12 — Silencio por defecto en toda la app. Si el perfil todavía no tiene
+  // preferencias, se arranca en silencio y no al revés.
+  const [sonido, setSonido] = useState(false)
+
+  useEffect(() => {
+    if (!uid) return
+    shared
+      .getPreferences(uid)
+      .then((preferencias) => setSonido(preferencias?.soundEnabled === true))
+      .catch(() => {})
+  }, [uid])
+
+  /** RN-AUD-03 — Silenciar una vez silencia para siempre, hasta que se cambie. */
+  const guardarSonido = (activado) => {
+    setSonido(activado)
+    shared.updatePreferences(uid, { soundEnabled: activado }).catch(() => {})
+  }
 
   const superficie = momento === 'manana' ? 'light' : 'dark'
 
@@ -108,6 +127,17 @@ export default function Hoy({ uid, onHideNav }) {
     return marco(<RitualNoche estado={estado} acciones={acciones} onSalir={cerrar} />)
   }
 
+  if (vista === 'respiracion') {
+    return marco(
+      <Respiracion
+        textos={copy.lumia.respiracion}
+        sonido={sonido}
+        onSonido={guardarSonido}
+        onSalir={cerrar}
+      />,
+    )
+  }
+
   const hecho =
     momento === 'manana'
       ? mananaEscrita(estado.morning)
@@ -145,14 +175,30 @@ export default function Hoy({ uid, onHideNav }) {
           </Button>
         </div>
 
-        {/* La entrada al modo guiado (§5.6). Va como enlace discreto y no como
-            segundo botón: la pantalla Hoy tiene **una** acción principal, y el
-            modo guiado y la vista libre escriben en el mismo sitio (D-4.5). */}
+        {/* Las dos entradas secundarias del momento activo. Van como enlaces
+            discretos y no como segundo botón: la pantalla Hoy tiene **una**
+            acción principal.
+
+            RN-LU-RESP-01 — La respiración se abre desde aquí y **solo** desde
+            aquí. Entrar en la sección Mañana no la dispara, y por eso los 39
+            segundos que dura son aceptables. */}
+        {momento === 'manana' && (
+          <button
+            type="button"
+            onClick={() => abrir('respiracion')}
+            className="self-start rounded-full px-3 py-2 min-h-touch-sm text-left text-sm text-on-surface-soft hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30"
+          >
+            {`${copy.lumia.respiracion.entrada.abrir} · ${copy.lumia.respiracion.entrada.ayuda}`}
+          </button>
+        )}
+
+        {/* El modo guiado de la noche (§5.6). Escribe en el mismo sitio que la
+            vista libre (D-4.5). */}
         {momento === 'noche' && (
           <button
             type="button"
             onClick={() => abrir('guiado')}
-            className="self-start rounded-full px-3 py-2 min-h-touch-sm text-sm text-on-surface-soft hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30"
+            className="self-start rounded-full px-3 py-2 min-h-touch-sm text-left text-sm text-on-surface-soft hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30"
           >
             {`${copy.lumia.ritualNoche.abrir} · ${copy.lumia.ritualNoche.abrirAyuda}`}
           </button>

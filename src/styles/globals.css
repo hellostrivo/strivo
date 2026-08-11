@@ -114,6 +114,19 @@
   --animo-en_paz:    #7E9E86;
 }
 
+/* ─── Acento de la respiración (§6.3.9) ──────────────────────────────────────
+   Naranja/dorado deliberadamente más saturado que `amber` (#E5A25C): tiene que
+   destacar sobre el degradado de amanecer, que ya es cálido. Usar el ámbar del
+   sistema fue justo el origen del defecto que corrige el Bloque 05 — el círculo
+   se pintaba del color del fondo y el ejercicio era invisible.
+
+   Uso exclusivo: este token no se usa en ningún otro componente.
+*/
+:root {
+  --color-breath:      #E8A54A;
+  --color-breath-halo: rgba(232, 165, 74, .35);
+}
+
 /* ─── Tarjetas de sección del Journal (§6.3.10) ──────────────────────────────
    El contraste cálido/frío es funcional, no decorativo: separa "lo que siento"
    de "lo que escribo" sin líneas ni títulos pesados. Las dos son superficies
@@ -215,6 +228,18 @@
     transition: background-color var(--dur-theme) cubic-bezier(0.4, 0, 0.2, 1),
                 color var(--dur-theme) cubic-bezier(0.4, 0, 0.2, 1),
                 border-color var(--dur-theme) cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Círculo del ejercicio de respiración (§6.3.9).
+
+     El halo crece y decrece con el círculo sin ser un elemento aparte: la
+     escala se aplica al elemento y la sombra escala con él. La escala la
+     escribe `Respiracion.jsx` fotograma a fotograma con el mismo reloj que
+     gobierna el tono, así que aquí no hay ni transición ni animación que
+     pudieran desfasarse con el audio. */
+  .circulo-respiracion {
+    background-color: var(--color-breath);
+    box-shadow: 0 0 40px 12px var(--color-breath-halo);
   }
 
   /* Círculo de descompresión de N1 (§5.6): seis segundos por ciclo.

@@ -337,6 +337,48 @@ export const copy = {
       },
     },
 
+    // ─── Respiración diaria (§C2.3) ─────────────────────────────────────────
+    // Ex-R1. Dejó de ser el primer paso de un ritual y es una experiencia
+    // propia de la sección Mañana.
+    //
+    // **RN-LU-RESP-01 se nota en el copy.** Los 39 segundos solo son aceptables
+    // porque nada de esto se abre solo ni retiene a nadie, y el texto lo dice
+    // sin que haya que descubrirlo: se anuncia lo que dura y se anuncia que se
+    // puede salir, antes de empezar.
+    //
+    // El copy de Fase 0 —"Antes de empezar, respira una vez"— quedó sin objeto
+    // (§C7.7.6): "antes de empezar" presuponía un ritual que venía después, y
+    // no viene nada después. Este lo sustituye. Invita, no vende: sin
+    // exclamaciones, sin lenguaje de meditación guiada y sin prometer que nadie
+    // se va a sentir mejor.
+    respiracion: {
+      entrada: {
+        abrir: 'Respirar un momento',
+        ayuda: 'Poco más de medio minuto',
+      },
+      titulo: 'Un momento para respirar',
+      lead: 'Tres ciclos. Puedes salir cuando quieras.',
+
+      empezar: 'Empezar',
+      pausar: 'Pausa',
+      seguir: 'Seguir',
+      // Saltar no tiene coste, no pide confirmación y no se registra.
+      saltar: 'Saltar',
+      salir: 'Salir',
+
+      sonido: {
+        activar: 'Activar el sonido',
+        silenciar: 'Silenciar',
+      },
+
+      // La única señal textual del ejercicio. Sin cuenta atrás y sin números.
+      fases: {
+        inhalar: 'Inhala',
+        exhalar: 'Exhala',
+        pausa: 'Descansa',
+      },
+    },
+
     // ─── Ritual de Noche (§5.6) ─────────────────────────────────────────────
     // Cinco pantallas: N1, N3, N4, N5, N6. **N2 no existe** y su número no se
     // reasigna (§C7.7.1). Aquí no hay una sola palabra de hábitos: el modo

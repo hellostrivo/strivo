@@ -21,6 +21,10 @@ const FORMIA_MODULES = [
   '**/formia/**',
 ]
 const LUMIA_MODULES = ['./lumia', './lumia.js', '**/lumia', '**/lumia.js', '**/lumia/**']
+
+const COMPARTIDO =
+  'Un componente de components/shared/ lo usan los dos espacios y el onboarding: ' +
+  'no puede depender de lumia/ ni de formia/. Lo que necesite, que llegue por props.'
 const DB_ENTRYPOINT = ['@/lib/db', '**/lib/db', '**/lib/db/index.js', './index.js', '../index.js']
 
 const LUMIA_FILES = [
@@ -59,6 +63,10 @@ const browserGlobals = {
   structuredClone: 'readonly',
   // La derivación del PIN codifica a bytes antes de pasar por PBKDF2 (§7.7.1).
   TextEncoder: 'readonly',
+  // El ejercicio de respiración: un solo reloj para el círculo y para el tono.
+  performance: 'readonly',
+  requestAnimationFrame: 'readonly',
+  cancelAnimationFrame: 'readonly',
 }
 
 export default [
@@ -114,6 +122,26 @@ export default [
           patterns: [
             { group: LUMIA_MODULES, message: RN_DB4_01 },
             { group: DB_ENTRYPOINT, importNames: ['lumia'], message: RN_DB4_01 },
+          ],
+        },
+      ],
+    },
+  },
+
+  // ─── Lo compartido no conoce ningún espacio ─────────────────────────────────
+  // `components/shared/` es lo que usan los dos productos y el onboarding a la
+  // vez. Un import a `lumia/` o a `formia/` desde aquí lo convertiría en un
+  // componente de ese espacio disfrazado de compartido, que es la forma en que
+  // se pierden los componentes únicos (RN-LU-RESP-02).
+  {
+    files: ['src/components/shared/**/*.{js,jsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            { group: [...LUMIA_MODULES, ...FORMIA_MODULES], message: COMPARTIDO },
+            { group: DB_ENTRYPOINT, importNames: ['lumia', 'formia'], message: COMPARTIDO },
           ],
         },
       ],

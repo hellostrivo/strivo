@@ -127,7 +127,12 @@ export async function initShared(uid, { profile, auth, preferences, onboarding }
     ...profile,
   })
   await saveAuthRecord(uid, { uid, email: null, phone: null, ...auth })
-  await savePreferences(uid, { soundEnabled: true, reducedMotion: false, ...preferences })
+  // §6.12 — Silencio por defecto: todos los sonidos llegan desactivados en la
+  // instalación. El escenario de uso nocturno con la pareja durmiendo al lado
+  // hace del sonido por defecto un riesgo de desinstalación inmediata. SPEC_02
+  // sembraba `true` aquí, que es justo lo contrario; lo corrige SPEC_08, que es
+  // la primera spec con sonido de verdad.
+  await savePreferences(uid, { soundEnabled: false, reducedMotion: false, ...preferences })
   await saveOnboarding(uid, { completedSteps: [], currentStep: null, ...onboarding })
   return SHARED_DOCS
 }

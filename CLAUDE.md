@@ -288,8 +288,9 @@ git status
 | **SPEC_05** | ✅ Completa y comiteada | 10 ago |
 | **SPEC_06** | ✅ Completa | 10 ago |
 | **SPEC_07** | ✅ Completa | 10 ago |
-| SPEC_08 | → Siguiente | — |
-| SPEC_09–12 | Pendientes | — |
+| **SPEC_08** | ✅ Completa | 11 ago |
+| SPEC_09 | → Siguiente | — |
+| SPEC_10–12 | Pendientes | — |
 
 **Notas:**
 - SPEC_02 pasó 7 criterios de aceptación
@@ -301,7 +302,10 @@ git status
   y los 5 s de las sugerencias de gratitud)
 - SPEC_07 pasó sus 10 criterios: 7 con prueba automática y 3 verificados en navegador
   (género femenino en N5, ritual de 5 pantallas sin escribir nada, y N6 cerrando con la red caída)
-- npm run lint, test y build verdes · 294 pruebas
+- SPEC_08 pasó 8 de sus 9 criterios: 5 con prueba automática y 3 verificados en navegador
+  (duración real de 39 s, círculo naranja sobre el amanecer, y ningún `AudioContext` vivo al salir).
+  El criterio 8 —P1 usa el mismo componente— no se puede ejercitar: no hay onboarding en Fase 1
+- npm run lint, test y build verdes · 340 pruebas
 - npm run lint:copy limpio: los 7 avisos de Fase 0 desaparecieron con SPEC_06
 - **Deuda consciente:**
 - RN-RN-01 (pop-up automático a las 19:00–23:59 + desactivación tras 3 rechazos) → FASE_2
@@ -373,7 +377,40 @@ git status
 - **El namespace `empty` de Fase 0 se retira.** Sus cuatro cadenas tenían dueño en otro sitio y
   ninguna se usaba ya.
 
+**Decisiones de SPEC_08 (respiración diaria), 11 ago:**
+- **El ritmo vive aparte del componente:** `src/lib/ritmoRespiracion.js`. SPEC_08 §6 solo nombra dos
+  archivos, pero el criterio 1 —un ciclo de 13 s exactos— se mide sin React y sin Web Audio. Mismo
+  patrón que `src/lib/constancia.js` en SPEC_05: la regla en un módulo puro y probable.
+- **`Respiracion.jsx` recibe el copy por props.** Vive en `components/shared/` porque lo usan Lumia y
+  P1 (RN-LU-RESP-02), y un componente compartido que alcanza un namespace de Lumia deja de serlo.
+  Hay una **regla de ESLint nueva** que impide a `components/shared/**` importar `lumia/` o `formia/`.
+- **La entrada está en Hoy, sección Mañana, como enlace discreto** bajo la acción principal, igual que
+  el modo guiado de la noche. Al acabar los tres ciclos se cierra sola: el "avance automático" de R1
+  sobrevive como **cierre** automático (§C2.3), porque ya no hay pantalla siguiente a la que ir.
+- **Hay un botón "Empezar" antes del ejercicio.** RN-AUD-01 exige crear el `AudioContext` dentro del
+  manejador del gesto; si arrancara al montarse, el gesto habría ocurrido en la pantalla anterior y
+  el navegador entregaría un contexto suspendido. De paso es el control iniciar/pausar de §5.1.2.
+- **`initShared` sembraba `soundEnabled: true` y contradecía §6.12.** "Silencio por defecto, todos los
+  sonidos desactivados en la instalación" y A-03 dicen lo contrario de lo que hacía SPEC_02. Corregido
+  a `false`. Es la primera spec con sonido de verdad, así que es la primera que lo nota.
+- **La preferencia se lee de `soundEnabled`, no de `sonidoRespiracion`.** RN-AUD-03 nombra ese segundo
+  campo, pero el modelo canónico solo tiene el primero y SPEC_08 §5 dice expresamente que se use.
+  Consecuencia: silenciar la respiración silencia toda la app, que es lo que §6.12 describe de todos
+  modos con su paleta de cuatro sonidos.
+- **Un solo reloj gobierna el círculo y el tono** (§6.12.1). La escala se escribe sobre el nodo del DOM
+  y no en el estado de React: sesenta renders por segundo para mover un círculo sería caro, y lo único
+  que cambia de verdad —nueve veces en 39 s— es la fase.
+- **Reducir movimiento cambia el cómo, nunca el cuánto.** Sin escala, opacidad fija por fase, y las
+  duraciones intactas: la duración no es una animación, es el ejercicio (§6.10.1). El ritmo no expone
+  ni un parámetro que permita acortarlo.
+- **§5.5.1 no se implementa.** Está derogada: defendía el 4-4 con el argumento de que R1 era el umbral
+  de un ritual, y ese ritual ya no existe.
+
 **Deuda consciente de Fase 1 (se salda en su spec):**
+- **El criterio 8 de SPEC_08 no se puede ejercitar todavía:** ninguna de las doce specs construye el
+  onboarding, así que P1 no existe. Lo que sí está garantizado es que el componente sirve a los dos
+  sitios —props de configuración, cero dependencias de espacio, tres ciclos por defecto y un lint que
+  lo impone—. Cuando exista P1, lo único que tiene que hacer es pasarle su propio copy.
 - **La ventana de activación del Ritual de Noche (RN-RN-01) y la extensión de madrugada** siguen sin
   construirse: hacen falta dos campos nuevos en `nightRitual`. Es el mismo hueco que deja RN-VN-05
   a medias desde SPEC_06.
