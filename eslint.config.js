@@ -57,6 +57,8 @@ const browserGlobals = {
   fetch: 'readonly',
   IDBKeyRange: 'readonly',
   structuredClone: 'readonly',
+  // La derivación del PIN codifica a bytes antes de pasar por PBKDF2 (§7.7.1).
+  TextEncoder: 'readonly',
 }
 
 export default [

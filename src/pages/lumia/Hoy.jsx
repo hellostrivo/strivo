@@ -16,6 +16,7 @@ import { useState } from 'react'
 import { clsx } from 'clsx'
 import DiarioManana from '@components/lumia/DiarioManana'
 import DiarioNoche from '@components/lumia/DiarioNoche'
+import RitualNoche from '@components/lumia/RitualNoche'
 import FraseDelDia from '@components/lumia/FraseDelDia'
 import SelectorMomento from '@components/lumia/SelectorMomento'
 import Button from '@components/ui/Button'
@@ -103,6 +104,10 @@ export default function Hoy({ uid, onHideNav }) {
     return marco(<DiarioNoche estado={estado} acciones={acciones} onSalir={cerrar} />)
   }
 
+  if (vista === 'guiado') {
+    return marco(<RitualNoche estado={estado} acciones={acciones} onSalir={cerrar} />)
+  }
+
   const hecho =
     momento === 'manana'
       ? mananaEscrita(estado.morning)
@@ -139,6 +144,19 @@ export default function Hoy({ uid, onHideNav }) {
             {hecho ? textos.hecho.accion : tarjeta.accion}
           </Button>
         </div>
+
+        {/* La entrada al modo guiado (§5.6). Va como enlace discreto y no como
+            segundo botón: la pantalla Hoy tiene **una** acción principal, y el
+            modo guiado y la vista libre escriben en el mismo sitio (D-4.5). */}
+        {momento === 'noche' && (
+          <button
+            type="button"
+            onClick={() => abrir('guiado')}
+            className="self-start rounded-full px-3 py-2 min-h-touch-sm text-sm text-on-surface-soft hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30"
+          >
+            {`${copy.lumia.ritualNoche.abrir} · ${copy.lumia.ritualNoche.abrirAyuda}`}
+          </button>
+        )}
       </section>
 
       {error && (

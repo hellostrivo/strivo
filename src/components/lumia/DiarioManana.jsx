@@ -30,6 +30,7 @@ import {
   filasIniciales,
   textosDe,
 } from '@/lumia/filas'
+import { CATALOGO, alternarEmocion } from '@/lumia/emociones'
 import { fechaLarga, franjaDelSaludo } from '@/lumia/fechas'
 
 const textos = copy.lumia.diario.manana
@@ -143,9 +144,13 @@ export default function DiarioManana({ estado, acciones, onSalir }) {
           <p className="text-sm text-on-surface-soft">{textos.emociones.lead}</p>
         </div>
         <ChipsEmociones
+          catalogo={CATALOGO}
+          alternar={alternarEmocion}
           seleccion={emociones}
           genero={estado.genero}
+          etiqueta={textos.emociones.titulo}
           aviso={aviso}
+          avisoTexto={textos.emociones.max}
           onCambiar={guardarEmociones}
           onDesplazada={() => setAviso(true)}
         />

@@ -73,8 +73,52 @@ describe('Lumia no sabe nada de hábitos (RN-DB4-01, §C2.6)', () => {
     CADENAS.forEach(([ruta, texto]) => expect(`${ruta}: ${texto}`).not.toMatch(prohibido))
   })
 
-  it('el copy de Lumia solo dice "ritual" del Ritual de Noche, que sí existe', () => {
-    CADENAS.forEach(([ruta, texto]) => expect(`${ruta}: ${texto}`).not.toMatch(/ritual/i))
+  it('ninguna cadena de Lumia le dice "ritual" a nadie', () => {
+    // El Ritual de Noche existe y su namespace se llama `ritualNoche`, pero eso
+    // es vocabulario interno: en pantalla el módulo se presenta por lo que hace
+    // —cerrar el día paso a paso— y no por cómo se llama en el blueprint. Por
+    // eso aquí se revisa el texto y no la ruta, que sí lleva el nombre. Se
+    // recogen las rutas infractoras en vez de concatenarlas al texto: lo que se
+    // comprueba es la cadena, y el fallo tiene que decir dónde está.
+    const infractoras = CADENAS.filter(([, texto]) => /ritual/i.test(texto)).map(([ruta]) => ruta)
+    expect(infractoras).toEqual([])
+  })
+})
+
+describe('las superficies de SPEC_07 (§C7.7.1, §C7.7.2)', () => {
+  const DE_SPEC_07 = [
+    'src/pages/lumia/Journal.jsx',
+    'src/pages/lumia/Historial.jsx',
+    'src/components/lumia/RitualNoche.jsx',
+    'src/components/lumia/BloqueoPin.jsx',
+    'src/components/lumia/CuentaParaPin.jsx',
+    'src/components/lumia/CalendarioAnimo.jsx',
+    'src/components/lumia/VistaDiaCompleto.jsx',
+    'src/lumia/journal.js',
+    'src/lumia/pin.js',
+    'src/lumia/historial.js',
+    'src/lumia/ritualNoche.js',
+  ]
+
+  it('existen todos los archivos que la spec nombra', () => {
+    DE_SPEC_07.forEach((ruta) => expect(ARCHIVOS).toContain(ruta))
+  })
+
+  it('ninguno importa formia (SPEC_07, criterio 2)', () => {
+    DE_SPEC_07.forEach((ruta) => {
+      const imports = codigoDe(ruta).match(/^\s*import[\s\S]*?from\s+'[^']+'/gm) ?? []
+      imports.forEach((linea) => expect(`${ruta}: ${linea}`).not.toMatch(/formia/i))
+    })
+  })
+
+  it('la vista de día completo no nombra hábitos (SPEC_07, criterio 3)', () => {
+    const vista = codigoDe('src/components/lumia/VistaDiaCompleto.jsx')
+    expect(vista).not.toMatch(/h[áa]bito|constancia|progreso/i)
+  })
+
+  it('las dos páginas nuevas declaran su superficie (RN-SURF-02)', () => {
+    expect(codigoDe('src/pages/lumia/Journal.jsx')).toMatch(/data-surface="light"/)
+    expect(codigoDe('src/pages/lumia/Historial.jsx')).toMatch(/data-surface="light"/)
   })
 })
 

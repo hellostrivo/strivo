@@ -336,6 +336,221 @@ export const copy = {
         },
       },
     },
+
+    // ─── Ritual de Noche (§5.6) ─────────────────────────────────────────────
+    // Cinco pantallas: N1, N3, N4, N5, N6. **N2 no existe** y su número no se
+    // reasigna (§C7.7.1). Aquí no hay una sola palabra de hábitos: el modo
+    // guiado escribe exactamente lo mismo que la vista libre, así que N3, N4 y
+    // N5 reutilizan el copy de `diario.noche` en vez de duplicarlo.
+    //
+    // Ninguna cadena de este namespace dice "ritual": el nombre del módulo es
+    // vocabulario interno, no algo que se le lea a nadie en pantalla.
+    ritualNoche: {
+      abrir: 'Cerrar mi día paso a paso',
+      abrirAyuda: 'Tres minutos, guiado',
+      salir: 'Salir',
+      seguir: 'Seguir',
+      atras: 'Atrás',
+      // Ninguna pantalla es obligatoria (RN-VN-01): saltar siempre está a mano.
+      saltar: 'Saltar esto',
+      pasoTemplate: 'Paso {n} de {total}',
+
+      n1: {
+        titulo: 'El día ya pasó.',
+        lead: 'Vamos a mirarlo con calma.',
+        respiracion: 'Respiración de entrada',
+      },
+
+      n5: {
+        // §5.6 — La profundidad extra es opt-in, nunca obligatoria.
+        mas: '¿Quieres escribir un poco más?',
+      },
+    },
+
+    // ─── Journal (§5.8, §5.8.1, §5.8.2) ─────────────────────────────────────
+    // El único espacio de la app donde el sistema es completamente mudo: no
+    // sugiere, no corrige y no comenta nada (RN-JR-03).
+    journal: {
+      title: 'Journal',
+      lead: 'Sin preguntas y sin estructura. Lo que quieras, cuando quieras.',
+      nueva: 'Escribir',
+      volver: 'Volver',
+      // §5.8, "Estados" — invitación suave, nunca la cuenta de lo que falta.
+      vacio: 'Aquí caben los pensamientos que no caben en otro lado. Empieza cuando quieras.',
+
+      buscar: {
+        label: 'Buscar en tu journal',
+        placeholder: 'Buscar',
+        limpiar: 'Limpiar',
+        sinResultados: 'Nada con esas palabras. Todo lo demás sigue aquí.',
+      },
+
+      grupos: {
+        hoy: 'Hoy',
+        semana: 'Esta semana',
+      },
+
+      // El modelo canónico no guarda título (§C5.2): una entrada se presenta
+      // por su hora y su primera línea, como en el wireframe de §5.8.
+      entrada: {
+        fechaHoraTemplate: '{fecha} · {hora}',
+        soloEmociones: 'Solo emociones, sin palabras.',
+      },
+
+      editor: {
+        volver: 'Volver',
+        // §5.8.1 — Dos tarjetas de sección, cálida y fría. Ninguna obligatoria.
+        emociones: {
+          titulo: '¿Cómo me siento?',
+          lead: 'Hasta tres. Las difíciles también cuentan.',
+          max: 'Tres es un buen número.',
+          otra: {
+            chip: 'Otra',
+            label: 'Una palabra',
+            placeholder: 'Como quieras decirlo',
+          },
+          // Las 15 del Journal (§5.8.1). Catálogo distinto del de la mañana:
+          // allí se elige qué cultivar, aquí se nombra lo que hay. Por eso
+          // aquí sí están Triste, Ansioso, Frustrado, Preocupado, Melancólico,
+          // Solo y Cansado, y no llevan ningún tratamiento de advertencia.
+          catalogo: [
+            { id: 'feliz',       emoji: '😊', label: { m: 'Feliz',       f: 'Feliz',       n: 'Feliz' } },
+            { id: 'agradecido',  emoji: '🙏', label: { m: 'Agradecido',  f: 'Agradecida',  n: 'Con gratitud' } },
+            { id: 'tranquilo',   emoji: '🌿', label: { m: 'Tranquilo',   f: 'Tranquila',   n: 'En calma' } },
+            { id: 'orgulloso',   emoji: '✨', label: { m: 'Orgulloso',   f: 'Orgullosa',   n: 'Con orgullo' } },
+            { id: 'esperanzado', emoji: '🌅', label: { m: 'Esperanzado', f: 'Esperanzada', n: 'Con esperanza' } },
+            { id: 'motivado',    emoji: '🔥', label: { m: 'Motivado',    f: 'Motivada',    n: 'Con motivación' } },
+            { id: 'aliviado',    emoji: '🌤️', label: { m: 'Aliviado',    f: 'Aliviada',    n: 'Con alivio' } },
+            { id: 'acompanado',  emoji: '🤝', label: { m: 'Acompañado',  f: 'Acompañada',  n: 'En compañía' } },
+            { id: 'cansado',     emoji: '😴', label: { m: 'Cansado',     f: 'Cansada',     n: 'Con cansancio' } },
+            { id: 'triste',      emoji: '💧', label: { m: 'Triste',      f: 'Triste',      n: 'Triste' } },
+            { id: 'ansioso',     emoji: '🌀', label: { m: 'Ansioso',     f: 'Ansiosa',     n: 'Con ansiedad' } },
+            { id: 'frustrado',   emoji: '😤', label: { m: 'Frustrado',   f: 'Frustrada',   n: 'Con frustración' } },
+            { id: 'preocupado',  emoji: '🌧️', label: { m: 'Preocupado',  f: 'Preocupada',  n: 'Con preocupación' } },
+            { id: 'melancolico', emoji: '🍂', label: { m: 'Melancólico', f: 'Melancólica', n: 'Con melancolía' } },
+            { id: 'solo',        emoji: '🌑', label: { m: 'Solo',        f: 'Sola',        n: 'En soledad' } },
+          ],
+        },
+        texto: {
+          titulo: 'Mi diario de hoy',
+          placeholder: 'Lo que sea',
+        },
+        borrar: 'Borrar esta entrada',
+        borrarConfirmar: '¿Borrarla del todo?',
+      },
+
+      // §5.8.2 y §7.7.1 — Bloqueo de acceso al módulo, **no** protección del
+      // contenido. El copy autorizado habla de "acceso en este dispositivo".
+      // Prohibido prometer inviolabilidad de ninguna forma: §7.8 compromete
+      // decir la verdad sobre lo que la app hace con lo que se escribe.
+      pin: {
+        title: 'Proteger mi journal',
+        lead: 'Pide un PIN para abrir tu journal en este dispositivo.',
+        // La honestidad de §7.7.1, dicha en voz alta y sin tecnicismos.
+        alcance: 'Es una puerta en esta pantalla. Lo que escribes se guarda igual que siempre.',
+        activar: 'Pedir un PIN',
+        desactivar: 'Dejar de pedirlo',
+        activo: 'Tu journal pide un PIN para abrirse.',
+        ajustes: 'Ajustes de acceso',
+        cerrar: 'Cerrar',
+
+        campo: {
+          label: 'PIN',
+          hint: 'De cuatro a seis dígitos.',
+        },
+        repetir: {
+          label: 'Escríbelo otra vez',
+          noCoincide: 'No coincidieron. Puedes volver a intentarlo.',
+        },
+        corto: 'Con cuatro dígitos basta.',
+        guardar: 'Guardar',
+        cancelar: 'Cancelar',
+        guardado: 'Listo. Tu journal pedirá este PIN.',
+        retirado: 'Retirado. Tu journal se abre en un toque.',
+
+        bloqueo: {
+          titulo: 'Tu journal te espera',
+          lead: 'Escribe tu PIN para abrirlo.',
+          abrir: 'Abrir',
+          incorrecto: 'Ese no era. Prueba otra vez.',
+          olvide: 'Olvidé mi PIN',
+        },
+
+        // §5.8.2 — Reautenticación contra la cuenta y PIN nuevo. Nada de lo
+        // escrito se toca: el PIN es una puerta, no una llave del contenido.
+        recuperar: {
+          titulo: 'Volvamos a reconocerte',
+          lead: 'Verificamos tu cuenta y eliges un PIN nuevo. Todo lo que escribiste se queda donde está.',
+          cta: 'Verificar mi cuenta',
+          volver: 'Volver al PIN',
+          sinSesion: 'Para verificarte hace falta entrar a tu cuenta. Todavía no hay sesión en este dispositivo.',
+          sinMetodo: 'Esta cuenta no tiene correo ni teléfono vinculados, así que no hay forma de verificarte.',
+          noVerificado: 'No pudimos verificarte esta vez. Tu journal sigue donde estaba.',
+          nuevo: 'Elige tu PIN nuevo',
+        },
+
+        // RN-JR-PIN-02 — Nunca un PIN activo sobre una cuenta sin salida.
+        cuenta: {
+          titulo: 'Antes, una forma de volver a entrar',
+          lead: 'Si algún día olvidas el PIN, necesitamos reconocerte por algún lado. Añade tu correo o tu teléfono.',
+          email: { label: 'Correo', placeholder: 'tu@correo.com' },
+          telefono: { label: 'Teléfono', placeholder: '+52 55 0000 0000' },
+          guardar: 'Guardar',
+          listo: 'Listo. Ya puedes pedir un PIN.',
+          aviso: 'Tu journal pide un PIN y esta cuenta se quedó sin forma de recuperarlo. Añade un correo o retira el PIN.',
+        },
+      },
+    },
+
+    // ─── Historial (§5.10) ──────────────────────────────────────────────────
+    // Solo contenido de Lumia: mañana, noche y journal (§C7.7.2). Sin hábitos,
+    // sin cifras acumuladas y sin ninguna vista que cruce los dos espacios.
+    historial: {
+      title: 'Historial',
+      lead: 'Vuelve a cualquier día. Todo sigue aquí.',
+      vacio: 'Tu historial crecerá con cada día que registres.',
+      // Se dice siempre igual, haya o no haya entradas ese mes: si apareciera
+      // solo cuando las hay, la propia frase estaría contando lo que el PIN
+      // tapa (RN-JR-PIN-01).
+      journalConPin: 'Con tu PIN puesto, lo que escribes se lee desde el journal.',
+
+      calendario: {
+        anterior: 'Mes anterior',
+        siguiente: 'Mes siguiente',
+        // Un día sin registro no se marca de ningún modo: no hay huecos, no hay
+        // grises y no hay días perdidos (§5.10).
+        diaConAnimoTemplate: '{fecha} · {animo}',
+        leyenda: 'Cómo te fuiste a dormir',
+      },
+
+      // Los cinco tonos de §6.3.5, para el lector de pantalla y la leyenda.
+      //
+      // `normal` no dice "sin registrar": es el ánimo de un día que existió sin
+      // estado de sueño declarado —o con "Pensativa", que §5.4.1 deriva aquí—, y
+      // llamarlo "sin registrar" sería contarle a alguien que ese día no contó.
+      animo: {
+        agotado:   'Con cansancio',
+        inquieto:  'Con inquietud',
+        normal:    'Estuviste',
+        tranquilo: 'En calma',
+        en_paz:    'En paz',
+      },
+
+      dia: {
+        volver: 'Volver al calendario',
+        manana: 'Tu mañana',
+        noche: 'Tu noche',
+        journal: 'Lo que escribiste',
+        victorias: 'Tus logros',
+        emociones: 'Cómo querías sentirte',
+        gratitud: 'Lo que agradeciste',
+        granVision: 'Cómo imaginabas el día',
+        logros: 'Lo que no estaba en el plan',
+        aprendizaje: 'Lo que aprendiste',
+        // Un día en blanco no es un día perdido.
+        vacio: 'Este día no tiene nada escrito. También estuviste.',
+      },
+    },
   },
 
   // ─── Insights ─────────────────────────────────────────────────────────────
@@ -573,13 +788,10 @@ export const copy = {
     },
   },
 
-  // ─── Estados vacíos ───────────────────────────────────────────────────────
-  empty: {
-    journal: 'Aquí vive tu escritura libre. Toca + para empezar.',
-    historial: 'Tu historial crecerá con cada día que registres.',
-    insights: 'Necesito conocerte un poco más. En unos días empezaré a notar cosas.',
-    habits: 'Un solo hábito es un buen comienzo.',
-  },
+  // El namespace `empty` de Fase 0 se retira con SPEC_07. Sus cuatro cadenas
+  // tienen dueño en otro sitio —`lumia.journal.vacio`, `lumia.historial.vacio`,
+  // `insights.empty` y `formia.habitos.empty`— y ninguna se usaba ya. Dos
+  // versiones del mismo estado vacío es una invitación a editar la que nadie ve.
 
   // ─── Errores y recuperación ───────────────────────────────────────────────
   errors: {

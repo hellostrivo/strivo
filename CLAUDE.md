@@ -287,8 +287,9 @@ git status
 | **SPEC_04** | ✅ Completa y comiteada | 10 ago |
 | **SPEC_05** | ✅ Completa y comiteada | 10 ago |
 | **SPEC_06** | ✅ Completa | 10 ago |
-| SPEC_07 | → Siguiente | — |
-| SPEC_08–12 | Pendientes | — |
+| **SPEC_07** | ✅ Completa | 10 ago |
+| SPEC_08 | → Siguiente | — |
+| SPEC_09–12 | Pendientes | — |
 
 **Notas:**
 - SPEC_02 pasó 7 criterios de aceptación
@@ -298,8 +299,13 @@ git status
 - SPEC_06 pasó sus 10 criterios: 7 con prueba automática y 3 verificados en navegador
   (tema por botón con las dos secciones a cualquier hora, contraste del tema Noche,
   y los 5 s de las sugerencias de gratitud)
-- npm run lint, test y build verdes · 208 pruebas
+- SPEC_07 pasó sus 10 criterios: 7 con prueba automática y 3 verificados en navegador
+  (género femenino en N5, ritual de 5 pantallas sin escribir nada, y N6 cerrando con la red caída)
+- npm run lint, test y build verdes · 294 pruebas
 - npm run lint:copy limpio: los 7 avisos de Fase 0 desaparecieron con SPEC_06
+- **Deuda consciente:**
+- RN-RN-01 (pop-up automático a las 19:00–23:59 + desactivación tras 3 rechazos) → FASE_2
+  Requiere campos en nightRitual que SPEC_02 no recoge. Ritual accesible desde Hoy.
 
 **Decisiones tomadas al implementar (no estaban escritas en ningún sitio):**
 - **H1 agrupa por identidad** (SPEC_04 §4) y el momento del día sobrevive como etiqueta de fila y barra de progreso. §C3.5 hablaba de cabeceras por momento en H1; se leyó como lo heredado, no como lo vigente.
@@ -326,7 +332,55 @@ git status
 - **60 frases del día**, con el mecanismo entero montado; se amplía en SPEC_12. RN-HOY-02 (365 sin repetir) se cumple hasta donde llega el repertorio, y `diasSinRepetir()` lo dice en voz alta.
 - **`lint-copy` ya no revisa `__tests__`:** una prueba que comprueba que el léxico prohibido no aparece tiene que poder nombrarlo.
 
+**Decisiones de SPEC_07 (Journal, Historial y Ritual de Noche), 10 ago:**
+- **Dos citas de SPEC_07 §3 están desplazadas y no son contradicciones.** Dice "§5.4 Journal"
+  y "§5.8 Historial"; en v4.1, §5.4 es la Vista de Noche, §5.8 el Journal y §5.10 el Historial.
+  Y **§5.6.1 no está derogada**: es "N5 — Estado de sueño rediseñado" y está vigente. Lo derogado
+  es su sub-apartado final, "Hábitos en el Ritual de Noche".
+- **El Journal no tiene título, etiquetas `#`, ánimo por entrada, adjuntos ni plantillas.**
+  `FIELDS.journal` de SPEC_02 es exhaustivo y los rechaza al escribir. La búsqueda va sobre el
+  texto y sobre las etiquetas de emoción resueltas al género, no sobre los ids.
+- **El interruptor del PIN vive dentro del Journal.** §5.8.2 lo sitúa en Perfil → Privacidad
+  (§5.12.1), pero **§5.12.1 no llegó a escribirse en v4.1** —solo se la cita— y no hay spec de
+  Perfil en Fase 1. Se mueve allí cuando exista.
+- **La regla de copy del PIN se comprueba en una prueba, no en `lint-copy.js`.** "Seguro" y
+  "Segura" son dos emociones legítimas del catálogo de la mañana: prohibir la palabra en todo
+  `src/` rompería el build por un motivo equivocado. `pin.test.js` recorre `copy.lumia.journal.pin`
+  entero, como SPEC_05 hizo con el vocabulario de rendimiento en `progreso`.
+- **El punto de ánimo del calendario se deriva al vuelo, no se lee de `dayState.mood`.** Coherente
+  con SPEC_06: `animoDerivado` es una vista y §5.4.1 prohíbe persistirla. Día con estado de sueño →
+  su color de §6.3.5; día con algo escrito pero sin estado → `normal`; día sin nada → sin punto.
+  La etiqueta de `normal` es **"Estuviste"** y no "Sin registrar": el día existió.
+- **Sin pop-up automático del Ritual de Noche.** RN-RN-01 pide ventana 19:00–23:59, extensión de
+  madrugada y desactivación tras tres rechazos; eso necesita "completado hoy" y "veces rechazado",
+  dos campos que §C5 no recoge. Se entra desde la tarjeta de Hoy, como enlace discreto bajo la
+  acción principal, porque §5.2 solo admite una acción principal por pantalla.
+- **N6 no tiene ceremonia propia: reutiliza `CierreDelDia`.** El ritual y la Vista de Noche son dos
+  caminos al mismo sitio (D-4.5); dos implementaciones del cierre serían dos que envejecen distinto.
+- **Reautenticación del PIN por proveedor, no por enlace de correo ni SMS.** §5.8.2 describe correo
+  o SMS, pero `src/lib/firebase.js` solo configura Google y Apple. El método de `shared/auth` decide
+  **si** puede haber PIN (RN-JR-PIN-02); el proveedor decide **cómo** se verifica. Sin sesión de
+  Firebase —que es el estado de toda la Fase 1— devuelve `sin-sesion` y se dice en pantalla.
+- **Con el PIN puesto, el Historial no lee el journal.** La vista de día completo incluye journal
+  (§C7.7.2) y lo estaba imprimiendo con la puerta cerrada. Ahora `cargarDia` no lo carga siquiera,
+  y el Historial lo dice con una frase fija que no depende de si hay entradas: si apareciera solo
+  cuando las hay, la frase estaría contando lo que el PIN tapa (RN-JR-PIN-01).
+- **"Algo más" y "+ Otra" aplican el límite en el campo, no solo al guardar.** Aceptar dos palabras
+  y guardar una es corregir en silencio. Corrige de paso el mismo comportamiento en `EstadoSueno`.
+- **`ChipsEmociones` recibe catálogo y regla de selección.** Los dos catálogos siguen siendo
+  distintos (15 positivas en la mañana, 15 con las difíciles en el Journal); lo que se comparte es
+  la píldora, no el vocabulario.
+- **El namespace `empty` de Fase 0 se retira.** Sus cuatro cadenas tenían dueño en otro sitio y
+  ninguna se usaba ya.
+
 **Deuda consciente de Fase 1 (se salda en su spec):**
+- **La ventana de activación del Ritual de Noche (RN-RN-01) y la extensión de madrugada** siguen sin
+  construirse: hacen falta dos campos nuevos en `nightRitual`. Es el mismo hueco que deja RN-VN-05
+  a medias desde SPEC_06.
+- **`Journal` e `Historial` entran por el mismo andamio provisional** que ya usaba Formia: la
+  pestaña "Journal" con un conmutador de dos. SPEC_11 lo sustituye entero.
+- **La reautenticación real no se puede ejercitar** hasta que exista el onboarding con sesión de
+  Firebase. Lo que sí está probado es que reestablecer el PIN no toca ni una entrada.
 - `SesionProvisional.jsx` y la entrada por la pestaña "Tú" (con su conmutador Identidad/Hábitos) son andamios: los sustituyen el onboarding y SPEC_11.
 - `src/tokens/index.js` mapea las áreas con ids viejos (`espiritual`, `personal`) y con emoji. El catálogo bueno es `AREA_CATALOG` de SPEC_02; la limpieza es SPEC_12.
 - Los grises de texto van a `text-ink/80` como mínimo: por debajo no llegan a AAA sobre `paper`.

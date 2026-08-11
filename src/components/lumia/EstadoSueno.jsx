@@ -12,7 +12,7 @@ import { clsx } from 'clsx'
 import { CampoLinea } from './Campo'
 import { copy } from '@copy'
 import { resolveGender } from '@copy/gender'
-import { ID_OTRO, OPCIONES, alternarEstado } from '@/lumia/estadoSueno'
+import { ID_OTRO, MAX_PALABRA, OPCIONES, alternarEstado, primeraPalabra } from '@/lumia/estadoSueno'
 
 const textos = copy.lumia.diario.noche.sueno
 
@@ -59,8 +59,11 @@ export default function EstadoSueno({ seleccion = [], otro = '', genero, onCambi
       {seleccion.includes(ID_OTRO) && (
         <CampoLinea
           value={otro}
-          maxLength={24}
-          onChange={(evento) => onCambiar(seleccion, evento.target.value)}
+          maxLength={MAX_PALABRA}
+          // El límite es duro en el campo, no solo al guardar (§5.4.1): los
+          // espacios no crean una segunda palabra, y lo que se ve escrito es
+          // exactamente lo que queda guardado.
+          onChange={(evento) => onCambiar(seleccion, primeraPalabra(evento.target.value))}
           placeholder={textos.otro.placeholder}
           aria-label={textos.otro.label}
           className="max-w-xs"

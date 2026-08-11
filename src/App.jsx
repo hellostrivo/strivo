@@ -6,8 +6,9 @@ import { useState } from 'react'
 import { clsx } from 'clsx'
 
 // Páginas (rutas)
-import Hoy         from '@/pages/lumia/Hoy'
-import JournalPage from '@/pages/JournalPage'  // stub de Fase 0, lo sustituye SPEC_07
+import Hoy       from '@/pages/lumia/Hoy'
+import Journal   from '@/pages/lumia/Journal'
+import Historial from '@/pages/lumia/Historial'
 
 // ⚠ PROVISIONAL — SPEC_03 y SPEC_04 construyen los dos espacios de Formia
 // (Identidad y Hábitos), pero la barra de dos espacios ("Lumia · Reflexión" /
@@ -25,6 +26,13 @@ const FORMIA_PROVISIONAL = [
   { id: 'progreso',  label: 'Progreso',  render: (uid) => <Progreso  uid={uid} /> },
 ]
 
+// ⚠ PROVISIONAL — mismo andamio, ahora para las dos superficies de Lumia que
+// construye SPEC_07. La barra de SPEC_11 les dará su sitio propio.
+const LUMIA_PROVISIONAL = [
+  { id: 'journal',   label: 'Journal',   render: (uid, onHideNav) => <Journal uid={uid} onHideNav={onHideNav} /> },
+  { id: 'historial', label: 'Historial', render: (uid) => <Historial uid={uid} /> },
+]
+
 const TABS = [
   { id: 'hoy',     label: 'Hoy',     icon: SunMoonIcon },
   { id: 'journal', label: 'Journal', icon: PenIcon     },
@@ -35,6 +43,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('hoy')
   const [hideNav, setHideNav]     = useState(false)  // ocultar en rituales / escritura activa
   const [formiaTab, setFormiaTab] = useState('identidad')  // ⚠ provisional, ver arriba
+  const [lumiaTab,  setLumiaTab]  = useState('journal')    // ⚠ provisional, ver arriba
 
   return (
     <div className="min-h-screen bg-paper text-ink font-sans flex flex-col">
@@ -45,30 +54,31 @@ export default function App() {
             {(uid) => <Hoy uid={uid} onHideNav={setHideNav} />}
           </SesionProvisional>
         )}
-        {activeTab === 'journal' && <JournalPage onHideNav={setHideNav} />}
+        {activeTab === 'journal' && (
+          <SesionProvisional>
+            {(uid) => (
+              <>
+                {!hideNav && (
+                  <Conmutador
+                    secciones={LUMIA_PROVISIONAL}
+                    activa={lumiaTab}
+                    onCambiar={setLumiaTab}
+                  />
+                )}
+                {LUMIA_PROVISIONAL.find(s => s.id === lumiaTab).render(uid, setHideNav)}
+              </>
+            )}
+          </SesionProvisional>
+        )}
         {activeTab === 'tu'      && (
           <SesionProvisional>
             {(uid) => (
               <>
-                <div className="flex gap-2 px-5 pt-6">
-                  {FORMIA_PROVISIONAL.map(seccion => (
-                    <button
-                      key={seccion.id}
-                      type="button"
-                      onClick={() => setFormiaTab(seccion.id)}
-                      aria-pressed={formiaTab === seccion.id}
-                      className={clsx(
-                        'rounded-full border px-4 py-2 min-h-touch-sm text-base font-medium text-ink',
-                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20',
-                        formiaTab === seccion.id
-                          ? 'border-ink bg-surface'
-                          : 'border-border bg-paper',
-                      )}
-                    >
-                      {seccion.label}
-                    </button>
-                  ))}
-                </div>
+                <Conmutador
+                  secciones={FORMIA_PROVISIONAL}
+                  activa={formiaTab}
+                  onCambiar={setFormiaTab}
+                />
                 {FORMIA_PROVISIONAL.find(seccion => seccion.id === formiaTab).render(uid)}
               </>
             )}
@@ -132,6 +142,30 @@ export default function App() {
           })}
         </nav>
       )}
+    </div>
+  )
+}
+
+// ⚠ PROVISIONAL — El conmutador que sostiene los dos andamios de arriba, en un
+// solo sitio para que no haya dos copias que mantener. SPEC_11 se lo lleva.
+function Conmutador({ secciones, activa, onCambiar }) {
+  return (
+    <div className="flex gap-2 px-5 pt-6">
+      {secciones.map(seccion => (
+        <button
+          key={seccion.id}
+          type="button"
+          onClick={() => onCambiar(seccion.id)}
+          aria-pressed={activa === seccion.id}
+          className={clsx(
+            'rounded-full border px-4 py-2 min-h-touch-sm text-base font-medium text-ink',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20',
+            activa === seccion.id ? 'border-ink bg-surface' : 'border-border bg-paper',
+          )}
+        >
+          {seccion.label}
+        </button>
+      ))}
     </div>
   )
 }
