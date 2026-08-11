@@ -8,7 +8,12 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { FRECUENCIA_ALTA, FRECUENCIA_BAJA, GANANCIA_MAX, crearAudioRespiracion } from '../audioRespiracion.js'
+import {
+  FRECUENCIA_ALTA,
+  FRECUENCIA_BAJA,
+  GANANCIA_MAX,
+  crearAudioRespiracion,
+} from '../audioRespiracion.js'
 
 /** Un parámetro de audio que apunta lo que le programan. */
 function parametroFalso(inicial = 0) {

@@ -92,9 +92,7 @@ describe('identityRef (§C5.5)', () => {
   })
 
   it('RN-DB4-09: la identidad central no se escribe vacía', () => {
-    expect(codeOf(() => assertCentralIdentity('   '))).toBe(
-      ERROR_CODES.IDENTITY_CENTRAL_REQUIRED,
-    )
+    expect(codeOf(() => assertCentralIdentity('   '))).toBe(ERROR_CODES.IDENTITY_CENTRAL_REQUIRED)
     expect(assertCentralIdentity('Alguien que crece')).toBe('Alguien que crece')
   })
 })

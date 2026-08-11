@@ -19,6 +19,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { HashRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { getTimeSlot } from '@lib/timeSlot'
 
 import ArranqueProvisional from '@/components/ArranqueProvisional'
 import BarraEspacios from '@components/shared/BarraEspacios'
@@ -38,6 +39,18 @@ const INICIO = Object.freeze({ lumia: '/lumia/hoy', formia: '/formia/identidad' 
 
 function espacioDe(ruta) {
   return ruta.startsWith('/formia') ? 'formia' : 'lumia'
+}
+
+/**
+ * El momento que viste al espacio (manual §4.1).
+ *
+ * Lo decide el reloj, y es la firma visual del producto: abrir a las 7:00 y a
+ * las 23:00 no se ve igual (§6.1, principio 2). No choca con RN-HOY-05, que
+ * habla del **tema de la pantalla Hoy** —ese lo manda su conmutador y sigue
+ * mandándolo—: esto viste el cromo del espacio, que es otra superficie.
+ */
+function momentoDe(franja = getTimeSlot()) {
+  return franja === 'amanecer' || franja === 'dia' ? 'manana' : 'noche'
 }
 
 export default function App() {
@@ -76,7 +89,15 @@ function Espacios({ uid }) {
   }, [pathname])
 
   return (
-    <div data-surface="light" className="flex min-h-screen flex-col bg-paper font-sans text-ink">
+    // `data-space` elige la paleta de marca y `data-surface` sigue eligiendo el
+    // color de texto: son dos capas distintas y no se pisan (manual §4.8).
+    // Cambiar de pestaña cambia el atributo, y con él la paleta, sin recargar.
+    <div
+      data-space={espacio}
+      data-moment={momentoDe()}
+      data-surface="light"
+      className="flex min-h-screen flex-col bg-espacio font-sans text-on-surface"
+    >
       {!hideNav && (espacio === 'formia' ? <NavFormia /> : <NavLumia />)}
 
       <main className="flex-1 pb-24">

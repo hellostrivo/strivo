@@ -13,7 +13,10 @@
 
 import { clsx } from 'clsx'
 
-const HECHO = '#7E9E86' // sage: hábitos, constancia, crecimiento (§6.3.2)
+// El color del día marcado sale del token, no de un literal: sage es el verde
+// de constancia y crecimiento (§6.3.2), y vive en `globals.css` con el resto.
+// SPEC_12 lo trajo aquí desde un hex escrito a mano en este archivo.
+const HECHO = 'var(--color-sage)'
 
 // El día hecho va relleno; el que no, en contorno. La diferencia es de forma,
 // así que sobrevive a cualquier daltonismo. El contorno se mantiene tenue a

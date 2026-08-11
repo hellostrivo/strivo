@@ -36,12 +36,12 @@ export default function Progreso({ uid }) {
   const { estado, carga, reintentar } = useHabitos(uid)
 
   if (carga === 'cargando') {
-    return <div className="min-h-screen bg-paper px-5 py-8" aria-busy="true" />
+    return <div className="min-h-screen bg-espacio px-5 py-8" aria-busy="true" />
   }
 
   if (carga === 'error') {
     return (
-      <div className="min-h-screen bg-paper px-5 py-8 flex flex-col gap-4">
+      <div className="min-h-screen bg-espacio px-5 py-8 flex flex-col gap-4">
         <p className="text-base text-ink">{copy.formia.habitos.error.load.body}</p>
         <div>
           <Button size="sm" onClick={reintentar}>
@@ -57,7 +57,7 @@ export default function Progreso({ uid }) {
   const dias = constanciaTotal(logs)
 
   return (
-    <div className="min-h-screen bg-paper px-5 py-8 flex flex-col gap-8">
+    <div className="min-h-screen bg-espacio px-5 py-8 flex flex-col gap-8">
       <header className="flex flex-col gap-2">
         <h1 className="font-display text-lg text-ink">{textos.title}</h1>
         <p className="text-base text-ink/80">{textos.lead}</p>
@@ -69,9 +69,7 @@ export default function Progreso({ uid }) {
             tipografía grande sería subrayar lo que no hay. */}
         <p
           className={
-            dias === 0
-              ? 'text-base text-ink/80'
-              : 'font-display text-xl text-ink leading-tight'
+            dias === 0 ? 'text-base text-ink/80' : 'font-display text-xl text-ink leading-tight'
           }
         >
           {textoConstancia(dias)}

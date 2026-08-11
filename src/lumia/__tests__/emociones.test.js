@@ -3,7 +3,14 @@
 
 import { describe, expect, it } from 'vitest'
 
-import { CATALOGO, IDS, MAX_EMOCIONES, alternarEmocion, etiquetaDe, soloDelCatalogo } from '../emociones.js'
+import {
+  CATALOGO,
+  IDS,
+  MAX_EMOCIONES,
+  alternarEmocion,
+  etiquetaDe,
+  soloDelCatalogo,
+} from '../emociones.js'
 
 const DIFICILES = ['triste', 'ansioso', 'frustrado', 'preocupado', 'melancolico', 'solo', 'cansado']
 

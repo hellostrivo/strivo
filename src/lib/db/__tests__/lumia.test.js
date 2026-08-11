@@ -38,9 +38,9 @@ describe('journal', () => {
   })
 
   it('rechaza un campo fuera del modelo', async () => {
-    await expect(
-      lumia.createJournalEntry(UID, { text: 'x', privada: true }),
-    ).rejects.toMatchObject({ code: ERROR_CODES.UNKNOWN_FIELD })
+    await expect(lumia.createJournalEntry(UID, { text: 'x', privada: true })).rejects.toMatchObject(
+      { code: ERROR_CODES.UNKNOWN_FIELD },
+    )
   })
 })
 
@@ -85,9 +85,9 @@ describe('registros por fecha', () => {
   })
 
   it('morningEntry solo admite los tres campos de SPEC_02 §5', async () => {
-    await expect(
-      lumia.saveMorningEntry(UID, DATE, { smallAction: 'x' }),
-    ).rejects.toMatchObject({ code: ERROR_CODES.UNKNOWN_FIELD })
+    await expect(lumia.saveMorningEntry(UID, DATE, { smallAction: 'x' })).rejects.toMatchObject({
+      code: ERROR_CODES.UNKNOWN_FIELD,
+    })
   })
 
   it('exige una fecha con forma YYYY-MM-DD', async () => {

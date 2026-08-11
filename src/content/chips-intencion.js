@@ -36,7 +36,9 @@ export const TEXTOS = Object.freeze(CHIPS.map((chip) => chip.texto))
 
 /** ¿La intención guardada coincide con alguno? Decide qué chip se pinta activo. */
 export function chipDe(intencion) {
-  const texto = String(intencion ?? '').trim().toLowerCase()
+  const texto = String(intencion ?? '')
+    .trim()
+    .toLowerCase()
   if (texto === '') return null
   return CHIPS.find((chip) => chip.texto === texto) ?? null
 }

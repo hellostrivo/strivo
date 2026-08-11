@@ -20,7 +20,7 @@ export default function Card({ children, className, elevated = false, onClick, .
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20',
         ],
         'motion-reduce:transition-none',
-        className
+        className,
       )}
       onClick={onClick}
       role={isClickable ? 'button' : undefined}

@@ -70,7 +70,8 @@ describe('la voz del repertorio (§3.6)', () => {
     // La transición es un umbral de cinco segundos, no un consejo. Una frase
     // que promete o que da instrucciones convierte el umbral en la primera
     // pantalla de un wizard.
-    const prohibido = /te vas a sentir|ser[áa]s más|conseguir[áa]s|lograr[áa]s|tu mejor versión|vamos a por/i
+    const prohibido =
+      /te vas a sentir|ser[áa]s más|conseguir[áa]s|lograr[áa]s|tu mejor versión|vamos a por/i
     FRASES.forEach((frase) => expect(frase.texto).not.toMatch(prohibido))
   })
 

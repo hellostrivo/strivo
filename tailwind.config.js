@@ -55,21 +55,28 @@ export default {
       },
 
       // ─── Tipografía ──────────────────────────────────────────────────────
+      // UNA SOLA FAMILIA: Inter, para las tres marcas (manual §5.1). `display`
+      // apunta a la misma a propósito — la jerarquía se hace con peso, no con
+      // una segunda familia. La clase `.font-display` de globals.css es la que
+      // pone ese peso.
       fontFamily: {
-        display: ['Fraunces', 'serif'],    // Títulos grandes, emocionales
-        sans:    ['Satoshi', 'system-ui', '-apple-system', 'sans-serif'], // UI
+        display: ['Inter Variable', 'system-ui', '-apple-system', 'sans-serif'],
+        sans:    ['Inter Variable', 'system-ui', '-apple-system', 'sans-serif'],
       },
+      // Escala base 16px × 1.25, expresada en `rem`.
+      // **En rem y no en px**: con píxeles absolutos, subir el cuerpo de letra
+      // del sistema no cambiaba nada y §6.14 pide escalar hasta el 200 %.
+      // Medido antes del cambio: con la raíz a 32px, el texto seguía a 14px.
       fontSize: {
-        // Escala base 16px × 1.25
-        'xs':   ['12px', { lineHeight: '1.5' }],
-        'sm':   ['14px', { lineHeight: '1.5' }],
-        'base': ['16px', { lineHeight: '1.5' }],
-        'md':   ['20px', { lineHeight: '1.4' }],
-        'lg':   ['25px', { lineHeight: '1.3' }],
-        'xl':   ['32px', { lineHeight: '1.2' }],
-        '2xl':  ['40px', { lineHeight: '1.2' }],
-        '3xl':  ['50px', { lineHeight: '1.1' }],
-        '4xl':  ['64px', { lineHeight: '1.0' }],
+        'xs':   ['0.75rem',   { lineHeight: '1.5' }],   // 12px
+        'sm':   ['0.875rem',  { lineHeight: '1.5' }],   // 14px
+        'base': ['1rem',      { lineHeight: '1.5' }],   // 16px
+        'md':   ['1.25rem',   { lineHeight: '1.4' }],   // 20px
+        'lg':   ['1.5625rem', { lineHeight: '1.3' }],   // 25px
+        'xl':   ['2rem',      { lineHeight: '1.2' }],   // 32px
+        '2xl':  ['2.5rem',    { lineHeight: '1.2' }],   // 40px
+        '3xl':  ['3.125rem',  { lineHeight: '1.1' }],   // 50px
+        '4xl':  ['4rem',      { lineHeight: '1.0' }],   // 64px
       },
 
       // ─── Espaciado (base 4px) ─────────────────────────────────────────────
@@ -157,6 +164,9 @@ export default {
       },
 
       // ─── Tamaños mínimos para toque (WCAG 2.2) ───────────────────────────
+      // **Siguen en px, y es deliberado.** Un objetivo táctil es el tamaño de
+      // un dedo, no el de una letra: no debe encoger porque alguien baje el
+      // cuerpo de texto del sistema.
       minHeight: {
         'touch': '56px',  // mín para elementos tocables
         'touch-sm': '48px',

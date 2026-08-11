@@ -131,9 +131,7 @@ export async function appendIdentityVersion(uid, text, at = new Date().toISOStri
   validateIdentityVersion(version)
 
   const versions = await getIdentityHistory(uid)
-  const closed = versions.map((entry) =>
-    entry.to === null ? { ...entry, to: at } : entry,
-  )
+  const closed = versions.map((entry) => (entry.to === null ? { ...entry, to: at } : entry))
   await writePath({ ...historySpec(uid), data: { versions: [...closed, version] } })
   return version
 }

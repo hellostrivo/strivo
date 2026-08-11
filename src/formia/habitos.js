@@ -19,13 +19,7 @@ import { AREA_CATALOG, AREA_IDS, IDENTITY_CENTRAL, formia, shared, strivoDateKey
 // La cuenta de RN-06 vive en un solo sitio (`src/lib/constancia.js`). Aquí se
 // reexporta para que las pantallas de hábitos la sigan importando de un lugar
 // natural, pero la implementación no está duplicada.
-export {
-  constanciaDe,
-  fechasDe,
-  marcadosEn,
-  ultimasFechas,
-  ultimosNDias,
-} from '@/lib/constancia'
+export { constanciaDe, fechasDe, marcadosEn, ultimasFechas, ultimosNDias } from '@/lib/constancia'
 
 /** Orden de los momentos dentro de un grupo. `null` va al final. */
 const ORDEN_CONTEXTO = { manana: 0, noche: 1 }
@@ -103,8 +97,7 @@ export function agruparPorIdentidad(habits, areas, central) {
   // RN-DB4-08 — Un hábito cuyo `identityRef` no tiene destino no se descarta ni
   // se repara en silencio: se enseña aparte para que lo resuelva su dueño.
   const porRevisar = ordenados.filter(
-    (habit) =>
-      habit.identityRef !== IDENTITY_CENTRAL && !AREA_IDS.includes(habit.identityRef),
+    (habit) => habit.identityRef !== IDENTITY_CENTRAL && !AREA_IDS.includes(habit.identityRef),
   )
   if (porRevisar.length > 0) {
     grupos.push({

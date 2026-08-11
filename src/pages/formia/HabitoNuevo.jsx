@@ -41,18 +41,11 @@ export default function HabitoNuevo({ central, areas, habito = null, onGuardar, 
   // RN-FO-H3-06 — La sugerencia solo puede proponer identidades que existen:
   // las áreas elegidas ahora mismo. Nunca propone crear un área nueva.
   const disponibles = useMemo(() => areasEnMarcha(areas).map((area) => area.id), [areas])
-  const sugerida = useMemo(
-    () => sugerirIdentidad(nombre, disponibles),
-    [nombre, disponibles],
-  )
+  const sugerida = useMemo(() => sugerirIdentidad(nombre, disponibles), [nombre, disponibles])
 
   const faltaNombre = nombre.trim().length === 0
   const faltaIdentidad = identityRef === null
-  const pendiente = faltaNombre
-    ? textos.pendienteNombre
-    : faltaIdentidad
-      ? textos.pendiente
-      : null
+  const pendiente = faltaNombre ? textos.pendienteNombre : faltaIdentidad ? textos.pendiente : null
 
   async function guardar(evento) {
     evento.preventDefault()
@@ -63,7 +56,7 @@ export default function HabitoNuevo({ central, areas, habito = null, onGuardar, 
   }
 
   return (
-    <form className="min-h-screen bg-paper px-5 py-8 flex flex-col gap-8" onSubmit={guardar}>
+    <form className="min-h-screen bg-espacio px-5 py-8 flex flex-col gap-8" onSubmit={guardar}>
       <h1 className="font-display text-lg text-ink">
         {editando ? textos.titleEditar : textos.titleNuevo}
       </h1>

@@ -191,7 +191,7 @@ describe('accesibilidad de la barra (criterio 7)', () => {
     ;[NAV_LUMIA, NAV_FORMIA].forEach((ruta) => {
       const codigo = codigoDe(ruta)
       expect(codigo).toMatch(/font-semibold/)
-      expect(codigo).toMatch(/border-current/)
+      expect(codigo).toMatch(/border-espacio-acento/)
     })
   })
 
@@ -211,7 +211,9 @@ describe('accesibilidad de la barra (criterio 7)', () => {
 
   it('ninguna de las tres fija un color de texto literal (RN-SURF-01)', () => {
     ;[BARRA, NAV_LUMIA, NAV_FORMIA].forEach((ruta) => {
-      expect(`${ruta}: ${codigoDe(ruta)}`).not.toMatch(/text-ink|text-paper|text-night|#[0-9a-f]{6}/i)
+      expect(`${ruta}: ${codigoDe(ruta)}`).not.toMatch(
+        /text-ink|text-paper|text-night|#[0-9a-f]{6}/i,
+      )
     })
   })
 })

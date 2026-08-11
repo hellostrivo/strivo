@@ -32,7 +32,7 @@ export default function BarraEspacios({ rutaDe }) {
       className={clsx(
         'fixed bottom-0 left-0 right-0 z-40',
         'flex items-stretch',
-        'border-t border-on-surface bg-paper/95 backdrop-blur-sm',
+        'border-t border-espacio bg-espacio-cabecera/95 backdrop-blur-sm',
         'pb-safe',
       )}
     >
@@ -59,7 +59,7 @@ export default function BarraEspacios({ rutaDe }) {
               {isActive && (
                 <span
                   aria-hidden="true"
-                  className="absolute inset-x-6 top-0 h-0.5 rounded-full bg-current"
+                  className="absolute inset-x-6 top-0 h-0.5 rounded-full bg-espacio-acento"
                 />
               )}
               <span>{espacio.label}</span>

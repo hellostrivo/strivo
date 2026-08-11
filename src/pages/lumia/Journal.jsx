@@ -36,7 +36,7 @@ const textos = copy.lumia.journal
 
 function Marco({ children }) {
   return (
-    <div data-surface="light" className="min-h-screen bg-paper text-on-surface">
+    <div data-surface="light" className="min-h-screen bg-espacio text-on-surface">
       {children}
     </div>
   )
@@ -193,7 +193,10 @@ function JournalAbierto({ uid, pin, onHideNav }) {
         )}
 
         {error && (
-          <p className="flex flex-wrap items-center gap-3 text-sm text-on-surface-soft" role="status">
+          <p
+            className="flex flex-wrap items-center gap-3 text-sm text-on-surface-soft"
+            role="status"
+          >
             {copy.lumia.diario.error.save.body}
             <Button size="sm" variant="surface" onClick={error.reintentar}>
               {copy.lumia.diario.error.save.retry}

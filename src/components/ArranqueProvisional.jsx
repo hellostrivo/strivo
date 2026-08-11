@@ -22,6 +22,7 @@
 
 import { useEffect, useState } from 'react'
 import EditorIdentidad from '@components/formia/EditorIdentidad'
+import Simbolo from '@components/shared/Simbolo'
 import { copy } from '@copy'
 import { formia, initUserTree } from '@/lib/db'
 import { conPrefijoCentral } from '@/formia/identidad'
@@ -51,6 +52,10 @@ export default function ArranqueProvisional({ children }) {
     return (
       <div className="min-h-screen bg-paper px-5 py-8 flex flex-col justify-center gap-6">
         <div className="flex flex-col gap-2">
+          {/* El único sitio donde aparece el símbolo de Strivo: esta superficie
+              está por encima de los dos espacios —cuenta y perfil, §C0.4— y es
+              lo que la marca madre viste. Nunca es un destino navegable. */}
+          <Simbolo marca="strivo" alto={32} titulo={copy.appName} />
           <h1 className="font-display text-lg text-ink">{copy.onboarding.p3.headline}</h1>
           <p className="text-base text-ink/80">{copy.onboarding.p3.subhead}</p>
         </div>

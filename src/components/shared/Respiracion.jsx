@@ -53,7 +53,13 @@ function usaMovimientoReducido() {
  * @param {Function} [onSonido]  - Persiste el cambio de preferencia.
  * @param {Function} onSalir     - Saltar y cerrar al terminar van al mismo sitio.
  */
-export default function Respiracion({ textos, ciclos = CICLOS, sonido = false, onSonido, onSalir }) {
+export default function Respiracion({
+  textos,
+  ciclos = CICLOS,
+  sonido = false,
+  onSonido,
+  onSalir,
+}) {
   const [corriendo, setCorriendo] = useState(false)
   const [empezado, setEmpezado] = useState(false)
   const [fase, setFase] = useState(null)

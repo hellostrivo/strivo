@@ -25,7 +25,15 @@ describe('el catálogo (§5.8.1)', () => {
   })
 
   it('las emociones difíciles son obligatorias y están todas', () => {
-    const dificiles = ['cansado', 'triste', 'ansioso', 'frustrado', 'preocupado', 'melancolico', 'solo']
+    const dificiles = [
+      'cansado',
+      'triste',
+      'ansioso',
+      'frustrado',
+      'preocupado',
+      'melancolico',
+      'solo',
+    ]
     dificiles.forEach((id) => expect(IDS).toContain(id))
   })
 
@@ -111,11 +119,9 @@ describe('"+ Otra": una sola palabra (§5.8.1, criterio 3)', () => {
 
 describe('lo que se guarda', () => {
   it('descarta lo que no sea del catálogo y respeta el tope', () => {
-    expect(paraGuardar(['feliz', 'inventada', 'triste', 'solo', 'ansioso'], null).emotions).toEqual([
-      'feliz',
-      'triste',
-      'solo',
-    ])
+    expect(paraGuardar(['feliz', 'inventada', 'triste', 'solo', 'ansioso'], null).emotions).toEqual(
+      ['feliz', 'triste', 'solo'],
+    )
   })
 
   it('sin emociones, `otherText` es null y no una cadena vacía', () => {

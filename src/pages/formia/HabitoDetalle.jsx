@@ -50,7 +50,7 @@ export default function HabitoDetalle({
   const identidad = etiqueta ? etiqueta.nombre : capitalizar(central ?? '')
 
   return (
-    <div className="min-h-screen bg-paper px-5 py-8 flex flex-col gap-8">
+    <div className="min-h-screen bg-espacio px-5 py-8 flex flex-col gap-8">
       <div>
         <Button size="sm" variant="ghost" onClick={onVolver}>
           {textos.back}
@@ -119,11 +119,7 @@ export default function HabitoDetalle({
           </Button>
         )}
         {estado !== 'archivado' && (
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onCambiarEstado(habito.id, 'archivado')}
-          >
+          <Button size="sm" variant="ghost" onClick={() => onCambiarEstado(habito.id, 'archivado')}>
             {detalle.archive}
           </Button>
         )}

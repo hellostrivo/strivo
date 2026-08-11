@@ -25,7 +25,11 @@ const MANANA = '2026-08-11'
 const fila = (texto, id = null) => ({ id, texto })
 
 async function conVictorias(...textos) {
-  return guardarFilas(UID, HOY, textos.map((texto) => fila(texto)))
+  return guardarFilas(
+    UID,
+    HOY,
+    textos.map((texto) => fila(texto)),
+  )
 }
 
 describe('victorias', () => {

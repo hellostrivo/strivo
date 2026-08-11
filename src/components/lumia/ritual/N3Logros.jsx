@@ -16,7 +16,14 @@ import { useEffect, useRef, useState } from 'react'
 import FilasDinamicas from '../FilasDinamicas'
 import VictoriasHeredadas from '../VictoriasHeredadas'
 import { copy } from '@copy'
-import { LIMITES, conIdsDe, desdeRegistros, desdeTextos, filasIniciales, textosDe } from '@/lumia/filas'
+import {
+  LIMITES,
+  conIdsDe,
+  desdeRegistros,
+  desdeTextos,
+  filasIniciales,
+  textosDe,
+} from '@/lumia/filas'
 import { visiblesDeNoche } from '@/lumia/victorias'
 
 const textos = copy.lumia.diario.noche

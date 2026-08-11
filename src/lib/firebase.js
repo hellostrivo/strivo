@@ -16,25 +16,25 @@ import { getAuth, GoogleAuthProvider, OAuthProvider } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
-  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId:             import.meta.env.VITE_FIREBASE_APP_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 }
 
 // Inicializar solo si hay configuración (evita errores en dev sin .env.local)
 let app, auth, db
 
 if (firebaseConfig.apiKey) {
-  app  = initializeApp(firebaseConfig)
+  app = initializeApp(firebaseConfig)
   auth = getAuth(app)
-  db   = getFirestore(app)
+  db = getFirestore(app)
 } else {
   console.warn('[Strivo] Firebase no configurado. Agrega las variables en .env.local')
 }
 
 export { auth, db }
 export const googleProvider = new GoogleAuthProvider()
-export const appleProvider  = new OAuthProvider('apple.com')
+export const appleProvider = new OAuthProvider('apple.com')

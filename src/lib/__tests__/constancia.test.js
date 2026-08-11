@@ -159,7 +159,10 @@ describe('el orden de la vista nunca depende de la cantidad', () => {
 
   it('las áreas ya no elegidas van al final, sin perder sus datos', () => {
     const areas = { ...AREAS, salud: { ...AREAS.salud, selected: false } }
-    const logs = [{ habitId: 'h1', date: HOY }, { habitId: 'h3', date: HOY }]
+    const logs = [
+      { habitId: 'h1', date: HOY },
+      { habitId: 'h3', date: HOY },
+    ]
 
     const identidades = progresoPorIdentidad(HABITOS, logs, areas, HOY)
     expect(identidades.map((i) => i.identityRef)).toEqual(['central', 'salud'])
@@ -191,8 +194,15 @@ describe('criterio 3 — el léxico de la pantalla', () => {
   // SPEC_05 §8 prohíbe estas además del léxico general de §3.6. La prueba se
   // limita a este namespace para no mover la línea base de `lint:copy`.
   const PROHIBIDAS = [
-    /\bracha/i, /\bstreak/i, /\bcumpliste/i, /\bmeta\b/i, /\bmetas\b/i,
-    /\bobjetivo/i, /\bfallaste/i, /\bincumpl/i, /%/,
+    /\bracha/i,
+    /\bstreak/i,
+    /\bcumpliste/i,
+    /\bmeta\b/i,
+    /\bmetas\b/i,
+    /\bobjetivo/i,
+    /\bfallaste/i,
+    /\bincumpl/i,
+    /%/,
   ]
 
   function textosDe(valor) {
@@ -215,7 +225,11 @@ describe('criterio 3 — el léxico de la pantalla', () => {
 
 describe('criterio 7 — RN-DB4-01', () => {
   const RAICES = ['src/formia', 'src/pages/formia', 'src/components/formia']
-  const SUELTOS = ['src/lib/constancia.js', 'src/lib/habitAreaLabel.js', 'src/lib/sugerirIdentidad.js']
+  const SUELTOS = [
+    'src/lib/constancia.js',
+    'src/lib/habitAreaLabel.js',
+    'src/lib/sugerirIdentidad.js',
+  ]
 
   function archivos(dir) {
     return readdirSync(dir).flatMap((nombre) => {

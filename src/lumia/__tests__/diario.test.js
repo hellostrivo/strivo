@@ -23,7 +23,10 @@ describe('el día de Lumia', () => {
   beforeEach(resetLocalDB)
 
   it('carga el día entero en una sola lectura, con perfil y frase', async () => {
-    await initUserTree(UID, { identityCentral: 'alguien que crece', profile: { name: 'Mariana', gender: 'f' } })
+    await initUserTree(UID, {
+      identityCentral: 'alguien que crece',
+      profile: { name: 'Mariana', gender: 'f' },
+    })
     await guardarManana(UID, HOY, { gratitude: ['el café'] })
 
     const dia = await cargarDia(UID, HOY)
@@ -74,7 +77,9 @@ describe('el día de Lumia', () => {
       const night = { newWins: ['ayudé a alguien'], gratitude: ['el café', 'la tarde'] }
       const victorias = [{ state: 'lograda' }, { state: 'pendiente' }]
       expect(recuentoDelDia(night, victorias)).toEqual({ logros: 2, gracias: 2 })
-      expect(sintesisDelDia(night, victorias)).toBe('Hoy reconociste 2 logros y agradeciste 2 cosas.')
+      expect(sintesisDelDia(night, victorias)).toBe(
+        'Hoy reconociste 2 logros y agradeciste 2 cosas.',
+      )
     })
 
     it('concuerda el singular', () => {
@@ -97,12 +102,7 @@ describe('el día de Lumia', () => {
     })
 
     it('cierra bien un día escrito de principio a fin', async () => {
-      const victorias = await guardarFilas(
-        UID,
-        HOY,
-        [{ id: null, texto: 'caminar' }],
-        'lograda',
-      )
+      const victorias = await guardarFilas(UID, HOY, [{ id: null, texto: 'caminar' }], 'lograda')
       await guardarEstadoSueno(UID, HOY, ['en_paz'], '')
       const dia = await cargarDia(UID, HOY)
       expect(sintesisDelDia(dia.night, victorias)).toBe('Hoy reconociste un logro que lograste.')

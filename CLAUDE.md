@@ -1,6 +1,6 @@
 # CLAUDE.md — Consola ejecutiva de Strivo
 
-**Última actualización:** 10 ago 2026 (v4.1 del blueprint — Fase 1: División Lumia/Formia)  
+**Última actualización:** 11 ago 2026 (v4.1 del blueprint — **Fase 1 cerrada**, doce specs)  
 **Ubicación del blueprint completo:** `/docs/blueprint/Strivo_Blueprint_de_Producto_v4_1.md`  
 **Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO_LUMIA_FORMIA.md`  
 **Referencia rápida:** este archivo es para sesiones de desarrollo. Si una decisión no está aquí, busca en los archivos de `docs/blueprint/`.
@@ -110,17 +110,20 @@ No es:
 
 ## 5. Tokens de diseño (completos en `design-tokens.json`)
 
-**Tipografía:**
-- Display: `Fraunces` (variable, soft, cálida) — títulos grandes.
-- Interfaz: `Inter` (Regular / Medium / Semibold) — cuerpo, botones, labels.
+**Tipografía — `Inter` y solo Inter** (manual §5.1, aplicada en SPEC_12). Las tres marcas comparten
+familia y se diferencian **por peso**: Lumia 400/500, Strivo 500/600, Formia 600/700. Fraunces y
+Satoshi se retiraron: el manual manda sobre §6.4.1 del blueprint en todo lo tipográfico.
+La escala va en `rem` para que escale con la preferencia del sistema.
 
-**Colores de marca Lumia (mañana/noche):**
-- Lumia Mañana: paleta clara, degradado amanecer dorado → naranja
-- Lumia Noche: azul oscuro, punto de convergencia cromática con Formia
+**Colores de marca — el manual es la fuente única. Ningún hex se escribe a mano.**
+Las cuatro paletas viven en `design-tokens.json` y se aplican con `data-space` + `data-moment`:
+- Lumia · Mañana: claridad suave (`#F6F2E9`, `#DCCFF1`, `#E5C2DC`, `#F6DDE8`)
+- Lumia · Noche: introspección profunda (`#6C5AA7` primario, `#8D82B6`, `#5A5568`, `#F3EFEA`)
+- Formia · Mañana: energía cálida (`#F7F2E9`, `#E8D9C4`, `#FFC29C`, `#E9A387`)
+- Formia · Noche: avance con propósito (`#B45A2B` primario, `#8F4A2F`, `#5D4766`, `#1F1D22`)
 
-**Colores de marca Formia:**
-- Formia Mañana: paleta clara y directa
-- Formia Noche: púrpura/índigo
+`#5D4766` en Formia·Noche **es intencional** (manual §4.7): el punto donde Lumia y Formia convergen
+al final del día. No se corrige para alejarlo del morado.
 
 **Paleta compartida (ver §6 del BRAND_MANUAL):**
 - Ink (texto principal): `#241E33`
@@ -292,7 +295,9 @@ git status
 | **SPEC_09** | ✅ Completa | 11 ago |
 | **SPEC_10** | ✅ Completa | 11 ago |
 | **SPEC_11** | ✅ Completa | 11 ago |
-| SPEC_12 | → Última | — |
+| **SPEC_12** | ✅ Completa | 11 ago |
+
+**Fase 1 cerrada.** Las doce specs están implementadas y comiteadas.
 
 **Notas:**
 - SPEC_02 pasó 7 criterios de aceptación
@@ -313,7 +318,9 @@ git status
   (el umbral en los dos sitios con el contenido ya montado detrás, y ausente con "reducir movimiento")
 - SPEC_11 pasó 7 de sus 8 criterios y el octavo a medias: los rótulos no se truncan a ningún ancho,
   pero el escalado al 200 % no funciona en toda la app por los tokens en px (deuda, la salda SPEC_12)
-- npm run lint, test y build verdes · 414 pruebas · verificado también sobre el bundle de producción
+- SPEC_12 pasó sus 9 criterios: 7 con prueba automática, el contraste con `npm run lint:contraste`
+  (que mide los 30 pares reales) y el cambio de paleta verificado en navegador
+- npm run lint, test, build, lint:copy, lint:contraste y format:check verdes · 438 pruebas
 - npm run lint:copy limpio: los 7 avisos de Fase 0 desaparecieron con SPEC_06
 - **Deuda consciente:**
 - RN-RN-01 (pop-up automático a las 19:00–23:59 + desactivación tras 3 rechazos) → FASE_2
@@ -508,16 +515,51 @@ git status
   por `/` antes de que el comodín redirija; guardarla dejaba la pestaña de Lumia apuntando a `#/` y
   sin marcarse activa. Solo se recuerdan rutas que empiezan por `/lumia/` o `/formia/`.
 
+**Decisiones de SPEC_12 (aplicación de marca), 11 ago:**
+- **Fraunces y Satoshi desaparecen. Inter para las tres marcas.** El manual §5.1 la fija como familia
+  única y el criterio 6 pide "una sola familia"; el capítulo 12 lo concede en su preámbulo — la
+  tipografía la manda el manual. `.font-display` **conserva su nombre y cambia de significado**: ya
+  no elige familia sino **peso** (Lumia 500, Formia 700, §5.2), así que los veinte componentes que la
+  usan no se tocaron. Esta spec aplica marca; no rediseña componentes.
+- **La fuente va por npm, no por CDN** (manual §5.1): sin dependencia de red y sin mandar la IP de
+  nadie a Google o Fontshare al abrir la app.
+- **`data-space` + `data-moment` eligen la paleta; `data-surface` sigue eligiendo el texto.** Son dos
+  capas y no se pisan, que es exactamente lo que dice la nota técnica del manual §4.8.
+- **El momento del espacio lo decide el reloj.** Es la firma visual del producto (§6.1, principio 2).
+  No choca con RN-HOY-05, que habla del tema de la pantalla Hoy: ese lo sigue mandando su conmutador.
+- **La cabecera adopta el color de su espacio** y lleva su símbolo. Es lo que hace que cambiar de
+  pestaña se note sin recargar (criterio 7).
+- **Las cabeceras se quedan en el rango claro de cada paleta**, también en el momento noche. El tono
+  nocturno entra por el acento y por el degradado de Hoy. Poner cromo oscuro sobre páginas claras
+  —Journal, Historial— habría dejado una costura, y arreglarla era rediseñarlas.
+- **El token de texto secundario se recalibró de `#4F4A5A` a `#3A3546`.** Estaba calibrado contra
+  `paper` (8,1:1) y sobre las cabeceras teñidas caía a 5,5:1 — fuera de AAA sin que se viera a
+  simple vista. Lo cazó `npm run lint:contraste`, que ahora mide los 30 pares reales de la app.
+- **Los primarios de marca no llevan texto de cuerpo encima**, y no es un descuido: blanco sobre
+  `lumia-pm-500` da 5,74:1 y sobre `formia-pm-600`, 4,73:1. Pasan AA y no AAA. Se usan como acento y
+  como borde, donde el umbral es 3:1. El script los mide igual y los deja anotados como informativos.
+- **`Constancia90.jsx` tenía un hex escrito a mano** (`#7E9E86`). Ahora sale de `--color-sage`. Era el
+  único de toda la app y lo encontró la prueba del criterio 1.
+- **El símbolo de Strivo aparece en un solo sitio**: el arranque de sesión, que es la superficie por
+  encima de los dos espacios (§C0.4). Nunca como destino navegable (§C0.2).
+- **Prettier no toca el CSS ni `design-tokens.json`.** Colapsa la alineación por columnas de los
+  bloques de tokens y **pasa los hexes a minúsculas**, que es justo lo que rompe la comprobación de
+  que cada hex de marca aparece literal en el manual. Está en `.prettierignore` con ese motivo.
+- **Ya se puede correr `npm run format`.** El aviso de "no correrlo" era de cuando prettier no tenía
+  configuración; ahora `.prettierrc` reproduce el estilo del repo y `format:check` está en verde.
+
 **Deuda consciente de Fase 1 (se salda en su spec):**
-- **El escalado de texto al 200 % no funciona en ninguna pantalla de la app, y es de los tokens.**
-  La escala tipográfica de `tailwind.config.js` está en **px absolutos** (`base: 16px`, `sm: 14px`…),
-  así que subir el tamaño de fuente del sistema no cambia nada: medido, con la raíz a 32 px la
-  cabecera se queda en 14 px. Contradice §6.14 ("texto escalable hasta 200 % sin pérdida de
-  contenido"). Viene de Fase 0, afecta a todo el producto y **se salda en SPEC_12**, que es quien es
-  dueña de los tokens: pasar la escala a `rem` tiene consecuencias visuales en todas las pantallas y
-  es una decisión, no un arreglo suelto. Lo que sí está verificado del criterio 2 de SPEC_11 es que
-  los rótulos **no se truncan a ningún ancho**, ni siquiera a 320 px: "Lumia" mide 46 px y "Formia"
-  51 px. Es exactamente la razón por la que la opción A gana a la B.
+- **Los 16 íconos de emoción no se hicieron, y es una decisión, no un olvido.** SPEC_12 §10 excluye
+  "ilustraciones nuevas" y §7 dice que los íconos de UI siguen pendientes en el manual v1.1 y que hay
+  que **pedirlos, no improvisarlos: son material de marca, no de código**. La mañana conserva sus 15
+  chips con emoji de SPEC_06. Para hacerlos hace falta: (a) que el manual cierre su §9, (b) la
+  geometría de §6.7 —retícula de 24 px, trazo 1,75, formas orgánicas abstractas, nunca caras— y no
+  el lienzo 122×130, que es el de los símbolos de marca, y (c) restaurar "Abundante" para volver a
+  las 16 de §5.3.
+- **Las 60 frases nuevas del día están sin revisar editorialmente**, como las 100 de apertura. Pasan
+  §3.6 con prueba automática; el criterio de qué se lee cada mañana es del propietario del producto.
+- ~~**El escalado de texto al 200 % no funciona.**~~ **Saldada en SPEC_12.** La escala pasó a `rem` y
+  la raíz dejó de fijar `font-size`. Medido: con la raíz a 32 px el texto pasa de 14 px a 28 px.
 - **El `_redirects` de Netlify no existe.** Mientras el router sea `HashRouter` no hace falta; si
   alguien lo cambia a `BrowserRouter`, hay que añadirlo antes o las rutas profundas darán 404.
 - **Las 100 frases de apertura están sin revisar editorialmente.** Pasan §3.6 con prueba automática
@@ -538,7 +580,7 @@ git status
 - `src/tokens/index.js` mapea las áreas con ids viejos (`espiritual`, `personal`) y con emoji. El catálogo bueno es `AREA_CATALOG` de SPEC_02; la limpieza es SPEC_12.
 - Los grises de texto van a `text-ink/80` como mínimo: por debajo no llegan a AAA sobre `paper`.
 - El contorno de los días sin marca en la cuadrícula de constancia se mantiene tenue (~2.4:1) por decisión de §5.7. Lo que informa son los días llenos (5.4:1) y el resumen en texto que los acompaña.
-- **No correr `npm run format`:** prettier no tiene configuración y sus valores por defecto (punto y coma, comillas dobles) contradicen el estilo de todo el repo.
+- ~~**No correr `npm run format`.**~~ **Resuelto en SPEC_12:** ya hay `.prettierrc` con el estilo del repo (sin punto y coma, comillas simples, ancho 100) y `format:check` está en verde. El CSS y `design-tokens.json` quedan fuera a propósito; el motivo está en `.prettierignore`.
 - **De §5.3 y §5.4 quedan fuera, y no por olvido:** la ruta express "Hoy voy con prisa", el modo día difícil (§5.14.1, RN-VM-06), el selector de 24 emojis por fila de agradecimiento, guardar una frase manteniéndola pulsada, y la oferta de partir en algo más pequeño una victoria aplazada tres veces. Ninguno aparece en el alcance de SPEC_06.
 - **RN-VN-05 se cumple a medias:** reabrir y volver a cerrar el día no duplica ningún registro, pero la celebración sí se repite tras recargar. Saberlo exigiría un estado `cerrado` que §C5 no recoge; §4.8 lo describía en v3.1.
 - **La pestaña "Hoy" también entra por `SesionProvisional`.** Es el mismo andamio que ya usaba Formia y lo sustituyen el onboarding y SPEC_11.

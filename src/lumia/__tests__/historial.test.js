@@ -78,9 +78,7 @@ describe('puntos de ánimo (§5.10 · §6.3.5)', () => {
   it('todo ánimo que se pinta está en la paleta de cinco', async () => {
     await lumia.saveNightRitual(UID, '2026-08-10', { sleepState: ['inquieto'] })
     const dias = await cargarMes(UID, AGOSTO)
-    dias
-      .filter((dia) => dia.animo !== null)
-      .forEach((dia) => expect(ANIMOS).toContain(dia.animo))
+    dias.filter((dia) => dia.animo !== null).forEach((dia) => expect(ANIMOS).toContain(dia.animo))
   })
 
   it('el ánimo no se persiste: `dayState` sigue sin escribirse (§5.4.1)', async () => {
@@ -94,7 +92,11 @@ describe('vista de día completo: solo Lumia (§C7.7.2)', () => {
   it('trae mañana, noche, victorias y journal', async () => {
     await lumia.saveMorningEntry(UID, '2026-08-10', { gratitude: ['el café'] })
     await lumia.saveNightRitual(UID, '2026-08-10', { learning: 'Que se puede pedir ayuda' })
-    await lumia.createVictory(UID, { text: 'Salir a caminar', date: '2026-08-10', state: 'lograda' })
+    await lumia.createVictory(UID, {
+      text: 'Salir a caminar',
+      date: '2026-08-10',
+      state: 'lograda',
+    })
     await guardar(UID, { ...entradaNueva('2026-08-10'), text: 'Hoy escribí' })
 
     const dia = await cargarDia(UID, '2026-08-10')

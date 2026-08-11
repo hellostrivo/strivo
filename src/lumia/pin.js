@@ -36,7 +36,9 @@ export const MAX_DIGITOS = 6
 
 /** Se queda con los dígitos y corta al máximo. Sin avisar de lo que descarta. */
 export function soloDigitos(texto) {
-  return String(texto ?? '').replace(/\D/g, '').slice(0, MAX_DIGITOS)
+  return String(texto ?? '')
+    .replace(/\D/g, '')
+    .slice(0, MAX_DIGITOS)
 }
 
 export function esPinValido(pin) {

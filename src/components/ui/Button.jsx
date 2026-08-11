@@ -30,7 +30,7 @@ export default function Button({
     'rounded-md font-sans font-medium',
     'transition-all duration-260 ease-smooth',
     'select-none cursor-pointer',
-    'min-h-touch',  // 56px mínimo (WCAG 2.2)
+    'min-h-touch', // 56px mínimo (WCAG 2.2)
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30',
     'disabled:opacity-40 disabled:pointer-events-none',
     // Respeta prefers-reduced-motion
@@ -38,15 +38,15 @@ export default function Button({
   ]
 
   const variants = {
-    primary:   'bg-ink text-paper hover:bg-ink/90 active:scale-[0.98]',
+    primary: 'bg-ink text-paper hover:bg-ink/90 active:scale-[0.98]',
     secondary: 'bg-paper border border-border text-ink hover:bg-surface active:scale-[0.98]',
-    ghost:     'bg-transparent text-ink hover:bg-surface active:scale-[0.98]',
-    danger:    'bg-clay/10 text-clay border border-clay/30 hover:bg-clay/20 active:scale-[0.98]',
+    ghost: 'bg-transparent text-ink hover:bg-surface active:scale-[0.98]',
+    danger: 'bg-clay/10 text-clay border border-clay/30 hover:bg-clay/20 active:scale-[0.98]',
     // Hereda el color de la superficie en la que está (§6.3.7). Es la variante
     // de las pantallas que cambian de tema: un botón `primary` sobre el fondo
     // nocturno es tinta sobre tinta, y uno `secondary` es un rectángulo blanco
     // a las once de la noche.
-    surface:   'bg-raised border border-on-surface text-on-surface active:scale-[0.98]',
+    surface: 'bg-raised border border-on-surface text-on-surface active:scale-[0.98]',
   }
 
   const sizes = {
@@ -67,7 +67,9 @@ export default function Button({
           <Spinner />
           <span className="opacity-60">{children}</span>
         </>
-      ) : children}
+      ) : (
+        children
+      )}
     </button>
   )
 }
@@ -82,8 +84,11 @@ function Spinner() {
       aria-hidden="true"
     >
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path className="opacity-75" fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+      />
     </svg>
   )
 }

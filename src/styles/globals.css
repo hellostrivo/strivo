@@ -1,17 +1,31 @@
 /* src/styles/globals.css */
+
+/* ─── Fuentes ───────────────────────────────────────────────────────────────
+   **Inter, y solo Inter**, para las tres marcas (manual §5.1, confirmada ✅).
+   Se diferencian por peso y tratamiento, nunca por familia: §5.2.
+
+   Sustituye a Fraunces + Satoshi del blueprint §6.4.1. El capítulo 12 lo
+   concede en su propio preámbulo — la especificación de tipografía vive en el
+   manual y manda sobre él (§C0.6).
+
+   Va por npm y no por CDN, como pide el manual §5.1: sin dependencia de red,
+   sin latencia de carga y sin enviar la IP de nadie a un tercero al abrir la
+   app (§7.9).
+
+   Los `@import` van antes que todo lo demás: CSS los ignora si aparecen
+   después de una regla.
+*/
+@import '@fontsource-variable/inter';
+
+/* Paletas de marca por espacio y momento (manual §4). Se cargan siempre; el
+   `data-space` de la raíz de cada espacio decide cuál se aplica. */
+@import './tokens-lumia.css';
+@import './tokens-formia.css';
+
 /* Tailwind */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* ─── Fuentes ───────────────────────────────────────────────────────────────
-   Fraunces (display): https://fonts.google.com/specimen/Fraunces
-   Satoshi (UI):       https://fontsource.org/fonts/satoshi  (o CDN de Fontshare)
-   En producción: self-hosted para privacidad.
-   En dev: Google Fonts / Fontshare CDN para velocidad.
-*/
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700&display=swap');
-@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap');
 
 /* ─── Variables CSS globales (de design-tokens.json) ────────────────────────
    Usado por componentes que necesitan acceso en tiempo de ejecución.
@@ -42,13 +56,17 @@
    RN-SURF-03 — Es independiente del modo claro/oscuro del sistema.
 
    Desviación anotada: §6.3.7 fija #5B5470 para el texto secundario sobre
-   claro. Sobre `paper` se queda en 6,7:1 y Fase 1 pide AAA, así que aquí vale
-   #4F4A5A (8,1:1) — que es exactamente `ink` al 80 % sobre `paper`, la regla
-   que ya seguía el resto del repositorio.
+   claro. Sobre `paper` se queda en 6,7:1 y Fase 1 pide AAA.
+
+   **Recalibrado en SPEC_12.** Valía #4F4A5A, que daba 8,1:1 sobre `paper` pero
+   solo 5,5:1 sobre las cabeceras teñidas de marca — la más oscura es
+   `formia-am-400` (#FFC29C). Aplicar la paleta lo sacó de AAA sin que se viera
+   a simple vista; lo cazó `npm run lint:contraste`. Ahora vale #3A3546, que da
+   7,57:1 en el peor fondo de toda la app y sigue subiendo desde ahí.
 */
 :root {
   --color-text-on-light:       #241E33;
-  --color-text-on-light-soft:  #4F4A5A;
+  --color-text-on-light-soft:  #3A3546;
   --color-text-on-light-faint: #8E88A0;
   --color-text-on-dark:        #F2EEF7;
   --color-text-on-dark-soft:   #B4ACC6;
@@ -58,6 +76,34 @@
 
   /* Cambio de tema de la pantalla Hoy (§5.2.1, token dur-theme). */
   --dur-theme: 320ms;
+
+  /* Peso del tratamiento display. Lo reescribe cada espacio: Lumia va suave y
+     sin urgencia, Formia enérgico y directo (manual §5.2). */
+  --peso-display: 600;
+}
+
+[data-space='lumia'] { --peso-display: 500; }
+[data-space='formia'] { --peso-display: 700; }
+
+/* ─── Neutros conectores de Strivo (manual §4.2) ─────────────────────────────
+   Son el valor por defecto del cromo cuando no hay espacio activo: el arranque
+   de sesión, o cualquier superficie que viva por encima de los dos productos.
+   Strivo es el conector y su paleta no cambia con el momento del día (§4.1).
+
+   No es una pestaña ni un destino: la marca madre no se usa directamente
+   (§C0.2). Aquí solo viste lo que queda fuera de los dos espacios.
+*/
+:root {
+  --strivo-50: #F6F4F1;
+  --strivo-100: #E9E7E3;
+  --strivo-300: #D4D1CD;
+  --strivo-600: #6E6A73;
+  --strivo-900: #2B2730;
+
+  --espacio-base: var(--strivo-50);
+  --espacio-cabecera: var(--strivo-100);
+  --espacio-borde: var(--strivo-600);
+  --espacio-acento: var(--strivo-900);
 }
 
 [data-surface='light'] {
@@ -85,8 +131,8 @@
    sustituye por los de la paleta de marca sin tocar ningún componente.
 */
 [data-lumia='manana'] {
-  --lumia-base: #F6F2E9;
-  --lumia-fondo: linear-gradient(168deg, #F6F2E9 0%, #F6DDE8 62%, #DCCFF1 100%);
+  --lumia-base: var(--lumia-am-50);
+  --lumia-fondo: linear-gradient(168deg, var(--lumia-am-50) 0%, var(--lumia-am-300) 62%, var(--lumia-am-100) 100%);
   --lumia-tarjeta: rgba(255, 255, 255, .72);
   --lumia-campo: rgba(255, 255, 255, .58);
 }
@@ -175,8 +221,11 @@
 */
 @layer base {
   html {
-    font-family: 'Satoshi', system-ui, -apple-system, sans-serif;
-    font-size: 16px;
+    font-family: 'Inter Variable', system-ui, -apple-system, sans-serif;
+    /* Sin `font-size` fijo: la raíz la manda el navegador, que es donde vive la
+       preferencia de tamaño de quien lee. Con la escala en `rem`, subir el
+       cuerpo de letra del sistema al 200 % ahora sí agranda toda la app
+       (§6.14). Fijarla aquí era lo que lo impedía. */
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -196,10 +245,10 @@
     }
   }
 
-  /* Escalado de fuente hasta 200% sin romper layout */
-  @media (max-width: 480px) {
-    html { font-size: clamp(14px, 4vw, 18px); }
-  }
+  /* Aquí había `html { font-size: clamp(14px, 4vw, 18px) }` en móvil. Se retira:
+     ataba el cuerpo de letra al ancho de la ventana y, con la escala en `rem`,
+     habría pisado la preferencia del sistema — justo lo contrario de lo que
+     pide §6.14. El tamaño de letra lo elige quien lee, no el viewport. */
 }
 
 /* ─── Utilidades personalizadas ─────────────────────────────────────────────
@@ -291,8 +340,24 @@
   .pb-safe { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
   .pt-safe { padding-top: max(16px, env(safe-area-inset-top)); }
 
-  /* Fuente display para títulos emocionales */
-  .font-display { font-family: 'Fraunces', serif; }
+  /* Tratamiento display para títulos emocionales.
+     Ya no cambia de familia —hay una sola, Inter— sino de **peso y tracking**,
+     que es como el manual §5.2 diferencia las marcas. La clase se conserva con
+     su nombre para no tocar los veinte componentes que la usan: esta spec
+     aplica marca, no rediseña componentes (SPEC_12 §10). */
+  .font-display {
+    font-weight: var(--peso-display, 600);
+    letter-spacing: -0.011em;
+  }
+
+  /* Superficies de marca del espacio activo (manual §4). Ningún componente
+     escribe un hex: pide la superficie por su papel y el espacio decide cuál. */
+  .bg-espacio            { background-color: var(--espacio-base); }
+  .bg-espacio-cabecera   { background-color: var(--espacio-cabecera); }
+  .border-espacio        { border-color: var(--espacio-borde); }
+  .border-espacio-acento { border-color: var(--espacio-acento); }
+  .text-espacio-acento   { color: var(--espacio-acento); }
+  .bg-espacio-acento     { background-color: var(--espacio-acento); }
 
   /* Scroll suave sin overscroll bounce (para pantallas modales) */
   .scroll-smooth-no-bounce {

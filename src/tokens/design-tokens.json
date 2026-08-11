@@ -1,7 +1,64 @@
 {
-  "version": "1.0",
-  "date": "4 ago 2026",
-  "description": "Tokens de diseño de Strivo del blueprint v3, §6.3–6.9",
+  "version": "1.1",
+  "date": "11 ago 2026",
+  "description": "Tokens de diseño de Strivo. Comportamiento: blueprint v4.1, cap. 12. Color, símbolos y tipografía: BRAND_MANUAL v1.1, que manda sobre el capítulo 12 (§C0.6).",
+  "brand": {
+    "comment": "Paletas por marca y momento del manual §4.8, copiadas sin corregir. La paleta de marca dice QUÉ SUPERFICIE usar; el sistema de contraste de `semantic` sigue decidiendo QUÉ TEXTO va encima (manual §4.8, nota técnica).",
+    "strivo": {
+      "comment": "Neutros conectores. Constantes: Strivo no cambia con el momento del día.",
+      "50": "#F6F4F1",
+      "100": "#E9E7E3",
+      "300": "#D4D1CD",
+      "600": "#6E6A73",
+      "900": "#2B2730"
+    },
+    "lumia": {
+      "am": {
+        "comment": "Claridad suave. Los cuatro confirmados contra el archivo fuente.",
+        "50": "#F6F2E9",
+        "100": "#DCCFF1",
+        "200": "#E5C2DC",
+        "300": "#F6DDE8"
+      },
+      "pm": {
+        "comment": "Introspección profunda.",
+        "50": "#F3EFEA",
+        "400": "#8D82B6",
+        "500": "#6C5AA7",
+        "700": "#5A5568"
+      }
+    },
+    "formia": {
+      "am": {
+        "comment": "Energía cálida.",
+        "50": "#F7F2E9",
+        "200": "#E8D9C4",
+        "400": "#FFC29C",
+        "500": "#E9A387"
+      },
+      "pm": {
+        "comment": "Avance con propósito.",
+        "600": "#B45A2B",
+        "700": "#8F4A2F",
+        "800": "#5D4766",
+        "900": "#1F1D22"
+      }
+    },
+    "simbolos": {
+      "comment": "Manual §3.2 — El tono de firma de cada símbolo NO coincide con el primario de su paleta, y no se fuerza a que coincida. Se usa solo para el símbolo: logo, ícono de app, favicon.",
+      "lumia": "#7563A7",
+      "strivo": "#2B2730",
+      "formia": "#D56732",
+      "viewBox": "0 0 122 130",
+      "strokeLinecap": "round",
+      "strokeLinejoin": "round"
+    },
+    "convergencia": {
+      "comment": "Manual §4.7, confirmado ✅ — `#5D4766` es morado dentro de la paleta de Formia y es INTENCIONAL: el punto donde 'hacia dentro' y 'hacia delante' se encuentran al final del día. No se corrige para alejarlo del morado.",
+      "token": "formia.pm.800",
+      "hex": "#5D4766"
+    }
+  },
   "colors": {
     "semantic": {
       "ink": "#241E33",
@@ -52,40 +109,47 @@
   },
   "typography": {
     "fontFamilies": {
-      "display": "Fraunces",
-      "interface": "Satoshi",
+      "comment": "UNA SOLA FAMILIA: Inter, para las tres marcas (manual §5.1, confirmada ✅). Se diferencian por peso y tratamiento, nunca por familia. Sustituye a Fraunces + Satoshi del blueprint §6.4.1: el capítulo 12 concede en su preámbulo que el manual manda en tipografía.",
+      "base": "Inter Variable",
+      "display": "Inter Variable",
+      "interface": "Inter Variable",
       "fallback": "system-ui, -apple-system, sans-serif"
     },
     "scales": {
       "baseSize": "16px",
       "ratio": 1.25,
-      "comment": "Escala: 12, 16, 20, 25, 32, 40, 50, 64, 80, 100px",
+      "comment": "En `rem`, no en px: con la escala en píxeles absolutos, subir el tamaño de fuente del sistema no cambiaba nada y §6.14 pide escalar hasta el 200 %. 1rem = 16px mientras nadie toque la raíz.",
       "sizes": {
-        "xs": "12px",
-        "sm": "16px",
-        "base": "16px",
-        "md": "20px",
-        "lg": "25px",
-        "xl": "32px",
-        "2xl": "40px",
-        "3xl": "50px",
-        "4xl": "64px",
-        "5xl": "80px",
-        "6xl": "100px"
+        "xs": "0.75rem",
+        "sm": "0.875rem",
+        "base": "1rem",
+        "md": "1.25rem",
+        "lg": "1.5625rem",
+        "xl": "2rem",
+        "2xl": "2.5rem",
+        "3xl": "3.125rem",
+        "4xl": "4rem"
       }
     },
     "weights": {
-      "display": {
-        "regular": 400,
-        "medium": 500,
-        "bold": 700,
-        "comment": "Fraunces: para títulos grandes (Hoy, etapas de ritual)"
+      "comment": "Manual §5.2 — La jerarquía de marca se construye con peso dentro de Inter.",
+      "lumia": {
+        "cuerpo": 400,
+        "enfasis": 500,
+        "display": 500,
+        "comment": "Suave, íntimo, sin urgencia."
       },
-      "interface": {
-        "regular": 400,
-        "medium": 500,
-        "bold": 700,
-        "comment": "Satoshi: para cuerpo, botones, labels"
+      "strivo": {
+        "cuerpo": 400,
+        "enfasis": 500,
+        "display": 600,
+        "comment": "Neutro, confiable, estructurado."
+      },
+      "formia": {
+        "cuerpo": 400,
+        "enfasis": 600,
+        "display": 700,
+        "comment": "Enérgico, directo, orientado a la acción."
       }
     },
     "lineHeights": {

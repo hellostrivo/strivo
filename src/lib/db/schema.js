@@ -153,11 +153,7 @@ export const COLLECTIONS = Object.freeze({
  */
 export function assertFields(record, allowed, label) {
   if (record === null || typeof record !== 'object' || Array.isArray(record)) {
-    throw new StrivoDataError(
-      ERROR_CODES.FIELD_TYPE,
-      `${label}: se esperaba un objeto.`,
-      { label },
-    )
+    throw new StrivoDataError(ERROR_CODES.FIELD_TYPE, `${label}: se esperaba un objeto.`, { label })
   }
   const unknown = Object.keys(record).filter((key) => !allowed.includes(key))
   if (unknown.length > 0) {

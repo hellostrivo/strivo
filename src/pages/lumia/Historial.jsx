@@ -22,7 +22,7 @@ const textos = copy.lumia.historial
 
 function Marco({ children }) {
   return (
-    <div data-surface="light" className="min-h-screen bg-paper text-on-surface">
+    <div data-surface="light" className="min-h-screen bg-espacio text-on-surface">
       {children}
     </div>
   )
@@ -67,9 +67,7 @@ export default function Historial({ uid }) {
         <header className="flex flex-col gap-2">
           <h1 className="font-display text-lg text-on-surface">{textos.title}</h1>
           <p className="text-sm text-on-surface-soft">{textos.lead}</p>
-          {journalConPin && (
-            <p className="text-sm text-on-surface-soft">{textos.journalConPin}</p>
-          )}
+          {journalConPin && <p className="text-sm text-on-surface-soft">{textos.journalConPin}</p>}
         </header>
 
         <CalendarioAnimo

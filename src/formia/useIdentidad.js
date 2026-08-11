@@ -72,8 +72,7 @@ export function useIdentidad(uid) {
   }, [])
 
   const acciones = {
-    guardarCentral: (texto) =>
-      ejecutar(() => identidad.guardarCentral(uid, texto, estado.central)),
+    guardarCentral: (texto) => ejecutar(() => identidad.guardarCentral(uid, texto, estado.central)),
     guardarIdentidadArea: (areaId, texto) =>
       ejecutar(() => identidad.guardarIdentidadArea(uid, areaId, texto)),
     elegirArea: (areaId) => ejecutar(() => identidad.elegirArea(uid, areaId, estado.areas)),

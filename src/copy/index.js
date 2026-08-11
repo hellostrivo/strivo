@@ -15,7 +15,6 @@
 // componente lee `.m` ni `.f` (RN-GEN-01).
 
 export const copy = {
-
   // ─── Generales ───────────────────────────────────────────────────────────
   appName: 'Strivo',
   tagline: 'Refugio digital para terminar cada día en paz contigo mismo.',
@@ -164,11 +163,31 @@ export const copy = {
             // pregunta detonante; escribir sigue siendo cosa de la persona.
             descartar: 'Ahora no',
             opciones: [
-              { id: 'familia', label: 'tu familia', pregunta: '¿Quién de tu familia te hizo bien esta semana?' },
-              { id: 'cuerpo', label: 'tu cuerpo', pregunta: '¿Qué te permite hacer tu cuerpo esta mañana?' },
-              { id: 'momento', label: 'este momento', pregunta: '¿Qué tiene de bueno este momento?' },
-              { id: 'silencio', label: 'el silencio', pregunta: '¿Dónde encuentras silencio en tu día?' },
-              { id: 'tienes', label: 'lo que tienes', pregunta: '¿Qué tienes hoy que hace un año esperabas?' },
+              {
+                id: 'familia',
+                label: 'tu familia',
+                pregunta: '¿Quién de tu familia te hizo bien esta semana?',
+              },
+              {
+                id: 'cuerpo',
+                label: 'tu cuerpo',
+                pregunta: '¿Qué te permite hacer tu cuerpo esta mañana?',
+              },
+              {
+                id: 'momento',
+                label: 'este momento',
+                pregunta: '¿Qué tiene de bueno este momento?',
+              },
+              {
+                id: 'silencio',
+                label: 'el silencio',
+                pregunta: '¿Dónde encuentras silencio en tu día?',
+              },
+              {
+                id: 'tienes',
+                label: 'lo que tienes',
+                pregunta: '¿Qué tienes hoy que hace un año esperabas?',
+              },
             ],
           },
         },
@@ -186,21 +205,53 @@ export const copy = {
           // El ajuste que lo cambia por "Conectado conmigo" es §5.12, fuera de
           // esta spec: aquí está siempre presente.
           catalogo: [
-            { id: 'agradecido',     emoji: '🙏', label: { m: 'Agradecido',        f: 'Agradecida',        n: 'Con gratitud' } },
-            { id: 'en_paz',         emoji: '🕊️', label: { m: 'En paz',            f: 'En paz',            n: 'En paz' } },
-            { id: 'enfocado',       emoji: '🎯', label: { m: 'Enfocado',          f: 'Enfocada',          n: 'Con foco' } },
-            { id: 'orgulloso',      emoji: '✨', label: { m: 'Orgulloso de mí',   f: 'Orgullosa de mí',   n: 'Con orgullo' } },
-            { id: 'pleno',          emoji: '🌕', label: { m: 'Pleno',             f: 'Plena',             n: 'En plenitud' } },
-            { id: 'inspirado',      emoji: '💡', label: { m: 'Inspirado',         f: 'Inspirada',         n: 'Con inspiración' } },
-            { id: 'feliz',          emoji: '😊', label: { m: 'Feliz',             f: 'Feliz',             n: 'Feliz' } },
-            { id: 'conectado_dios', emoji: '🕯️', label: { m: 'Conectado con Dios', f: 'Conectada con Dios', n: 'En conexión con Dios' } },
-            { id: 'amado',          emoji: '💛', label: { m: 'Amado',             f: 'Amada',             n: 'Con amor' } },
-            { id: 'seguro',         emoji: '🛡️', label: { m: 'Seguro',            f: 'Segura',            n: 'Con seguridad' } },
-            { id: 'valiente',       emoji: '🦁', label: { m: 'Valiente',          f: 'Valiente',          n: 'Valiente' } },
-            { id: 'creativo',       emoji: '🎨', label: { m: 'Creativo',          f: 'Creativa',          n: 'Con creatividad' } },
-            { id: 'paciente',       emoji: '🌱', label: { m: 'Paciente',          f: 'Paciente',          n: 'Paciente' } },
-            { id: 'generoso',       emoji: '🤲', label: { m: 'Generoso',          f: 'Generosa',          n: 'Con generosidad' } },
-            { id: 'prospero',       emoji: '🌾', label: { m: 'Próspero',          f: 'Próspera',          n: 'Con prosperidad' } },
+            {
+              id: 'agradecido',
+              emoji: '🙏',
+              label: { m: 'Agradecido', f: 'Agradecida', n: 'Con gratitud' },
+            },
+            { id: 'en_paz', emoji: '🕊️', label: { m: 'En paz', f: 'En paz', n: 'En paz' } },
+            { id: 'enfocado', emoji: '🎯', label: { m: 'Enfocado', f: 'Enfocada', n: 'Con foco' } },
+            {
+              id: 'orgulloso',
+              emoji: '✨',
+              label: { m: 'Orgulloso de mí', f: 'Orgullosa de mí', n: 'Con orgullo' },
+            },
+            { id: 'pleno', emoji: '🌕', label: { m: 'Pleno', f: 'Plena', n: 'En plenitud' } },
+            {
+              id: 'inspirado',
+              emoji: '💡',
+              label: { m: 'Inspirado', f: 'Inspirada', n: 'Con inspiración' },
+            },
+            { id: 'feliz', emoji: '😊', label: { m: 'Feliz', f: 'Feliz', n: 'Feliz' } },
+            {
+              id: 'conectado_dios',
+              emoji: '🕯️',
+              label: {
+                m: 'Conectado con Dios',
+                f: 'Conectada con Dios',
+                n: 'En conexión con Dios',
+              },
+            },
+            { id: 'amado', emoji: '💛', label: { m: 'Amado', f: 'Amada', n: 'Con amor' } },
+            { id: 'seguro', emoji: '🛡️', label: { m: 'Seguro', f: 'Segura', n: 'Con seguridad' } },
+            { id: 'valiente', emoji: '🦁', label: { m: 'Valiente', f: 'Valiente', n: 'Valiente' } },
+            {
+              id: 'creativo',
+              emoji: '🎨',
+              label: { m: 'Creativo', f: 'Creativa', n: 'Con creatividad' },
+            },
+            { id: 'paciente', emoji: '🌱', label: { m: 'Paciente', f: 'Paciente', n: 'Paciente' } },
+            {
+              id: 'generoso',
+              emoji: '🤲',
+              label: { m: 'Generoso', f: 'Generosa', n: 'Con generosidad' },
+            },
+            {
+              id: 'prospero',
+              emoji: '🌾',
+              label: { m: 'Próspero', f: 'Próspera', n: 'Con prosperidad' },
+            },
           ],
         },
 
@@ -248,7 +299,8 @@ export const copy = {
         logros: {
           titulo: '¿Qué más logré hoy que no había planeado?',
           placeholder: 'Algo que no estaba en el plan',
-          sugerencia: '¿Ayudaste a alguien? ¿Resolviste algo pequeño? ¿Te sostuviste en un momento difícil?',
+          sugerencia:
+            '¿Ayudaste a alguien? ¿Resolviste algo pequeño? ¿Te sostuviste en un momento difícil?',
         },
 
         gratitud: {
@@ -263,11 +315,31 @@ export const copy = {
             titulo: '¿Te ayudo con una idea?',
             descartar: 'Ahora no',
             opciones: [
-              { id: 'alguien', label: 'alguien de hoy', pregunta: '¿Quién te hizo el día más fácil?' },
-              { id: 'inesperado', label: 'algo que no esperabas', pregunta: '¿Qué te sorprendió hoy?' },
-              { id: 'cuerpo', label: 'tu cuerpo', pregunta: '¿Qué te sostuvo hoy sin que lo pidieras?' },
-              { id: 'pequeno', label: 'algo pequeño', pregunta: '¿Qué momento de hoy duró poco y valió la pena?' },
-              { id: 'tuyo', label: 'algo tuyo', pregunta: '¿Qué hiciste hoy que agradeces haber hecho?' },
+              {
+                id: 'alguien',
+                label: 'alguien de hoy',
+                pregunta: '¿Quién te hizo el día más fácil?',
+              },
+              {
+                id: 'inesperado',
+                label: 'algo que no esperabas',
+                pregunta: '¿Qué te sorprendió hoy?',
+              },
+              {
+                id: 'cuerpo',
+                label: 'tu cuerpo',
+                pregunta: '¿Qué te sostuvo hoy sin que lo pidieras?',
+              },
+              {
+                id: 'pequeno',
+                label: 'algo pequeño',
+                pregunta: '¿Qué momento de hoy duró poco y valió la pena?',
+              },
+              {
+                id: 'tuyo',
+                label: 'algo tuyo',
+                pregunta: '¿Qué hiciste hoy que agradeces haber hecho?',
+              },
             ],
           },
         },
@@ -303,15 +375,15 @@ export const copy = {
             placeholder: 'Como quieras decirlo',
           },
           opciones: [
-            { id: 'en_paz',     label: { m: 'En paz',     f: 'En paz',     n: 'En paz' } },
+            { id: 'en_paz', label: { m: 'En paz', f: 'En paz', n: 'En paz' } },
             { id: 'agradecido', label: { m: 'Agradecido', f: 'Agradecida', n: 'Con gratitud' } },
-            { id: 'orgulloso',  label: { m: 'Orgulloso',  f: 'Orgullosa',  n: 'Con orgullo' } },
-            { id: 'tranquilo',  label: { m: 'Tranquilo',  f: 'Tranquila',  n: 'En calma' } },
-            { id: 'contento',   label: { m: 'Contento',   f: 'Contenta',   n: 'Con alegría' } },
-            { id: 'pensativo',  label: { m: 'Pensativo',  f: 'Pensativa',  n: 'Pensando' } },
-            { id: 'cansado',    label: { m: 'Cansado',    f: 'Cansada',    n: 'Con cansancio' } },
-            { id: 'inquieto',   label: { m: 'Inquieto',   f: 'Inquieta',   n: 'Con inquietud' } },
-            { id: 'otro',       label: { m: 'Algo más',   f: 'Algo más',   n: 'Algo más' } },
+            { id: 'orgulloso', label: { m: 'Orgulloso', f: 'Orgullosa', n: 'Con orgullo' } },
+            { id: 'tranquilo', label: { m: 'Tranquilo', f: 'Tranquila', n: 'En calma' } },
+            { id: 'contento', label: { m: 'Contento', f: 'Contenta', n: 'Con alegría' } },
+            { id: 'pensativo', label: { m: 'Pensativo', f: 'Pensativa', n: 'Pensando' } },
+            { id: 'cansado', label: { m: 'Cansado', f: 'Cansada', n: 'Con cansancio' } },
+            { id: 'inquieto', label: { m: 'Inquieto', f: 'Inquieta', n: 'Con inquietud' } },
+            { id: 'otro', label: { m: 'Algo más', f: 'Algo más', n: 'Algo más' } },
           ],
         },
 
@@ -482,21 +554,69 @@ export const copy = {
           // aquí sí están Triste, Ansioso, Frustrado, Preocupado, Melancólico,
           // Solo y Cansado, y no llevan ningún tratamiento de advertencia.
           catalogo: [
-            { id: 'feliz',       emoji: '😊', label: { m: 'Feliz',       f: 'Feliz',       n: 'Feliz' } },
-            { id: 'agradecido',  emoji: '🙏', label: { m: 'Agradecido',  f: 'Agradecida',  n: 'Con gratitud' } },
-            { id: 'tranquilo',   emoji: '🌿', label: { m: 'Tranquilo',   f: 'Tranquila',   n: 'En calma' } },
-            { id: 'orgulloso',   emoji: '✨', label: { m: 'Orgulloso',   f: 'Orgullosa',   n: 'Con orgullo' } },
-            { id: 'esperanzado', emoji: '🌅', label: { m: 'Esperanzado', f: 'Esperanzada', n: 'Con esperanza' } },
-            { id: 'motivado',    emoji: '🔥', label: { m: 'Motivado',    f: 'Motivada',    n: 'Con motivación' } },
-            { id: 'aliviado',    emoji: '🌤️', label: { m: 'Aliviado',    f: 'Aliviada',    n: 'Con alivio' } },
-            { id: 'acompanado',  emoji: '🤝', label: { m: 'Acompañado',  f: 'Acompañada',  n: 'En compañía' } },
-            { id: 'cansado',     emoji: '😴', label: { m: 'Cansado',     f: 'Cansada',     n: 'Con cansancio' } },
-            { id: 'triste',      emoji: '💧', label: { m: 'Triste',      f: 'Triste',      n: 'Triste' } },
-            { id: 'ansioso',     emoji: '🌀', label: { m: 'Ansioso',     f: 'Ansiosa',     n: 'Con ansiedad' } },
-            { id: 'frustrado',   emoji: '😤', label: { m: 'Frustrado',   f: 'Frustrada',   n: 'Con frustración' } },
-            { id: 'preocupado',  emoji: '🌧️', label: { m: 'Preocupado',  f: 'Preocupada',  n: 'Con preocupación' } },
-            { id: 'melancolico', emoji: '🍂', label: { m: 'Melancólico', f: 'Melancólica', n: 'Con melancolía' } },
-            { id: 'solo',        emoji: '🌑', label: { m: 'Solo',        f: 'Sola',        n: 'En soledad' } },
+            { id: 'feliz', emoji: '😊', label: { m: 'Feliz', f: 'Feliz', n: 'Feliz' } },
+            {
+              id: 'agradecido',
+              emoji: '🙏',
+              label: { m: 'Agradecido', f: 'Agradecida', n: 'Con gratitud' },
+            },
+            {
+              id: 'tranquilo',
+              emoji: '🌿',
+              label: { m: 'Tranquilo', f: 'Tranquila', n: 'En calma' },
+            },
+            {
+              id: 'orgulloso',
+              emoji: '✨',
+              label: { m: 'Orgulloso', f: 'Orgullosa', n: 'Con orgullo' },
+            },
+            {
+              id: 'esperanzado',
+              emoji: '🌅',
+              label: { m: 'Esperanzado', f: 'Esperanzada', n: 'Con esperanza' },
+            },
+            {
+              id: 'motivado',
+              emoji: '🔥',
+              label: { m: 'Motivado', f: 'Motivada', n: 'Con motivación' },
+            },
+            {
+              id: 'aliviado',
+              emoji: '🌤️',
+              label: { m: 'Aliviado', f: 'Aliviada', n: 'Con alivio' },
+            },
+            {
+              id: 'acompanado',
+              emoji: '🤝',
+              label: { m: 'Acompañado', f: 'Acompañada', n: 'En compañía' },
+            },
+            {
+              id: 'cansado',
+              emoji: '😴',
+              label: { m: 'Cansado', f: 'Cansada', n: 'Con cansancio' },
+            },
+            { id: 'triste', emoji: '💧', label: { m: 'Triste', f: 'Triste', n: 'Triste' } },
+            {
+              id: 'ansioso',
+              emoji: '🌀',
+              label: { m: 'Ansioso', f: 'Ansiosa', n: 'Con ansiedad' },
+            },
+            {
+              id: 'frustrado',
+              emoji: '😤',
+              label: { m: 'Frustrado', f: 'Frustrada', n: 'Con frustración' },
+            },
+            {
+              id: 'preocupado',
+              emoji: '🌧️',
+              label: { m: 'Preocupado', f: 'Preocupada', n: 'Con preocupación' },
+            },
+            {
+              id: 'melancolico',
+              emoji: '🍂',
+              label: { m: 'Melancólico', f: 'Melancólica', n: 'Con melancolía' },
+            },
+            { id: 'solo', emoji: '🌑', label: { m: 'Solo', f: 'Sola', n: 'En soledad' } },
           ],
         },
         texto: {
@@ -551,8 +671,10 @@ export const copy = {
           lead: 'Verificamos tu cuenta y eliges un PIN nuevo. Todo lo que escribiste se queda donde está.',
           cta: 'Verificar mi cuenta',
           volver: 'Volver al PIN',
-          sinSesion: 'Para verificarte hace falta entrar a tu cuenta. Todavía no hay sesión en este dispositivo.',
-          sinMetodo: 'Esta cuenta no tiene correo ni teléfono vinculados, así que no hay forma de verificarte.',
+          sinSesion:
+            'Para verificarte hace falta entrar a tu cuenta. Todavía no hay sesión en este dispositivo.',
+          sinMetodo:
+            'Esta cuenta no tiene correo ni teléfono vinculados, así que no hay forma de verificarte.',
           noVerificado: 'No pudimos verificarte esta vez. Tu journal sigue donde estaba.',
           nuevo: 'Elige tu PIN nuevo',
         },
@@ -565,7 +687,8 @@ export const copy = {
           telefono: { label: 'Teléfono', placeholder: '+52 55 0000 0000' },
           guardar: 'Guardar',
           listo: 'Listo. Ya puedes pedir un PIN.',
-          aviso: 'Tu journal pide un PIN y esta cuenta se quedó sin forma de recuperarlo. Añade un correo o retira el PIN.',
+          aviso:
+            'Tu journal pide un PIN y esta cuenta se quedó sin forma de recuperarlo. Añade un correo o retira el PIN.',
         },
       },
     },
@@ -597,11 +720,11 @@ export const copy = {
       // estado de sueño declarado —o con "Pensativa", que §5.4.1 deriva aquí—, y
       // llamarlo "sin registrar" sería contarle a alguien que ese día no contó.
       animo: {
-        agotado:   'Con cansancio',
-        inquieto:  'Con inquietud',
-        normal:    'Estuviste',
+        agotado: 'Con cansancio',
+        inquieto: 'Con inquietud',
+        normal: 'Estuviste',
         tranquilo: 'En calma',
-        en_paz:    'En paz',
+        en_paz: 'En paz',
       },
 
       dia: {
@@ -677,9 +800,11 @@ export const copy = {
     reject: 'No me sirve',
     area: {
       // Template: "Eres alguien que crece. En {área} lo demostraste {n} de los últimos {total} días."
-      evidenceTemplate: 'Eres alguien que {identidad}. En {área} lo demostraste {n} de los últimos {total} días.',
+      evidenceTemplate:
+        'Eres alguien que {identidad}. En {área} lo demostraste {n} de los últimos {total} días.',
       // Desequilibrio (NUNCA acusatorio):
-      lowActivity: 'Llevas un tiempo enfocado en {áreaActiva}. Es natural. {áreaBaja} sigue aquí cuando quieras.',
+      lowActivity:
+        'Llevas un tiempo enfocado en {áreaActiva}. Es natural. {áreaBaja} sigue aquí cuando quieras.',
     },
     weekly: {
       // Template: "Cinco días esta semana. Tu palabra más repetida: calma."
@@ -750,13 +875,13 @@ export const copy = {
         resume: 'Reanudar',
         remove: 'Quitar',
         names: {
-          salud:          'Salud',
-          trabajo:        'Trabajo',
-          relaciones:     'Relaciones',
+          salud: 'Salud',
+          trabajo: 'Trabajo',
+          relaciones: 'Relaciones',
           espiritualidad: 'Espiritualidad',
-          crecimiento:    'Crecimiento personal',
-          finanzas:       'Finanzas',
-          creatividad:    'Creatividad',
+          crecimiento: 'Crecimiento personal',
+          finanzas: 'Finanzas',
+          creatividad: 'Creatividad',
         },
       },
 
@@ -926,8 +1051,8 @@ export const copy = {
 
   // ─── Notificaciones ───────────────────────────────────────────────────────
   notifications: {
-    manana: '¿Cómo quieres sentirte hoy?',   // A hora de despertar
-    noche:  '¿Cómo cerrar el día?',           // A hora de dormir
+    manana: '¿Cómo quieres sentirte hoy?', // A hora de despertar
+    noche: '¿Cómo cerrar el día?', // A hora de dormir
     // Nunca badge numérico. Nunca contenido del usuario.
   },
 
@@ -960,7 +1085,7 @@ export const copy = {
   // ─── Días de semana ───────────────────────────────────────────────────────
   days: {
     short: ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'],
-    long:  ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
+    long: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
   },
 }
 

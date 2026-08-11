@@ -138,9 +138,7 @@ export function agrupar(entradas, hoy, titulos) {
   const limiteSemana = restarDias(hoy, 6)
 
   const deHoy = lista.filter((entrada) => entrada.date === hoy)
-  const deLaSemana = lista.filter(
-    (entrada) => entrada.date < hoy && entrada.date >= limiteSemana,
-  )
+  const deLaSemana = lista.filter((entrada) => entrada.date < hoy && entrada.date >= limiteSemana)
   const anteriores = lista.filter((entrada) => entrada.date < limiteSemana)
 
   const grupos = []
@@ -164,7 +162,9 @@ export function agrupar(entradas, hoy, titulos) {
 
 /** Resta días a una clave de fecha sin pasar por `new Date(cadena)` (UTC). */
 function restarDias(dateKey, dias) {
-  const [year, month, day] = String(dateKey ?? '').split('-').map(Number)
+  const [year, month, day] = String(dateKey ?? '')
+    .split('-')
+    .map(Number)
   if (!year || !month || !day) return dateKey
   const fecha = new Date(year, month - 1, day, 12, 0, 0)
   fecha.setDate(fecha.getDate() - dias)

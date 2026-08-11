@@ -12,7 +12,13 @@ import { useState } from 'react'
 import { clsx } from 'clsx'
 import { CampoLinea } from './Campo'
 import { copy } from '@copy'
-import { alSalirDeFila, escribirEn, pideConfirmacion, quitarFila, topeAlcanzado } from '@/lumia/filas'
+import {
+  alSalirDeFila,
+  escribirEn,
+  pideConfirmacion,
+  quitarFila,
+  topeAlcanzado,
+} from '@/lumia/filas'
 
 const textos = copy.lumia.diario.filas
 

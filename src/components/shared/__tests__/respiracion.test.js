@@ -78,7 +78,9 @@ describe('no se registra en ninguna parte (criterio 9)', () => {
     // Sin la capa de datos —que la prueba de arriba ya prohíbe importar— la
     // única vía que quedaría para persistir algo es un almacén global.
     ;[COMPONENTE, RITMO, AUDIO].forEach((ruta) => {
-      expect(`${ruta}: ${codigoDe(ruta)}`).not.toMatch(/localStorage|indexedDB|sessionStorage|fetch\(/)
+      expect(`${ruta}: ${codigoDe(ruta)}`).not.toMatch(
+        /localStorage|indexedDB|sessionStorage|fetch\(/,
+      )
     })
   })
 })
@@ -103,9 +105,7 @@ describe('el copy invita, no vende (SPEC_08 §8)', () => {
   })
 
   it('no queda rastro del copy de Fase 0, que presuponía un ritual detrás', () => {
-    CADENAS.forEach(([ruta, texto]) =>
-      expect(`${ruta}: ${texto}`).not.toMatch(/antes de empezar/i),
-    )
+    CADENAS.forEach(([ruta, texto]) => expect(`${ruta}: ${texto}`).not.toMatch(/antes de empezar/i))
   })
 
   it('dice lo que dura y que se puede salir, antes de empezar', () => {

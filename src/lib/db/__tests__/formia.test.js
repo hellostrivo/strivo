@@ -99,9 +99,9 @@ describe('createHabit (RN-DB4-05)', () => {
     const cambiado = await formia.updateHabit(UID, habit.id, { identityRef: 'salud' })
     expect(cambiado.identityRef).toBe('salud')
 
-    await expect(
-      formia.updateHabit(UID, habit.id, { identityRef: null }),
-    ).rejects.toMatchObject({ code: ERROR_CODES.HABIT_IDENTITY_REQUIRED })
+    await expect(formia.updateHabit(UID, habit.id, { identityRef: null })).rejects.toMatchObject({
+      code: ERROR_CODES.HABIT_IDENTITY_REQUIRED,
+    })
   })
 
   it('RN-FO-ID-04: agrupar por identidad es una consulta', async () => {

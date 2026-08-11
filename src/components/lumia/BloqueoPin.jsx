@@ -181,7 +181,12 @@ export default function BloqueoPin({ modo, estado, acciones, onCerrar }) {
           <p className="text-base text-on-surface-soft">{textos.bloqueo.lead}</p>
         </div>
 
-        <CampoPin id="pin-abrir" value={codigo} onChange={setCodigo} etiqueta={textos.campo.label} />
+        <CampoPin
+          id="pin-abrir"
+          value={codigo}
+          onChange={setCodigo}
+          etiqueta={textos.campo.label}
+        />
         {nota && <Nota>{nota}</Nota>}
 
         <Button variant="surface" onClick={abrir} disabled={codigo.length < MIN_DIGITOS}>

@@ -31,34 +31,107 @@ import { AREA_IDS } from '@/lib/db'
  */
 const SENALES = Object.freeze({
   salud: [
-    'correr', 'corro', 'carrera', 'gym', 'gimnasio', 'entrenar', 'entreno',
-    'pesas', 'ejercicio', 'estirar', 'estiramiento', 'yoga', 'caminar', 'camino',
-    'pasos', 'nadar', 'bici', 'bicicleta', 'dormir', 'agua', 'fruta', 'verdura',
+    'correr',
+    'corro',
+    'carrera',
+    'gym',
+    'gimnasio',
+    'entrenar',
+    'entreno',
+    'pesas',
+    'ejercicio',
+    'estirar',
+    'estiramiento',
+    'yoga',
+    'caminar',
+    'camino',
+    'pasos',
+    'nadar',
+    'bici',
+    'bicicleta',
+    'dormir',
+    'agua',
+    'fruta',
+    'verdura',
   ],
   trabajo: [
-    'reunion', 'reuniones', 'junta', 'propuesta', 'cliente', 'clientes',
-    'correos', 'inbox', 'informe', 'proyecto', 'prioridades', 'pendientes',
+    'reunion',
+    'reuniones',
+    'junta',
+    'propuesta',
+    'cliente',
+    'clientes',
+    'correos',
+    'inbox',
+    'informe',
+    'proyecto',
+    'prioridades',
+    'pendientes',
     'presentacion',
   ],
   relaciones: [
-    'llamar', 'llamada', 'familia', 'amigos', 'amigas', 'amigo', 'amiga',
-    'pareja', 'hijos', 'hijas', 'mama', 'papa', 'abuela', 'abuelo', 'escuchar',
+    'llamar',
+    'llamada',
+    'familia',
+    'amigos',
+    'amigas',
+    'amigo',
+    'amiga',
+    'pareja',
+    'hijos',
+    'hijas',
+    'mama',
+    'papa',
+    'abuela',
+    'abuelo',
+    'escuchar',
   ],
   espiritualidad: [
-    'meditar', 'meditacion', 'orar', 'oracion', 'rezar', 'misa', 'biblia',
-    'agradecer', 'gratitud', 'silencio',
+    'meditar',
+    'meditacion',
+    'orar',
+    'oracion',
+    'rezar',
+    'misa',
+    'biblia',
+    'agradecer',
+    'gratitud',
+    'silencio',
   ],
   crecimiento: [
-    'leer', 'leo', 'libro', 'libros', 'paginas', 'estudiar', 'estudio', 'curso',
-    'aprender', 'idioma', 'ingles',
+    'leer',
+    'leo',
+    'libro',
+    'libros',
+    'paginas',
+    'estudiar',
+    'estudio',
+    'curso',
+    'aprender',
+    'idioma',
+    'ingles',
   ],
   finanzas: [
-    'ahorrar', 'ahorro', 'ahorros', 'gastos', 'presupuesto', 'invertir',
-    'inversion', 'deudas', 'finanzas',
+    'ahorrar',
+    'ahorro',
+    'ahorros',
+    'gastos',
+    'presupuesto',
+    'invertir',
+    'inversion',
+    'deudas',
+    'finanzas',
   ],
   creatividad: [
-    'dibujar', 'dibujo', 'pintar', 'guitarra', 'piano', 'cantar', 'componer',
-    'fotografia', 'fotos',
+    'dibujar',
+    'dibujo',
+    'pintar',
+    'guitarra',
+    'piano',
+    'cantar',
+    'componer',
+    'fotografia',
+    'fotos',
   ],
 })
 
@@ -78,9 +151,7 @@ export function palabrasDe(texto) {
  */
 export function areasSenaladas(texto) {
   const palabras = new Set(palabrasDe(texto))
-  return AREA_IDS.filter((areaId) =>
-    SENALES[areaId].some((senal) => palabras.has(senal)),
-  )
+  return AREA_IDS.filter((areaId) => SENALES[areaId].some((senal) => palabras.has(senal)))
 }
 
 /**
@@ -98,9 +169,7 @@ export function areasSenaladas(texto) {
  * señal clara, y elegir una por la persona sería adivinar.
  */
 export function sugerirIdentidad(texto, areasDisponibles = []) {
-  const senaladas = areasSenaladas(texto).filter((areaId) =>
-    areasDisponibles.includes(areaId),
-  )
+  const senaladas = areasSenaladas(texto).filter((areaId) => areasDisponibles.includes(areaId))
   return senaladas.length === 1 ? senaladas[0] : null
 }
 

@@ -223,7 +223,9 @@ describe('RN-HB-02 — pausar y archivar conservan el historial', () => {
 
     const reanudado = await cambiarEstado(UID, habitId, 'activo')
     expect(constanciaDe(reanudado.estado.logs, habitId)).toBe(1)
-    expect(agruparPorIdentidad(reanudado.estado.habits, reanudado.estado.areas, CENTRAL)).toHaveLength(1)
+    expect(
+      agruparPorIdentidad(reanudado.estado.habits, reanudado.estado.areas, CENTRAL),
+    ).toHaveLength(1)
   })
 })
 

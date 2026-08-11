@@ -12,7 +12,9 @@ const LOCALE = 'es'
 
 /** 'YYYY-MM-DD' → Date local a mediodía, lejos de cualquier salto de horario. */
 export function fechaDeClave(dateKey) {
-  const [year, month, day] = String(dateKey ?? '').split('-').map(Number)
+  const [year, month, day] = String(dateKey ?? '')
+    .split('-')
+    .map(Number)
   if (!year || !month || !day) return null
   return new Date(year, month - 1, day, 12, 0, 0)
 }

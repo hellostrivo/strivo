@@ -33,7 +33,9 @@ function claveDe(year, month, day) {
 
 /** El mes al que pertenece una fecha, como `{ year, month }` con month 1..12. */
 export function mesDe(dateKey) {
-  const [year, month] = String(dateKey ?? '').split('-').map(Number)
+  const [year, month] = String(dateKey ?? '')
+    .split('-')
+    .map(Number)
   return { year, month }
 }
 
@@ -159,9 +161,7 @@ export async function cargarDia(uid, fecha, { conJournal = true } = {}) {
     morning,
     night,
     victorias: ordenar(victorias).filter((victoria) => victoria.state !== 'soltada'),
-    journal: [...journal].sort((a, b) =>
-      String(a.createdAt).localeCompare(String(b.createdAt)),
-    ),
+    journal: [...journal].sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt))),
   }
 }
 

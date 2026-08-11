@@ -87,6 +87,74 @@ export const FRASES = Object.freeze([
   { texto: 'Ser alguien nuevo empieza por un gesto de siempre hecho distinto.', tema: 'identidad' },
   { texto: 'Hoy solo tienes que llegar hasta la noche.', tema: 'aceptacion' },
   { texto: 'El esfuerzo de hoy se nota en semanas, no en horas.', tema: 'esfuerzo' },
+
+  // ─── Ampliación de SPEC_12: de 60 a 120 ─────────────────────────────────────
+  // El mecanismo ya estaba entero desde SPEC_06; esto es repertorio. Con 120,
+  // `diasSinRepetir()` sube a 120 días y RN-HOY-02 (365 sin repetir) se cumple
+  // hasta donde llega, que es el doble que antes.
+  //
+  // **Pendientes de revisión editorial.** Pasan §3.6 con prueba automática, pero
+  // qué se le dice a alguien cada mañana es criterio de producto.
+  { texto: 'Lo que agradeces se queda más tiempo.', tema: 'gratitud' },
+  { texto: 'La calma se entrena como todo lo demás.', tema: 'calma' },
+  { texto: 'Eres el único que estuvo en todos tus días.', tema: 'identidad' },
+  { texto: 'Hoy no tiene que parecerse a ayer.', tema: 'aceptacion' },
+  { texto: 'Lo pequeño repetido termina siendo grande.', tema: 'esfuerzo' },
+  { texto: 'Alguien te sostiene sin que lo notes.', tema: 'gratitud' },
+  { texto: 'Bajar el ritmo también es una decisión.', tema: 'calma' },
+  { texto: 'Tus manías también te construyen.', tema: 'identidad' },
+  { texto: 'No todo lo que pesa hay que cargarlo hoy.', tema: 'aceptacion' },
+  { texto: 'Lo que empiezas hoy ya cuenta como empezado.', tema: 'esfuerzo' },
+  { texto: 'Mirar lo que hay es más raro de lo que parece.', tema: 'gratitud' },
+  { texto: 'El apuro casi nunca mejora el resultado.', tema: 'calma' },
+  { texto: 'Nadie más lleva tu manera de hacer las cosas.', tema: 'identidad' },
+  { texto: 'Un día torcido no tuerce una vida.', tema: 'aceptacion' },
+  { texto: 'La disciplina también se toma descansos.', tema: 'esfuerzo' },
+  { texto: 'Hoy alguien contará contigo para algo.', tema: 'gratitud' },
+  { texto: 'El ruido pasa. Tú sigues.', tema: 'calma' },
+  { texto: 'Lo que defiendes dice más que lo que dices.', tema: 'identidad' },
+  { texto: 'Está bien no tener respuesta todavía.', tema: 'aceptacion' },
+  { texto: 'Media hora bien puesta rinde más que un día disperso.', tema: 'esfuerzo' },
+  { texto: 'Casi todo lo bueno de hoy ya estaba antes de que llegaras.', tema: 'gratitud' },
+  { texto: 'Respirar hondo cambia más de lo que parece.', tema: 'calma' },
+  { texto: 'Ser el mismo en privado es la parte difícil.', tema: 'identidad' },
+  { texto: 'Puedes estar en proceso y estar bien.', tema: 'aceptacion' },
+  { texto: 'Lo que se hace sin ganas también cuenta.', tema: 'esfuerzo' },
+  { texto: 'Hay gente que te desea cosas buenas hoy.', tema: 'gratitud' },
+  { texto: 'No hace falta llenar todos los huecos del día.', tema: 'calma' },
+  { texto: 'Tus decisiones pequeñas te van dibujando.', tema: 'identidad' },
+  { texto: 'Lo imperfecto también sirve.', tema: 'aceptacion' },
+  { texto: 'Terminar algo pequeño despeja la cabeza.', tema: 'esfuerzo' },
+  { texto: 'Tienes más de lo que recuerdas al levantarte.', tema: 'gratitud' },
+  { texto: 'La quietud no es tiempo perdido.', tema: 'calma' },
+  { texto: 'Nadie te va a parecer más tú que tú.', tema: 'identidad' },
+  { texto: 'Hoy también sirve el día que apenas alcanza.', tema: 'aceptacion' },
+  { texto: 'Lo que cuesta al principio deja de costar.', tema: 'esfuerzo' },
+  { texto: 'Alguien hizo algo por ti sin contártelo.', tema: 'gratitud' },
+  { texto: 'Ir despacio no es ir perdiendo.', tema: 'calma' },
+  { texto: 'Te pareces a lo que haces cuando nadie mira.', tema: 'identidad' },
+  { texto: 'Aceptar un día flojo lo hace más corto.', tema: 'aceptacion' },
+  { texto: 'Nadie construye nada de una sentada.', tema: 'esfuerzo' },
+  { texto: 'Lo de siempre también se puede agradecer.', tema: 'gratitud' },
+  { texto: 'Puedes parar antes de estar agotado.', tema: 'calma' },
+  { texto: 'Lo que perdonas también te define.', tema: 'identidad' },
+  { texto: 'No hay que estar en paz con todo a la vez.', tema: 'aceptacion' },
+  { texto: 'Volver después de parar es la parte que cuenta.', tema: 'esfuerzo' },
+  { texto: 'Hoy hay cosas funcionando sin que las mires.', tema: 'gratitud' },
+  { texto: 'El silencio de la mañana también es tuyo.', tema: 'calma' },
+  { texto: 'Cambiar de opinión es señal de que piensas.', tema: 'identidad' },
+  { texto: 'Un día raro sigue siendo un día vivido.', tema: 'aceptacion' },
+  { texto: 'Lo constante no se nota hasta que se acumula.', tema: 'esfuerzo' },
+  { texto: 'Alguien te dio tiempo esta semana.', tema: 'gratitud' },
+  { texto: 'No todo lo que se puede hacer hoy hay que hacerlo.', tema: 'calma' },
+  { texto: 'Lo que te importa se nota en dónde pones las horas.', tema: 'identidad' },
+  { texto: 'Puedes empezar otra vez las veces que haga falta.', tema: 'aceptacion' },
+  { texto: 'Lo difícil se vuelve normal antes de lo que crees.', tema: 'esfuerzo' },
+  { texto: 'Hoy alguien te agradecería algo que ni recuerdas.', tema: 'gratitud' },
+  { texto: 'La prisa se te pega de fuera. Se puede soltar.', tema: 'calma' },
+  { texto: 'No eres tu peor día ni tu mejor tarde.', tema: 'identidad' },
+  { texto: 'Estar cansado no significa estar fallando.', tema: 'aceptacion' },
+  { texto: 'Un paso corto sigue siendo un paso.', tema: 'esfuerzo' },
 ])
 
 /** Días que el repertorio actual aguanta sin repetir una frase (RN-HOY-02). */
@@ -96,7 +164,9 @@ export function diasSinRepetir(frases = FRASES) {
 
 /** Días transcurridos desde el 1 de enero de 1970, a partir de 'YYYY-MM-DD'. */
 function diasDesdeEpoca(dateKey) {
-  const [year, month, day] = String(dateKey ?? '').split('-').map(Number)
+  const [year, month, day] = String(dateKey ?? '')
+    .split('-')
+    .map(Number)
   if (!year || !month || !day) return 0
   return Math.floor(Date.UTC(year, month - 1, day) / 86400000)
 }
@@ -119,8 +189,8 @@ export function fraseDelDia(dateKey, { animoBajoReciente = false } = {}) {
     ? FRASES.filter((frase) => !TEMAS_DE_RENDIMIENTO.includes(frase.tema))
     : FRASES
 
-  const indice = ((diasDesdeEpoca(dateKey) % repertorio.length) + repertorio.length) %
-    repertorio.length
+  const indice =
+    ((diasDesdeEpoca(dateKey) % repertorio.length) + repertorio.length) % repertorio.length
   return repertorio[indice]
 }
 

@@ -17,13 +17,7 @@ import EditorIdentidad from './EditorIdentidad'
 
 const textos = copy.formia.identidad.areas
 
-export default function AreaCard({
-  area,
-  onGuardarIdentidad,
-  onPausar,
-  onReanudar,
-  onQuitar,
-}) {
+export default function AreaCard({ area, onGuardarIdentidad, onPausar, onReanudar, onQuitar }) {
   const [editando, setEditando] = useState(false)
   const idBase = useId()
   const nombre = textos.names[area.id]

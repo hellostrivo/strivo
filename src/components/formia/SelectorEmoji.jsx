@@ -17,10 +17,30 @@ import { copy } from '@copy'
 const textos = copy.formia.habitos.editor.emoji
 
 const PALETA = [
-  '💧', '🍎', '🥗', '🏃', '🚶', '💪',
-  '🧘', '🛏️', '☀️', '🌙', '📖', '✍️',
-  '🎧', '🎸', '🎨', '📷', '💼', '📞',
-  '🫂', '🙏', '🌿', '🧹', '💰', '⏳',
+  '💧',
+  '🍎',
+  '🥗',
+  '🏃',
+  '🚶',
+  '💪',
+  '🧘',
+  '🛏️',
+  '☀️',
+  '🌙',
+  '📖',
+  '✍️',
+  '🎧',
+  '🎸',
+  '🎨',
+  '📷',
+  '💼',
+  '📞',
+  '🫂',
+  '🙏',
+  '🌿',
+  '🧹',
+  '💰',
+  '⏳',
 ]
 
 export default function SelectorEmoji({ valor, onElegir }) {

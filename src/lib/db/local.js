@@ -91,11 +91,7 @@ export async function readCollection(uid, collection) {
 export async function readCollectionByDate(uid, collection, date) {
   assertUid(uid)
   const db = await getLocalDB()
-  const rows = await db.getAllFromIndex(STORE_RECORDS, 'byCollectionDate', [
-    uid,
-    collection,
-    date,
-  ])
+  const rows = await db.getAllFromIndex(STORE_RECORDS, 'byCollectionDate', [uid, collection, date])
   return rows.map(toItem)
 }
 

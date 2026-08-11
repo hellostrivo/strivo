@@ -15,14 +15,14 @@ import { clsx } from 'clsx'
 export default function Chip({
   children,
   selected = false,
-  color,           // hex, p.ej. '#7E9E86' para área Salud
+  color, // hex, p.ej. '#7E9E86' para área Salud
   size = 'md',
   onClick,
   className,
   ...props
 }) {
   const selectedStyle = color
-    ? { backgroundColor: color + '22', borderColor: color, color }   // área con color propio
+    ? { backgroundColor: color + '22', borderColor: color, color } // área con color propio
     : undefined
 
   return (
@@ -42,10 +42,10 @@ export default function Chip({
         size === 'sm' ? 'px-3 py-1.5 text-sm' : 'px-4 py-2 text-base',
         // Estado base (sin color de área)
         !color && !selected && 'bg-surface border-border text-ink hover:bg-surface/80',
-        !color && selected  && 'bg-ink border-ink text-paper',
+        !color && selected && 'bg-ink border-ink text-paper',
         // Estado con color de área → se aplica via style
         color && !selected && 'bg-surface border-border text-ink hover:bg-surface/80',
-        className
+        className,
       )}
       style={selected && color ? selectedStyle : undefined}
       {...props}

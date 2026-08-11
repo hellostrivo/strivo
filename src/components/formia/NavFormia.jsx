@@ -17,6 +17,7 @@
 
 import { NavLink } from 'react-router-dom'
 import { clsx } from 'clsx'
+import Simbolo from '@components/shared/Simbolo'
 import { copy } from '@copy'
 
 const textos = copy.shared.navegacion
@@ -29,8 +30,11 @@ const SECCIONES = [
 
 export default function NavFormia() {
   return (
-    <header className="relative z-30 flex flex-col gap-3 border-b border-on-surface bg-paper px-5 pb-3 pt-safe">
-      <p className="text-sm text-on-surface-soft">{textos.formia.cabecera}</p>
+    <header className="relative z-30 flex flex-col gap-3 border-b border-espacio bg-espacio-cabecera px-5 pb-3 pt-safe">
+      <p className="flex items-center gap-2 text-sm text-on-surface-soft">
+        <Simbolo marca="formia" alto={18} />
+        {textos.formia.cabecera}
+      </p>
 
       <nav aria-label={textos.seccionesLabel}>
         <ul className="flex flex-wrap gap-2">
@@ -46,8 +50,8 @@ export default function NavFormia() {
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30',
                     // Peso y borde, no solo color (criterio 7).
                     isActive
-                      ? 'border-current bg-raised font-semibold text-on-surface shadow-elev-1'
-                      : 'border-on-surface bg-paper font-medium text-on-surface-soft',
+                      ? 'border-espacio-acento bg-raised font-semibold text-on-surface shadow-elev-1'
+                      : 'border-on-surface bg-transparent font-medium text-on-surface-soft',
                   )
                 }
               >
