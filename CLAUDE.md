@@ -289,8 +289,9 @@ git status
 | **SPEC_06** | ✅ Completa | 10 ago |
 | **SPEC_07** | ✅ Completa | 10 ago |
 | **SPEC_08** | ✅ Completa | 11 ago |
-| SPEC_09 | → Siguiente | — |
-| SPEC_10–12 | Pendientes | — |
+| **SPEC_09** | ✅ Completa | 11 ago |
+| SPEC_10 | → Siguiente | — |
+| SPEC_11–12 | Pendientes | — |
 
 **Notas:**
 - SPEC_02 pasó 7 criterios de aceptación
@@ -305,7 +306,9 @@ git status
 - SPEC_08 pasó 8 de sus 9 criterios: 5 con prueba automática y 3 verificados en navegador
   (duración real de 39 s, círculo naranja sobre el amanecer, y ningún `AudioContext` vivo al salir).
   El criterio 8 —P1 usa el mismo componente— no se puede ejercitar: no hay onboarding en Fase 1
-- npm run lint, test y build verdes · 340 pruebas
+- SPEC_09 pasó sus 8 criterios: 6 con prueba automática y 2 verificados en navegador
+  (la intención sigue en el héroe al cambiar de sección, y el chip guarda en 272 ms)
+- npm run lint, test y build verdes · 365 pruebas
 - npm run lint:copy limpio: los 7 avisos de Fase 0 desaparecieron con SPEC_06
 - **Deuda consciente:**
 - RN-RN-01 (pop-up automático a las 19:00–23:59 + desactivación tras 3 rechazos) → FASE_2
@@ -405,6 +408,33 @@ git status
   ni un parámetro que permita acortarlo.
 - **§5.5.1 no se implementa.** Está derogada: defendía el 4-4 con el argumento de que R1 era el umbral
   de un ritual, y ese ritual ya no existe.
+
+**Decisiones de SPEC_09 (intención del día), 11 ago:**
+- **SPEC_09 §7 y §C2.4.1 numeran distinto las mismas cuatro reglas** `RN-LU-INT-01..04`. No hay
+  contradicción de fondo: las ocho afirmaciones son compatibles y se cumplen todas. Manda el
+  blueprint, como la propia spec indica, y esa es la numeración que citan los comentarios.
+- **`HeroeHoy` contiene la captura, no la duplica.** En la sección Mañana monta los chips; en la de
+  Noche muestra la intención como texto, sin controles. Pintarla en el héroe *y* en un bloque aparte
+  sería la misma cosa dos veces. "Se fusiona dentro del display de Hoy → Mañana" (§C2.4), literal.
+- **La intención sigue visible al cambiar a la sección Noche.** §C2.4 conserva íntegro el criterio 6
+  del ritual disuelto: permanece en Hoy toda la jornada. Mostrarla no es preguntar por ella; lo que
+  la noche recupera —y lo hace en el Diario— es la gran visión.
+- **`useDiario` gana un tercer espacio pendiente** junto a mañana y noche. La mañana y la noche
+  acumulan campos; la intención es una línea y la última gana. Tocar un chip descarta lo que hubiera
+  a medio escribir: si no, la escritura anterior volvería 800 ms después a pisar el chip.
+- **El campo no lleva `maxLength`.** §C2.4.1 pide que no invite a escribir de más, y eso lo resuelve
+  una línea con un marcador de posición corto. Un límite inventado cortaría a mitad de palabra.
+- **Los chips van en `content/` y el resto del texto en `copy.lumia.intencion`.** Son material
+  editorial, como las frases del día. Como `lint:copy` y la prueba de separación solo miran
+  `copy.lumia`, hay una prueba que les pasa el mismo listón de voz.
+- **No se usa `Chip.jsx` de `components/ui/`:** fija `text-ink` y `bg-surface`, y sobre el héroe
+  nocturno sería tinta sobre tinta. Se sigue el patrón de `ChipsEmociones`, que hereda la superficie.
+- **La gran visión no entra en el Ritual de Noche.** El criterio 3 se cumple por sus dos mitades: la
+  Vista de Noche ya recupera la gran visión desde SPEC_06, y una prueba comprueba que **ninguna**
+  superficie nocturna lee `dailyIntention`. La tabla de §5.6 no pone el contraste en ninguna de las
+  cinco pantallas del ritual, así que SPEC_07 no lo construyó y aquí no se añade.
+- **El riesgo de §C2.4.1 es hoy de dos campos, no de tres.** La "acción pequeña" de §5.3-Bloque 3 no
+  existe: SPEC_06 decidió no construirla porque no está en el modelo canónico.
 
 **Deuda consciente de Fase 1 (se salda en su spec):**
 - **El criterio 8 de SPEC_08 no se puede ejercitar todavía:** ninguna de las doce specs construye el

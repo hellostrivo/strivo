@@ -17,7 +17,7 @@ import { clsx } from 'clsx'
 import DiarioManana from '@components/lumia/DiarioManana'
 import DiarioNoche from '@components/lumia/DiarioNoche'
 import RitualNoche from '@components/lumia/RitualNoche'
-import FraseDelDia from '@components/lumia/FraseDelDia'
+import HeroeHoy from '@components/lumia/HeroeHoy'
 import SelectorMomento from '@components/lumia/SelectorMomento'
 import Respiracion from '@components/shared/Respiracion'
 import Button from '@components/ui/Button'
@@ -25,7 +25,7 @@ import { copy, interpolate } from '@copy'
 import { shared } from '@/lib/db'
 import { getTimeSlot } from '@lib/timeSlot'
 import { mananaEscrita, nocheEscrita } from '@/lumia/diario'
-import { fechaLarga, franjaDelSaludo } from '@/lumia/fechas'
+import { franjaDelSaludo } from '@/lumia/fechas'
 import { useDiario } from '@/lumia/useDiario'
 
 const textos = copy.lumia.hoy
@@ -147,16 +147,16 @@ export default function Hoy({ uid, onHideNav }) {
 
   return marco(
     <div className="flex min-h-screen flex-col gap-8 px-5 pb-24 pt-10">
-      <header className="flex flex-col gap-2">
-        <h1 className="font-display text-lg text-on-surface">
-          {estado.nombre
+      <HeroeHoy
+        estado={estado}
+        momento={momento}
+        acciones={acciones}
+        saludo={
+          estado.nombre
             ? interpolate(textos.saludo.conNombreTemplate, { saludo, nombre: estado.nombre })
-            : saludo}
-        </h1>
-        <p className="text-sm text-on-surface-soft">{fechaLarga(estado.fecha)}</p>
-      </header>
-
-      <FraseDelDia frase={estado.frase} />
+            : saludo
+        }
+      />
 
       <SelectorMomento momento={momento} onCambiar={setMomento} />
 
