@@ -16,6 +16,17 @@
 
 import { AREA_CATALOG, AREA_IDS, IDENTITY_CENTRAL, formia, shared, strivoDateKey } from '@/lib/db'
 
+// La cuenta de RN-06 vive en un solo sitio (`src/lib/constancia.js`). Aquí se
+// reexporta para que las pantallas de hábitos la sigan importando de un lugar
+// natural, pero la implementación no está duplicada.
+export {
+  constanciaDe,
+  fechasDe,
+  marcadosEn,
+  ultimasFechas,
+  ultimosNDias,
+} from '@/lib/constancia'
+
 /** Orden de los momentos dentro de un grupo. `null` va al final. */
 const ORDEN_CONTEXTO = { manana: 0, noche: 1 }
 
@@ -27,46 +38,6 @@ export function ordenDeContexto(context) {
 export function capitalizar(texto) {
   const limpio = String(texto ?? '')
   return limpio.charAt(0).toUpperCase() + limpio.slice(1)
-}
-
-// ─── Fechas ───────────────────────────────────────────────────────────────────
-
-/** Las últimas `n` fechas, de la más antigua a hoy. */
-export function ultimasFechas(n, hoy) {
-  const fechas = []
-  const base = new Date(`${hoy}T12:00:00`)
-  for (let i = n - 1; i >= 0; i -= 1) {
-    const dia = new Date(base.getTime())
-    dia.setDate(dia.getDate() - i)
-    const year = dia.getFullYear()
-    const month = String(dia.getMonth() + 1).padStart(2, '0')
-    const day = String(dia.getDate()).padStart(2, '0')
-    fechas.push(`${year}-${month}-${day}`)
-  }
-  return fechas
-}
-
-// ─── Lecturas sobre los registros ─────────────────────────────────────────────
-
-/** Fechas en las que se marcó un hábito. Un día marcado cinco veces es una. */
-export function fechasDe(logs, habitId) {
-  return new Set(logs.filter((log) => log.habitId === habitId).map((log) => log.date))
-}
-
-/** RN-06 — Constancia de un hábito: días distintos en que se hizo. */
-export function constanciaDe(logs, habitId) {
-  return fechasDe(logs, habitId).size
-}
-
-/** Cuántos de los últimos `n` días tienen marca. Formato positivo, siempre. */
-export function ultimosNDias(logs, habitId, hoy, n) {
-  const fechas = fechasDe(logs, habitId)
-  return ultimasFechas(n, hoy).filter((fecha) => fechas.has(fecha)).length
-}
-
-/** Ids de los hábitos marcados en una fecha. */
-export function marcadosEn(logs, fecha) {
-  return new Set(logs.filter((log) => log.date === fecha).map((log) => log.habitId))
 }
 
 // ─── Agrupación de H1 ─────────────────────────────────────────────────────────

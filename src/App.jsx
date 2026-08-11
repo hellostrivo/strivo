@@ -18,10 +18,12 @@ import JournalPage from '@/pages/JournalPage'
 import SesionProvisional from '@/components/SesionProvisional'
 import Identidad         from '@/pages/formia/Identidad'
 import Habitos           from '@/pages/formia/Habitos'
+import Progreso          from '@/pages/formia/Progreso'
 
 const FORMIA_PROVISIONAL = [
   { id: 'identidad', label: 'Identidad', render: (uid) => <Identidad uid={uid} /> },
   { id: 'habitos',   label: 'Hábitos',   render: (uid) => <Habitos   uid={uid} /> },
+  { id: 'progreso',  label: 'Progreso',  render: (uid) => <Progreso  uid={uid} /> },
 ]
 
 const TABS = [

@@ -285,14 +285,16 @@ git status
 | **SPEC_02** | ✅ Completa y comiteada | 10 ago |
 | **SPEC_03** | ✅ Completa y comiteada | 10 ago |
 | **SPEC_04** | ✅ Completa y comiteada | 10 ago |
-| SPEC_05 | → Siguiente | — |
-| SPEC_06–12 | Pendientes | — |
+| **SPEC_05** | ✅ Completa y comiteada | 10 ago |
+| SPEC_06 | → Siguiente | — |
+| SPEC_07–12 | Pendientes | — |
 
 **Notas:**
 - SPEC_02 pasó 7 criterios de aceptación
 - SPEC_03 pasó sus 7 criterios (5 con prueba automática, 2 verificados en navegador)
 - SPEC_04 pasó sus 10 criterios (9 con prueba automática, el de "marcar es un toque" verificado en navegador)
-- npm run lint, test y build verdes · 99 pruebas
+- SPEC_05 pasó sus 7 criterios, todos con prueba automática
+- npm run lint, test y build verdes · 116 pruebas
 - npm run lint:copy tiene 7 avisos preexistentes (Fase 0), se resuelven en SPEC_06/SPEC_11
 
 **Decisiones tomadas al implementar (no estaban escritas en ningún sitio):**
@@ -301,6 +303,10 @@ git status
 - **Copy huérfano de §C7.7.6 redactado:** "Todo lo de esta mañana, hecho." / "Todo lo de esta noche, hecho."
 - El motor de sugerencia (`src/lib/sugerirIdentidad.js`) es el mecanismo de §5.3 y lo reutilizarán las victorias de Lumia. No duplicarlo.
 - `src/lib/habitAreaLabel.js` es el **único** sitio donde vive la regla de §5.7.4 (RN-HAB-AREA-01).
+- `src/lib/constancia.js` es el **único** sitio donde vive el cálculo de RN-06. `formia/habitos.js` lo reexporta, no lo reimplementa.
+- **La Constancia que muestra Formia cuenta días con algún hábito marcado**, no días de presencia. §5.9 la define sobre "cualquier registro", pero desde Formia no se ve el resto (RN-DB4-01). La cifra global cruza espacios y es de Fase 2. Por eso el copy dice "días construyendo" y no "días contigo".
+- **Umbral del insight de evidencia:** `MINIMO_DIAS_CON_EVIDENCIA = 10` (de §5.9, criterio 1) sobre `DIAS_VENTANA_EVIDENCIA = 28` (del ejemplo de §C4.3). Por debajo no se muestra nada — ni una versión reducida, ni cuánto falta.
+- **Las páginas de Formia usan `<div>`, no `<main>`:** el `<main>` lo pone el contenedor de la app. Dos anidados son HTML inválido y rompen el punto de referencia del lector de pantalla.
 
 **Deuda consciente de Fase 1 (se salda en su spec):**
 - `SesionProvisional.jsx` y la entrada por la pestaña "Tú" (con su conmutador Identidad/Hábitos) son andamios: los sustituyen el onboarding y SPEC_11.

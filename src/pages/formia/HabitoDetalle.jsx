@@ -50,7 +50,7 @@ export default function HabitoDetalle({
   const identidad = etiqueta ? etiqueta.nombre : capitalizar(central ?? '')
 
   return (
-    <main className="min-h-screen bg-paper px-5 py-8 flex flex-col gap-8">
+    <div className="min-h-screen bg-paper px-5 py-8 flex flex-col gap-8">
       <div>
         <Button size="sm" variant="ghost" onClick={onVolver}>
           {textos.back}
@@ -132,6 +132,6 @@ export default function HabitoDetalle({
       {/* Pausar y archivar no pierden nada, y se dice al pasar. */}
       {estado === 'pausado' && <p className="text-sm text-ink/80">{detalle.paused}</p>}
       {estado === 'archivado' && <p className="text-sm text-ink/80">{detalle.archived}</p>}
-    </main>
+    </div>
   )
 }

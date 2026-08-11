@@ -399,6 +399,43 @@ export const copy = {
         },
       },
     },
+
+    // Además del léxico general de §3.6, aquí está prohibido el vocabulario de
+    // rendimiento y cualquier porcentaje de cumplimiento (SPEC_05 §8). La lista
+    // exacta y la prueba que recorre este namespace entero están en
+    // `src/lib/__tests__/constancia.test.js`.
+    progreso: {
+      title: 'Progreso',
+      lead: 'La evidencia de quien estás siendo. Esto solo suma.',
+      empty: 'Aquí se irá acumulando lo que construyas. Empieza por un hábito.',
+
+      constancia: {
+        title: 'Tu constancia',
+        // Cuenta días con algún hábito marcado, no días de presencia en la app:
+        // desde Formia no se ve el resto (RN-DB4-01), y decir "días contigo"
+        // sobre esta cifra sería contarle a alguien menos días de los que estuvo.
+        template: '{n} días construyendo',
+        uno: 'Un día construyendo',
+        cero: 'Aquí aparecerán tus días en cuanto marques algo.',
+      },
+
+      identidad: {
+        diasTemplate: '{n} días construyendo esto',
+        diasUno: 'Un día construyendo esto',
+        diasCero: 'Todavía sin marcas. Aquí se van a guardar.',
+        inactiva: 'No activa ahora',
+      },
+
+      // §C4.3 — Evidencia de identidad: identidad + área + evidencia numérica.
+      // Se genera por reglas, no por IA (§C4.2), y siempre puede citar los días
+      // que la sostienen (RN-SI-03).
+      evidencia: {
+        areaTemplate: 'Eres {identidad}. En {area} lo demostraste {n} de los últimos {total} días.',
+        centralTemplate: 'Eres {identidad}. Lo demostraste {n} de los últimos {total} días.',
+        ver: 'Ver los días',
+        ocultar: 'Cerrar',
+      },
+    },
   },
 
   // ─── Estados vacíos ───────────────────────────────────────────────────────

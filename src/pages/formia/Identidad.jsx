@@ -25,7 +25,7 @@ export default function Identidad({ uid }) {
   const [eligiendo, setEligiendo] = useState(false)
 
   if (carga === 'cargando') {
-    return <main className="min-h-screen bg-paper px-5 py-8" aria-busy="true" />
+    return <div className="min-h-screen bg-paper px-5 py-8" aria-busy="true" />
   }
 
   // Sin árbol no hay identidad central que enseñar, y RN-DB4-08 prohíbe
@@ -33,14 +33,14 @@ export default function Identidad({ uid }) {
   // con calma y se ofrece volver a intentarlo.
   if (carga === 'error' || !estado.existe) {
     return (
-      <main className="min-h-screen bg-paper px-5 py-8 flex flex-col gap-4">
+      <div className="min-h-screen bg-paper px-5 py-8 flex flex-col gap-4">
         <p className="text-base text-ink">{textos.error.load.body}</p>
         <div>
           <Button size="sm" onClick={reintentar}>
             {textos.error.load.retry}
           </Button>
         </div>
-      </main>
+      </div>
     )
   }
 
@@ -56,7 +56,7 @@ export default function Identidad({ uid }) {
   }
 
   return (
-    <main className="min-h-screen bg-paper px-5 py-8 flex flex-col gap-8">
+    <div className="min-h-screen bg-paper px-5 py-8 flex flex-col gap-8">
       <header className="flex flex-col gap-2">
         <h1 className="font-display text-lg text-ink">{textos.title}</h1>
         <p className="text-base text-ink/80">{textos.lead}</p>
@@ -133,6 +133,6 @@ export default function Identidad({ uid }) {
           </Button>
         </p>
       )}
-    </main>
+    </div>
   )
 }

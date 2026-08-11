@@ -42,7 +42,7 @@ export default function SesionProvisional({ children }) {
 
   if (!tieneArbol) {
     return (
-      <main className="min-h-screen bg-paper px-5 py-8 flex flex-col justify-center gap-6">
+      <div className="min-h-screen bg-paper px-5 py-8 flex flex-col justify-center gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="font-display text-lg text-ink">{copy.onboarding.p3.headline}</h1>
           <p className="text-base text-ink/80">{copy.onboarding.p3.subhead}</p>
@@ -59,7 +59,7 @@ export default function SesionProvisional({ children }) {
             setTieneArbol(true)
           }}
         />
-      </main>
+      </div>
     )
   }
 
