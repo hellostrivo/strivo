@@ -284,19 +284,30 @@ git status
 |---|---|---|
 | **SPEC_02** | ✅ Completa y comiteada | 10 ago |
 | **SPEC_03** | ✅ Completa y comiteada | 10 ago |
-| SPEC_04 | → Siguiente | — |
-| SPEC_05–12 | Pendientes | — |
+| **SPEC_04** | ✅ Completa y comiteada | 10 ago |
+| SPEC_05 | → Siguiente | — |
+| SPEC_06–12 | Pendientes | — |
 
 **Notas:**
 - SPEC_02 pasó 7 criterios de aceptación
 - SPEC_03 pasó sus 7 criterios (5 con prueba automática, 2 verificados en navegador)
-- npm run lint, test y build verdes
+- SPEC_04 pasó sus 10 criterios (9 con prueba automática, el de "marcar es un toque" verificado en navegador)
+- npm run lint, test y build verdes · 99 pruebas
 - npm run lint:copy tiene 7 avisos preexistentes (Fase 0), se resuelven en SPEC_06/SPEC_11
 
+**Decisiones tomadas al implementar (no estaban escritas en ningún sitio):**
+- **H1 agrupa por identidad** (SPEC_04 §4) y el momento del día sobrevive como etiqueta de fila y barra de progreso. §C3.5 hablaba de cabeceras por momento en H1; se leyó como lo heredado, no como lo vigente.
+- **Sin `diasSemana` ni recordatorio.** §5.7 los describe, el modelo canónico de v4.1 no los recoge y el validador de SPEC_02 rechaza campos fuera de lista. En Fase 1 todo hábito activo cuenta para hoy.
+- **Copy huérfano de §C7.7.6 redactado:** "Todo lo de esta mañana, hecho." / "Todo lo de esta noche, hecho."
+- El motor de sugerencia (`src/lib/sugerirIdentidad.js`) es el mecanismo de §5.3 y lo reutilizarán las victorias de Lumia. No duplicarlo.
+- `src/lib/habitAreaLabel.js` es el **único** sitio donde vive la regla de §5.7.4 (RN-HAB-AREA-01).
+
 **Deuda consciente de Fase 1 (se salda en su spec):**
-- `SesionProvisional.jsx` y la entrada por la pestaña "Tú" son andamios: los sustituyen el onboarding y SPEC_11.
+- `SesionProvisional.jsx` y la entrada por la pestaña "Tú" (con su conmutador Identidad/Hábitos) son andamios: los sustituyen el onboarding y SPEC_11.
 - `src/tokens/index.js` mapea las áreas con ids viejos (`espiritual`, `personal`) y con emoji. El catálogo bueno es `AREA_CATALOG` de SPEC_02; la limpieza es SPEC_12.
 - Los grises de texto van a `text-ink/80` como mínimo: por debajo no llegan a AAA sobre `paper`.
+- El contorno de los días sin marca en la cuadrícula de constancia se mantiene tenue (~2.4:1) por decisión de §5.7. Lo que informa son los días llenos (5.4:1) y el resumen en texto que los acompaña.
+- **No correr `npm run format`:** prettier no tiene configuración y sus valores por defecto (punto y coma, comillas dobles) contradicen el estilo de todo el repo.
 
 ---
 

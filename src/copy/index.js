@@ -308,6 +308,97 @@ export const copy = {
         },
       },
     },
+
+    // La palabra "ritual" no aparece en ninguna pantalla de Formia
+    // (§C3.0, principio 1 · §C3.5, criterio de aceptación 2).
+    habitos: {
+      title: 'Hábitos',
+      lead: 'Lo que haces porque es lo que hace quien quieres ser.',
+      add: 'Nuevo hábito',
+      back: 'Volver',
+      empty: 'Todavía no hay hábitos aquí. Uno solo es un buen comienzo.',
+
+      momento: {
+        manana: 'Mañana',
+        noche: 'Noche',
+        ninguno: 'Sin momento fijo',
+      },
+
+      // Confirmación al completar los hábitos de un momento (§C7.7.6).
+      // Sustituye a "Ritual completo. Buen comienzo." — vocabulario de Lumia
+      // dentro de Formia. Acompaña a la barra que se llena y nada más
+      // (RN-FO-HAB-02): sin exclamación y sin celebrar de más.
+      progreso: {
+        template: '{hecho} de {total}',
+        completoManana: 'Todo lo de esta mañana, hecho.',
+        completoNoche: 'Todo lo de esta noche, hecho.',
+      },
+
+      grupo: {
+        inactiva: 'No activa ahora',
+        pausadosTitle: 'En pausa',
+        archivadosTitle: 'Archivados',
+        revisionTitle: 'Sin identidad todavía',
+        revisionBody: 'Ábrelos cuando quieras y elige a quién construyen.',
+      },
+
+      detalle: {
+        totalTemplate: 'Lo has hecho {n} veces',
+        totalUna: 'Lo has hecho una vez',
+        totalNinguna: 'Aquí aparecerán tus marcas.',
+        diasTemplate: '{n} de los últimos {total} días',
+        gridTitle: 'Los últimos 90 días',
+        edit: 'Editar',
+        pause: 'Pausar',
+        paused: 'Pausado. Aquí estará cuando lo quieras de vuelta.',
+        pausedLabel: 'En pausa',
+        resume: 'Reanudar',
+        archive: 'Archivar',
+        archived: 'Archivado. Su historia se queda contigo.',
+        archivedLabel: 'Archivado',
+      },
+
+      editor: {
+        titleNuevo: 'Nuevo hábito',
+        titleEditar: 'Editar hábito',
+        nombre: {
+          label: '¿Cuál es tu nuevo hábito?',
+          labelEditar: 'El hábito',
+          placeholder: 'Beber agua, leer, estirar…',
+        },
+        emoji: {
+          label: 'Un emoji, si quieres',
+          choose: 'Elegir',
+          none: 'Sin emoji',
+        },
+        identidad: {
+          label: '¿Qué identidad construye este hábito?',
+          // RN-FO-H3-04 — La sugerencia se propone, nunca se asigna sola.
+          suggested: 'Por lo que escribiste, quizá sea esta. Tócala si es así.',
+        },
+        contexto: {
+          label: '¿En qué momento del día?',
+          hint: 'Solo es una etiqueta. Nada te espera a esa hora.',
+        },
+        // RN-FO-H3-02 — Dice qué falta, nunca que hayas hecho algo mal.
+        // Prohibido: "campo obligatorio", "debes seleccionar", asteriscos rojos.
+        pendiente: 'Elige a quién estás construyendo con esto.',
+        pendienteNombre: 'Escribe primero qué quieres hacer.',
+        save: 'Guardar',
+        cancel: 'Cancelar',
+      },
+
+      error: {
+        load: {
+          body: 'No pudimos abrir tus hábitos. Siguen guardados.',
+          retry: 'Reintentar',
+        },
+        save: {
+          body: 'No pudimos guardar eso. Tu marca sigue aquí.',
+          retry: 'Reintentar',
+        },
+      },
+    },
   },
 
   // ─── Estados vacíos ───────────────────────────────────────────────────────

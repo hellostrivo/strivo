@@ -10,12 +10,19 @@ import { clsx } from 'clsx'
 import HoyPage     from '@/pages/HoyPage'
 import JournalPage from '@/pages/JournalPage'
 
-// ⚠ PROVISIONAL — SPEC_03 construye el espacio de identidad de Formia, pero la
-// barra de dos espacios ("Lumia · Reflexión" / "Formia · Acción") es SPEC_11 y
-// no se adelanta. Mientras tanto, la pestaña "Tú" del stub de Fase 0 sirve de
-// entrada para poder verificar la pantalla. SPEC_11 sustituye esto entero.
+// ⚠ PROVISIONAL — SPEC_03 y SPEC_04 construyen los dos espacios de Formia
+// (Identidad y Hábitos), pero la barra de dos espacios ("Lumia · Reflexión" /
+// "Formia · Acción") es SPEC_11 y no se adelanta. Mientras tanto, la pestaña
+// "Tú" del stub de Fase 0 sirve de entrada, con un conmutador mínimo para
+// llegar a las dos. SPEC_11 sustituye esto entero.
 import SesionProvisional from '@/components/SesionProvisional'
 import Identidad         from '@/pages/formia/Identidad'
+import Habitos           from '@/pages/formia/Habitos'
+
+const FORMIA_PROVISIONAL = [
+  { id: 'identidad', label: 'Identidad', render: (uid) => <Identidad uid={uid} /> },
+  { id: 'habitos',   label: 'Hábitos',   render: (uid) => <Habitos   uid={uid} /> },
+]
 
 const TABS = [
   { id: 'hoy',     label: 'Hoy',     icon: SunMoonIcon },
@@ -26,6 +33,7 @@ const TABS = [
 export default function App() {
   const [activeTab, setActiveTab] = useState('hoy')
   const [hideNav, setHideNav]     = useState(false)  // ocultar en rituales / escritura activa
+  const [formiaTab, setFormiaTab] = useState('identidad')  // ⚠ provisional, ver arriba
 
   return (
     <div className="min-h-screen bg-paper text-ink font-sans flex flex-col">
@@ -35,7 +43,30 @@ export default function App() {
         {activeTab === 'journal' && <JournalPage onHideNav={setHideNav} />}
         {activeTab === 'tu'      && (
           <SesionProvisional>
-            {(uid) => <Identidad uid={uid} />}
+            {(uid) => (
+              <>
+                <div className="flex gap-2 px-5 pt-6">
+                  {FORMIA_PROVISIONAL.map(seccion => (
+                    <button
+                      key={seccion.id}
+                      type="button"
+                      onClick={() => setFormiaTab(seccion.id)}
+                      aria-pressed={formiaTab === seccion.id}
+                      className={clsx(
+                        'rounded-full border px-4 py-2 min-h-touch-sm text-base font-medium text-ink',
+                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20',
+                        formiaTab === seccion.id
+                          ? 'border-ink bg-surface'
+                          : 'border-border bg-paper',
+                      )}
+                    >
+                      {seccion.label}
+                    </button>
+                  ))}
+                </div>
+                {FORMIA_PROVISIONAL.find(seccion => seccion.id === formiaTab).render(uid)}
+              </>
+            )}
           </SesionProvisional>
         )}
       </main>
