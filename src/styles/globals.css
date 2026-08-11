@@ -96,6 +96,9 @@
   --lumia-fondo: linear-gradient(168deg, #191428 0%, #221B3A 58%, #2C2350 100%);
   --lumia-tarjeta: rgba(242, 238, 247, .10);
   --lumia-campo: rgba(242, 238, 247, .07);
+  /* Un velo crema a las once de la noche sería un fogonazo. */
+  --transicion-velo: #191428;
+  --transicion-luz: radial-gradient(circle, rgba(232, 165, 74, .18) 0%, rgba(232, 165, 74, 0) 70%);
 }
 
 /* ─── Paleta de ánimo del Historial (§6.3.5) ─────────────────────────────────
@@ -112,6 +115,19 @@
   --animo-normal:    #A9A2B8;
   --animo-tranquilo: #93A9C4;
   --animo-en_paz:    #7E9E86;
+}
+
+/* ─── Transición de entrada (§C7.5) ──────────────────────────────────────────
+   Luz tenue y frase. El velo y la luz se definen aquí y no en el componente
+   porque `TransicionLuz` es compartido y no puede conocer Lumia: se monta en la
+   entrada a la app y en la entrada a la mañana, y hereda el tono de donde esté.
+
+   La variante nocturna vive junto al resto del tema, más abajo, con los demás
+   `[data-lumia='noche']`.
+*/
+:root {
+  --transicion-velo: #FBF8F4;
+  --transicion-luz: radial-gradient(circle, rgba(232, 165, 74, .28) 0%, rgba(232, 165, 74, 0) 70%);
 }
 
 /* ─── Acento de la respiración (§6.3.9) ──────────────────────────────────────
@@ -137,6 +153,15 @@
   --journal-card-warm-border: #E4D2BC;
   --journal-card-cool:        #E4EDF5;
   --journal-card-cool-border: #CBDCE9;
+}
+
+/* La frase entra despacio, se queda y se va. Cinco segundos en total, que es
+   la duración calmada de P1 (§C7.5, "Motion"). */
+@keyframes transicion-entrada {
+  0%   { opacity: 0; }
+  18%  { opacity: 1; }
+  78%  { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 @keyframes respiracion-lenta {
@@ -228,6 +253,18 @@
     transition: background-color var(--dur-theme) cubic-bezier(0.4, 0, 0.2, 1),
                 color var(--dur-theme) cubic-bezier(0.4, 0, 0.2, 1),
                 border-color var(--dur-theme) cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Transición de entrada (§C7.5): el velo, la luz y su entrada y salida.
+
+     Es una sola pieza que aparece y se va. No hay estados intermedios porque no
+     hay pasos: el día que a esto se le añada un segundo fotograma con algo que
+     tocar, habrá vuelto el wizard del Anexo E. */
+  .velo-transicion  { background-color: var(--transicion-velo); }
+  .luz-transicion   { background-image: var(--transicion-luz); }
+
+  .transicion-entrada {
+    animation: transicion-entrada 5000ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
 
   /* Círculo del ejercicio de respiración (§6.3.9).

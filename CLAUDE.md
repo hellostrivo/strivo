@@ -290,8 +290,9 @@ git status
 | **SPEC_07** | ✅ Completa | 10 ago |
 | **SPEC_08** | ✅ Completa | 11 ago |
 | **SPEC_09** | ✅ Completa | 11 ago |
-| SPEC_10 | → Siguiente | — |
-| SPEC_11–12 | Pendientes | — |
+| **SPEC_10** | ✅ Completa | 11 ago |
+| SPEC_11 | → Siguiente | — |
+| SPEC_12 | Pendiente | — |
 
 **Notas:**
 - SPEC_02 pasó 7 criterios de aceptación
@@ -308,7 +309,9 @@ git status
   El criterio 8 —P1 usa el mismo componente— no se puede ejercitar: no hay onboarding en Fase 1
 - SPEC_09 pasó sus 8 criterios: 6 con prueba automática y 2 verificados en navegador
   (la intención sigue en el héroe al cambiar de sección, y el chip guarda en 272 ms)
-- npm run lint, test y build verdes · 365 pruebas
+- SPEC_10 pasó sus 7 criterios: 5 con prueba automática y 2 verificados en navegador
+  (el umbral en los dos sitios con el contenido ya montado detrás, y ausente con "reducir movimiento")
+- npm run lint, test y build verdes · 391 pruebas
 - npm run lint:copy limpio: los 7 avisos de Fase 0 desaparecieron con SPEC_06
 - **Deuda consciente:**
 - RN-RN-01 (pop-up automático a las 19:00–23:59 + desactivación tras 3 rechazos) → FASE_2
@@ -436,7 +439,39 @@ git status
 - **El riesgo de §C2.4.1 es hoy de dos campos, no de tres.** La "acción pequeña" de §5.3-Bloque 3 no
   existe: SPEC_06 decidió no construirla porque no está en el modelo canónico.
 
+**Decisiones de SPEC_10 (transición de entrada), 11 ago:**
+- **La pieza "ya implementada en Fase 0" no existía y hubo que escribirla.** RN-LU-MAN-01 y §8 dan
+  por hecho que el componente y las ~100 frases se reutilizan de Fase 0, pero Fase 1 es borrón y
+  cuenta nueva (SPEC_00 §2). No cambia el alcance, cambia el trabajo: **las 100 frases de
+  `frases-apertura.js` son nuevas y están pendientes de revisión editorial.**
+- **Se construyeron los dos usos, no solo el de Mañana.** El criterio 1 exige que la entrada a la app
+  y la entrada a la mañana sean el mismo componente; con un solo uso, ese criterio no se puede
+  ejercitar. La entrada a la app son diez líneas en `App.jsx`.
+- **En Mañana se dispara al abrir la vista, no al mover el conmutador.** El conmutador solo cambia lo
+  que muestra el héroe; cinco segundos ahí serían un peaje cada vez que alguien compara mañana y
+  noche. El umbral va donde estaba el pop-up disuelto: justo antes del contenido.
+- **Una vez por sesión, con una variable de módulo en `Hoy.jsx`.** Con el estado dentro del
+  componente, ir al Journal y volver haría cruzar el umbral otra vez, porque `Hoy` se desmonta al
+  cambiar de pestaña. No se persiste: SPEC_10 §5 no tiene modelo de datos.
+- **Con `prefers-reduced-motion` no se muestra.** "Inmediata" leído literal: entrar es inmediato. Una
+  pantalla quieta cinco segundos no es menos movimiento, es solo esperar.
+- **El velo se monta sobre el contenido ya renderizado**, no en su lugar. Cuando la luz se va no hay
+  nada que cargar ni ningún paso que dar: es un umbral, no una pantalla de carga.
+- **El tema del velo va en `globals.css`, no en props.** `TransicionLuz` está en `components/shared/`
+  y el lint de SPEC_08 le impide conocer Lumia. **La variante nocturna existe y resuelve
+  correctamente (`#191428`), pero hoy ningún camino la monta bajo el tema de noche**: se abre solo
+  desde la mañana. Está por el día que SPEC_11 mueva la entrada bajo la barra de dos espacios.
+- **R2 no se reconstruye.** La bienvenida dinámica está eliminada de raíz (Anexo E, E.0) y una prueba
+  falla si aparecen saludo, fecha o nombre dentro de la transición. Lo que sobrevive es el
+  encabezado del héroe, que ya estaba desde SPEC_06.
+- **Las pruebas de esta spec comprueban sobre todo lo que NO hay:** ni botón de continuar, ni
+  pregunta, ni segundo fotograma, ni una segunda variante del componente. El riesgo de SPEC_10 es de
+  diseño, y así queda vigilado por el `npm test` y no por la memoria de quien lo lea.
+
 **Deuda consciente de Fase 1 (se salda en su spec):**
+- **Las 100 frases de apertura están sin revisar editorialmente.** Pasan §3.6 con prueba automática
+  —sin exclamaciones, sin léxico prohibido, sin promesas ni lenguaje de coach— pero el criterio de
+  qué se le dice a alguien al abrir la app es del propietario del producto, no de quien programa.
 - **El criterio 8 de SPEC_08 no se puede ejercitar todavía:** ninguna de las doce specs construye el
   onboarding, así que P1 no existe. Lo que sí está garantizado es que el componente sirve a los dos
   sitios —props de configuración, cero dependencias de espacio, tres ciclos por defecto y un lint que

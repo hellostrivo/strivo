@@ -20,6 +20,7 @@ import RitualNoche from '@components/lumia/RitualNoche'
 import HeroeHoy from '@components/lumia/HeroeHoy'
 import SelectorMomento from '@components/lumia/SelectorMomento'
 import Respiracion from '@components/shared/Respiracion'
+import TransicionLuz, { prefiereMenosMovimiento } from '@components/shared/TransicionLuz'
 import Button from '@components/ui/Button'
 import { copy, interpolate } from '@copy'
 import { shared } from '@/lib/db'
@@ -29,6 +30,24 @@ import { franjaDelSaludo } from '@/lumia/fechas'
 import { useDiario } from '@/lumia/useDiario'
 
 const textos = copy.lumia.hoy
+
+/**
+ * ¿Ya se cruzó el umbral de la mañana en esta sesión? (§C7.5)
+ *
+ * Vive en el módulo y no en un `useRef` porque `Hoy` se desmonta al cambiar de
+ * pestaña: con el estado dentro del componente, ir al Journal y volver haría
+ * pasar por el umbral otra vez. Un umbral que se cruza tres veces en diez
+ * minutos deja de ser un umbral y empieza a ser un peaje.
+ *
+ * No se persiste: SPEC_10 §5 no tiene modelo de datos, y cerrar la app y
+ * volver mañana es exactamente cuando el umbral vuelve a tener sentido.
+ */
+let umbralCruzado = false
+
+/** Solo para las pruebas: devuelve el módulo a como empieza una sesión. */
+export function olvidarUmbral() {
+  umbralCruzado = false
+}
 
 /** Con cuál se abre la pantalla (§5.2.1). A partir de ahí manda el conmutador. */
 function momentoInicial() {
@@ -55,6 +74,7 @@ export default function Hoy({ uid, onHideNav }) {
   const { estado, carga, error, acciones, reintentar } = useDiario(uid)
   const [momento, setMomento] = useState(momentoInicial)
   const [vista, setVista] = useState('hoy')
+  const [umbral, setUmbral] = useState(false)
   // §6.12 — Silencio por defecto en toda la app. Si el perfil todavía no tiene
   // preferencias, se arranca en silencio y no al revés.
   const [sonido, setSonido] = useState(false)
@@ -75,7 +95,19 @@ export default function Hoy({ uid, onHideNav }) {
 
   const superficie = momento === 'manana' ? 'light' : 'dark'
 
+  /**
+   * §C7.5 — El umbral va donde estaba el pop-up disuelto: justo antes del
+   * contenido de la mañana, y no al mover el conmutador, que solo cambia lo
+   * que muestra el héroe.
+   *
+   * RN-LU-MAN-03 — Abrir la mañana **no** dispara la respiración. Sigue
+   * entrando solo por su enlace, que es lo que la hace voluntaria.
+   */
   const abrir = (siguiente) => {
+    if (siguiente === 'manana' && !umbralCruzado && !prefiereMenosMovimiento()) {
+      umbralCruzado = true
+      setUmbral(true)
+    }
     setVista(siguiente)
     onHideNav?.(true)
   }
@@ -116,7 +148,14 @@ export default function Hoy({ uid, onHideNav }) {
   }
 
   if (vista === 'manana') {
-    return marco(<DiarioManana estado={estado} acciones={acciones} onSalir={cerrar} />)
+    return marco(
+      <>
+        <DiarioManana estado={estado} acciones={acciones} onSalir={cerrar} />
+        {/* La mañana ya está montada detrás: cuando la luz se va, no hay nada
+            que cargar ni ningún paso que dar. Umbral, no secuencia. */}
+        {umbral && <TransicionLuz onTerminar={() => setUmbral(false)} />}
+      </>,
+    )
   }
 
   if (vista === 'noche') {

@@ -621,6 +621,19 @@ export const copy = {
     },
   },
 
+  // ─── Compartido entre los dos espacios ────────────────────────────────────
+  shared: {
+    // §C7.5 — La transición de entrada. Es un **umbral**, no una secuencia: no
+    // introduce pasos, no exige interacción y no tiene botón de avanzar. Cada
+    // cosa que se le añada la acerca al wizard derogado del Anexo E, así que
+    // este namespace tiene una sola cadena y conviene que siga siendo así.
+    transicion: {
+      // La transición entera es el área que la salta, y esto es lo que oye
+      // quien la recorre con un lector de pantalla.
+      saltar: 'Entrar',
+    },
+  },
+
   // ─── Insights ─────────────────────────────────────────────────────────────
   insights: {
     empty: 'Necesito conocerte un poco más. En unos días empezaré a notar cosas.',

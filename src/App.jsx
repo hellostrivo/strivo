@@ -15,6 +15,8 @@ import Historial from '@/pages/lumia/Historial'
 // "Formia · Acción") es SPEC_11 y no se adelanta. Mientras tanto, la pestaña
 // "Tú" del stub de Fase 0 sirve de entrada, con un conmutador mínimo para
 // llegar a las dos. SPEC_11 sustituye esto entero.
+import TransicionLuz, { prefiereMenosMovimiento } from '@/components/shared/TransicionLuz'
+
 import SesionProvisional from '@/components/SesionProvisional'
 import Identidad         from '@/pages/formia/Identidad'
 import Habitos           from '@/pages/formia/Habitos'
@@ -45,8 +47,13 @@ export default function App() {
   const [formiaTab, setFormiaTab] = useState('identidad')  // ⚠ provisional, ver arriba
   const [lumiaTab,  setLumiaTab]  = useState('journal')    // ⚠ provisional, ver arriba
 
+  // §C7.5 — El umbral de entrada a la app. Con "reducir movimiento" no se
+  // muestra: "inmediata" leído literal es que entrar sea inmediato, y una
+  // pantalla quieta cinco segundos no es menos movimiento, es solo esperar.
+  const [entrando, setEntrando] = useState(() => !prefiereMenosMovimiento())
+
   return (
-    <div className="min-h-screen bg-paper text-ink font-sans flex flex-col">
+    <div data-surface="light" className="min-h-screen bg-paper text-ink font-sans flex flex-col">
       {/* Contenido principal */}
       <main className="flex-1 overflow-y-auto pb-20">
         {activeTab === 'hoy'     && (
@@ -85,6 +92,11 @@ export default function App() {
           </SesionProvisional>
         )}
       </main>
+
+      {/* La misma pieza que usa la entrada a la mañana (RN-LU-MAN-01). Va sobre
+          la app ya montada: cuando la luz se va, lo de detrás ya está ahí. Es un
+          umbral, no una pantalla de carga. */}
+      {entrando && <TransicionLuz onTerminar={() => setEntrando(false)} />}
 
       {/* Barra de navegación inferior (se oculta en rituales y escritura activa) */}
       {!hideNav && (
