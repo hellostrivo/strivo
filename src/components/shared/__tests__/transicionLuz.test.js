@@ -157,8 +157,11 @@ describe('no dispara la respiración (RN-LU-MAN-03, criterio 4)', () => {
 
 describe('la misma pieza en los dos sitios (RN-LU-MAN-01, criterio 1)', () => {
   it('la entrada a la app y la entrada a la mañana importan el mismo componente', () => {
-    expect(codigoDe(APP)).toMatch(/import TransicionLuz.*from '@\/components\/shared\/TransicionLuz'/)
-    expect(codigoDe(HOY)).toMatch(/import TransicionLuz.*from '@components\/shared\/TransicionLuz'/)
+    // El alias da igual —`@/components` y `@components` resuelven al mismo
+    // sitio—; lo que importa es que los dos importen el mismo módulo.
+    const mismoModulo = /import TransicionLuz.*from '@\/?components\/shared\/TransicionLuz'/
+    expect(codigoDe(APP)).toMatch(mismoModulo)
+    expect(codigoDe(HOY)).toMatch(mismoModulo)
   })
 
   it('no hay una segunda variante en ningún sitio', () => {

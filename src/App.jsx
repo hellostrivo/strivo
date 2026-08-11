@@ -1,212 +1,104 @@
 // src/App.jsx
-// Punto de entrada de la app Strivo
-// Navegación de 3 pestañas: Hoy · Journal · Tú (§4.3.1, Blueprint v3)
+// Los dos espacios de Strivo y lo único que los conecta (§C7.3, SPEC_11).
+//
+// **La barra es el único cruce.** Ningún enlace de contenido lleva de Lumia a
+// Formia ni al revés (§C7.7.3): el puente de Fase 0 se retiró y no se sustituyó
+// por ninguno. Cada espacio carga lo suyo y cambiar de pestaña no arrastra
+// datos (RN-DB4-01).
+//
+// **Dos pestañas, ni una más.** No hay tercera de Strivo: es la marca madre y
+// nadie la abre para hacer algo (§C0.2). Profundidad máxima de tres toques
+// desde cualquier punto (§4.3.2, regla 1).
+//
+// **Se entra siempre por Lumia** y la pestaña activa no se persiste: es estado
+// de interfaz, no un dato del usuario (SPEC_11 §5).
+//
+// `HashRouter` y no `BrowserRouter`: la app se sirve como PWA estática y, sin
+// una regla de reescritura en el hospedaje, recargar en `/formia/habitos`
+// devolvería un 404. El hash no depende de configuración que esta spec no toca.
 
-import { useState } from 'react'
-import { clsx } from 'clsx'
+import { useEffect, useRef, useState } from 'react'
+import { HashRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
-// Páginas (rutas)
-import Hoy       from '@/pages/lumia/Hoy'
-import Journal   from '@/pages/lumia/Journal'
+import ArranqueProvisional from '@/components/ArranqueProvisional'
+import BarraEspacios from '@components/shared/BarraEspacios'
+import TransicionLuz, { prefiereMenosMovimiento } from '@components/shared/TransicionLuz'
+import NavLumia from '@components/lumia/NavLumia'
+import NavFormia from '@components/formia/NavFormia'
+
+import Hoy from '@/pages/lumia/Hoy'
+import Journal from '@/pages/lumia/Journal'
 import Historial from '@/pages/lumia/Historial'
+import Identidad from '@/pages/formia/Identidad'
+import Habitos from '@/pages/formia/Habitos'
+import Progreso from '@/pages/formia/Progreso'
 
-// ⚠ PROVISIONAL — SPEC_03 y SPEC_04 construyen los dos espacios de Formia
-// (Identidad y Hábitos), pero la barra de dos espacios ("Lumia · Reflexión" /
-// "Formia · Acción") es SPEC_11 y no se adelanta. Mientras tanto, la pestaña
-// "Tú" del stub de Fase 0 sirve de entrada, con un conmutador mínimo para
-// llegar a las dos. SPEC_11 sustituye esto entero.
-import TransicionLuz, { prefiereMenosMovimiento } from '@/components/shared/TransicionLuz'
+/** La raíz de cada espacio, y por dónde se entra a la app. */
+const INICIO = Object.freeze({ lumia: '/lumia/hoy', formia: '/formia/identidad' })
 
-import SesionProvisional from '@/components/SesionProvisional'
-import Identidad         from '@/pages/formia/Identidad'
-import Habitos           from '@/pages/formia/Habitos'
-import Progreso          from '@/pages/formia/Progreso'
-
-const FORMIA_PROVISIONAL = [
-  { id: 'identidad', label: 'Identidad', render: (uid) => <Identidad uid={uid} /> },
-  { id: 'habitos',   label: 'Hábitos',   render: (uid) => <Habitos   uid={uid} /> },
-  { id: 'progreso',  label: 'Progreso',  render: (uid) => <Progreso  uid={uid} /> },
-]
-
-// ⚠ PROVISIONAL — mismo andamio, ahora para las dos superficies de Lumia que
-// construye SPEC_07. La barra de SPEC_11 les dará su sitio propio.
-const LUMIA_PROVISIONAL = [
-  { id: 'journal',   label: 'Journal',   render: (uid, onHideNav) => <Journal uid={uid} onHideNav={onHideNav} /> },
-  { id: 'historial', label: 'Historial', render: (uid) => <Historial uid={uid} /> },
-]
-
-const TABS = [
-  { id: 'hoy',     label: 'Hoy',     icon: SunMoonIcon },
-  { id: 'journal', label: 'Journal', icon: PenIcon     },
-  { id: 'tu',      label: 'Tú',      icon: CircleIcon  },
-]
+function espacioDe(ruta) {
+  return ruta.startsWith('/formia') ? 'formia' : 'lumia'
+}
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('hoy')
-  const [hideNav, setHideNav]     = useState(false)  // ocultar en rituales / escritura activa
-  const [formiaTab, setFormiaTab] = useState('identidad')  // ⚠ provisional, ver arriba
-  const [lumiaTab,  setLumiaTab]  = useState('journal')    // ⚠ provisional, ver arriba
+  return (
+    <HashRouter>
+      <ArranqueProvisional>{(uid) => <Espacios uid={uid} />}</ArranqueProvisional>
+    </HashRouter>
+  )
+}
+
+function Espacios({ uid }) {
+  // §4.3.2, regla 2 — La navegación se oculta durante rituales, escritura
+  // activa y secuencias de cierre. Son estados de flujo, no de navegación.
+  const [hideNav, setHideNav] = useState(false)
 
   // §C7.5 — El umbral de entrada a la app. Con "reducir movimiento" no se
-  // muestra: "inmediata" leído literal es que entrar sea inmediato, y una
-  // pantalla quieta cinco segundos no es menos movimiento, es solo esperar.
+  // muestra: entrar es inmediato.
   const [entrando, setEntrando] = useState(() => !prefiereMenosMovimiento())
 
+  const { pathname } = useLocation()
+  const espacio = espacioDe(pathname)
+
+  // La última sección visitada de cada espacio, para que volver a una pestaña
+  // devuelva donde se estaba y no a su raíz (criterio 4). Vive en una
+  // referencia y no en el modelo: no es un dato del usuario, y entre sesiones
+  // se olvida a propósito (SPEC_11 §10).
+  const ultima = useRef({ ...INICIO })
+
+  useEffect(() => {
+    // Solo se recuerdan secciones de verdad. Al abrir la app, la ruta pasa un
+    // instante por `/` antes de que el comodín redirija a Lumia; guardar ese
+    // paso dejaría la pestaña de Lumia apuntando a una ruta que no existe y sin
+    // marcarse activa, que es justo lo que pasaba antes de este guardia.
+    const actual = espacioDe(pathname)
+    if (pathname.startsWith(`/${actual}/`)) ultima.current[actual] = pathname
+  }, [pathname])
+
   return (
-    <div data-surface="light" className="min-h-screen bg-paper text-ink font-sans flex flex-col">
-      {/* Contenido principal */}
-      <main className="flex-1 overflow-y-auto pb-20">
-        {activeTab === 'hoy'     && (
-          <SesionProvisional>
-            {(uid) => <Hoy uid={uid} onHideNav={setHideNav} />}
-          </SesionProvisional>
-        )}
-        {activeTab === 'journal' && (
-          <SesionProvisional>
-            {(uid) => (
-              <>
-                {!hideNav && (
-                  <Conmutador
-                    secciones={LUMIA_PROVISIONAL}
-                    activa={lumiaTab}
-                    onCambiar={setLumiaTab}
-                  />
-                )}
-                {LUMIA_PROVISIONAL.find(s => s.id === lumiaTab).render(uid, setHideNav)}
-              </>
-            )}
-          </SesionProvisional>
-        )}
-        {activeTab === 'tu'      && (
-          <SesionProvisional>
-            {(uid) => (
-              <>
-                <Conmutador
-                  secciones={FORMIA_PROVISIONAL}
-                  activa={formiaTab}
-                  onCambiar={setFormiaTab}
-                />
-                {FORMIA_PROVISIONAL.find(seccion => seccion.id === formiaTab).render(uid)}
-              </>
-            )}
-          </SesionProvisional>
-        )}
+    <div data-surface="light" className="flex min-h-screen flex-col bg-paper font-sans text-ink">
+      {!hideNav && (espacio === 'formia' ? <NavFormia /> : <NavLumia />)}
+
+      <main className="flex-1 pb-24">
+        <Routes>
+          <Route path="/lumia/hoy" element={<Hoy uid={uid} onHideNav={setHideNav} />} />
+          <Route path="/lumia/journal" element={<Journal uid={uid} onHideNav={setHideNav} />} />
+          <Route path="/lumia/historial" element={<Historial uid={uid} />} />
+
+          <Route path="/formia/identidad" element={<Identidad uid={uid} />} />
+          <Route path="/formia/habitos" element={<Habitos uid={uid} />} />
+          <Route path="/formia/progreso" element={<Progreso uid={uid} />} />
+
+          {/* Cualquier otra ruta entra por Lumia, incluida la raíz. */}
+          <Route path="*" element={<Navigate to={INICIO.lumia} replace />} />
+        </Routes>
       </main>
 
-      {/* La misma pieza que usa la entrada a la mañana (RN-LU-MAN-01). Va sobre
-          la app ya montada: cuando la luz se va, lo de detrás ya está ahí. Es un
-          umbral, no una pantalla de carga. */}
+      {/* El umbral va sobre la app ya montada: cuando la luz se va, lo de
+          detrás ya está ahí (RN-LU-MAN-02). */}
       {entrando && <TransicionLuz onTerminar={() => setEntrando(false)} />}
 
-      {/* Barra de navegación inferior (se oculta en rituales y escritura activa) */}
-      {!hideNav && (
-        <nav
-          className={clsx(
-            'fixed bottom-0 left-0 right-0 z-50',
-            'bg-paper/95 backdrop-blur-sm',
-            'border-t border-border',
-            'flex items-center',
-            'pb-safe', // respeta safe area de iOS
-          )}
-          aria-label="Navegación principal"
-        >
-          {TABS.map(tab => {
-            const Icon    = tab.icon
-            const isActive = activeTab === tab.id
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                aria-current={isActive ? 'page' : undefined}
-                className={clsx(
-                  'flex-1 flex flex-col items-center justify-center gap-1',
-                  'py-3 min-h-touch',
-                  'transition-colors duration-260 ease-smooth',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20',
-                  'motion-reduce:transition-none',
-                  isActive ? 'text-ink' : 'text-ink/40',
-                )}
-              >
-                <Icon
-                  className={clsx(
-                    'w-5 h-5 transition-transform duration-260',
-                    isActive && 'scale-110',
-                    'motion-reduce:transition-none',
-                  )}
-                  filled={isActive}
-                  aria-hidden="true"
-                />
-                <span className={clsx(
-                  'text-xs font-medium',
-                  isActive ? 'opacity-100' : 'opacity-60',
-                )}>
-                  {tab.label}
-                </span>
-                {/* Indicador activo */}
-                {isActive && (
-                  <span
-                    className="absolute bottom-1 w-1 h-1 rounded-full bg-ink"
-                    aria-hidden="true"
-                  />
-                )}
-              </button>
-            )
-          })}
-        </nav>
-      )}
+      {!hideNav && <BarraEspacios rutaDe={(id) => ultima.current[id] ?? INICIO[id]} />}
     </div>
-  )
-}
-
-// ⚠ PROVISIONAL — El conmutador que sostiene los dos andamios de arriba, en un
-// solo sitio para que no haya dos copias que mantener. SPEC_11 se lo lleva.
-function Conmutador({ secciones, activa, onCambiar }) {
-  return (
-    <div className="flex gap-2 px-5 pt-6">
-      {secciones.map(seccion => (
-        <button
-          key={seccion.id}
-          type="button"
-          onClick={() => onCambiar(seccion.id)}
-          aria-pressed={activa === seccion.id}
-          className={clsx(
-            'rounded-full border px-4 py-2 min-h-touch-sm text-base font-medium text-ink',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20',
-            activa === seccion.id ? 'border-ink bg-surface' : 'border-border bg-paper',
-          )}
-        >
-          {seccion.label}
-        </button>
-      ))}
-    </div>
-  )
-}
-
-// ─── Íconos SVG (inline, sin dependencias externas) ───────────────────────────
-function SunMoonIcon({ className, filled }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={filled ? 2.5 : 1.8}>
-      <circle cx="12" cy="12" r="4" fill={filled ? 'currentColor' : 'none'} />
-      <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
-        strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function PenIcon({ className, filled }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={filled ? 2.5 : 1.8}>
-      <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"
-        strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function CircleIcon({ className, filled }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={filled ? 2.5 : 1.8}>
-      <circle cx="12" cy="8" r="4" fill={filled ? 'currentColor' : 'none'} />
-      <path d="M4 20c0-4 3.58-7 8-7s8 3 8 7" strokeLinecap="round" />
-    </svg>
   )
 }

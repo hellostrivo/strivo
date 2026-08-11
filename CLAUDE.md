@@ -291,8 +291,8 @@ git status
 | **SPEC_08** | ✅ Completa | 11 ago |
 | **SPEC_09** | ✅ Completa | 11 ago |
 | **SPEC_10** | ✅ Completa | 11 ago |
-| SPEC_11 | → Siguiente | — |
-| SPEC_12 | Pendiente | — |
+| **SPEC_11** | ✅ Completa | 11 ago |
+| SPEC_12 | → Última | — |
 
 **Notas:**
 - SPEC_02 pasó 7 criterios de aceptación
@@ -311,7 +311,9 @@ git status
   (la intención sigue en el héroe al cambiar de sección, y el chip guarda en 272 ms)
 - SPEC_10 pasó sus 7 criterios: 5 con prueba automática y 2 verificados en navegador
   (el umbral en los dos sitios con el contenido ya montado detrás, y ausente con "reducir movimiento")
-- npm run lint, test y build verdes · 391 pruebas
+- SPEC_11 pasó 7 de sus 8 criterios y el octavo a medias: los rótulos no se truncan a ningún ancho,
+  pero el escalado al 200 % no funciona en toda la app por los tokens en px (deuda, la salda SPEC_12)
+- npm run lint, test y build verdes · 414 pruebas · verificado también sobre el bundle de producción
 - npm run lint:copy limpio: los 7 avisos de Fase 0 desaparecieron con SPEC_06
 - **Deuda consciente:**
 - RN-RN-01 (pop-up automático a las 19:00–23:59 + desactivación tras 3 rechazos) → FASE_2
@@ -468,7 +470,56 @@ git status
   pregunta, ni segundo fotograma, ni una segunda variante del componente. El riesgo de SPEC_10 es de
   diseño, y así queda vigilado por el `npm test` y no por la memoria de quien lo lea.
 
+**Decisiones de SPEC_11 (navegación de dos espacios), 11 ago:**
+- **Rótulos: opción A.** Era la última decisión abierta del proyecto (§C7.3) y queda cerrada.
+  Pestaña `Lumia` / `Formia`; cabecera del espacio `Lumia · Reflexión` / `Formia · Acción`.
+  **Por qué:** "Lumia · Reflexión" entero no es legible en una pestaña de móvil con escalado al
+  200 %, y la opción B —pestaña `Reflexión` / `Acción`— deja las marcas fuera del uso diario y solo
+  vivas en las tiendas. Con la A la marca se aprende abajo y el descriptor la explica arriba, que es
+  exactamente el naming mixto que §C7.3 resolvió.
+- **`RN-10` significa dos cosas distintas.** SPEC_11 §3 lo cita como "máximo de pestañas y
+  profundidad", que es la regla de la tabla de este archivo. En el blueprint, **RN-10 es no pedir
+  valoración en la tienda los primeros 21 días**. La regla implementada es **§4.3.2, punto 1**:
+  profundidad máxima de tres toques. Conviene no citar RN-10 sin decir de cuál se habla.
+- **`NavLumia` y `NavFormia` no existían.** No los construyeron SPEC_03 ni SPEC_04: los dos espacios
+  se montaron entrando por los andamios provisionales. SPEC_11 §6 es la spec que los crea.
+- **Son dos archivos casi idénticos y siguen separados a propósito.** SPEC_12 le da a cada espacio su
+  paleta y sus símbolos: están a punto de dejar de parecerse, y factorizarlos ahora solo adelanta el
+  trabajo de deshacerlo.
+- **`SesionProvisional` no se retiró: se renombró a `ArranqueProvisional` y se movió a la raíz.** No
+  es navegación —resuelve el uid y crea el árbol del usuario— y **ninguna spec de Fase 1 construye el
+  onboarding**, así que retirarlo deja la app sin arrancar. Lo que sí desapareció entero son los dos
+  conmutadores y el componente `Conmutador` que los sostenía.
+- **`HashRouter`, no `BrowserRouter`.** La app se sirve como PWA estática; sin una regla de
+  reescritura en Netlify, recargar en `/formia/habitos` daría un 404. Si algún día se quiere URL
+  limpia, hay que añadir el `_redirects` **antes** de cambiar el router.
+- **Cambiar de pestaña vuelve a la sección donde estabas**, no a la raíz del espacio (criterio 4). Se
+  recuerda en una referencia, dentro de la sesión: entre sesiones se olvida a propósito (§10).
+- **La cabecera del espacio va en una franja superior sobre `paper`.** Consecuencia: el degradado de
+  Hoy deja de llegar al borde de la pantalla y queda por debajo de la franja. Es el precio de que la
+  marca se lea, y **SPEC_12 puede revisarlo** cuando dé a cada espacio su superficie.
+- **Las tres navegaciones usan los tokens de superficie**, no `text-ink`. La primera versión los fijó
+  literales y la prueba de RN-SURF-01 lo cazó: sobre el tema que SPEC_12 va a dar a cada espacio,
+  habría sido tinta sobre tinta.
+- **La cabecera de Lumia lleva `z-30` y no es decorativo.** La pantalla Hoy pinta su degradado en una
+  capa `fixed` que cubre la ventana entera; sin ese `z-30` la cabecera estaba en el DOM y era
+  invisible. Queda por debajo de la barra (z-40) y de las secuencias de cierre (z-50), que sí mandan.
+- **La ruta transitoria `/` no se recuerda como sección.** Al abrir la app la ruta pasa un instante
+  por `/` antes de que el comodín redirija; guardarla dejaba la pestaña de Lumia apuntando a `#/` y
+  sin marcarse activa. Solo se recuerdan rutas que empiezan por `/lumia/` o `/formia/`.
+
 **Deuda consciente de Fase 1 (se salda en su spec):**
+- **El escalado de texto al 200 % no funciona en ninguna pantalla de la app, y es de los tokens.**
+  La escala tipográfica de `tailwind.config.js` está en **px absolutos** (`base: 16px`, `sm: 14px`…),
+  así que subir el tamaño de fuente del sistema no cambia nada: medido, con la raíz a 32 px la
+  cabecera se queda en 14 px. Contradice §6.14 ("texto escalable hasta 200 % sin pérdida de
+  contenido"). Viene de Fase 0, afecta a todo el producto y **se salda en SPEC_12**, que es quien es
+  dueña de los tokens: pasar la escala a `rem` tiene consecuencias visuales en todas las pantallas y
+  es una decisión, no un arreglo suelto. Lo que sí está verificado del criterio 2 de SPEC_11 es que
+  los rótulos **no se truncan a ningún ancho**, ni siquiera a 320 px: "Lumia" mide 46 px y "Formia"
+  51 px. Es exactamente la razón por la que la opción A gana a la B.
+- **El `_redirects` de Netlify no existe.** Mientras el router sea `HashRouter` no hace falta; si
+  alguien lo cambia a `BrowserRouter`, hay que añadirlo antes o las rutas profundas darán 404.
 - **Las 100 frases de apertura están sin revisar editorialmente.** Pasan §3.6 con prueba automática
   —sin exclamaciones, sin léxico prohibido, sin promesas ni lenguaje de coach— pero el criterio de
   qué se le dice a alguien al abrir la app es del propietario del producto, no de quien programa.

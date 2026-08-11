@@ -632,6 +632,43 @@ export const copy = {
       // quien la recorre con un lector de pantalla.
       saltar: 'Entrar',
     },
+
+    // §C7.3 — Naming de la navegación. **Opción A, decidida el 11 ago 2026**:
+    // rótulo corto en la pestaña y marca + descriptor en la cabecera del
+    // espacio. Era la última decisión abierta del proyecto.
+    //
+    // El naming es mixto por decisión: la marca se aprende sin que la barra
+    // deje de decir qué hay dentro. "Lumia · Reflexión" completo no cabe en una
+    // pestaña de móvil a un tamaño legible, así que la marca sola va abajo y el
+    // descriptor aparece arriba, al entrar.
+    //
+    // **La barra no mezcla los dos registros.** Lumia habla de reflexión;
+    // Formia, de construcción. Cada lista de secciones usa su vocabulario y
+    // ninguna toma prestado el de la otra.
+    navegacion: {
+      barraLabel: 'Espacios',
+      seccionesLabel: 'Secciones',
+
+      lumia: {
+        pestana: 'Lumia',
+        cabecera: 'Lumia · Reflexión',
+        secciones: {
+          hoy: 'Hoy',
+          journal: 'Journal',
+          historial: 'Historial',
+        },
+      },
+
+      formia: {
+        pestana: 'Formia',
+        cabecera: 'Formia · Acción',
+        secciones: {
+          identidad: 'Identidad',
+          habitos: 'Hábitos',
+          progreso: 'Progreso',
+        },
+      },
+    },
   },
 
   // ─── Insights ─────────────────────────────────────────────────────────────

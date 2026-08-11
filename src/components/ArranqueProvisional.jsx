@@ -1,17 +1,24 @@
-// src/components/SesionProvisional.jsx
+// src/components/ArranqueProvisional.jsx
 //
-// ⚠ PROVISIONAL — se retira cuando existan el onboarding y SPEC_11.
+// ⚠ PROVISIONAL — lo sustituye el onboarding, que **ninguna de las doce specs
+// de Fase 1 construye**.
 //
-// Fase 1 empieza por la capa de datos y por Formia, así que todavía no hay ni
-// autenticación ni onboarding: nadie ha creado el árbol de `users/{uid}/`. Este
-// envoltorio hace lo mínimo para poder entrar al espacio de identidad en
-// desarrollo — resolver un uid local y, si el árbol no existe, **preguntar** la
-// identidad central antes de crearlo.
+// Antes se llamaba `SesionProvisional` y se montaba una vez por pestaña, lo que
+// lo hacía parecer parte de la navegación. SPEC_11 retiró los dos conmutadores
+// provisionales de la barra, pero esto no es navegación: es el arranque de
+// sesión. Resuelve un uid y, si el árbol de `users/{uid}/` no existe, **pregunta
+// la identidad central** antes de crearlo.
 //
-// Preguntarla en vez de inventarla no es un detalle: RN-DB4-08 prohíbe rellenar
-// datos que la persona no ha escrito, y RN-DB4-09 exige que la central exista
-// desde el primer momento. El onboarding real (P3) hará esto mismo, con su
-// pantalla y su ritmo.
+// **Por qué no se retira con los otros dos andamios:** sin él no hay uid, no
+// corre `initUserTree` y no se puede crear ni un hábito, porque RN-DB4-09 exige
+// que la identidad central exista desde el primer momento. No hay autenticación
+// ni onboarding en Fase 1, así que retirarlo deja la app sin arrancar.
+//
+// Preguntar la identidad en vez de inventarla tampoco es un detalle: RN-DB4-08
+// prohíbe rellenar datos que la persona no ha escrito. El onboarding real (P3)
+// hará esto mismo, con su pantalla y su ritmo.
+//
+// Se monta **una sola vez, en la raíz**, por encima de la barra de espacios.
 
 import { useEffect, useState } from 'react'
 import EditorIdentidad from '@components/formia/EditorIdentidad'
@@ -30,7 +37,7 @@ function uidLocal() {
   return uid
 }
 
-export default function SesionProvisional({ children }) {
+export default function ArranqueProvisional({ children }) {
   const [uid] = useState(uidLocal)
   const [tieneArbol, setTieneArbol] = useState(null)
 
@@ -48,7 +55,7 @@ export default function SesionProvisional({ children }) {
           <p className="text-base text-ink/80">{copy.onboarding.p3.subhead}</p>
         </div>
         <EditorIdentidad
-          id="sesion-identidad-central"
+          id="arranque-identidad-central"
           prefijo={copy.formia.identidad.central.prefix}
           placeholder={copy.formia.identidad.central.placeholder}
           ayuda={copy.formia.identidad.central.hint}

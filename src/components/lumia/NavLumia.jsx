@@ -1,0 +1,67 @@
+// src/components/lumia/NavLumia.jsx
+// La navegación interna de Lumia: cabecera del espacio y sus tres secciones.
+//
+// **Hoy · Journal · Historial.** Es la navegación propia del espacio, distinta
+// de la de Formia, y con el vocabulario de Lumia: reflexión, calma, cierre. La
+// barra de espacios no mezcla los dos registros y esta tampoco.
+//
+// La cabecera dice "Lumia · Reflexión" —opción A de §C7.3— porque la pestaña de
+// abajo solo lleva la marca. Es donde se aprende qué es Lumia.
+//
+// **Es gemela de `NavFormia` y sigue siendo un archivo aparte a propósito.**
+// SPEC_12 le da a cada espacio su paleta y sus símbolos: dentro de una spec las
+// dos navegaciones van a dejar de parecerse, y factorizar ahora lo que está a
+// punto de divergir solo adelanta el trabajo de deshacerlo.
+//
+// RN-DB4-01 — Aquí no hay un solo enlace a Formia. El único cruce entre
+// espacios es la barra de abajo (§C7.7.3).
+
+import { NavLink } from 'react-router-dom'
+import { clsx } from 'clsx'
+import { copy } from '@copy'
+
+const textos = copy.shared.navegacion
+
+const SECCIONES = [
+  { id: 'hoy', ruta: '/lumia/hoy' },
+  { id: 'journal', ruta: '/lumia/journal' },
+  { id: 'historial', ruta: '/lumia/historial' },
+]
+
+export default function NavLumia() {
+  return (
+    // `z-30` no es decorativo: la pantalla Hoy pinta su degradado en una capa
+    // `fixed` que cubre la ventana entera, y sin esto la cabecera queda debajo
+    // —presente en el DOM, invisible en pantalla—. Por debajo de la barra de
+    // espacios (z-40) y de las secuencias de cierre (z-50), que sí mandan.
+    <header className="relative z-30 flex flex-col gap-3 border-b border-on-surface bg-paper px-5 pb-3 pt-safe">
+      <p className="text-sm text-on-surface-soft">{textos.lumia.cabecera}</p>
+
+      <nav aria-label={textos.seccionesLabel}>
+        <ul className="flex flex-wrap gap-2">
+          {SECCIONES.map((seccion) => (
+            <li key={seccion.id}>
+              <NavLink
+                to={seccion.ruta}
+                className={({ isActive }) =>
+                  clsx(
+                    'inline-flex items-center rounded-full border px-4 py-2',
+                    'min-h-touch-sm text-base',
+                    'transition-colors duration-260 ease-smooth motion-reduce:transition-none',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30',
+                    // Peso y borde, no solo color (criterio 7).
+                    isActive
+                      ? 'border-current bg-raised font-semibold text-on-surface shadow-elev-1'
+                      : 'border-on-surface bg-paper font-medium text-on-surface-soft',
+                  )
+                }
+              >
+                {textos.lumia.secciones[seccion.id]}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </header>
+  )
+}
