@@ -15,6 +15,11 @@
 // Esta vista se diseña para el peor día, no para el mejor: se puede recorrer
 // entera sin escribir nada y cerrarse igual (RN-VN-01).
 //
+// **Se muestra empotrada en Hoy, no como pantalla aparte.** El saludo y la
+// fecha son del héroe y no se repiten aquí; lo que sí se queda es la línea de
+// apertura, que enmarca el cierre y no la dice nadie más. El botón de cerrar
+// el día **no** es un paso de navegación: es la ceremonia (§5.4, Bloque 7).
+//
 // §5.4.3 — El contenedor declara `data-surface="dark"` y todo el texto hereda
 // el color claro. Ningún componente de aquí fija un color literal.
 
@@ -41,12 +46,11 @@ import { sintesisDelDia } from '@/lumia/diario'
 import { visiblesDeNoche } from '@/lumia/victorias'
 
 const textos = copy.lumia.diario.noche
-const saludos = copy.lumia.hoy.saludo
 
 /** §5.4, Bloque 3 — la sugerencia de logros aparece tras 6 s sin escribir. */
 const RETRASO_LOGROS = 6000
 
-export default function DiarioNoche({ estado, acciones, onSalir }) {
+export default function DiarioNoche({ estado, acciones }) {
   const [logros, setLogros] = useState([])
   const [gratitud, setGratitud] = useState([])
   const [victorias, verVictorias] = useState([])
@@ -112,27 +116,10 @@ export default function DiarioNoche({ estado, acciones, onSalir }) {
   }
 
   return (
-    <div className="flex flex-col gap-8 px-5 pb-12 pt-6">
-      <header className="flex flex-col gap-2">
-        <button
-          type="button"
-          onClick={onSalir}
-          className="self-start rounded-full px-3 py-2 min-h-touch-sm text-sm text-on-surface-soft hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30"
-        >
-          {textos.volver}
-        </button>
-        <h1 className="font-display text-lg text-on-surface">
-          {estado.nombre
-            ? interpolate(saludos.conNombreTemplate, {
-                saludo: saludos.noche,
-                nombre: estado.nombre,
-              })
-            : saludos.noche}
-        </h1>
-        <p className="text-sm text-on-surface-soft">
-          {interpolate(textos.aperturaTemplate, { dia: diaDeLaSemana(estado.fecha) })}
-        </p>
-      </header>
+    <div className="flex flex-col gap-8">
+      <p className="text-sm text-on-surface-soft">
+        {interpolate(textos.aperturaTemplate, { dia: diaDeLaSemana(estado.fecha) })}
+      </p>
 
       <VictoriasHeredadas
         victorias={heredadas}
@@ -253,10 +240,10 @@ export default function DiarioNoche({ estado, acciones, onSalir }) {
         <CierreDelDia
           sintesis={sintesisDelDia(estado.night, estado.victorias)}
           compasivo={compasivo}
-          onTerminar={() => {
-            setCerrando(false)
-            onSalir()
-          }}
+          // Al terminar la ceremonia se vuelve al día, que sigue debajo: no
+          // hay pantalla anterior a la que salir y el día no se bloquea
+          // (RN-VN-05, reabrir y volver a cerrar no duplica nada).
+          onTerminar={() => setCerrando(false)}
         />
       )}
     </div>

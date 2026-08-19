@@ -11,12 +11,20 @@
 //
 // El tema lo elige el conmutador y solo el conmutador (RN-HOY-05). La hora del
 // sistema decide con cuál se abre la pantalla y nada más.
+//
+// **El Diario se muestra aquí, sin paso intermedio.** El conmutador elige qué
+// sección se escribe y sus bloques aparecen debajo: no hay tarjeta que anuncie
+// el día ni botón que lleve a otra pantalla a escribirlo. El único destino
+// aparte es la respiración, que ocupa la pantalla entera mientras dura.
+//
+// **Cerrar el día es escribir la noche, y nada más.** No hay un recorrido
+// guiado paralelo: la ceremonia de cierre está al final de la sección Noche,
+// donde se escribe.
 
 import { useEffect, useState } from 'react'
 import { clsx } from 'clsx'
 import DiarioManana from '@components/lumia/DiarioManana'
 import DiarioNoche from '@components/lumia/DiarioNoche'
-import RitualNoche from '@components/lumia/RitualNoche'
 import HeroeHoy from '@components/lumia/HeroeHoy'
 import SelectorMomento from '@components/lumia/SelectorMomento'
 import Respiracion from '@components/shared/Respiracion'
@@ -25,7 +33,6 @@ import Button from '@components/ui/Button'
 import { copy, interpolate } from '@copy'
 import { shared } from '@/lib/db'
 import { getTimeSlot } from '@lib/timeSlot'
-import { mananaEscrita, nocheEscrita } from '@/lumia/diario'
 import { franjaDelSaludo } from '@/lumia/fechas'
 import { useDiario } from '@/lumia/useDiario'
 
@@ -96,18 +103,26 @@ export default function Hoy({ uid, onHideNav }) {
   const superficie = momento === 'manana' ? 'light' : 'dark'
 
   /**
-   * §C7.5 — El umbral va donde estaba el pop-up disuelto: justo antes del
-   * contenido de la mañana, y no al mover el conmutador, que solo cambia lo
-   * que muestra el héroe.
+   * §C7.5 — El umbral se cruza al mostrarse la mañana, una vez por sesión.
+   * Antes lo disparaba el botón que llevaba al Diario; sin ese botón, el sitio
+   * equivalente es el primer momento en que la mañana está en pantalla.
    *
-   * RN-LU-MAN-03 — Abrir la mañana **no** dispara la respiración. Sigue
+   * Espera a que el día esté cargado: un velo sobre una pantalla en blanco no
+   * es un umbral, es una espera con luz. El contenido tiene que estar montado
+   * detrás para que, cuando la luz se va, no quede nada por hacer.
+   *
+   * RN-LU-MAN-03 — Mostrar la mañana **no** dispara la respiración. Sigue
    * entrando solo por su enlace, que es lo que la hace voluntaria.
    */
+  useEffect(() => {
+    const puedeCruzarse = !umbralCruzado && !prefiereMenosMovimiento()
+    if (carga !== 'lista' || momento !== 'manana' || !puedeCruzarse) return
+    umbralCruzado = true
+    setUmbral(true)
+  }, [carga, momento])
+
+  /** Las dos superficies que sí son un destino: ocupan la pantalla entera. */
   const abrir = (siguiente) => {
-    if (siguiente === 'manana' && !umbralCruzado && !prefiereMenosMovimiento()) {
-      umbralCruzado = true
-      setUmbral(true)
-    }
     setVista(siguiente)
     onHideNav?.(true)
   }
@@ -147,25 +162,6 @@ export default function Hoy({ uid, onHideNav }) {
     )
   }
 
-  if (vista === 'manana') {
-    return marco(
-      <>
-        <DiarioManana estado={estado} acciones={acciones} onSalir={cerrar} />
-        {/* La mañana ya está montada detrás: cuando la luz se va, no hay nada
-            que cargar ni ningún paso que dar. Umbral, no secuencia. */}
-        {umbral && <TransicionLuz onTerminar={() => setUmbral(false)} />}
-      </>,
-    )
-  }
-
-  if (vista === 'noche') {
-    return marco(<DiarioNoche estado={estado} acciones={acciones} onSalir={cerrar} />)
-  }
-
-  if (vista === 'guiado') {
-    return marco(<RitualNoche estado={estado} acciones={acciones} onSalir={cerrar} />)
-  }
-
   if (vista === 'respiracion') {
     return marco(
       <Respiracion
@@ -177,12 +173,18 @@ export default function Hoy({ uid, onHideNav }) {
     )
   }
 
-  const hecho =
-    momento === 'manana'
-      ? mananaEscrita(estado.morning)
-      : nocheEscrita(estado.night, estado.victorias)
-  const tarjeta = textos.tarjeta[momento]
   const saludo = copy.lumia.hoy.saludo[franjaDelSaludo()]
+
+  /* La entrada a la respiración, la misma en las dos secciones. Va como
+     enlace discreto justo debajo del conmutador, que es donde estaba cuando la
+     tarjeta del día existía: se encuentra sin desplazarse y no interrumpe la
+     escritura de más abajo.
+
+     RN-LU-RESP-01 — La respiración se abre desde aquí y **solo** desde aquí.
+     Mostrar una sección no la dispara, y por eso los 39 segundos que dura son
+     aceptables. */
+  const enlace =
+    'self-start rounded-full px-3 py-2 min-h-touch-sm text-left text-sm text-on-surface-soft hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30'
 
   return marco(
     <div className="flex min-h-screen flex-col gap-8 px-5 pb-24 pt-10">
@@ -195,7 +197,14 @@ export default function Hoy({ uid, onHideNav }) {
         estado={estado}
         momento={momento}
         acciones={acciones}
-        conmutador={<SelectorMomento momento={momento} onCambiar={setMomento} />}
+        conmutador={
+          <div className="flex flex-col items-start gap-1">
+            <SelectorMomento momento={momento} onCambiar={setMomento} />
+            <button type="button" onClick={() => abrir('respiracion')} className={enlace}>
+              {`${copy.lumia.respiracion.entrada.abrir} · ${copy.lumia.respiracion.entrada.ayuda}`}
+            </button>
+          </div>
+        }
         saludo={
           estado.nombre
             ? interpolate(textos.saludo.conNombreTemplate, { saludo, nombre: estado.nombre })
@@ -203,50 +212,17 @@ export default function Hoy({ uid, onHideNav }) {
         }
       />
 
-      {/* RN-HOY-07 — La tarjeta se distingue del fondo por luminancia, no solo
-          por el borde. Es la única acción principal de la pantalla. */}
-      <section className="flex flex-col gap-3 rounded-lg border border-on-surface bg-lumia-tarjeta p-5 shadow-elev-2 transicion-tema">
-        <div className="flex flex-col gap-1">
-          <h2 className="font-display text-md text-on-surface">{tarjeta.titulo}</h2>
-          <p className="text-sm text-on-surface-soft">
-            {hecho ? textos.hecho[momento] : tarjeta.duracion}
-          </p>
-        </div>
-        <div>
-          <Button size="sm" variant="surface" onClick={() => abrir(momento)}>
-            {hecho ? textos.hecho.accion : tarjeta.accion}
-          </Button>
-        </div>
+      {/* El Diario, aquí mismo. Sin tarjeta que lo anuncie y sin paso previo:
+          la sección elegida arriba es la que se escribe abajo. */}
+      {momento === 'manana' ? (
+        <DiarioManana estado={estado} acciones={acciones} />
+      ) : (
+        <DiarioNoche estado={estado} acciones={acciones} />
+      )}
 
-        {/* Las dos entradas secundarias del momento activo. Van como enlaces
-            discretos y no como segundo botón: la pantalla Hoy tiene **una**
-            acción principal.
-
-            RN-LU-RESP-01 — La respiración se abre desde aquí y **solo** desde
-            aquí. Entrar en la sección Mañana no la dispara, y por eso los 39
-            segundos que dura son aceptables. */}
-        {momento === 'manana' && (
-          <button
-            type="button"
-            onClick={() => abrir('respiracion')}
-            className="self-start rounded-full px-3 py-2 min-h-touch-sm text-left text-sm text-on-surface-soft hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30"
-          >
-            {`${copy.lumia.respiracion.entrada.abrir} · ${copy.lumia.respiracion.entrada.ayuda}`}
-          </button>
-        )}
-
-        {/* El modo guiado de la noche (§5.6). Escribe en el mismo sitio que la
-            vista libre (D-4.5). */}
-        {momento === 'noche' && (
-          <button
-            type="button"
-            onClick={() => abrir('guiado')}
-            className="self-start rounded-full px-3 py-2 min-h-touch-sm text-left text-sm text-on-surface-soft hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30"
-          >
-            {`${copy.lumia.ritualNoche.abrir} · ${copy.lumia.ritualNoche.abrirAyuda}`}
-          </button>
-        )}
-      </section>
+      {/* El día ya está montado detrás: cuando la luz se va, no hay nada que
+          cargar ni ningún paso que dar. Umbral, no secuencia. */}
+      {umbral && <TransicionLuz onTerminar={() => setUmbral(false)} />}
 
       {error && (
         <p className="flex flex-wrap items-center gap-3 text-sm text-on-surface-soft" role="status">

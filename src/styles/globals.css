@@ -154,6 +154,13 @@
   /* De noche el contratono se invierte: el conmutador es la pieza clara. */
   --lumia-conmutador: #F2DDE7;
   --lumia-conmutador-activo: rgba(36, 30, 51, .12);
+  /* §6.3.9 — El acento de la respiración es el naranja del amanecer y de
+     noche no funciona: se pinta sobre un degradado frío y oscuro, que es lo
+     contrario del fondo para el que se eligió. De noche toma el lavanda de la
+     paleta (`lumia-am-100`), que sobre el degradado nocturno se lee a 12,2:1
+     en su extremo más oscuro y a 9,7:1 en el más claro. */
+  --color-breath: var(--lumia-am-100);
+  --color-breath-halo: rgba(220, 207, 241, .28);
   /* Un velo crema a las once de la noche sería un fogonazo. */
   --transicion-velo: #191428;
   --transicion-luz: radial-gradient(circle, rgba(232, 165, 74, .18) 0%, rgba(232, 165, 74, 0) 70%);
@@ -220,12 +227,6 @@
   18%  { opacity: 1; }
   78%  { opacity: 1; }
   100% { opacity: 0; }
-}
-
-@keyframes respiracion-lenta {
-  0%,
-  100% { transform: scale(1);    opacity: .72; }
-  50%  { transform: scale(1.12); opacity: 1; }
 }
 
 /* ─── Base ───────────────────────────────────────────────────────────────────
@@ -344,14 +345,6 @@
   .circulo-respiracion {
     background-color: var(--color-breath);
     box-shadow: 0 0 40px 12px var(--color-breath-halo);
-  }
-
-  /* Círculo de descompresión de N1 (§5.6): seis segundos por ciclo.
-     No es la respiración diaria de tres ciclos 5-5-3, que tiene su propia
-     especificación: esto es un respiro de entrada y nada más.
-     Con "reducir movimiento" queda quieto, por la regla global de más arriba. */
-  .respiracion-lenta {
-    animation: respiracion-lenta 6000ms cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
 
   /* Safe area para barra de navegación inferior */

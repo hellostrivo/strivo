@@ -97,27 +97,9 @@ export const copy = {
         noche: 'Noche',
       },
 
-      // §5.2, "Comportamiento". La tarjeta de acción no nombra ningún ritual
-      // de mañana: ese envoltorio ya no existe (§C0.5, §C7.7.3).
-      tarjeta: {
-        manana: {
-          titulo: 'Empieza tu día',
-          duracion: 'Dos minutos',
-          accion: 'Abrir',
-        },
-        noche: {
-          titulo: 'Cerrar tu día',
-          duracion: 'Tres minutos',
-          accion: 'Abrir',
-        },
-      },
-
-      // RN-HOY-03 — Lo hecho se dice con lenguaje, nunca con un tic verde.
-      hecho: {
-        manana: 'Ya definiste tu día. Míralo cuando quieras.',
-        noche: 'Tu día está cerrado. Descansa.',
-        accion: 'Ver',
-      },
+      // Sin tarjeta de acción y sin estado "hecho": el Diario se muestra en
+      // Hoy, así que no hay nada que anunciar ni que dar por terminado.
+      // RN-HOY-03 se cumple sin decir nada — lo escrito está a la vista.
 
       frase: { label: 'Frase de hoy' },
     },
@@ -150,7 +132,6 @@ export const copy = {
 
       manana: {
         titulo: 'Tu mañana',
-        volver: 'Volver a Hoy',
 
         gratitud: {
           titulo: '¿Qué agradezco esta mañana?',
@@ -267,16 +248,10 @@ export const copy = {
           ayuda: 'Tres cosas que, si pasan hoy, el día valió la pena.',
           placeholder: 'Algo que quieres que pase hoy',
         },
-
-        // §C2.4 — "Comenzar mi día" sobrevive como cierre de esta vista, no
-        // como final de una secuencia. Sin nada escrito, es solo una salida.
-        cta: 'Comenzar mi día',
-        ctaVacio: 'Salir',
       },
 
       noche: {
         titulo: 'Tu noche',
-        volver: 'Volver a Hoy',
         // §5.4, Bloque 1 — frase de apertura con el día de la semana.
         aperturaTemplate: 'Vamos a cerrar el {dia}.',
 
@@ -474,36 +449,6 @@ export const copy = {
         inhalar: 'Inhala',
         exhalar: 'Exhala',
         pausa: 'Descansa',
-      },
-    },
-
-    // ─── Ritual de Noche (§5.6) ─────────────────────────────────────────────
-    // Cinco pantallas: N1, N3, N4, N5, N6. **N2 no existe** y su número no se
-    // reasigna (§C7.7.1). Aquí no hay una sola palabra de hábitos: el modo
-    // guiado escribe exactamente lo mismo que la vista libre, así que N3, N4 y
-    // N5 reutilizan el copy de `diario.noche` en vez de duplicarlo.
-    //
-    // Ninguna cadena de este namespace dice "ritual": el nombre del módulo es
-    // vocabulario interno, no algo que se le lea a nadie en pantalla.
-    ritualNoche: {
-      abrir: 'Cerrar mi día paso a paso',
-      abrirAyuda: 'Tres minutos, guiado',
-      salir: 'Salir',
-      seguir: 'Seguir',
-      atras: 'Atrás',
-      // Ninguna pantalla es obligatoria (RN-VN-01): saltar siempre está a mano.
-      saltar: 'Saltar esto',
-      pasoTemplate: 'Paso {n} de {total}',
-
-      n1: {
-        titulo: 'El día ya pasó.',
-        lead: 'Vamos a mirarlo con calma.',
-        respiracion: 'Respiración de entrada',
-      },
-
-      n5: {
-        // §5.6 — La profundidad extra es opt-in, nunca obligatoria.
-        mas: '¿Quieres escribir un poco más?',
       },
     },
 

@@ -575,6 +575,51 @@ git status
   `lumia-campo`): con un bloque en contratono, la tarjeta del ritual ya no compite con él porque no
   juegan en la misma escala.
 
+- **El Diario se escribe dentro de Hoy, 19 ago.** Desaparece la tarjeta que anunciaba el día y su
+  botón: `DiarioManana` y `DiarioNoche` se montan empotrados bajo el héroe, y la sección elegida en
+  el conmutador es la que se escribe. **No había ruta que retirar**: el Diario siempre fue una vista
+  interna de `Hoy.jsx`, nunca una URL. El Diario de **días pasados** no se toca — vive en
+  `VistaDiaCompleto` (Historial), que es otro componente y de solo lectura.
+- **Lo que colgaba de ese botón, y dónde está ahora.** No había analítica ni ningún registro de
+  "abrió su día" (nada se pierde en silencio). El **umbral de luz** (SPEC_10) pasa del clic al
+  primer momento en que la mañana está en pantalla, una vez por sesión, y espera a `carga === 'lista'`
+  para que el velo no caiga sobre una pantalla en blanco. `onHideNav` deja de usarse para el Diario:
+  la barra de dos espacios se queda visible mientras se escribe. Los dos enlaces secundarios
+  —respiración y modo guiado— salen de la tarjeta y van bajo el conmutador; siguen siendo las dos
+  únicas superficies a pantalla completa.
+- **El estado "hecho" de RN-HOY-03 se retira.** "Ya definiste tu día. Míralo cuando quieras." vivía en
+  esa tarjeta; con el contenido a la vista, decirlo es contarle a alguien lo que está leyendo. La
+  regla dice **cómo** se comunica lo hecho, no que tenga que haber una línea.
+- **El CTA final de la mañana ("Comenzar mi día" / "Salir") se retira.** No hay a dónde volver y el
+  guardado ya ocurre al escribir y al salir del campo; un botón ahí sugiere que sin tocarlo no se
+  guardó. **"Cerrar mi día" no es ese botón y se queda**: es la ceremonia del Bloque 7 de §5.4. Al
+  terminar ya no sale de ninguna pantalla, solo cierra el velo y deja el día debajo.
+- **`mananaEscrita` y `nocheEscrita` (`src/lumia/diario.js`) se quedan sin ningún consumidor.** Eran
+  para el estado "hecho". Siguen exportadas y probadas; si nadie las reclama, se retiran.
+
+- **La respiración es la entrada de las dos secciones, 19 ago.** El enlace de la noche —"Cerrar mi
+  día paso a paso · Tres minutos, guiado"— se retira y en su sitio va el mismo enlace de la mañana.
+  Un solo enlace, sin ramas: lo que cambia entre secciones es la paleta, no el destino.
+- **El acento de la respiración tiene versión nocturna.** `--color-breath` era el naranja del
+  amanecer (`#E8A54A`) para toda la app; de noche se pinta sobre un degradado frío y oscuro, que es
+  justo el fondo contrario al que lo eligió §6.3.9. Bajo `[data-lumia='noche']` toma `lumia-am-100`
+  (`#DCCFF1`), de la paleta de la noche: 12,2:1 sobre el extremo oscuro del degradado.
+- **El círculo de la respiración no se mide contra el 3:1 de WCAG 1.4.11**, y consta en el script: la
+  fase la dice el texto con `aria-live` —"Inhala", "Exhala", "Descansa"—, el círculo es el ritmo y no
+  el dato. Al medirlo salió que **el círculo de la mañana está en 1,66:1 sobre el amanecer** desde
+  SPEC_08. Queda anotado como informativo, no como fallo.
+- **El Ritual de Noche guiado se retira entero, 19 ago.** **Cerrar el día es escribir la sección
+  Noche del Diario, y no hay nada adicional.** Se borraron `RitualNoche.jsx`, las cinco pantallas de
+  `components/lumia/ritual/`, el módulo de pasos `src/lumia/ritualNoche.js`, su prueba, el namespace
+  `copy.lumia.ritualNoche` y la animación `.respiracion-lenta`, que solo usaba N1. **Deroga la parte
+  de SPEC_07 que construía el recorrido de cinco pantallas** (N1, N3, N4, N5, N6) y deja sin objeto a
+  RN-RN-01, que ya estaba aplazada a Fase 2 por otro motivo.
+- **Lo que NO se fue con él:** la ceremonia de cierre (`CierreDelDia`, §5.4 Bloque 7) sigue al final
+  de la sección Noche —era la mitad compartida (D-4.5)—, y `EstadoSueno` y `CampoGratitud` siguen
+  donde estaban. En datos no cambia nada: la colección canónica se sigue llamando `nightRitual` y es
+  donde escribe la noche. `isRitualNocheWindow()` de `lib/timeSlot.js` se queda: es la ventana
+  horaria, no el recorrido, y nadie la llama todavía.
+
 **Deuda consciente de Fase 1 (se salda en su spec):**
 - **Los 16 íconos de emoción no se hicieron, y es una decisión, no un olvido.** SPEC_12 §10 excluye
   "ilustraciones nuevas" y §7 dice que los íconos de UI siguen pendientes en el manual v1.1 y que hay

@@ -75,8 +75,8 @@ function paletaExplorada() {
 }
 
 function Espacios({ uid }) {
-  // §4.3.2, regla 2 — La navegación se oculta durante rituales, escritura
-  // activa y secuencias de cierre. Son estados de flujo, no de navegación.
+  // §4.3.2, regla 2 — La navegación se oculta durante la escritura activa y
+  // las secuencias de cierre. Son estados de flujo, no de navegación.
   const [hideNav, setHideNav] = useState(false)
 
   // §C7.5 — El umbral de entrada a la app. Con "reducir movimiento" no se

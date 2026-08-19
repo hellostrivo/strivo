@@ -148,11 +148,14 @@ describe('no dispara la respiración (RN-LU-MAN-03, criterio 4)', () => {
     expect(codigoDe(COMPONENTE)).not.toMatch(/respiraci[óo]n|Respiracion/i)
   })
 
-  it('abrir la mañana no arranca ningún ejercicio', () => {
+  it('mostrar la mañana no arranca ningún ejercicio', () => {
+    // El umbral se cruza al mostrarse la sección, ahora que el Diario se
+    // escribe en Hoy y ya no hay botón que lleve a él. Lo que no cambia es que
+    // ese camino no toca la respiración: se entra a ella por su enlace.
     const hoy = codigoDe(HOY)
-    const abrir = hoy.match(/const abrir = \([\s\S]*?\n {2}\}/)?.[0] ?? ''
-    expect(abrir).toMatch(/umbral/i)
-    expect(abrir).not.toMatch(/respiracion/i)
+    const efecto = hoy.match(/useEffect\(\(\) => \{[^}]*umbralCruzado[\s\S]*?\n {2}\}/)?.[0] ?? ''
+    expect(efecto).toMatch(/umbral/i)
+    expect(efecto).not.toMatch(/respiracion/i)
   })
 })
 

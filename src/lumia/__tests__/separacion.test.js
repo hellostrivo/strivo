@@ -5,7 +5,7 @@
 // §C2.6, criterio 2 — "Una búsqueda de `Habit` o `HabitLog` en el árbol de
 // componentes del Diario no devuelve ninguna referencia".
 
-import { readFileSync, readdirSync, statSync } from 'fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'fs'
 import { join } from 'path'
 import { describe, expect, it } from 'vitest'
 
@@ -74,11 +74,9 @@ describe('Lumia no sabe nada de hábitos (RN-DB4-01, §C2.6)', () => {
   })
 
   it('ninguna cadena de Lumia le dice "ritual" a nadie', () => {
-    // El Ritual de Noche existe y su namespace se llama `ritualNoche`, pero eso
-    // es vocabulario interno: en pantalla el módulo se presenta por lo que hace
-    // —cerrar el día paso a paso— y no por cómo se llama en el blueprint. Por
-    // eso aquí se revisa el texto y no la ruta, que sí lleva el nombre. Se
-    // recogen las rutas infractoras en vez de concatenarlas al texto: lo que se
+    // Ya no queda ni el vocabulario interno: cerrar el día es escribir la
+    // sección Noche, y no hay ningún módulo aparte que presentar. Se recogen
+    // las rutas infractoras en vez de concatenarlas al texto: lo que se
     // comprueba es la cadena, y el fallo tiene que decir dónde está.
     const infractoras = CADENAS.filter(([, texto]) => /ritual/i.test(texto)).map(([ruta]) => ruta)
     expect(infractoras).toEqual([])
@@ -89,7 +87,6 @@ describe('las superficies de SPEC_07 (§C7.7.1, §C7.7.2)', () => {
   const DE_SPEC_07 = [
     'src/pages/lumia/Journal.jsx',
     'src/pages/lumia/Historial.jsx',
-    'src/components/lumia/RitualNoche.jsx',
     'src/components/lumia/BloqueoPin.jsx',
     'src/components/lumia/CuentaParaPin.jsx',
     'src/components/lumia/CalendarioAnimo.jsx',
@@ -97,7 +94,6 @@ describe('las superficies de SPEC_07 (§C7.7.1, §C7.7.2)', () => {
     'src/lumia/journal.js',
     'src/lumia/pin.js',
     'src/lumia/historial.js',
-    'src/lumia/ritualNoche.js',
   ]
 
   it('existen todos los archivos que la spec nombra', () => {
@@ -179,20 +175,19 @@ describe('el tema lo manda el conmutador, no el reloj (RN-HOY-05)', () => {
     // del día y por delante de la captura de intención, que es la primera
     // pregunta. Elegir el momento decide de qué habla el resto de la pantalla.
     const heroe = codigoDe('src/components/lumia/HeroeHoy.jsx')
-    expect(hoy).toMatch(/conmutador=\{<SelectorMomento/)
+    expect(hoy).toMatch(/conmutador=\{[\s\S]{0,80}<SelectorMomento/)
     expect(heroe.indexOf('fechaLarga')).toBeLessThan(heroe.indexOf('{conmutador}'))
     expect(heroe.indexOf('{conmutador}')).toBeLessThan(heroe.indexOf('<FraseDelDia'))
     expect(heroe.indexOf('{conmutador}')).toBeLessThan(heroe.indexOf('<IntencionDelDia'))
   })
 
-  it('el conmutador va en contratono y no en la escala de la tarjeta', () => {
-    // La tarjeta del ritual sigue siendo la única superficie que destaca por
-    // luminancia sobre el fondo (RN-HOY-07); el conmutador destaca por
-    // inversión, que es otra escala y por eso no compiten.
+  it('el conmutador va en contratono, fuera de la escala de las superficies', () => {
+    // `lumia-tarjeta` y `lumia-campo` son los dos escalones de luminancia que
+    // usan las piezas que acompañan al fondo. El conmutador no acompaña: lo
+    // contradice, y por eso no comparte escala con ninguna de ellas.
     const selector = codigoDe('src/components/lumia/SelectorMomento.jsx')
     expect(selector).toMatch(/bg-lumia-conmutador/)
     expect(selector).not.toMatch(/bg-lumia-tarjeta|bg-lumia-campo/)
-    expect(hoy).toMatch(/<section[^>]*bg-lumia-tarjeta/)
   })
 
   it('el bloque declara su propia superficie, sin nombrar un color', () => {
@@ -206,6 +201,59 @@ describe('el tema lo manda el conmutador, no el reloj (RN-HOY-05)', () => {
     const css = readFileSync('src/styles/globals.css', 'utf8')
     expect(css).toMatch(/\[data-lumia='manana'\][\s\S]*?--lumia-conmutador:\s*#1D1833/)
     expect(css).toMatch(/\[data-lumia='noche'\][\s\S]*?--lumia-conmutador:\s*#F2DDE7/)
+  })
+})
+
+describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
+  const hoy = codigoDe('src/pages/lumia/Hoy.jsx')
+
+  it('las dos secciones se montan en la pantalla, no en una vista aparte', () => {
+    expect(hoy).toMatch(/<DiarioManana estado=/)
+    expect(hoy).toMatch(/<DiarioNoche estado=/)
+    expect(hoy).not.toMatch(/vista === 'manana'|vista === 'noche'/)
+  })
+
+  it('no queda el botón que llevaba al Diario, ni su copy', () => {
+    expect(copy.lumia.hoy.tarjeta).toBeUndefined()
+    expect(copy.lumia.hoy.hecho).toBeUndefined()
+    const todo = JSON.stringify(copy.lumia)
+    ;['Empieza tu día', 'Cerrar tu día', 'Comenzar mi día', 'Volver a Hoy'].forEach((cadena) =>
+      expect(todo).not.toContain(cadena),
+    )
+  })
+
+  it('la ceremonia de cierre no era ese botón y se queda donde estaba', () => {
+    // "Cerrar mi día" es el Bloque 7 de §5.4, no un paso de navegación: es la
+    // ceremonia, y la ceremonia nunca falla (no-negociable 3).
+    expect(copy.lumia.diario.noche.cierre.cta).toBe('Cerrar mi día')
+    expect(codigoDe('src/components/lumia/DiarioNoche.jsx')).toMatch(/<CierreDelDia/)
+  })
+
+  it('las dos vistas empotradas no repiten el héroe ni piden salir', () => {
+    const manana = codigoDe('src/components/lumia/DiarioManana.jsx')
+    const noche = codigoDe('src/components/lumia/DiarioNoche.jsx')
+    ;[manana, noche].forEach((codigo) => expect(codigo).not.toMatch(/onSalir|<h1/))
+    // El saludo, la fecha y la frase del día se pintan una vez, en el héroe.
+    expect(manana).not.toMatch(/FraseDelDia|fechaLarga|saludo/i)
+  })
+
+  it('la respiración es la entrada de las dos secciones, sin ramas', () => {
+    // El mismo enlace de día y de noche: lo que cambia es la paleta, no el
+    // destino. La versión nocturna del acento vive en el CSS.
+    expect(hoy.match(/abrir\('respiracion'\)/g) ?? []).toHaveLength(1)
+    const css = readFileSync('src/styles/globals.css', 'utf8')
+    expect(css).toMatch(/\[data-lumia='noche'\][\s\S]*?--color-breath:/)
+  })
+
+  it('no hay un recorrido guiado paralelo: cerrar el día es escribir la noche', () => {
+    // El módulo de cinco pantallas de SPEC_07 se retiró entero. La ceremonia
+    // de cierre se queda donde se escribe, al final de la sección Noche.
+    expect(hoy).not.toMatch(/guiado|RitualNoche/)
+    expect(copy.lumia.ritualNoche).toBeUndefined()
+    expect(existsSync('src/components/lumia/RitualNoche.jsx')).toBe(false)
+    expect(existsSync('src/components/lumia/ritual')).toBe(false)
+    expect(existsSync('src/lumia/ritualNoche.js')).toBe(false)
+    expect(codigoDe('src/components/lumia/DiarioNoche.jsx')).toMatch(/<CierreDelDia/)
   })
 })
 

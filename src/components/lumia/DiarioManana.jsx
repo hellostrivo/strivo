@@ -1,27 +1,33 @@
 // src/components/lumia/DiarioManana.jsx
-// Vista de Mañana del Diario (§5.3). Cinco bloques:
+// Vista de Mañana del Diario (§5.3). Cuatro bloques:
 //
-//   1. Frase del día
-//   2. Agradecimientos
-//   3. Emociones — "¿Cómo me quiero sentir hoy?"
-//   4. Gran visión
-//   5. Victorias
+//   1. Agradecimientos
+//   2. Emociones — "¿Cómo me quiero sentir hoy?"
+//   3. Gran visión
+//   4. Victorias
+//
+// El bloque 1 de §5.3 —la frase del día— sigue en pantalla y sigue siendo el
+// primero que se lee: lo pinta el héroe de Hoy, una vez, para las dos
+// secciones. Aquí se repetiría.
 //
 // **No hay sexto bloque.** El checklist de hábitos de Fase 0 no se construye
 // aquí ni en ningún sitio de Lumia: no se elimina nada, nunca existió en este
 // código (§C2.6).
 //
-// Ningún campo es obligatorio y ninguno bloquea (RN-VM-01). Se puede entrar,
-// mirar y salir sin escribir una palabra.
+// Ningún campo es obligatorio y ninguno bloquea (RN-VM-01). Se puede mirar la
+// pantalla entera sin escribir una palabra.
+//
+// **Se muestra empotrada en Hoy, no como pantalla aparte.** Por eso no trae
+// cabecera —el saludo, la fecha y la frase del día son del héroe— ni botón de
+// volver ni de terminar: no hay a dónde volver, y lo escrito se guarda solo
+// mientras se escribe.
 
 import { useEffect, useRef, useState } from 'react'
 import CampoGratitud from './CampoGratitud'
 import ChipsEmociones from './ChipsEmociones'
-import FraseDelDia from './FraseDelDia'
 import ListaVictorias from './ListaVictorias'
 import { CampoTexto } from './Campo'
-import Button from '@components/ui/Button'
-import { copy, interpolate } from '@copy'
+import { copy } from '@copy'
 import {
   LIMITES,
   conIdsDe,
@@ -31,20 +37,13 @@ import {
   textosDe,
 } from '@/lumia/filas'
 import { CATALOGO, alternarEmocion } from '@/lumia/emociones'
-import { fechaLarga, franjaDelSaludo } from '@/lumia/fechas'
 
 const textos = copy.lumia.diario.manana
-const saludos = copy.lumia.hoy.saludo
 
 /** §5.3, Bloque 4 — la pregunta de apoyo aparece tras 8 s sin escribir. */
 const RETRASO_GRAN_VISION = 8000
 
-function saludoDelDia(nombre) {
-  const saludo = saludos[franjaDelSaludo()]
-  return nombre ? interpolate(saludos.conNombreTemplate, { saludo, nombre }) : saludo
-}
-
-export default function DiarioManana({ estado, acciones, onSalir }) {
+export default function DiarioManana({ estado, acciones }) {
   const [gratitud, setGratitud] = useState([])
   const [victorias, verVictorias] = useState([])
   // Las filas también viven en una referencia: el guardado las lee cuando le
@@ -103,27 +102,8 @@ export default function DiarioManana({ estado, acciones, onSalir }) {
     }
   }
 
-  const vacia =
-    textosDe(gratitud).length === 0 &&
-    textosDe(victorias).length === 0 &&
-    emociones.length === 0 &&
-    granVision.trim() === ''
-
   return (
-    <div className="flex flex-col gap-8 px-5 pb-12 pt-6">
-      <header className="flex flex-col gap-2">
-        <button
-          type="button"
-          onClick={onSalir}
-          className="self-start rounded-full px-3 py-2 min-h-touch-sm text-sm text-on-surface-soft hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30"
-        >
-          {textos.volver}
-        </button>
-        <h1 className="font-display text-lg text-on-surface">{saludoDelDia(estado.nombre)}</h1>
-        <p className="text-sm text-on-surface-soft">{fechaLarga(estado.fecha)}</p>
-        <FraseDelDia frase={estado.frase} />
-      </header>
-
+    <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
         <h2 className="font-display text-md text-on-surface">{textos.gratitud.titulo}</h2>
         <CampoGratitud
@@ -173,18 +153,6 @@ export default function DiarioManana({ estado, acciones, onSalir }) {
       </section>
 
       <ListaVictorias filas={victorias} onCambiar={setVictorias} onVolcar={volcarVictorias} />
-
-      {/* §C2.4 — Sin nada escrito no hay celebración: solo una salida. */}
-      <Button
-        fullWidth
-        onClick={async () => {
-          await volcarVictorias()
-          await acciones.volcar()
-          onSalir()
-        }}
-      >
-        {vacia ? textos.ctaVacio : textos.cta}
-      </Button>
     </div>
   )
 }

@@ -86,6 +86,9 @@ const MARCA = {
   // producto— y por eso se mide aquí como cualquier otra superficie con texto.
   conmutadorAm: '#1D1833',
   conmutadorPm: '#F2DDE7',
+  // §6.3.9 — El círculo de la respiración, en sus dos versiones.
+  breathAm: '#E8A54A',
+  breathPm: '#DCCFF1',
 }
 
 const CUERPO = 7
@@ -150,6 +153,13 @@ const PARES = [
  * cuerpo sobre un primario de marca, estos números dicen en cuánto se queda.
  */
 const INFORMATIVOS = [
+  // El círculo de la respiración, en sus dos versiones. **No se le exige el
+  // 3:1 de 1.4.11 y no es un descuido:** la fase no la comunica el círculo,
+  // la dice el texto con `aria-live` ("Inhala", "Exhala", "Descansa"). El
+  // círculo es el ritmo, no el dato, y sobre el amanecer se queda en 1,7:1
+  // desde SPEC_08 —cifra que sale a la luz al medirlo, no ahora—.
+  ['círculo de respiración sobre el amanecer', MARCA.breathAm, MARCA.lumiaAm300],
+  ['círculo de respiración sobre la noche', MARCA.breathPm, MARCA.night],
   ['blanco sobre lumia-pm-500', TEXTO.blanco, MARCA.lumiaPm500],
   ['blanco sobre formia-pm-600', TEXTO.blanco, MARCA.formiaPm600],
   ['blanco sobre formia-pm-800 (convergencia)', TEXTO.blanco, MARCA.formiaPm800],

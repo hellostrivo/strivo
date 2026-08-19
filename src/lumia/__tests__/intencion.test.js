@@ -137,14 +137,10 @@ describe('intención y gran visión son dos cosas (criterio 1 · §C2.4.1)', () 
 })
 
 describe('de noche se recupera la gran visión, no la intención (criterios 3 y 8)', () => {
+  // Desde que el recorrido guiado se retiró, la noche es una sola superficie.
   const NOCTURNAS = [
     'src/components/lumia/DiarioNoche.jsx',
-    'src/components/lumia/RitualNoche.jsx',
-    'src/components/lumia/ritual/N1Descompresion.jsx',
-    'src/components/lumia/ritual/N3Logros.jsx',
-    'src/components/lumia/ritual/N4Agradecimientos.jsx',
-    'src/components/lumia/ritual/N5EstadoSueno.jsx',
-    'src/components/lumia/ritual/N6Cierre.jsx',
+    'src/components/lumia/CierreDelDia.jsx',
   ]
 
   function codigoDe(ruta) {
