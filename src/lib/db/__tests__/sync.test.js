@@ -43,22 +43,22 @@ afterEach(() => {
 
 describe('cola local-first (RN-02)', () => {
   it('una escritura encola exactamente una entrada por ruta', async () => {
-    await lumia.saveDailyIntention(UID, '2026-08-10', { intentionText: 'Ir despacio.' })
+    await lumia.saveMorningEntry(UID, '2026-08-10', { granVision: 'Un día tranquilo.' })
     const queue = await listQueue(UID)
 
     expect(queue).toHaveLength(1)
-    expect(queue[0].path).toBe('users/usuario-de-prueba/lumia/dailyIntention/items/2026-08-10')
+    expect(queue[0].path).toBe('users/usuario-de-prueba/lumia/morningEntry/items/2026-08-10')
     expect(queue[0].op).toBe('put')
   })
 
   it('cinco escrituras sobre la misma ruta dejan una entrada con el último estado', async () => {
     for (const texto of ['a', 'b', 'c', 'd', 'e']) {
-      await lumia.saveDailyIntention(UID, '2026-08-10', { intentionText: texto })
+      await lumia.saveMorningEntry(UID, '2026-08-10', { granVision: texto })
     }
 
     const queue = await listQueue(UID)
     expect(queue).toHaveLength(1)
-    expect(queue[0].data.intentionText).toBe('e')
+    expect(queue[0].data.granVision).toBe('e')
   })
 })
 

@@ -45,12 +45,10 @@ describe('journal', () => {
 })
 
 describe('registros por fecha', () => {
-  it('dailyIntention, morningEntry y nightRitual son un registro por día', async () => {
-    await lumia.saveDailyIntention(UID, DATE, { intentionText: 'Ir despacio.' })
+  it('morningEntry y nightRitual son un registro por día', async () => {
     await lumia.saveMorningEntry(UID, DATE, { granVision: 'Un día tranquilo.' })
     await lumia.saveNightRitual(UID, DATE, { learning: 'Descansar también cuenta.' })
 
-    expect((await lumia.getDailyIntention(UID, DATE)).intentionText).toBe('Ir despacio.')
     expect((await lumia.getMorningEntry(UID, DATE)).granVision).toBe('Un día tranquilo.')
     expect((await lumia.getNightRitual(UID, DATE)).learning).toBe('Descansar también cuenta.')
   })
@@ -92,7 +90,7 @@ describe('registros por fecha', () => {
 
   it('exige una fecha con forma YYYY-MM-DD', async () => {
     await expect(
-      lumia.saveDailyIntention(UID, '10-08-2026', { intentionText: 'x' }),
+      lumia.saveMorningEntry(UID, '10-08-2026', { granVision: 'x' }),
     ).rejects.toMatchObject({ code: ERROR_CODES.DATE_INVALID })
   })
 })

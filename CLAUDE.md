@@ -292,7 +292,7 @@ git status
 | **SPEC_06** | ✅ Completa | 10 ago |
 | **SPEC_07** | ✅ Completa | 10 ago |
 | **SPEC_08** | ✅ Completa | 11 ago |
-| **SPEC_09** | ✅ Completa | 11 ago |
+| **SPEC_09** | ⛔ Derogada (19 ago) | 11 ago |
 | **SPEC_10** | ✅ Completa | 11 ago |
 | **SPEC_11** | ✅ Completa | 11 ago |
 | **SPEC_12** | ✅ Completa | 11 ago |
@@ -619,6 +619,34 @@ git status
   donde estaban. En datos no cambia nada: la colección canónica se sigue llamando `nightRitual` y es
   donde escribe la noche. `isRitualNocheWindow()` de `lib/timeSlot.js` se queda: es la ventana
   horaria, no el recorrido, y nadie la llama todavía.
+
+- **La intención del día se retira entera, 19 ago. SPEC_09 queda derogada.** Se fueron
+  `IntencionDelDia.jsx`, `content/chips-intencion.js`, `copy.lumia.intencion`, el tercer espacio de
+  `useDiario`, `guardarIntencion` en `lumia/diario.js` y **la colección `lumia/dailyIntention` con su
+  campo `intentionText`** de `schema.js` y `lib/db/lumia.js`. La mañana conserva sus dos preguntas:
+  emociones y gran visión. El archivo de la spec **se conserva marcado como derogado** —igual que el
+  Anexo E—, con el detalle de qué se borró y por qué.
+- **Reabre §C2.4 y §C2.4.1 del blueprint, y es una decisión consciente.** Esa sección decidió que
+  intención y gran visión son conceptos distintos y no fusionables; sigue siendo cierto en su
+  literal —no se fusionaron— pero una de las dos deja de existir. **La documentación está pendiente
+  de reescribir esa sección**; con ella caen `RN-LU-INT-01..04`. No bloquea el código.
+- **Los datos ya escritos se quedan inertes.** Ningún camino lee `lumia/dailyIntention` y nada lo
+  borra: `COLLECTIONS` es solo una etiqueta al escribir y la cola de sincronización trabaja por ruta,
+  así que un registro viejo no rompe ninguna lectura histórica. No se migró nada a `granVision`: eso
+  mezclaría los dos conceptos que §C2.4.1 separó.
+- **Ninguna otra superficie lo leía**, comprobado antes de retirarlo: ni Historial, ni
+  `VistaDiaCompleto`, ni la sección Noche —SPEC_09 dejó una prueba de que ninguna superficie nocturna
+  lo tocaba—, ni Formia. Hoy una prueba recorre `src/lumia`, `src/pages/lumia`, `src/components/lumia`
+  y `src/lib/db` entero y falla si `dailyIntention` o `intentionText` reaparecen.
+
+- **Las emociones abren la sección Mañana, 19 ago.** "¿Cómo me quiero sentir hoy?" pasa a ser la
+  primera pregunta, justo debajo de la frase del día; agradecimientos, gran visión y victorias
+  conservan su orden relativo. **Invierte el orden de §5.3**, que ponía los agradecimientos primero:
+  la pregunta que se responde con un toque abre la pantalla y las que piden escribir vienen después.
+- **Los dos temporizadores no dependen del orden**, comprobado antes de mover nada: las sugerencias
+  de gratitud (5 s) cuentan dentro de `CampoGratitud` desde que se monta y desde cada tecla, y la
+  pista de la gran visión (8 s) arranca al escribir y borrar. Ninguno mira si su bloque está a la
+  vista, así que bajarlos en la pantalla no los altera.
 
 **Deuda consciente de Fase 1 (se salda en su spec):**
 - **Los 16 íconos de emoción no se hicieron, y es una decisión, no un olvido.** SPEC_12 §10 excluye

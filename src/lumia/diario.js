@@ -90,12 +90,11 @@ export function nocheEscrita(night, victorias) {
 export async function cargarDia(uid, fechaPedida = null) {
   const fecha = fechaPedida ?? (await fechaDeHoy(uid))
 
-  const [perfil, morning, night, victorias, intencion, animoBajo] = await Promise.all([
+  const [perfil, morning, night, victorias, animoBajo] = await Promise.all([
     shared.getProfile(uid),
     lumia.getMorningEntry(uid, fecha),
     lumia.getNightRitual(uid, fecha),
     cargarVictorias(uid, fecha),
-    lumia.getDailyIntention(uid, fecha),
     animoBajoReciente(uid, fecha),
   ])
 
@@ -106,7 +105,6 @@ export async function cargarDia(uid, fechaPedida = null) {
     morning,
     night,
     victorias,
-    intencion,
     frase: fraseDelDia(fecha, { animoBajoReciente: animoBajo }),
   }
 }
@@ -128,19 +126,6 @@ export async function guardarNoche(uid, fecha, patch) {
 /** El estado de sueño se limpia antes de guardarse (§5.4.1, "Algo más"). */
 export async function guardarEstadoSueno(uid, fecha, seleccion, otro) {
   return guardarNoche(uid, fecha, suenoParaGuardar(seleccion, otro))
-}
-
-/**
- * La intención del día (§C2.4). Vive en su propio registro, no dentro de la
- * mañana: es del **día**, no de la vista de mañana, y por eso el héroe la sigue
- * mostrando cuando la pantalla ya está en la sección de noche.
- *
- * §C2.4.1 — No se fusiona con `morningEntry.granVision` y no se compara con
- * ella. Son el *cómo* y el *qué* del día, y la noche solo recupera el segundo.
- */
-export async function guardarIntencion(uid, fecha, texto) {
-  await lumia.saveDailyIntention(uid, fecha, { intentionText: String(texto ?? '').trim() })
-  return lumia.getDailyIntention(uid, fecha)
 }
 
 // ─── Síntesis de cierre (§5.4) ────────────────────────────────────────────────

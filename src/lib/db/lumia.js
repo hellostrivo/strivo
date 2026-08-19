@@ -85,27 +85,6 @@ export async function deleteJournalEntry(uid, entryId) {
   await deletePath({ uid, path: paths.lumiaItem(uid, 'journal', entryId) })
 }
 
-// ─── dailyIntention (ex-R5) ───────────────────────────────────────────────────
-
-export async function getDailyIntention(uid, date) {
-  assertUid(uid)
-  assertDateKey(date)
-  return readPath(paths.lumiaItem(uid, 'dailyIntention', date))
-}
-
-export async function saveDailyIntention(uid, date, intention) {
-  assertUid(uid)
-  assertDateKey(date)
-  assertFields(intention, FIELDS.dailyIntention, 'lumia/dailyIntention')
-  return mergePath({
-    uid,
-    path: paths.lumiaItem(uid, 'dailyIntention', date),
-    collection: COLLECTIONS.dailyIntention,
-    id: date,
-    patch: intention,
-  })
-}
-
 // ─── morningEntry ─────────────────────────────────────────────────────────────
 
 export async function getMorningEntry(uid, date) {
@@ -275,7 +254,7 @@ export async function clearPinConfig(uid) {
 // ─── Árbol de un usuario nuevo ────────────────────────────────────────────────
 
 /**
- * `lumia/` no necesita ningún registro inicial: journal, dailyIntention,
+ * `lumia/` no necesita ningún registro inicial: journal,
  * morningEntry, nightRitual, victories y dayState nacen vacíos y pinConfig no
  * existe hasta que alguien decide poner un PIN.
  *

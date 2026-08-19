@@ -10,6 +10,7 @@ import { join } from 'path'
 import { describe, expect, it } from 'vitest'
 
 import { copy } from '@copy'
+import { COLLECTIONS, FIELDS } from '@/lib/db/schema'
 
 const ARBOL_LUMIA = ['src/lumia', 'src/pages/lumia', 'src/components/lumia']
 
@@ -118,37 +119,46 @@ describe('las superficies de SPEC_07 (§C7.7.1, §C7.7.2)', () => {
   })
 })
 
-describe('la intención en el héroe de Hoy (§C2.4, SPEC_09)', () => {
+describe('la intención del día se retiró entera (deroga SPEC_09)', () => {
   const heroe = codigoDe('src/components/lumia/HeroeHoy.jsx')
-  const captura = codigoDe('src/components/lumia/IntencionDelDia.jsx')
 
-  it('ninguno de los dos importa formia (criterio 8)', () => {
-    ;[heroe, captura].forEach((codigo) => expect(codigo).not.toMatch(/formia/i))
+  it('no queda ni componente, ni chips, ni copy, ni campo en el modelo', () => {
+    expect(existsSync('src/components/lumia/IntencionDelDia.jsx')).toBe(false)
+    expect(existsSync('src/content/chips-intencion.js')).toBe(false)
+    expect(copy.lumia.intencion).toBeUndefined()
+    expect(FIELDS.dailyIntention).toBeUndefined()
+    expect(COLLECTIONS.dailyIntention).toBeUndefined()
   })
 
-  it('la gran visión no aparece en el héroe (RN-LU-INT-02)', () => {
-    // Vive en el bloque 4 del Diario de mañana. Dos superficies, no una lista
-    // de preguntas seguidas.
+  it('nadie escribe ni lee la colección, en ningún espacio', () => {
+    ARCHIVOS.concat(archivosDe('src/lib/db')).forEach((ruta) =>
+      expect(`${ruta}: ${codigoDe(ruta)}`).not.toMatch(/dailyIntention|intentionText/i),
+    )
+  })
+
+  it('las emociones abren la pantalla, antes de todo lo que se escribe', () => {
+    // La pregunta que se responde con un toque va primero; las que piden
+    // escribir, después. Los temporizadores de gratitud (5 s) y gran visión
+    // (8 s) cuentan desde que se montan, no desde que se ven: el orden no los
+    // toca, y por eso no hay nada más que comprobar aquí.
+    const manana = codigoDe('src/components/lumia/DiarioManana.jsx')
+    const posicion = (etiqueta) => manana.indexOf(etiqueta)
+    expect(posicion('<ChipsEmociones')).toBeLessThan(posicion('<CampoGratitud'))
+    expect(posicion('<CampoGratitud')).toBeLessThan(posicion('{textos.granVision.titulo}'))
+    expect(posicion('{textos.granVision.titulo}')).toBeLessThan(posicion('<ListaVictorias'))
+  })
+
+  it('la mañana conserva sus dos preguntas', () => {
+    // Se va la intención; se quedan las emociones y la gran visión, que es la
+    // que §C2.4.1 distinguía de ella y la única que la noche recupera.
+    const manana = codigoDe('src/components/lumia/DiarioManana.jsx')
+    expect(manana).toMatch(/granVision/)
+    expect(manana).toMatch(/emociones/i)
     expect(heroe).not.toMatch(/granVision/)
-    expect(codigoDe('src/components/lumia/DiarioManana.jsx')).toMatch(/granVision/)
   })
 
-  it('la captura no abre el teclado sola (RN-LU-INT-01)', () => {
-    expect(captura).not.toMatch(/autoFocus/i)
-  })
-
-  it('los chips van antes que el campo libre', () => {
-    // Contra la etiqueta JSX, no contra el nombre: el import de `CampoLinea`
-    // está arriba del todo y haría pasar esta prueba en cualquier caso.
-    expect(captura.indexOf('CHIPS.map')).toBeLessThan(captura.indexOf('<CampoLinea'))
-  })
-
-  it('la intención se lee del héroe en los dos momentos del día', () => {
-    // §C2.4 — Permanece visible toda la jornada. El héroe no está dentro de
-    // ninguna rama que dependa del conmutador.
-    const hoy = codigoDe('src/pages/lumia/Hoy.jsx')
-    expect(hoy).toMatch(/<HeroeHoy/)
-    expect(hoy).not.toMatch(/momento === 'manana' && \(?\s*<HeroeHoy/)
+  it('el héroe no importa formia', () => {
+    expect(heroe).not.toMatch(/formia/i)
   })
 })
 
@@ -178,7 +188,6 @@ describe('el tema lo manda el conmutador, no el reloj (RN-HOY-05)', () => {
     expect(hoy).toMatch(/conmutador=\{[\s\S]{0,80}<SelectorMomento/)
     expect(heroe.indexOf('fechaLarga')).toBeLessThan(heroe.indexOf('{conmutador}'))
     expect(heroe.indexOf('{conmutador}')).toBeLessThan(heroe.indexOf('<FraseDelDia'))
-    expect(heroe.indexOf('{conmutador}')).toBeLessThan(heroe.indexOf('<IntencionDelDia'))
   })
 
   it('el conmutador va en contratono, fuera de la escala de las superficies', () => {

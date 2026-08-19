@@ -25,16 +25,14 @@ const ESTADO_VACIO = {
   morning: null,
   night: null,
   victorias: [],
-  intencion: null,
   frase: null,
 }
 
 /**
- * Los tres espacios que se guardan solos, cada uno con su forma.
+ * Los dos espacios que se guardan solos, cada uno con su forma.
  *
- * La mañana y la noche acumulan campos —dos teclas en dos campos distintos se
- * guardan juntas—; la intención es una sola línea y la última gana. `eco` es lo
- * que se ve en pantalla mientras el guardado va de camino.
+ * Los dos acumulan campos: dos teclas en dos campos distintos se guardan
+ * juntas. `eco` es lo que se ve en pantalla mientras el guardado va de camino.
  */
 const ESPACIOS = Object.freeze({
   manana: Object.freeze({
@@ -44,10 +42,6 @@ const ESPACIOS = Object.freeze({
   noche: Object.freeze({
     acumular: (previo, patch) => ({ ...(previo ?? {}), ...patch }),
     eco: (estado, patch) => ({ ...estado, night: { ...(estado.night ?? {}), ...patch } }),
-  }),
-  intencion: Object.freeze({
-    acumular: (_previo, texto) => texto,
-    eco: (estado, texto) => ({ ...estado, intencion: { intentionText: texto } }),
   }),
 })
 
@@ -59,7 +53,7 @@ export function useDiario(uid, fechaPedida = null) {
   const vivo = useRef(true)
   // Lo que está esperando a guardarse, por espacio. Se acumula: dos teclas en
   // dos campos distintos se guardan juntas y ninguna pisa a la otra.
-  const pendiente = useRef({ manana: null, noche: null, intencion: null })
+  const pendiente = useRef({ manana: null, noche: null })
   const temporizador = useRef(null)
   // Fila de escrituras: ninguna empieza hasta que termina la anterior.
   const cola = useRef(Promise.resolve())
@@ -124,8 +118,8 @@ export function useDiario(uid, fechaPedida = null) {
       clearTimeout(temporizador.current)
       temporizador.current = null
     }
-    const { manana, noche, intencion } = pendiente.current
-    pendiente.current = { manana: null, noche: null, intencion: null }
+    const { manana, noche } = pendiente.current
+    pendiente.current = { manana: null, noche: null }
     const fecha = estado.fecha
     if (!fecha) return
 
@@ -134,14 +128,6 @@ export function useDiario(uid, fechaPedida = null) {
     }
     if (noche) {
       await ejecutar(async () => ({ night: await diario.guardarNoche(uid, fecha, noche) }))
-    }
-    // `!== null` y no a secas: borrar la intención deja una cadena vacía, que es
-    // un cambio tan válido como cualquier otro y que un `if (intencion)` se
-    // tragaría en silencio.
-    if (intencion !== null) {
-      await ejecutar(async () => ({
-        intencion: await diario.guardarIntencion(uid, fecha, intencion),
-      }))
     }
   }, [ejecutar, estado.fecha, uid])
 
@@ -162,12 +148,11 @@ export function useDiario(uid, fechaPedida = null) {
   // Salir de la vista no puede perder una frase a medio escribir.
   useEffect(() => {
     return () => {
-      const { manana, noche, intencion } = pendiente.current
-      if (!estado.fecha || (!manana && !noche && intencion === null)) return
-      pendiente.current = { manana: null, noche: null, intencion: null }
+      const { manana, noche } = pendiente.current
+      if (!estado.fecha || (!manana && !noche)) return
+      pendiente.current = { manana: null, noche: null }
       if (manana) diario.guardarManana(uid, estado.fecha, manana).catch(() => {})
       if (noche) diario.guardarNoche(uid, estado.fecha, noche).catch(() => {})
-      if (intencion !== null) diario.guardarIntencion(uid, estado.fecha, intencion).catch(() => {})
     }
   }, [uid, estado.fecha])
 
@@ -177,7 +162,6 @@ export function useDiario(uid, fechaPedida = null) {
     /** Escritura continua: se guarda sola a los 800 ms. */
     escribirManana: (patch) => programar('manana', patch),
     escribirNoche: (patch) => programar('noche', patch),
-    escribirIntencion: (texto) => programar('intencion', texto),
 
     /** Al perder el foco o cerrar la vista, sin esperar. */
     volcar,
@@ -191,20 +175,6 @@ export function useDiario(uid, fechaPedida = null) {
       ejecutar(async () => ({
         night: await diario.guardarEstadoSueno(uid, estado.fecha, seleccion, otro),
       })),
-
-    /**
-     * Un chip de intención es un toque y se guarda al momento (RN-LU-INT-01).
-     *
-     * Antes descarta lo que estuviera esperando: si se venía escribiendo a mano
-     * y se toca un chip, lo que vale es el chip, y dejar viva la escritura
-     * anterior la haría volver 800 ms después para pisarlo.
-     */
-    guardarIntencion: (texto) => {
-      pendiente.current.intencion = null
-      return ejecutar(async () => ({
-        intencion: await diario.guardarIntencion(uid, estado.fecha, texto),
-      }))
-    },
 
     /**
      * `filas` puede ser una función. Las escrituras van en fila, y entre que

@@ -1,10 +1,16 @@
 // src/components/lumia/DiarioManana.jsx
 // Vista de Mañana del Diario (§5.3). Cuatro bloques:
 //
-//   1. Agradecimientos
-//   2. Emociones — "¿Cómo me quiero sentir hoy?"
+//   1. Emociones — "¿Cómo me quiero sentir hoy?"
+//   2. Agradecimientos
 //   3. Gran visión
 //   4. Victorias
+//
+// **Las emociones van primero**, invirtiendo el orden de §5.3: la pregunta más
+// fácil de responder —un toque, sin escribir— abre la pantalla, y las que piden
+// escribir vienen después. Los dos temporizadores de más abajo no se enteran de
+// la mudanza: el de las sugerencias de gratitud vive dentro de `CampoGratitud`
+// y cuenta desde que se monta y desde cada tecla, no desde que se ve.
 //
 // El bloque 1 de §5.3 —la frase del día— sigue en pantalla y sigue siendo el
 // primero que se lee: lo pinta el héroe de Hoy, una vez, para las dos
@@ -105,20 +111,6 @@ export default function DiarioManana({ estado, acciones }) {
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
-        <h2 className="font-display text-md text-on-surface">{textos.gratitud.titulo}</h2>
-        <CampoGratitud
-          filas={gratitud}
-          limites={LIMITES.gratitud}
-          onCambiar={guardarGratitud}
-          onVolcar={acciones.volcar}
-          sugerencias={textos.gratitud.sugerencias}
-          etiqueta={textos.gratitud.titulo}
-          ayudas={textos.gratitud.ayudas}
-          placeholder={textos.gratitud.placeholder}
-        />
-      </section>
-
-      <section className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
           <h2 className="font-display text-md text-on-surface">{textos.emociones.titulo}</h2>
           <p className="text-sm text-on-surface-soft">{textos.emociones.lead}</p>
@@ -133,6 +125,20 @@ export default function DiarioManana({ estado, acciones }) {
           avisoTexto={textos.emociones.max}
           onCambiar={guardarEmociones}
           onDesplazada={() => setAviso(true)}
+        />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="font-display text-md text-on-surface">{textos.gratitud.titulo}</h2>
+        <CampoGratitud
+          filas={gratitud}
+          limites={LIMITES.gratitud}
+          onCambiar={guardarGratitud}
+          onVolcar={acciones.volcar}
+          sugerencias={textos.gratitud.sugerencias}
+          etiqueta={textos.gratitud.titulo}
+          ayudas={textos.gratitud.ayudas}
+          placeholder={textos.gratitud.placeholder}
         />
       </section>
 

@@ -384,32 +384,6 @@ export const copy = {
       },
     },
 
-    // ─── Intención del día (§C2.4, ex-R5) ───────────────────────────────────
-    // Dejó de ser la quinta pantalla de un wizard y es un campo del display de
-    // Hoy → Mañana, disponible toda la franja matinal.
-    //
-    // **RN-LU-INT-04 (§C2.4.1) — Este copy no puede compartir formulación con
-    // el de la gran visión.** Aquí se pregunta *cómo* se quiere atravesar el
-    // día; allí, *qué* pasa en un gran día. Si algún día las dos preguntas
-    // se pueden responder con la misma frase, la
-    // distinción se ha perdido y hay que revisar la decisión de §C2.4.1, no
-    // ajustar el texto para que encaje.
-    //
-    // Ni una palabra sobre cumplirla: la intención se declara, no se evalúa.
-    intencion: {
-      pregunta: '¿Con qué intención quieres entrar al día?',
-      // RN-LU-INT-01 — Se responde con un toque. El campo es la salida para
-      // quien quiera otra palabra, nunca la puerta de entrada.
-      otra: {
-        label: 'O ponlo con tus palabras',
-        placeholder: 'con tus palabras',
-      },
-      // RN-LU-INT-03 — Un día sin intención es un día normal: la invitación se
-      // queda ahí y no hay marca de pendiente en ninguna parte.
-      guardadaTemplate: 'Hoy, {intencion}',
-      quitar: 'Quitarla',
-    },
-
     // ─── Respiración diaria (§C2.3) ─────────────────────────────────────────
     // Ex-R1. Dejó de ser el primer paso de un ritual y es una experiencia
     // propia de la sección Mañana.

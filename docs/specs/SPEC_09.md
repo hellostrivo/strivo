@@ -1,5 +1,29 @@
 # SPEC_09 — Lumia: intención del día
 
+> ## ⛔ DEROGADA — 19 ago 2026
+>
+> **La intención del día se retiró entera del producto**, no se fusionó con nada.
+> La sección Mañana conserva sus dos preguntas: "¿Cómo me quiero sentir hoy?" y
+> "¿Qué haría que hoy sea un gran día?" (la gran visión, en el Diario).
+>
+> **Qué se borró:** `IntencionDelDia.jsx`, `content/chips-intencion.js`, el
+> namespace `copy.lumia.intencion`, la colección `lumia/dailyIntention` con su
+> campo `intentionText` (SPEC_02 §5), y las funciones `guardarIntencion`,
+> `getDailyIntention` y `saveDailyIntention`.
+>
+> **Qué queda vivo de esta spec:** nada en código. Se conserva el documento por
+> trazabilidad, igual que el Anexo E del Ritual de Mañana.
+>
+> **Consecuencia para el blueprint:** reabre **§C2.4 y §C2.4.1**, que decidieron
+> que intención y gran visión son conceptos distintos y no fusionables. La
+> decisión se mantiene en su literal —no se fusionaron— pero una de las dos deja
+> de existir, así que la sección hay que reescribirla. **Pendiente de la próxima
+> ronda de documentación.** Con ella caen `RN-LU-INT-01..04`.
+>
+> **Datos ya escritos:** los registros `lumia/dailyIntention/{fecha}` que existan
+> se quedan donde están, inertes. Nada los lee y nada los borra; ningún día
+> histórico se rompe porque ninguna lectura los pedía fuera de esta spec.
+
 **Espacio:** Lumia · **Depende de:** SPEC_02, SPEC_06 · **Estimación:** 1 h
 
 ---

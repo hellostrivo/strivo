@@ -195,8 +195,6 @@ export default function Hoy({ uid, onHideNav }) {
           después de lo que gobierna. */}
       <HeroeHoy
         estado={estado}
-        momento={momento}
-        acciones={acciones}
         conmutador={
           <div className="flex flex-col items-start gap-1">
             <SelectorMomento momento={momento} onCambiar={setMomento} />

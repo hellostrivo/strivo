@@ -96,7 +96,6 @@ export const FIELDS = Object.freeze({
 
   // lumia/
   journal: Object.freeze(['date', 'text', 'emotions', 'otherText', 'createdAt', 'updatedAt']),
-  dailyIntention: Object.freeze(['intentionText']),
   morningEntry: Object.freeze(['granVision', 'gratitude', 'emotions']),
   nightRitual: Object.freeze([
     'inheritedWins',
@@ -134,7 +133,6 @@ export const paths = Object.freeze({
 export const COLLECTIONS = Object.freeze({
   shared: 'shared',
   journal: 'lumia/journal',
-  dailyIntention: 'lumia/dailyIntention',
   morningEntry: 'lumia/morningEntry',
   nightRitual: 'lumia/nightRitual',
   victories: 'lumia/victories',
