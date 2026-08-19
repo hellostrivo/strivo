@@ -548,6 +548,33 @@ git status
 - **Ya se puede correr `npm run format`.** El aviso de "no correrlo" era de cuando prettier no tenía
   configuración; ahora `.prettierrc` reproduce el estilo del repo y `format:check` está en verde.
 
+**Ajustes posteriores al cierre de Fase 1:**
+- **El conmutador Mañana/Noche es el primer elemento interactivo de Hoy, 19 ago.** Sube dentro de
+  `HeroeHoy` justo debajo de la fecha, por delante de la frase del día y de la captura de intención.
+  **Invierte el orden del Bloque 03** (frase → conmutador). La frase **no se retira**: baja un puesto
+  y sigue siendo el aire previo a la primera pregunta. Motivo: elegir el momento decide de qué habla
+  el resto de la pantalla, así que no puede llegar después de lo que gobierna.
+- **El conmutador baja un escalón de luminancia** para no competir con la tarjeta del ritual: el
+  contenedor pierde el relleno y el segmento activo pasa de `bg-lumia-tarjeta` a `bg-lumia-campo`.
+  RN-HOY-07 exige que la tarjeta destaque **por luminancia y no solo por borde**, y con el conmutador
+  arriba había dos superficies del mismo tono; ahora la tarjeta vuelve a ser la única del más claro.
+- **`HeroeHoy` recibe el conmutador como hueco (`conmutador`), no lo construye.** El héroe no sabe
+  qué momentos hay ni cómo se cambian: el estado sigue viviendo en `Hoy.jsx` (RN-HOY-05 intacta).
+  Cuatro pruebas nuevas en `separacion.test.js` fijan el orden, el contratono y sus dos colores.
+- **El bloque del conmutador va en contratono, 19 ago.** Mañana `#1D1833` (oscuro sobre la mañana
+  clara) y Noche `#F2DDE7` (claro sobre el degradado nocturno). **Los dos hexes los fijó el
+  propietario del producto y no salen del manual de marca**, que es la única excepción viva a "ningún
+  hex se escribe a mano": viven en `globals.css` como `--lumia-conmutador`, nunca en un componente
+  (RN-SURF-01), y `npm run lint:contraste` los mide como cualquier otra superficie con texto —14,9:1
+  de día y 12,4:1 de noche, AAA los dos—. Si algún día entran al manual, se moverán a los tokens de
+  marca. Son vecinos de dos colores que sí están en él (`night #191428`, `lumia-am-300 #F6DDE8`) sin
+  ser iguales, así que **no** se sustituyen por ellos por su cuenta.
+- **El bloque declara su propio `data-surface`** en vez de heredar el de la pantalla: es la única
+  superficie de Lumia que contradice a su fondo, y así el texto se invierte solo. Sustituye al
+  escalón de luminancia que se le había dado un rato antes (contenedor sin relleno, activo en
+  `lumia-campo`): con un bloque en contratono, la tarjeta del ritual ya no compite con él porque no
+  juegan en la misma escala.
+
 **Deuda consciente de Fase 1 (se salda en su spec):**
 - **Los 16 íconos de emoción no se hicieron, y es una decisión, no un olvido.** SPEC_12 §10 excluye
   "ilustraciones nuevas" y §7 dice que los íconos de UI siguen pendientes en el manual v1.1 y que hay

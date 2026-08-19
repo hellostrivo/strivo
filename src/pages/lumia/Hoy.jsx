@@ -186,18 +186,22 @@ export default function Hoy({ uid, onHideNav }) {
 
   return marco(
     <div className="flex min-h-screen flex-col gap-8 px-5 pb-24 pt-10">
+      {/* El conmutador va dentro del héroe, justo debajo de la fecha: es el
+          primer elemento con el que se puede interactuar, por delante de la
+          frase del día y de cualquier pregunta. Elegir el momento es lo que
+          decide de qué habla el resto de la pantalla, así que no puede llegar
+          después de lo que gobierna. */}
       <HeroeHoy
         estado={estado}
         momento={momento}
         acciones={acciones}
+        conmutador={<SelectorMomento momento={momento} onCambiar={setMomento} />}
         saludo={
           estado.nombre
             ? interpolate(textos.saludo.conNombreTemplate, { saludo, nombre: estado.nombre })
             : saludo
         }
       />
-
-      <SelectorMomento momento={momento} onCambiar={setMomento} />
 
       {/* RN-HOY-07 — La tarjeta se distingue del fondo por luminancia, no solo
           por el borde. Es la única acción principal de la pantalla. */}

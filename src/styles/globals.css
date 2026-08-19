@@ -22,6 +22,10 @@
 @import './tokens-lumia.css';
 @import './tokens-formia.css';
 
+/* EXPLORACIÓN (rama explora/lumia-am-amanecer) — paletas alternas de
+   Lumia·Mañana. Inerte sin `?paleta=a|b` en la URL. Se retira con el archivo. */
+@import './explora-lumia-am.css';
+
 /* Tailwind */
 @tailwind base;
 @tailwind components;
@@ -135,6 +139,11 @@
   --lumia-fondo: linear-gradient(168deg, var(--lumia-am-50) 0%, var(--lumia-am-300) 62%, var(--lumia-am-100) 100%);
   --lumia-tarjeta: rgba(255, 255, 255, .72);
   --lumia-campo: rgba(255, 255, 255, .58);
+  /* El conmutador va en contratono: de día, oscuro. Es el primer elemento
+     interactivo de Hoy y no comparte superficie con nada más, así que declara
+     su propio `data-surface` y el texto se invierte con él. */
+  --lumia-conmutador: #1D1833;
+  --lumia-conmutador-activo: rgba(242, 238, 247, .16);
 }
 
 [data-lumia='noche'] {
@@ -142,6 +151,9 @@
   --lumia-fondo: linear-gradient(168deg, #191428 0%, #221B3A 58%, #2C2350 100%);
   --lumia-tarjeta: rgba(242, 238, 247, .10);
   --lumia-campo: rgba(242, 238, 247, .07);
+  /* De noche el contratono se invierte: el conmutador es la pieza clara. */
+  --lumia-conmutador: #F2DDE7;
+  --lumia-conmutador-activo: rgba(36, 30, 51, .12);
   /* Un velo crema a las once de la noche sería un fogonazo. */
   --transicion-velo: #191428;
   --transicion-luz: radial-gradient(circle, rgba(232, 165, 74, .18) 0%, rgba(232, 165, 74, 0) 70%);
@@ -272,6 +284,12 @@
   .bg-lumia         { background-image: var(--lumia-fondo); }
   .bg-lumia-tarjeta { background-color: var(--lumia-tarjeta); }
   .bg-lumia-campo   { background-color: var(--lumia-campo); }
+
+  /* El conmutador Mañana/Noche y su segmento activo. Van aparte de las
+     superficies del momento porque son el contratono: no acompañan al fondo,
+     lo contradicen. */
+  .bg-lumia-conmutador        { background-color: var(--lumia-conmutador); }
+  .bg-lumia-conmutador-activo { background-color: var(--lumia-conmutador-activo); }
 
   /* Punto de ánimo del calendario (§6.3.5). El componente pone la clase a
      partir del id que devuelve `animoDerivado`; el color vive arriba. */

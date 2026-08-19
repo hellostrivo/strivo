@@ -18,6 +18,12 @@
 //
 // RN-LU-INT-02 — La gran visión **no** aparece en este héroe. Vive en el bloque
 // 4 del Diario de mañana, que es otra superficie y otro momento.
+//
+// **El conmutador entra como hueco, justo debajo de la fecha.** Es el primer
+// elemento con el que se puede interactuar en toda la pantalla: elegir de qué
+// momento se está hablando va antes que leer la frase y antes que cualquier
+// pregunta. El héroe no sabe qué momentos hay ni cómo se cambian; solo le
+// reserva el sitio (`conmutador`), que es de quien gobierna el estado.
 
 import FraseDelDia from './FraseDelDia'
 import IntencionDelDia from './IntencionDelDia'
@@ -26,7 +32,7 @@ import { fechaLarga } from '@/lumia/fechas'
 
 const textos = copy.lumia.intencion
 
-export default function HeroeHoy({ estado, momento, saludo, acciones }) {
+export default function HeroeHoy({ estado, momento, saludo, acciones, conmutador }) {
   const intencion = estado.intencion?.intentionText ?? ''
 
   return (
@@ -35,6 +41,8 @@ export default function HeroeHoy({ estado, momento, saludo, acciones }) {
         <h1 className="font-display text-lg text-on-surface">{saludo}</h1>
         <p className="text-sm text-on-surface-soft">{fechaLarga(estado.fecha)}</p>
       </div>
+
+      {conmutador}
 
       <FraseDelDia frase={estado.frase} />
 

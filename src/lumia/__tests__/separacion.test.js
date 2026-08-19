@@ -173,6 +173,40 @@ describe('el tema lo manda el conmutador, no el reloj (RN-HOY-05)', () => {
   it('las dos secciones están disponibles siempre, sin advertencia', () => {
     expect(hoy).not.toMatch(/todav[íi]a no es/i)
   })
+
+  it('el conmutador es el primer elemento interactivo de la pantalla', () => {
+    // Va dentro del héroe, justo debajo de la fecha: por delante de la frase
+    // del día y por delante de la captura de intención, que es la primera
+    // pregunta. Elegir el momento decide de qué habla el resto de la pantalla.
+    const heroe = codigoDe('src/components/lumia/HeroeHoy.jsx')
+    expect(hoy).toMatch(/conmutador=\{<SelectorMomento/)
+    expect(heroe.indexOf('fechaLarga')).toBeLessThan(heroe.indexOf('{conmutador}'))
+    expect(heroe.indexOf('{conmutador}')).toBeLessThan(heroe.indexOf('<FraseDelDia'))
+    expect(heroe.indexOf('{conmutador}')).toBeLessThan(heroe.indexOf('<IntencionDelDia'))
+  })
+
+  it('el conmutador va en contratono y no en la escala de la tarjeta', () => {
+    // La tarjeta del ritual sigue siendo la única superficie que destaca por
+    // luminancia sobre el fondo (RN-HOY-07); el conmutador destaca por
+    // inversión, que es otra escala y por eso no compiten.
+    const selector = codigoDe('src/components/lumia/SelectorMomento.jsx')
+    expect(selector).toMatch(/bg-lumia-conmutador/)
+    expect(selector).not.toMatch(/bg-lumia-tarjeta|bg-lumia-campo/)
+    expect(hoy).toMatch(/<section[^>]*bg-lumia-tarjeta/)
+  })
+
+  it('el bloque declara su propia superficie, sin nombrar un color', () => {
+    // El texto de dentro se invierte con el bloque: claro sobre el bloque
+    // oscuro de la mañana, oscuro sobre el bloque claro de la noche.
+    const selector = codigoDe('src/components/lumia/SelectorMomento.jsx')
+    expect(selector).toMatch(/data-surface=\{momento === 'manana' \? 'dark' : 'light'\}/)
+  })
+
+  it('los dos colores del bloque viven en el CSS, no en el componente', () => {
+    const css = readFileSync('src/styles/globals.css', 'utf8')
+    expect(css).toMatch(/\[data-lumia='manana'\][\s\S]*?--lumia-conmutador:\s*#1D1833/)
+    expect(css).toMatch(/\[data-lumia='noche'\][\s\S]*?--lumia-conmutador:\s*#F2DDE7/)
+  })
 })
 
 describe('contraste por superficie (§5.2.3, §5.4.3, RN-SURF-01)', () => {

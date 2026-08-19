@@ -61,6 +61,19 @@ export default function App() {
   )
 }
 
+// EXPLORACIÓN (rama explora/lumia-am-amanecer) — `?paleta=a|b` monta una de las
+// paletas alternas de Lumia·Mañana definidas en `styles/explora-lumia-am.css`.
+// Sin el parámetro devuelve `undefined` y React no escribe el atributo, así que
+// la app se pinta exactamente igual que en `main`. Se retira con la rama.
+function paletaExplorada() {
+  if (typeof window === 'undefined') return undefined
+  // Con `HashRouter` el parámetro puede venir antes o después del `#`.
+  const tras = window.location.hash.split('?')[1] ?? ''
+  const params = new window.URLSearchParams(`${window.location.search.slice(1)}&${tras}`)
+  const elegida = params.get('paleta')
+  return ['a', 'b'].includes(elegida) ? elegida : undefined
+}
+
 function Espacios({ uid }) {
   // §4.3.2, regla 2 — La navegación se oculta durante rituales, escritura
   // activa y secuencias de cierre. Son estados de flujo, no de navegación.
@@ -95,6 +108,7 @@ function Espacios({ uid }) {
     <div
       data-space={espacio}
       data-moment={momentoDe()}
+      data-paleta={paletaExplorada()}
       data-surface="light"
       className="flex min-h-screen flex-col bg-espacio font-sans text-on-surface"
     >

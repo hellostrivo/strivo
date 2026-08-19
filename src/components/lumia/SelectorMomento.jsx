@@ -11,6 +11,17 @@
 //
 // La selección responde al toque de inmediato: no espera a que termine el
 // cruce de 320 ms del fondo.
+//
+// **El bloque va en contratono** (`--lumia-conmutador`): oscuro sobre la mañana
+// clara, claro sobre la noche. No compite con la tarjeta del ritual porque no
+// juega en la misma escala —la tarjeta destaca por luminancia sobre el fondo
+// (RN-HOY-07) y el conmutador por inversión—, y es lo que hace que el primer
+// elemento interactivo de la pantalla se encuentre sin buscarlo.
+//
+// Al ser una superficie propia, **declara su `data-surface`** en vez de heredar
+// la de la pantalla: dentro del bloque el texto se invierte solo, sin que este
+// componente nombre ni un color (RN-SURF-01). Los dos pares pasan AAA: 14,9:1
+// de día y 12,4:1 de noche.
 
 import { clsx } from 'clsx'
 import { copy } from '@copy'
@@ -24,7 +35,8 @@ export default function SelectorMomento({ momento, onCambiar }) {
     <div
       role="group"
       aria-label={textos.label}
-      className="inline-flex gap-1 rounded-full border border-on-surface bg-lumia-campo p-1"
+      data-surface={momento === 'manana' ? 'dark' : 'light'}
+      className="inline-flex gap-1 rounded-full bg-lumia-conmutador p-1 transicion-tema"
     >
       {MOMENTOS.map((id) => {
         const activo = momento === id
@@ -39,7 +51,7 @@ export default function SelectorMomento({ momento, onCambiar }) {
               'text-on-surface transition-colors duration-120 ease-smooth',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30',
               'motion-reduce:transition-none',
-              activo ? 'bg-lumia-tarjeta' : 'opacity-70',
+              activo ? 'bg-lumia-conmutador-activo' : 'opacity-70',
             )}
           >
             {textos[id]}

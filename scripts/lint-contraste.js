@@ -81,6 +81,11 @@ const MARCA = {
   strivo600: '#6E6A73',
   strivo900: '#2B2730',
   night: '#191428',
+  // El bloque del conmutador de Hoy. Contratono: oscuro sobre la mañana clara,
+  // claro sobre la noche. No sale del manual —lo fijó el propietario del
+  // producto— y por eso se mide aquí como cualquier otra superficie con texto.
+  conmutadorAm: '#1D1833',
+  conmutadorPm: '#F2DDE7',
 }
 
 const CUERPO = 7
@@ -100,6 +105,8 @@ const PARES = [
   ['Lumia·AM · secundario sobre cabecera', TEXTO.onLightSoft, MARCA.lumiaAm300, CUERPO],
   ['Lumia·AM · acento sobre cabecera', MARCA.lumiaPm500, MARCA.lumiaAm300, NO_TEXTO],
   ['Lumia·AM · borde sobre cabecera', MARCA.lumiaPm400, MARCA.lumiaAm300, SEPARADOR],
+  ['Lumia·AM · cuerpo sobre conmutador', TEXTO.onDark, MARCA.conmutadorAm, CUERPO],
+  ['Lumia·AM · conmutador sobre base', MARCA.conmutadorAm, MARCA.lumiaAm50, NO_TEXTO],
 
   // ── Lumia · Noche ───────────────────────────────────────────────────────────
   ['Lumia·PM · cuerpo sobre base', TEXTO.onLight, MARCA.lumiaPm50, CUERPO],
@@ -111,6 +118,8 @@ const PARES = [
   // El degradado nocturno de Hoy, en sus tres paradas.
   ['Hoy·noche · cuerpo sobre degradado', TEXTO.onDark, MARCA.night, CUERPO],
   ['Hoy·noche · secundario sobre degradado', TEXTO.onDarkSoft, MARCA.night, GRANDE],
+  ['Lumia·PM · cuerpo sobre conmutador', TEXTO.onLight, MARCA.conmutadorPm, CUERPO],
+  ['Lumia·PM · conmutador sobre degradado', MARCA.conmutadorPm, MARCA.night, NO_TEXTO],
 
   // ── Formia · Mañana ─────────────────────────────────────────────────────────
   ['Formia·AM · cuerpo sobre base', TEXTO.onLight, MARCA.formiaAm50, CUERPO],
