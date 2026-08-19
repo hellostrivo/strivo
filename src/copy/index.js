@@ -141,8 +141,9 @@ export const copy = {
           // La pista de qué cabe aquí va dentro de los campos, en gris de
           // marcador de posición, y es la misma en los tres renglones: no se
           // reparte una idea por fila —eso era decirle a cada renglón de qué
-          // tiene que hablar—, se ofrece el abanico entero en cualquiera.
-          placeholder: 'Puede ser desde algo pequeño, una persona, o algo que ya tienes',
+          // tiene que hablar—. Corta a propósito: en un campo de una línea, en
+          // móvil, todo lo que no quepa se corta con puntos suspensivos.
+          placeholder: 'Puede ser desde algo pequeño',
           sugerencias: {
             titulo: '¿Te ayudo con una idea?',
             // RN dura de §5.3: tocar una idea NUNCA rellena el campo. Abre una

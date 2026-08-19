@@ -667,7 +667,8 @@ git status
   tu cuerpo, este momento, el silencio, lo que tienes— y una prueba lo fija por si acaso.
 - **La gratitud de la mañana se dice en dos alturas, 19 ago.** Bajo la pregunta, un `lead` que no
   pide nada —"Siempre hay algo que agradecer."—; dentro de los campos, en el gris del marcador de
-  posición, la pista de qué cabe: "Puede ser desde algo pequeño, una persona, o algo que ya tienes".
+  posición, la pista de qué cabe: "Puede ser desde algo pequeño" —corta a propósito, porque en un
+  campo de una línea en móvil todo lo que no quepa se corta con puntos suspensivos—.
   Mismo patrón de título + pista que el bloque de emociones justo encima. Los dos textos los fijó el
   propietario del producto, literales.
 - **Se retiran las tres `ayudas`** ("algo pequeño", "alguien", "algo que ya tienes") y con ellas el

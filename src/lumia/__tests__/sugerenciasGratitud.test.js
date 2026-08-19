@@ -124,9 +124,7 @@ describe('lo que se lee en el bloque de la mañana antes de escribir', () => {
   })
 
   it('la pista de qué cabe va dentro de los campos, en el gris del marcador', () => {
-    expect(copy.lumia.diario.manana.gratitud.placeholder).toBe(
-      'Puede ser desde algo pequeño, una persona, o algo que ya tienes',
-    )
+    expect(copy.lumia.diario.manana.gratitud.placeholder).toBe('Puede ser desde algo pequeño')
     expect(codigoDe(MANANA)).toMatch(/placeholder=\{textos\.gratitud\.placeholder\}/)
   })
 
