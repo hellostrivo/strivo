@@ -153,7 +153,8 @@ describe('no dispara la respiración (RN-LU-MAN-03, criterio 4)', () => {
     // escribe en Hoy y ya no hay botón que lleve a él. Lo que no cambia es que
     // ese camino no toca la respiración: se entra a ella por su enlace.
     const hoy = codigoDe(HOY)
-    const efecto = hoy.match(/useEffect\(\(\) => \{[^}]*umbralCruzado[\s\S]*?\n {2}\}/)?.[0] ?? ''
+    const efecto =
+      hoy.match(/useEffect\(\(\) => \{[\s\S]*?umbralPendiente[\s\S]*?\n {2}\}/)?.[0] ?? ''
     expect(efecto).toMatch(/umbral/i)
     expect(efecto).not.toMatch(/respiracion/i)
   })
@@ -190,6 +191,48 @@ describe('la misma pieza en los dos sitios (RN-LU-MAN-01, criterio 1)', () => {
   it('el componente es compartido de verdad: no conoce ningún espacio', () => {
     const imports = codigoDe(COMPONENTE).match(/^\s*import[\s\S]*?from\s+'[^']+'/gm) ?? []
     imports.forEach((linea) => expect(linea).not.toMatch(/lumia|formia|lib\/db/i))
+  })
+})
+
+describe('un solo umbral por sesión y por espacio (nota de producto, 19 ago)', () => {
+  const UMBRAL = 'src/lib/umbralSesion.js'
+
+  it('el contador vive fuera de las dos pantallas que lo consultan', () => {
+    ;[APP, HOY].forEach((ruta) => {
+      expect(codigoDe(ruta)).toMatch(/from '@lib\/umbralSesion'/)
+      // Ninguna de las dos guarda su propia cuenta: si lo hicieran, entrar por
+      // el Home y ver la mañana encadenaría dos umbrales seguidos.
+      expect(codigoDe(ruta)).not.toMatch(/let umbralCruzado/)
+    })
+  })
+
+  it('entrar a Lumia lo consume, y la mañana ya no lo repite', async () => {
+    const { cruzarUmbral, olvidarUmbrales, umbralPendiente } = await import('@lib/umbralSesion')
+    olvidarUmbrales()
+    expect(umbralPendiente('lumia')).toBe(true)
+    cruzarUmbral('lumia')
+    expect(umbralPendiente('lumia')).toBe(false)
+    // El de Formia es suyo: entrar a Lumia no se lo gasta.
+    expect(umbralPendiente('formia')).toBe(true)
+    olvidarUmbrales()
+  })
+
+  it('no se persiste: cerrar la app y volver mañana lo devuelve (§5)', () => {
+    expect(codigoDe(UMBRAL)).not.toMatch(/localStorage|indexedDB|lib\/db/)
+  })
+})
+
+describe('la entrada a Formia es la misma pieza sin frase (placeholder)', () => {
+  it('el umbral de Formia no saca ninguna frase del repertorio', () => {
+    expect(codigoDe(APP)).toMatch(/conFrase=\{entrando === 'lumia'\}/)
+  })
+
+  it('lo único propio de Formia es la paleta, y sale de sus tokens', () => {
+    const css = readFileSync('src/styles/globals.css', 'utf8')
+    const bloque =
+      css.match(/\[data-space='formia'\] \{[^}]*--transicion-velo[\s\S]*?\n\}/)?.[0] ?? ''
+    expect(bloque).toMatch(/var\(--formia-am-50\)/)
+    expect(bloque).not.toMatch(/#[0-9a-f]{3,8}/i)
   })
 })
 

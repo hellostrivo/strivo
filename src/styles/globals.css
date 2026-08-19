@@ -195,6 +195,33 @@
   --transicion-luz: radial-gradient(circle, rgba(232, 165, 74, .28) 0%, rgba(232, 165, 74, 0) 70%);
 }
 
+/* El umbral se monta ahora también en la raíz del espacio, al entrar desde el
+   Home, donde el tema que manda es `data-space` + `data-moment` y no el
+   `data-lumia` de la pantalla Hoy. De noche, sin esta regla, entrar a Lumia
+   daba un velo crema a las once: el mismo fogonazo que la variante de abajo
+   evita dentro de Hoy. */
+[data-space='lumia'][data-moment='noche'] {
+  --transicion-velo: var(--color-night);
+  --transicion-luz: radial-gradient(circle, rgba(232, 165, 74, .18) 0%, rgba(232, 165, 74, 0) 70%);
+}
+
+/* Umbral de entrada a Formia — **placeholder, pendiente de brief de diseño**.
+   Misma estructura que el de Lumia (luz tenue, cinco segundos, saltable) y sin
+   frase: el repertorio de apertura es de Lumia. Lo único propio es la paleta,
+   que sale de los tokens de marca y no de un hex escrito aquí. Se queda en el
+   rango claro también de noche, por la misma razón que las cabeceras (SPEC_12).
+
+   Es el mismo trato que los íconos de emoción: existe lo que hace falta para no
+   bloquear la entrega, y queda anotado que falta el material de marca. */
+[data-space='formia'] {
+  --transicion-velo: var(--formia-am-50);
+  --transicion-luz: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--formia-am-500) 30%, transparent) 0%,
+    transparent 70%
+  );
+}
+
 /* ─── Acento de la respiración (§6.3.9) ──────────────────────────────────────
    Naranja/dorado deliberadamente más saturado que `amber` (#E5A25C): tiene que
    destacar sobre el degradado de amanecer, que ya es cálido. Usar el ámbar del
@@ -227,6 +254,23 @@
   18%  { opacity: 1; }
   78%  { opacity: 1; }
   100% { opacity: 0; }
+}
+
+/* Bienvenida del Home de Strivo. **Sin texto**: el símbolo aparece y respira una
+   vez, y con él la luz que lo rodea. Dentro del rango de motion del proyecto
+   (120–900 ms) y en el extremo lento, que es donde vive la marca madre.
+
+   Con `prefers-reduced-motion` no se anula a mano: la regla global de más abajo
+   deja las dos en 0,01 ms, así que el símbolo simplemente ya está ahí. */
+@keyframes bienvenida-simbolo {
+  0%   { opacity: 0; transform: scale(.94); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes bienvenida-luz {
+  0%   { opacity: 0; transform: scale(.5); }
+  55%  { opacity: .55; }
+  100% { opacity: 0; transform: scale(1.5); }
 }
 
 /* ─── Base ───────────────────────────────────────────────────────────────────
@@ -333,6 +377,19 @@
 
   .transicion-entrada {
     animation: transicion-entrada 5000ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .bienvenida-simbolo {
+    animation: bienvenida-simbolo 720ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  }
+
+  .bienvenida-luz {
+    animation: bienvenida-luz 900ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    background-image: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--strivo-600) 22%, transparent) 0%,
+      transparent 70%
+    );
   }
 
   /* Círculo del ejercicio de respiración (§6.3.9).

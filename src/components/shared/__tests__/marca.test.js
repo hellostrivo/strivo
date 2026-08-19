@@ -185,16 +185,39 @@ describe('la escala tipográfica escala (deuda heredada de SPEC_11)', () => {
   })
 })
 
-describe('Strivo no es un espacio navegable (criterio 9)', () => {
-  it('no aparece como destino en la barra ni en ninguna ruta', () => {
+// El criterio 9 de SPEC_12 decía "Strivo no es un espacio navegable" (§C0.2).
+// **Revisado el 19 ago 2026**: el Home de Strivo es el punto de entrada de la
+// app y sí es un destino. Lo que sigue en pie es que no es un *espacio*: no
+// tiene secciones, no lee datos y su paleta no cambia con la hora.
+describe('Strivo es el vestíbulo, no un tercer espacio (revisión de §C0.2)', () => {
+  it('el destino es la raíz, y no tiene secciones dentro', () => {
     const app = codigoDe('src/App.jsx')
-    expect(app).not.toMatch(/\/strivo|'strivo'/)
-    expect(codigoDe('src/components/shared/BarraEspacios.jsx')).not.toMatch(/strivo/i)
+    expect(app).toMatch(/path="\/" element=\{<Home/)
+    // Ni una ruta `/strivo/algo`: el vestíbulo no tiene dentro.
+    expect(app).not.toMatch(/\/strivo\//)
+  })
+
+  it('no lee datos de ninguno de los dos espacios (RN-DB4-01)', () => {
+    const home = codigoDe('src/pages/Home.jsx')
+    expect(home).not.toMatch(/lib\/db|useDiario|habitos|journal/i)
+    // Nombra los dos espacios porque vive por encima de ellos, y solo enruta.
+    expect(home).toMatch(/'lumia'/)
+    expect(home).toMatch(/'formia'/)
+  })
+
+  it('su paleta es la neutra conectora y no cambia con el momento (§4.1)', () => {
+    const css = cssDe('src/styles/globals.css')
+    expect(css).toMatch(/--espacio-base: var\(--strivo-50\)/)
+    expect(css).not.toMatch(/\[data-space='strivo'\]/)
   })
 
   it('su símbolo solo se usa por encima de los dos espacios', () => {
     const conStrivo = COMPONENTES.filter((ruta) => /marca="strivo"/.test(codigoDe(ruta)))
-    expect(conStrivo).toEqual(['src/components/ArranqueProvisional.jsx'])
+    expect(conStrivo.sort()).toEqual([
+      'src/components/ArranqueProvisional.jsx',
+      'src/components/shared/BarraStrivo.jsx',
+      'src/pages/Home.jsx',
+    ])
   })
 })
 

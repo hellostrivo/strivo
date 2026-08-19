@@ -677,6 +677,45 @@ git status
   entero en cualquiera. Con eso la prop `ayudas` se queda sin un solo consumidor y se retira de
   `CampoGratitud` y de `FilasDinamicas`. **La noche no se toca**: conserva "algo de hoy".
 
+**Home de Strivo — revisión de SPEC_11 y de §C0.2/§C7.1, 19 ago:**
+- **Cada apertura aterriza en un Home de marca** (`src/pages/Home.jsx`, ruta `/`): símbolo de
+  Strivo, una animación de bienvenida sin texto y dos accesos —"Lumia · Reflexión / ¿Cómo estoy?"
+  y "Formia · Acción / ¿Quién quiero ser?"—. Las dos preguntas son las centrales del blueprint
+  (§1 de este archivo), no una frase del repertorio: son fijas.
+- **Strivo pasa a ser un destino navegable, y eso deroga el criterio 9 de SPEC_12** ("Strivo no es
+  un espacio navegable", §C0.2). Lo decidió el propietario del producto. Lo que sigue en pie es que
+  **no es un espacio**: no tiene secciones, no lee datos de ninguno de los dos (RN-DB4-01) y su
+  paleta son los neutros conectores, que no cambian con la hora (manual §4.1).
+- **La barra inferior ya no salta entre espacios.** `BarraEspacios` se renombró a `BarraStrivo` y
+  lleva un solo acceso, a `/`. Se renombró en vez de adaptarse porque hace otra cosa, igual que
+  `SesionProvisional` pasó a `ArranqueProvisional`. Para cambiar de espacio se vuelve al vestíbulo.
+  **El cruce sigue sin existir en el contenido** (§C7.7.3) y ahora tampoco está en el cromo.
+- **La profundidad se cuenta desde la raíz de cada espacio**, no desde la app abierta (§4.3.2,
+  regla 1). El Home es el vestíbulo y no cuenta: metiéndolo en la cuenta, el detalle de un hábito y
+  el hábito nuevo serían cuatro toques y la regla tendría dos excepciones en vez de un alcance
+  claro. Dentro de su espacio ningún destino pasa de tres.
+- **Volver a un espacio sigue devolviendo a la sección donde estabas** (criterio 4 de SPEC_11).
+  Sobrevive a la revisión: lo que cambia es por dónde se pasa, no dónde se aterriza.
+- **Un solo umbral por sesión y por espacio** (`src/lib/umbralSesion.js`). El "ya se cruzó" salió de
+  `Hoy.jsx` porque ahora hay dos sitios que lo consultan: la entrada al espacio desde el Home y la
+  aparición de la sección Mañana. Sin compartirlo, entrar de mañana encadenaba dos umbrales
+  seguidos —diez segundos de luz antes de escribir nada—, que es justo lo que RN-LU-MAN-02 evita.
+  Consecuencia buscada: volver al Home y entrar otra vez en la misma sesión no repite la luz.
+- **La entrada a Formia es la misma pieza sin frase.** `TransicionLuz` gana `conFrase`, que no es una
+  segunda variante: la frase de apertura es de Lumia (§C7.5) y a Formia no le pertenece. Lo único
+  propio es la paleta, que sale de `--formia-am-*` en `globals.css`. **Es un placeholder declarado**,
+  el mismo trato que los íconos de emoción: existe lo justo para no bloquear la entrega y queda
+  anotado que falta el brief de diseño.
+- **De paso se arregló el velo nocturno de Lumia.** Al montarse el umbral en la raíz del espacio, el
+  tema que manda es `data-space` + `data-moment` y no el `data-lumia` de Hoy: sin la regla nueva,
+  entrar a Lumia a las once daba un velo crema —el fogonazo que la variante de dentro de Hoy ya
+  evitaba desde SPEC_10—.
+- **La fricción del paso extra es una decisión consciente**, no un descuido. No rompe "nada bloquea":
+  el umbral se salta con un toque, el Home no pide nada y con "reducir movimiento" no hay animación
+  ni umbral. Lo que sí hace es reordenar el flujo, y por eso está escrito aquí.
+- **Pendiente:** §C7.1 y §C0.2 del blueprint siguen describiendo el flujo anterior. No bloquea el
+  código. `docs/specs/SPEC_11.md` ya lleva su cabecera de revisión con el detalle.
+
 **Deuda consciente de Fase 1 (se salda en su spec):**
 - **Los 16 íconos de emoción no se hicieron, y es una decisión, no un olvido.** SPEC_12 §10 excluye
   "ilustraciones nuevas" y §7 dice que los íconos de UI siguen pendientes en el manual v1.1 y que hay
@@ -685,6 +724,9 @@ git status
   geometría de §6.7 —retícula de 24 px, trazo 1,75, formas orgánicas abstractas, nunca caras— y no
   el lienzo 122×130, que es el de los símbolos de marca, y (c) restaurar "Abundante" para volver a
   las 16 de §5.3.
+- **La transición de entrada a Formia es un placeholder.** Hoy es la estructura del umbral de Lumia
+  —luz tenue, cinco segundos, saltable— sin frase y con la paleta de Formia. Falta el brief de
+  diseño: qué le corresponde a un espacio de acción al abrirse, que no tiene por qué ser una luz.
 - **Las 60 frases nuevas del día están sin revisar editorialmente**, como las 100 de apertura. Pasan
   §3.6 con prueba automática; el criterio de qué se lee cada mañana es del propietario del producto.
 - ~~**El escalado de texto al 200 % no funciona.**~~ **Saldada en SPEC_12.** La escala pasó a `rem` y

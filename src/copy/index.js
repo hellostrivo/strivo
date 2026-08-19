@@ -681,6 +681,23 @@ export const copy = {
       saltar: 'Entrar',
     },
 
+    // El Home de Strivo — la pantalla por la que se entra a la app (revisión de
+    // §C0.2 y de SPEC_11, 19 ago 2026). **No lleva frase**: la frase de
+    // apertura es del umbral de Lumia y aquí sería una segunda voz antes de
+    // haber elegido nada. Tampoco lleva saludo ni fecha: eso es R2, suprimido
+    // de raíz (Anexo E, E.0).
+    //
+    // Las dos preguntas centrales son las del blueprint —Lumia pregunta "¿cómo
+    // estoy?" y Formia "¿quién quiero ser?"— y están aquí porque son lo único
+    // que distingue de verdad a los dos espacios para quien abre la app por
+    // primera vez. No son una frase del repertorio: son fijas.
+    home: {
+      simbolo: 'Strivo',
+      espaciosLabel: 'Espacios',
+      lumia: { titulo: 'Lumia · Reflexión', pregunta: '¿Cómo estoy?' },
+      formia: { titulo: 'Formia · Acción', pregunta: '¿Quién quiero ser?' },
+    },
+
     // §C7.3 — Naming de la navegación. **Opción A, decidida el 11 ago 2026**:
     // rótulo corto en la pestaña y marca + descriptor en la cabecera del
     // espacio. Era la última decisión abierta del proyecto.
@@ -694,8 +711,12 @@ export const copy = {
     // Formia, de construcción. Cada lista de secciones usa su vocabulario y
     // ninguna toma prestado el de la otra.
     navegacion: {
-      barraLabel: 'Espacios',
+      // La barra ya no salta entre espacios: devuelve al Home. Para cambiar de
+      // espacio se pasa por Strivo (revisión de SPEC_11, 19 ago 2026).
+      barraLabel: 'Strivo',
       seccionesLabel: 'Secciones',
+      volver: 'Strivo',
+      volverLabel: 'Volver a Strivo',
 
       lumia: {
         pestana: 'Lumia',

@@ -1,17 +1,24 @@
 // src/App.jsx
-// Los dos espacios de Strivo y lo único que los conecta (§C7.3, SPEC_11).
+// El Home de Strivo, los dos espacios y lo único que los conecta.
 //
-// **La barra es el único cruce.** Ningún enlace de contenido lleva de Lumia a
-// Formia ni al revés (§C7.7.3): el puente de Fase 0 se retiró y no se sustituyó
-// por ninguno. Cada espacio carga lo suyo y cambiar de pestaña no arrastra
-// datos (RN-DB4-01).
+// **Revisión de SPEC_11 y de §C0.2/§C7.3, 19 ago 2026.** Antes se entraba
+// directo a Lumia y la barra de abajo saltaba entre los dos espacios. Ahora
+// cada apertura aterriza en el Home de Strivo, y desde dentro de un espacio la
+// barra devuelve ahí: para cambiar de espacio se pasa por el vestíbulo. Strivo
+// pasa a ser un destino navegable, que es exactamente lo que §C0.2 decía que no
+// era; lo decidió el propietario del producto y está anotado en CLAUDE.md.
 //
-// **Dos pestañas, ni una más.** No hay tercera de Strivo: es la marca madre y
-// nadie la abre para hacer algo (§C0.2). Profundidad máxima de tres toques
-// desde cualquier punto (§4.3.2, regla 1).
+// **Ningún otro cruce.** Ni un enlace de contenido lleva de Lumia a Formia ni al
+// revés (§C7.7.3), y cambiar de espacio no arrastra datos (RN-DB4-01). El Home
+// nombra a los dos porque vive por encima de ellos, como `ArranqueProvisional`.
 //
-// **Se entra siempre por Lumia** y la pestaña activa no se persiste: es estado
-// de interfaz, no un dato del usuario (SPEC_11 §5).
+// **La profundidad se cuenta desde la raíz de cada espacio** (§4.3.2, regla 1).
+// El Home es el vestíbulo y no cuenta: con él en la cuenta, el detalle de un
+// hábito serían cuatro toques. Dentro de su espacio, ningún destino pasa de
+// tres.
+//
+// La sección activa no se persiste: es estado de interfaz, no un dato del
+// usuario (SPEC_11 §5).
 //
 // `HashRouter` y no `BrowserRouter`: la app se sirve como PWA estática y, sin
 // una regla de reescritura en el hospedaje, recargar en `/formia/habitos`
@@ -19,14 +26,17 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { HashRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { clsx } from 'clsx'
 import { getTimeSlot } from '@lib/timeSlot'
 
 import ArranqueProvisional from '@/components/ArranqueProvisional'
-import BarraEspacios from '@components/shared/BarraEspacios'
+import BarraStrivo from '@components/shared/BarraStrivo'
 import TransicionLuz, { prefiereMenosMovimiento } from '@components/shared/TransicionLuz'
 import NavLumia from '@components/lumia/NavLumia'
 import NavFormia from '@components/formia/NavFormia'
+import { cruzarUmbral, umbralPendiente } from '@lib/umbralSesion'
 
+import Home from '@/pages/Home'
 import Hoy from '@/pages/lumia/Hoy'
 import Journal from '@/pages/lumia/Journal'
 import Historial from '@/pages/lumia/Historial'
@@ -34,11 +44,14 @@ import Identidad from '@/pages/formia/Identidad'
 import Habitos from '@/pages/formia/Habitos'
 import Progreso from '@/pages/formia/Progreso'
 
-/** La raíz de cada espacio, y por dónde se entra a la app. */
+/** La raíz de cada espacio. Por dónde se entra a la app es el Home, `/`. */
 const INICIO = Object.freeze({ lumia: '/lumia/hoy', formia: '/formia/identidad' })
 
+/** El espacio de una ruta, o `null` si la ruta está por encima de los dos. */
 function espacioDe(ruta) {
-  return ruta.startsWith('/formia') ? 'formia' : 'lumia'
+  if (ruta.startsWith('/formia')) return 'formia'
+  if (ruta.startsWith('/lumia')) return 'lumia'
+  return null
 }
 
 /**
@@ -79,9 +92,9 @@ function Espacios({ uid }) {
   // las secuencias de cierre. Son estados de flujo, no de navegación.
   const [hideNav, setHideNav] = useState(false)
 
-  // §C7.5 — El umbral de entrada a la app. Con "reducir movimiento" no se
-  // muestra: entrar es inmediato.
-  const [entrando, setEntrando] = useState(() => !prefiereMenosMovimiento())
+  // §C7.5 — El umbral de entrada al espacio. Guarda cuál se está cruzando, o
+  // `null`. Con "reducir movimiento" no se muestra: entrar es inmediato.
+  const [entrando, setEntrando] = useState(null)
 
   const { pathname } = useLocation()
   const espacio = espacioDe(pathname)
@@ -93,13 +106,29 @@ function Espacios({ uid }) {
   const ultima = useRef({ ...INICIO })
 
   useEffect(() => {
-    // Solo se recuerdan secciones de verdad. Al abrir la app, la ruta pasa un
-    // instante por `/` antes de que el comodín redirija a Lumia; guardar ese
-    // paso dejaría la pestaña de Lumia apuntando a una ruta que no existe y sin
-    // marcarse activa, que es justo lo que pasaba antes de este guardia.
+    // Solo se recuerdan secciones de verdad: el Home no es la sección de
+    // ningún espacio y guardarlo dejaría su acceso apuntando a `/`.
     const actual = espacioDe(pathname)
-    if (pathname.startsWith(`/${actual}/`)) ultima.current[actual] = pathname
+    if (actual && pathname.startsWith(`/${actual}/`)) ultima.current[actual] = pathname
   }, [pathname])
+
+  /**
+   * §C7.5 — El umbral se cruza al entrar al espacio desde el Home, una vez por
+   * sesión y por espacio (`lib/umbralSesion`). Al de Lumia le corresponde la
+   * frase de apertura; el de Formia entra sin ella —placeholder, pendiente de
+   * brief— y con su propia paleta, que le pone el tema.
+   *
+   * Es el **mismo** contador que consulta la sección Mañana, y por eso entrar
+   * por el Home y ver la mañana enseguida no encadena dos umbrales seguidos
+   * (RN-LU-MAN-01 y 02). Navegar entre secciones no lo vuelve a disparar: solo
+   * cambia con el espacio.
+   */
+  useEffect(() => {
+    const puedeCruzarse = !prefiereMenosMovimiento() && umbralPendiente(espacio)
+    if (!espacio || !puedeCruzarse) return
+    cruzarUmbral(espacio)
+    setEntrando(espacio)
+  }, [espacio])
 
   return (
     // `data-space` elige la paleta de marca y `data-surface` sigue eligiendo el
@@ -112,10 +141,14 @@ function Espacios({ uid }) {
       data-surface="light"
       className="flex min-h-screen flex-col bg-espacio font-sans text-on-surface"
     >
-      {!hideNav && (espacio === 'formia' ? <NavFormia /> : <NavLumia />)}
+      {/* El cromo del espacio no existe en el Home: allí no hay secciones que
+          mostrar ni sitio al que volver. */}
+      {espacio && !hideNav && (espacio === 'formia' ? <NavFormia /> : <NavLumia />)}
 
-      <main className="flex-1 pb-24">
+      <main className={clsx('flex-1', espacio && 'pb-24')}>
         <Routes>
+          <Route path="/" element={<Home rutaDe={(id) => ultima.current[id] ?? INICIO[id]} />} />
+
           <Route path="/lumia/hoy" element={<Hoy uid={uid} onHideNav={setHideNav} />} />
           <Route path="/lumia/journal" element={<Journal uid={uid} onHideNav={setHideNav} />} />
           <Route path="/lumia/historial" element={<Historial uid={uid} />} />
@@ -124,16 +157,20 @@ function Espacios({ uid }) {
           <Route path="/formia/habitos" element={<Habitos uid={uid} />} />
           <Route path="/formia/progreso" element={<Progreso uid={uid} />} />
 
-          {/* Cualquier otra ruta entra por Lumia, incluida la raíz. */}
-          <Route path="*" element={<Navigate to={INICIO.lumia} replace />} />
+          {/* Cualquier ruta desconocida vuelve al Home, no a un espacio: elegir
+              es de quien abre la app. */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
 
       {/* El umbral va sobre la app ya montada: cuando la luz se va, lo de
           detrás ya está ahí (RN-LU-MAN-02). */}
-      {entrando && <TransicionLuz onTerminar={() => setEntrando(false)} />}
+      {entrando && (
+        <TransicionLuz conFrase={entrando === 'lumia'} onTerminar={() => setEntrando(null)} />
+      )}
 
-      {!hideNav && <BarraEspacios rutaDe={(id) => ultima.current[id] ?? INICIO[id]} />}
+      {/* Devuelve al Home. No salta al otro espacio: para eso se pasa por él. */}
+      {espacio && !hideNav && <BarraStrivo />}
     </div>
   )
 }

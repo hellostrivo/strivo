@@ -29,6 +29,7 @@ import HeroeHoy from '@components/lumia/HeroeHoy'
 import SelectorMomento from '@components/lumia/SelectorMomento'
 import Respiracion from '@components/shared/Respiracion'
 import TransicionLuz, { prefiereMenosMovimiento } from '@components/shared/TransicionLuz'
+import { cruzarUmbral, umbralPendiente } from '@lib/umbralSesion'
 import Button from '@components/ui/Button'
 import { copy, interpolate } from '@copy'
 import { shared } from '@/lib/db'
@@ -37,24 +38,6 @@ import { franjaDelSaludo } from '@/lumia/fechas'
 import { useDiario } from '@/lumia/useDiario'
 
 const textos = copy.lumia.hoy
-
-/**
- * ¿Ya se cruzó el umbral de la mañana en esta sesión? (§C7.5)
- *
- * Vive en el módulo y no en un `useRef` porque `Hoy` se desmonta al cambiar de
- * pestaña: con el estado dentro del componente, ir al Journal y volver haría
- * pasar por el umbral otra vez. Un umbral que se cruza tres veces en diez
- * minutos deja de ser un umbral y empieza a ser un peaje.
- *
- * No se persiste: SPEC_10 §5 no tiene modelo de datos, y cerrar la app y
- * volver mañana es exactamente cuando el umbral vuelve a tener sentido.
- */
-let umbralCruzado = false
-
-/** Solo para las pruebas: devuelve el módulo a como empieza una sesión. */
-export function olvidarUmbral() {
-  umbralCruzado = false
-}
 
 /** Con cuál se abre la pantalla (§5.2.1). A partir de ahí manda el conmutador. */
 function momentoInicial() {
@@ -107,6 +90,11 @@ export default function Hoy({ uid, onHideNav }) {
    * Antes lo disparaba el botón que llevaba al Diario; sin ese botón, el sitio
    * equivalente es el primer momento en que la mañana está en pantalla.
    *
+   * El contador vive en `lib/umbralSesion` y lo comparte con la entrada al
+   * espacio desde el Home: si ya se cruzó ahí, aquí no se repite. Sin eso,
+   * entrar de mañana daría dos umbrales seguidos, diez segundos de luz antes
+   * de escribir nada.
+   *
    * Espera a que el día esté cargado: un velo sobre una pantalla en blanco no
    * es un umbral, es una espera con luz. El contenido tiene que estar montado
    * detrás para que, cuando la luz se va, no quede nada por hacer.
@@ -115,9 +103,9 @@ export default function Hoy({ uid, onHideNav }) {
    * entrando solo por su enlace, que es lo que la hace voluntaria.
    */
   useEffect(() => {
-    const puedeCruzarse = !umbralCruzado && !prefiereMenosMovimiento()
+    const puedeCruzarse = umbralPendiente('lumia') && !prefiereMenosMovimiento()
     if (carga !== 'lista' || momento !== 'manana' || !puedeCruzarse) return
-    umbralCruzado = true
+    cruzarUmbral('lumia')
     setUmbral(true)
   }, [carga, momento])
 

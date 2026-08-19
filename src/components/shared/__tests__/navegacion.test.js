@@ -1,11 +1,14 @@
 // src/components/shared/__tests__/navegacion.test.js
-// La barra de dos espacios (§C7.3, SPEC_11).
+// El Home de Strivo y la navegación de los dos espacios (§C7.3, SPEC_11
+// **revisada el 19 ago 2026**).
 //
-// La mitad de estas pruebas comprueban el criterio 3 —que no hay ningún enlace
-// de contenido que cruce de un espacio al otro— recorriendo la app entera. Es
-// la verificación que §7 pide hacer aquí, antes de la marca: si aparece un
-// cruce, la barra deja de ser el único puente y la separación se ha roto por
-// donde no se ve.
+// Lo que cambió: se entra por el Home, la barra de abajo ya no salta entre
+// espacios sino que devuelve al Home, y la profundidad se cuenta desde la raíz
+// de cada espacio, no desde la app abierta.
+//
+// Lo que no cambió, y es lo que sigue vigilando la mitad de este archivo: no
+// hay ningún enlace de contenido que cruce de un espacio al otro. Si aparece
+// uno, la separación se ha roto por donde no se ve.
 
 import { readFileSync, readdirSync, statSync } from 'fs'
 import { join } from 'path'
@@ -14,7 +17,8 @@ import { describe, expect, it } from 'vitest'
 import { copy } from '@copy'
 
 const APP = 'src/App.jsx'
-const BARRA = 'src/components/shared/BarraEspacios.jsx'
+const BARRA = 'src/components/shared/BarraStrivo.jsx'
+const HOME = 'src/pages/Home.jsx'
 const NAV_LUMIA = 'src/components/lumia/NavLumia.jsx'
 const NAV_FORMIA = 'src/components/formia/NavFormia.jsx'
 
@@ -34,24 +38,82 @@ function archivosDe(dir) {
   })
 }
 
-describe('dos pestañas, ni una más (criterio 1)', () => {
-  const barra = codigoDe(BARRA)
+describe('el Home es el punto de entrada (revisión 19 ago)', () => {
+  const app = codigoDe(APP)
+  const home = codigoDe(HOME)
 
-  it('la barra tiene exactamente dos espacios', () => {
-    const espacios = barra.match(/id: '(lumia|formia)'/g) ?? []
-    expect(espacios).toHaveLength(2)
+  it('cada apertura aterriza en el Home, no en un espacio', () => {
+    expect(app).toMatch(/path="\/" element=\{<Home/)
+    expect(app).toMatch(/path="\*" element=\{<Navigate to="\/" replace/)
   })
 
-  it('no hay tercera pestaña de Strivo (§C0.2)', () => {
-    // Strivo es la marca madre y no se usa directamente: nadie la abre para
-    // hacer algo. Una pestaña suya sería una pantalla sin contenido posible.
-    expect(barra).not.toMatch(/'strivo'|Strivo/)
+  it('ofrece los dos espacios y nada más', () => {
+    const accesos = home.match(/id: '(lumia|formia)'/g) ?? []
+    expect(accesos).toHaveLength(2)
+  })
+
+  it('no lleva frase: la de apertura es del umbral de Lumia', () => {
+    expect(home).not.toMatch(/frases-apertura|fraseDeApertura|frases-del-dia/)
+  })
+
+  it('tampoco lleva saludo, ni fecha, ni nombre (Anexo E, E.0)', () => {
+    expect(home).not.toMatch(/saludo|fecha|Buenos d[íi]as|nombre/i)
+  })
+
+  it('la bienvenida es el símbolo y su luz, sin texto', () => {
+    expect(home).toMatch(/marca="strivo"/)
+    expect(home).toMatch(/bienvenida-simbolo/)
+    expect(home).toMatch(/bienvenida-luz/)
+  })
+
+  it('la animación está dentro del rango de motion del proyecto (120–900 ms)', () => {
+    const css = readFileSync('src/styles/globals.css', 'utf8')
+    const duraciones = (css.match(/animation: bienvenida-\w+ (\d+)ms/g) ?? []).map((linea) =>
+      Number(linea.match(/(\d+)ms/)[1]),
+    )
+    expect(duraciones.length).toBe(2)
+    duraciones.forEach((ms) => {
+      expect(ms).toBeGreaterThanOrEqual(120)
+      expect(ms).toBeLessThanOrEqual(900)
+    })
+  })
+
+  it('con reducir movimiento no hay que anularla a mano: la regla global la deja quieta', () => {
+    const css = readFileSync('src/styles/globals.css', 'utf8')
+    expect(css).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*?animation-duration: 0\.01ms/,
+    )
+  })
+})
+
+describe('la barra devuelve al Home y no salta entre espacios', () => {
+  const barra = codigoDe(BARRA)
+
+  it('lleva un solo destino, y es la raíz', () => {
+    expect(barra.match(/to="/g) ?? []).toHaveLength(1)
+    expect(barra).toMatch(/to="\/"/)
+  })
+
+  it('no nombra a ninguno de los dos espacios', () => {
+    expect(barra).not.toMatch(/lumia|formia/i)
+  })
+
+  it('el copy de la navegación dice a dónde vuelve', () => {
     expect(Object.keys(copy.shared.navegacion)).toEqual([
       'barraLabel',
       'seccionesLabel',
+      'volver',
+      'volverLabel',
       'lumia',
       'formia',
     ])
+    expect(copy.shared.navegacion.volverLabel).toMatch(/Strivo/)
+  })
+
+  it('en el Home no hay barra ni cabecera de espacio', () => {
+    const app = codigoDe(APP)
+    expect(app).toMatch(/\{espacio && !hideNav && <BarraStrivo \/>\}/)
+    expect(app).toMatch(/\{espacio && !hideNav && \(espacio === 'formia'/)
   })
 
   it('los rótulos son los de la opción A, decidida y documentada (criterio 8)', () => {
@@ -71,7 +133,7 @@ describe('dos pestañas, ni una más (criterio 1)', () => {
   })
 })
 
-describe('la barra es el único cruce (criterio 3 · §C7.7.3)', () => {
+describe('no hay ningún cruce directo entre espacios (criterio 3 · §C7.7.3)', () => {
   const DE_LUMIA = ['src/lumia', 'src/pages/lumia', 'src/components/lumia'].flatMap(archivosDe)
   const DE_FORMIA = ['src/formia', 'src/pages/formia', 'src/components/formia'].flatMap(archivosDe)
 
@@ -98,20 +160,32 @@ describe('la barra es el único cruce (criterio 3 · §C7.7.3)', () => {
     })
   })
 
-  it('solo la barra y `App.jsx` ven los dos espacios a la vez', () => {
-    // `App.jsx` es la raíz de composición y la barra es el puente: son el
-    // equivalente de `lib/db/index.js` en la capa de datos, los únicos sitios
-    // autorizados a verlos juntos. Ninguno de los dos cruza datos.
+  it('solo `App.jsx` y el Home ven los dos espacios a la vez', () => {
+    // Son la raíz de composición y el vestíbulo: el equivalente de
+    // `lib/db/index.js` en la capa de datos, los únicos sitios autorizados a
+    // verlos juntos. Ninguno de los dos cruza datos. La barra ya no está en la
+    // lista: desde la revisión no nombra a ninguno.
     const app = codigoDe(APP)
     expect(app).toMatch(/NavLumia/)
     expect(app).toMatch(/NavFormia/)
-    expect(codigoDe(BARRA)).toMatch(/lumia[\s\S]*formia/i)
+    expect(codigoDe(HOME)).toMatch(/lumia[\s\S]*formia/i)
 
     const cruzan = [...DE_LUMIA, ...DE_FORMIA].filter((ruta) => {
       const codigo = codigoDe(ruta)
       return /lumia/i.test(codigo) && /formia/i.test(codigo)
     })
     expect(cruzan).toEqual([])
+  })
+
+  it('para cambiar de espacio hay que pasar por el Home', () => {
+    // La barra era el atajo y ya no lo es. Si vuelve a aparecer una ruta del
+    // otro espacio en cualquier cromo, el atajo ha vuelto sin decirlo.
+    ;[BARRA, NAV_LUMIA, NAV_FORMIA].forEach((ruta) => {
+      const codigo = codigoDe(ruta)
+      const rutas = codigo.match(/to="(\/[a-z/]*)"/g) ?? []
+      const espacios = new Set(rutas.map((r) => r.split('/')[1]))
+      expect(`${ruta}: ${[...espacios]}`).not.toMatch(/lumia[\s\S]*formia|formia[\s\S]*lumia/)
+    })
   })
 })
 
@@ -140,54 +214,65 @@ describe('cada espacio conserva su vocabulario (§8)', () => {
   })
 })
 
-describe('se entra siempre por Lumia (criterio 5)', () => {
+describe('se entra siempre por el Home (criterio 5, revisado)', () => {
   const app = codigoDe(APP)
 
-  it('la raíz y cualquier ruta desconocida llevan a Lumia', () => {
+  it('cada espacio conserva su raíz, pero ya no es la de la app', () => {
     expect(app).toMatch(/INICIO = Object\.freeze\(\{ lumia: '\/lumia\/hoy'/)
-    expect(app).toMatch(/path="\*" element=\{<Navigate to=\{INICIO\.lumia\} replace/)
+    expect(app).toMatch(/formia: '\/formia\/identidad'/)
   })
 
-  it('la pestaña activa no se persiste: no es un dato del usuario (§5)', () => {
+  it('volver a un espacio devuelve a la sección donde estabas (criterio 4)', () => {
+    // Sobrevive a la revisión: lo que cambia es por dónde se pasa, no que
+    // entrar a Lumia te devuelva al Journal si es donde lo dejaste.
+    expect(app).toMatch(/ultima\.current\[id\] \?\? INICIO\[id\]/)
+  })
+
+  it('la sección activa no se persiste: no es un dato del usuario (§5)', () => {
     expect(app).not.toMatch(/localStorage|savePreferences|saveProfile/)
   })
 })
 
 describe('profundidad máxima de tres toques (criterio 6 · §4.3.2)', () => {
-  // Se cuenta desde la app abierta, que entra por Lumia · Hoy.
+  // **Se cuenta desde la raíz de cada espacio, no desde la app abierta**
+  // (revisión del 19 ago 2026, decidida con producto). El Home es el vestíbulo
+  // y no cuenta: con él dentro, el detalle de un hábito serían cuatro toques y
+  // la regla tendría dos excepciones en vez de un alcance claro.
   const CAMINOS = [
-    { destino: 'Lumia · Hoy', toques: 0 },
-    { destino: 'Diario de mañana', toques: 1 },
-    { destino: 'Ritual de Noche', toques: 2 },
-    { destino: 'Respiración diaria', toques: 2 },
-    { destino: 'Journal · una entrada', toques: 2 },
-    { destino: 'Historial · un día', toques: 2 },
-    { destino: 'Formia · Identidad', toques: 1 },
-    { destino: 'Formia · Hábitos', toques: 2 },
-    { destino: 'Detalle de un hábito', toques: 3 },
-    { destino: 'Nuevo hábito', toques: 3 },
-    { destino: 'Formia · Progreso', toques: 2 },
+    { desde: 'Lumia · Hoy', destino: 'Sección Mañana', toques: 1 },
+    { desde: 'Lumia · Hoy', destino: 'Respiración diaria', toques: 2 },
+    { desde: 'Lumia · Hoy', destino: 'Journal · una entrada', toques: 2 },
+    { desde: 'Lumia · Hoy', destino: 'Historial · un día', toques: 2 },
+    { desde: 'Formia · Identidad', destino: 'Hábitos', toques: 1 },
+    { desde: 'Formia · Identidad', destino: 'Detalle de un hábito', toques: 2 },
+    { desde: 'Formia · Identidad', destino: 'Nuevo hábito', toques: 2 },
+    { desde: 'Formia · Identidad', destino: 'Progreso', toques: 1 },
   ]
 
-  it('ningún destino pasa de tres', () => {
+  it('ningún destino pasa de tres dentro de su espacio', () => {
     CAMINOS.forEach((camino) => expect(camino.toques).toBeLessThanOrEqual(3))
   })
 
-  it('la barra pone cada espacio a un toque', () => {
-    expect(codigoDe(BARRA)).toMatch(/to=\{rutaDe\(espacio\.id\)\}/)
+  it('el Home pone cada espacio a un toque', () => {
+    expect(codigoDe(HOME)).toMatch(/to=\{rutaDe\(espacio\.id\)\}/)
+  })
+
+  it('y la barra pone el Home a un toque desde cualquier sección', () => {
+    expect(codigoDe(BARRA)).toMatch(/to="\/"/)
+    expect(codigoDe(APP)).toMatch(/\{espacio && !hideNav && <BarraStrivo \/>\}/)
   })
 })
 
-describe('accesibilidad de la barra (criterio 7)', () => {
-  it('el estado activo no depende solo del color', () => {
+describe('accesibilidad de la navegación (criterio 7)', () => {
+  it('la barra no necesita estado activo: lleva a un sitio y solo a uno', () => {
     const barra = codigoDe(BARRA)
-    // Peso tipográfico y una línea encima, además del color.
-    expect(barra).toMatch(/font-semibold/)
-    expect(barra).toMatch(/isActive && \(/)
-    expect(barra).toMatch(/h-0\.5 rounded-full/)
+    expect(barra).not.toMatch(/isActive/)
+    // Lo que sí necesita es decir a dónde va, más allá del símbolo.
+    expect(barra).toMatch(/aria-label=\{textos\.volverLabel\}/)
+    expect(barra).toMatch(/\{textos\.volver\}/)
   })
 
-  it('lo mismo dentro de cada espacio', () => {
+  it('el estado activo dentro de cada espacio no depende solo del color', () => {
     ;[NAV_LUMIA, NAV_FORMIA].forEach((ruta) => {
       const codigo = codigoDe(ruta)
       expect(codigo).toMatch(/font-semibold/)
@@ -197,20 +282,22 @@ describe('accesibilidad de la barra (criterio 7)', () => {
 
   it('los objetivos táctiles llegan al mínimo', () => {
     expect(codigoDe(BARRA)).toMatch(/min-h-touch\b/)
+    expect(codigoDe(HOME)).toMatch(/min-h-touch\b/)
     ;[NAV_LUMIA, NAV_FORMIA].forEach((ruta) => {
       expect(codigoDe(ruta)).toMatch(/min-h-touch-sm/)
     })
   })
 
-  it('las tres navegaciones se anuncian con su nombre', () => {
+  it('las navegaciones se anuncian con su nombre', () => {
     expect(codigoDe(BARRA)).toMatch(/aria-label=\{textos\.barraLabel\}/)
+    expect(codigoDe(HOME)).toMatch(/aria-label=\{textos\.espaciosLabel\}/)
     ;[NAV_LUMIA, NAV_FORMIA].forEach((ruta) => {
       expect(codigoDe(ruta)).toMatch(/aria-label=\{textos\.seccionesLabel\}/)
     })
   })
 
-  it('ninguna de las tres fija un color de texto literal (RN-SURF-01)', () => {
-    ;[BARRA, NAV_LUMIA, NAV_FORMIA].forEach((ruta) => {
+  it('ninguna fija un color de texto literal (RN-SURF-01)', () => {
+    ;[BARRA, HOME, NAV_LUMIA, NAV_FORMIA].forEach((ruta) => {
       expect(`${ruta}: ${codigoDe(ruta)}`).not.toMatch(
         /text-ink|text-paper|text-night|#[0-9a-f]{6}/i,
       )

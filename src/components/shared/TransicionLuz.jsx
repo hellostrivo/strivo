@@ -21,7 +21,14 @@
 //
 // Vive en `components/shared/` y no conoce ningún espacio: el tono del velo y
 // de la luz los pone el tema desde `globals.css`, así que la misma pieza sirve
-// sobre el crema de la mañana y sobre el índigo de la noche sin saberlo.
+// sobre el crema de la mañana, sobre el índigo de la noche y sobre el ocre de
+// Formia sin saberlo.
+//
+// **`conFrase` no es una segunda variante**, es la misma pieza sin su texto. La
+// entrada a Formia todavía no tiene brief de diseño y entra con la estructura
+// de esta —luz tenue, cinco segundos, saltable— y su propia paleta, hasta que
+// exista. La frase es de Lumia: es el repertorio de apertura de §C7.5 y a
+// Formia no le pertenece.
 
 import { useEffect, useRef, useState } from 'react'
 import { copy } from '@copy'
@@ -36,10 +43,14 @@ export function prefiereMenosMovimiento() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-export default function TransicionLuz({ onTerminar }) {
+export default function TransicionLuz({ onTerminar, conFrase = true }) {
   // La frase se elige una sola vez, al montar: recalcularla en cada render la
-  // haría cambiar a mitad de los cinco segundos.
-  const [frase] = useState(() => fraseDeApertura())
+  // haría cambiar a mitad de los cinco segundos. Sin frase no se saca ninguna
+  // del bombo: gastarla sin enseñarla dejaría un hueco en el repertorio.
+  const [frase] = useState(function elegir() {
+    if (conFrase) return fraseDeApertura()
+    return null
+  })
   const temporizador = useRef(null)
   const terminado = useRef(false)
 
@@ -73,7 +84,9 @@ export default function TransicionLuz({ onTerminar }) {
         aria-hidden="true"
         className="luz-transicion pointer-events-none absolute h-72 w-72 rounded-full"
       />
-      <p className="relative font-display text-lg text-on-surface leading-snug">{frase.texto}</p>
+      {frase && (
+        <p className="relative font-display text-lg text-on-surface leading-snug">{frase.texto}</p>
+      )}
     </button>
   )
 }
