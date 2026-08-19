@@ -135,9 +135,14 @@ export const copy = {
 
         gratitud: {
           titulo: '¿Qué agradezco esta mañana?',
-          // Estado vacío del primer día: tres ayudas distintas, una por fila.
-          ayudas: ['algo pequeño', 'alguien', 'algo que ya tienes'],
-          placeholder: 'algo más',
+          // Bajo la pregunta, una sola línea que no pide nada: la certeza de
+          // que hay respuesta antes de buscarla.
+          lead: 'Siempre hay algo que agradecer.',
+          // La pista de qué cabe aquí va dentro de los campos, en gris de
+          // marcador de posición, y es la misma en los tres renglones: no se
+          // reparte una idea por fila —eso era decirle a cada renglón de qué
+          // tiene que hablar—, se ofrece el abanico entero en cualquiera.
+          placeholder: 'Puede ser desde algo pequeño, una persona, o algo que ya tienes',
           sugerencias: {
             titulo: '¿Te ayudo con una idea?',
             // RN dura de §5.3: tocar una idea NUNCA rellena el campo. Abre una

@@ -648,6 +648,34 @@ git status
   pista de la gran visión (8 s) arranca al escribir y borrar. Ninguno mira si su bloque está a la
   vista, así que bajarlos en la pantalla no los altera.
 
+- **Las ideas de gratitud son de un renglón, no del bloque, 19 ago.** La regla sale del componente y
+  vive en `src/lumia/sugerenciasGratitud.js`: se ofrecen cuando el foco está en **ese** renglón, ese
+  renglón está vacío y lleva 5 s sin recibir una tecla. Antes había un solo `visibles` y un solo
+  temporizador para los tres, con la condición `filas.every(vacía)`, así que aparecían solas a los
+  5 s de montarse la pantalla —sin que nadie estuviera en el bloque— y no volvían nunca en cuanto
+  había una línea escrita. Ahora los tres nacen en blanco y el segundo y el tercero conservan su
+  oferta aunque el primero esté escrito.
+- **El panel se pinta bajo el renglón enfocado**, no al pie del bloque. `FilasDinamicas` gana tres
+  props opcionales —`onEnfocar`, `onDesenfocar` y `debajoDeFila`— y quien no las pasa (victorias,
+  logros) no nota nada. Es el mismo componente, así que la sección Noche hereda el arreglo.
+- **Los botones de idea no roban el foco** (`onMouseDown` con `preventDefault`) y salir del campo no
+  las apaga si el foco se fue a ellas —se comprueba con `relatedTarget`—. Sin las dos cosas, tocar
+  una idea desenfocaría el renglón y el panel se iría antes de recibir el toque.
+- **El silencio por descartes sigue siendo del bloque y de la sesión.** Dos "Ahora no" en cualquier
+  renglón y las ideas se callan en los tres. Lo decidió el propietario del producto: la instrucción
+  era sobre el disparador, no sobre cuánto insiste la app. **El repertorio no se tocó** —tu familia,
+  tu cuerpo, este momento, el silencio, lo que tienes— y una prueba lo fija por si acaso.
+- **La gratitud de la mañana se dice en dos alturas, 19 ago.** Bajo la pregunta, un `lead` que no
+  pide nada —"Siempre hay algo que agradecer."—; dentro de los campos, en el gris del marcador de
+  posición, la pista de qué cabe: "Puede ser desde algo pequeño, una persona, o algo que ya tienes".
+  Mismo patrón de título + pista que el bloque de emociones justo encima. Los dos textos los fijó el
+  propietario del producto, literales.
+- **Se retiran las tres `ayudas`** ("algo pequeño", "alguien", "algo que ya tienes") y con ellas el
+  antiguo `placeholder` "algo más". El marcador es **el mismo en los tres renglones**: repartir una
+  idea por fila era decirle a cada renglón de qué tenía que hablar, y ahora se ofrece el abanico
+  entero en cualquiera. Con eso la prop `ayudas` se queda sin un solo consumidor y se retira de
+  `CampoGratitud` y de `FilasDinamicas`. **La noche no se toca**: conserva "algo de hoy".
+
 **Deuda consciente de Fase 1 (se salda en su spec):**
 - **Los 16 íconos de emoción no se hicieron, y es una decisión, no un olvido.** SPEC_12 §10 excluye
   "ilustraciones nuevas" y §7 dice que los íconos de UI siguen pendientes en el manual v1.1 y que hay

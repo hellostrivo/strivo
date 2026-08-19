@@ -129,7 +129,10 @@ export default function DiarioManana({ estado, acciones }) {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-display text-md text-on-surface">{textos.gratitud.titulo}</h2>
+        <div className="flex flex-col gap-1">
+          <h2 className="font-display text-md text-on-surface">{textos.gratitud.titulo}</h2>
+          <p className="text-sm text-on-surface-soft">{textos.gratitud.lead}</p>
+        </div>
         <CampoGratitud
           filas={gratitud}
           limites={LIMITES.gratitud}
@@ -137,7 +140,6 @@ export default function DiarioManana({ estado, acciones }) {
           onVolcar={acciones.volcar}
           sugerencias={textos.gratitud.sugerencias}
           etiqueta={textos.gratitud.titulo}
-          ayudas={textos.gratitud.ayudas}
           placeholder={textos.gratitud.placeholder}
         />
       </section>
