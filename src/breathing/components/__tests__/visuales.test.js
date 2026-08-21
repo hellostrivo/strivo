@@ -297,7 +297,10 @@ describe('ni un string visible fuera del copy (criterio 26)', () => {
   it.each(archivosDe('src/breathing/components').filter((r) => !r.includes('__tests__')))(
     '%s no escribe texto a mano',
     (ruta) => {
-      const codigo = codigoDe(ruta)
+      // Las flechas de los manejadores llevan un `>` dentro y partían el JSX por
+      // la mitad, dando por infractores a componentes que no escriben nada.
+      // Mismo arreglo que en las pruebas equivalentes de SPEC_15 y SPEC_16.
+      const codigo = codigoDe(ruta).replace(/=>/g, '=»')
       // Texto entre etiquetas JSX que no sea una interpolación.
       const sueltos = [...codigo.matchAll(/>\s*([A-Za-zÁÉÍÓÚÑáéíóúñ][^<>{}]{2,})\s*</g)]
         .map((m) => m[1].trim())

@@ -37,6 +37,7 @@ import NavFormia from '@components/formia/NavFormia'
 import { cruzarUmbral, umbralPendiente } from '@lib/umbralSesion'
 
 import Home from '@/pages/Home'
+import Respiracion from '@/breathing/Respiracion'
 import Hoy from '@/pages/lumia/Hoy'
 import Journal from '@/pages/lumia/Journal'
 import Historial from '@/pages/lumia/Historial'
@@ -47,7 +48,15 @@ import Progreso from '@/pages/formia/Progreso'
 /** La raíz de cada espacio. Por dónde se entra a la app es el Home, `/`. */
 const INICIO = Object.freeze({ lumia: '/lumia/hoy', formia: '/formia/identidad' })
 
-/** El espacio de una ruta, o `null` si la ruta está por encima de los dos. */
+/**
+ * El espacio de una ruta, o `null` si la ruta está por encima de los dos.
+ *
+ * **`/respiracion` devuelve `null` a propósito, y de ahí salen tres reglas de
+ * SPEC_16 sin escribir una línea más:** no se monta la barra (RN-RE-NAV-12), no
+ * se cruza el umbral de luz de Lumia (RN-RE-NAV-34) y el cromo se queda en los
+ * neutros de Strivo. Respiración es una herramienta, no un tercer espacio, y la
+ * función que decide qué es un espacio ya lo dice.
+ */
 function espacioDe(ruta) {
   if (ruta.startsWith('/formia')) return 'formia'
   if (ruta.startsWith('/lumia')) return 'lumia'
@@ -156,6 +165,11 @@ function Espacios({ uid }) {
           <Route path="/formia/identidad" element={<Identidad uid={uid} />} />
           <Route path="/formia/habitos" element={<Habitos uid={uid} />} />
           <Route path="/formia/progreso" element={<Progreso uid={uid} />} />
+
+          {/* La herramienta transversal. Sus dos pantallas las resuelve su
+              propio contenedor, que es quien sostiene la sesión entre ellas
+              para que el botón atrás pause en vez de destruir (RN-RE-NAV-10). */}
+          <Route path="/respiracion/*" element={<Respiracion uid={uid} />} />
 
           {/* Cualquier ruta desconocida vuelve al Home, no a un espacio: elegir
               es de quien abre la app. */}

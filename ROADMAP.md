@@ -31,6 +31,46 @@
 
 ---
 
+## Trabajo por specs: Fase 1 y Fase 1C — ✅ cerradas (20 ago 2026)
+
+> **Nota de numeración.** Este documento numera las fases de **producto** (Fase 0 → V3). El trabajo
+> dirigido por specs que se ha ejecutado usa otra numeración, la de `CLAUDE.md`: "Fase 1" allí es la
+> división Lumia/Formia, no el MVP privado de más abajo. Son dos ejes distintos y no se renumera
+> ninguno: este bloque registra el cierre del segundo, que alimenta al primero.
+
+**Fase 1 — División Lumia/Formia (SPEC_02 a SPEC_12).** Doce specs, cerrada el 11 ago 2026.
+Dos espacios navegables bajo la marca madre, con separación de datos garantizada por lint y por
+pruebas (RN-DB4-01), y la marca aplicada por producto.
+
+**Fase 1C — Respiración (SPEC_13 a SPEC_16).** Cuatro specs, cerrada el 20 ago 2026. Añade la
+herramienta transversal: un tercer acceso desde el Home que no es un tercer espacio.
+
+| Spec | Entrega | Estado |
+|---|---|---|
+| **SPEC_13** | Motor de ritmo, catálogo de patrones y capa de datos. Cero UI. | ✅ |
+| **SPEC_14** | Las dos guías visuales: círculo y bolita sobre línea. | ✅ |
+| **SPEC_15** | Sonido ambiente sintetizado, guía sonora y favoritos. | ✅ |
+| **SPEC_16** | Home, rutas, ensamblado e integración de extremo a extremo. | ✅ |
+
+**Métricas al cierre de Fase 1C:**
+
+| Métrica | Valor |
+|---|---|
+| Pruebas | **1.274 verdes** (438 al cerrar Fase 1) |
+| Archivos de prueba | 51 |
+| Bundle de la app | 476,6 kB · **141,0 kB comprimido** |
+| Delta de Fase 1C | +78,1 kB, **solo código** |
+| Archivos de audio en el repo | **0** — los cinco sonidos se sintetizan en tiempo real |
+| Dependencias nuevas | **0** |
+| Comandos de verificación | `lint` · `lint:copy` · `lint:contraste` · `format:check` · `build` · `test`, los seis en verde |
+
+**Lo que queda abierto y no lo cierra el código:** **23 validaciones manuales** acumuladas —8 visuales
+de SPEC_14, 7 de audio de SPEC_15 y 8 recorridos de extremo a extremo de SPEC_16—. Las pruebas no
+oyen y no juzgan si algo *se siente* bien; hacen falta audífonos, un teléfono y quince minutos con
+los ojos cerrados. El detalle está en `CLAUDE.md`.
+
+---
+
 ## Fase 1: MVP privado (22 ago – 9 oct 2026) ⭐ Primer producto con usuarios
 
 | Campo | Detalle |
@@ -245,5 +285,5 @@
 
 ---
 
-**Última actualización:** 4 ago 2026  
+**Última actualización:** 20 ago 2026 (cierre de Fase 1C — Respiración)  
 **Próxima revisión:** al cerrar cada fase (no cada semana; el roadmap no es un tracker diario).

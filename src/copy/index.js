@@ -1147,6 +1147,45 @@ export const copy = {
       separador: ' · ',
     },
 
+    // SPEC_16 §6 — El acceso del Home. Sin subtítulo a propósito (RN-RE-NAV-02):
+    // Lumia y Formia llevan uno porque son marcas; Respiración es una función y
+    // su nombre ya la describe. Añadirle subtítulo la asciende de categoría.
+    home: {
+      acceso: 'Respiración',
+    },
+
+    configuracion: {
+      titulo: 'Respiración',
+      visual: 'Cómo lo quieres ver',
+      visualCirculo: 'Círculo',
+      visualLinea: 'Línea',
+      ritmo: 'Ritmo',
+      ladoUnico: 'Cada lado',
+      cajaModificada: 'Al cambiar un tiempo por separado, esto deja de ser respiración en caja.',
+      tiempo: 'Tiempo',
+      info: 'Cómo usar esto',
+      // RN-RE-NAV-20 — Un patrón imposible nunca bloquea el botón: se corrige y
+      // se dice. Nada bloquea.
+      patronAjustado: 'Ajustamos los tiempos para que el ritmo se pueda seguir.',
+    },
+
+    sesion: {
+      ajustes: 'Ajustar',
+      cerrarAjustes: 'Listo',
+      progresoCiclos: '{completados} de {total}',
+      progresoAbierta: '{tiempo}',
+    },
+
+    accesibilidad: {
+      salir: 'Salir de respiración',
+      pausar: 'Pausar la sesión',
+      reanudar: 'Seguir con la sesión',
+      aumentarFase: 'Aumentar el tiempo de {fase}',
+      reducirFase: 'Reducir el tiempo de {fase}',
+      abrirAjustes: 'Abrir ajustes de la sesión',
+      vistaPrevia: 'Vista previa del ritmo {patron}',
+    },
+
     vacio: {
       sinFavoritos:
         'Todavía no guardas ninguna. Cuando encuentres un ritmo que te acomode, guárdalo aquí.',

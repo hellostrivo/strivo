@@ -289,3 +289,135 @@
 .respiracion-etiqueta[data-reducido='si'] {
   animation: none;
 }
+
+/* ─── SPEC_16 — El acceso del Home y las dos pantallas ─────────────────────── */
+
+/* El anillo del acceso: evoca la guia visual sin ser un simbolo de marca.
+   RN-RE-NAV-03 — Color de la escala Strivo, nunca Lumia ni Formia. */
+.acceso-respiracion__icono {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 2px solid var(--strivo-600);
+  position: relative;
+}
+
+.acceso-respiracion__icono::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 999px;
+  background: var(--strivo-600);
+  opacity: 0.35;
+}
+
+/* RN-RE-NAV-14 — La accion principal, pegada abajo. Lleva su propio fondo para
+   que el contenido que pasa por debajo no se lea a traves de ella. */
+.respiracion-accion {
+  background: var(--espacio-base);
+  border-top: 1px solid var(--espacio-borde);
+}
+
+/* RN-RE-NAV-21 y 25 — El progreso es periferico: se consulta si se busca, no se
+   lee sin querer. Lo que domina es la visual. */
+.respiracion-progreso {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  opacity: 0.4;
+  color: var(--color-text);
+}
+
+.respiracion-punto {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+}
+
+.respiracion-punto[data-lleno='si'] {
+  background: currentColor;
+}
+
+/* RN-RE-NAV-23 — Los controles se retiran a los seis segundos y vuelven al
+   tocar. **Siguen siendo tocables mientras estan tenues**: atenuar no es
+   desactivar, y por eso no se toca `pointer-events`. Es lo que permite cerrar
+   los ojos sin que la pantalla siga gritando. */
+.respiracion-control {
+  transition: opacity 600ms ease-in-out;
+}
+
+[data-atenuado='si'] .respiracion-control {
+  /* **Se apagan del todo, no a 0,25, y es RN-RE-NAV-46 quien lo decide.**
+     RN-RE-NAV-23 pide opacidad 0,25; medido, el texto del boton a 0,25 sobre el
+     fondo del Home da 1,67:1, ilegible. La regla 46 anticipa exactamente este
+     caso y da la salida: "o el texto se oculta del todo en vez de quedar
+     ilegible". A 0,25 se obtiene lo peor de las dos cosas —una mancha que no se
+     lee pero que sigue llamando la atencion—; a 0 la pantalla queda de verdad
+     limpia, que es lo que "cerrar los ojos sin que la pantalla grite" pedia.
+     Siguen siendo tocables: `pointer-events` no se toca. Atenuar no es
+     desactivar, y RN-RE-NAV-23 dice tocables, no visibles. */
+  opacity: 0;
+}
+
+/* RN-RE-NAV-45 — Con teclado no se atenua nada: un foco al 25 % es un foco
+   perdido. La deteccion la hace el contenedor, pero esta regla lo sostiene
+   tambien cuando el foco llega por otro camino. */
+[data-atenuado='si'] .respiracion-control:focus-visible {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .respiracion-control {
+    transition: none;
+  }
+}
+
+/* RN-RE-NAV-29 — Los 900 ms del cierre son los mismos del cierre del dia. Es la
+   firma de cierre de Strivo y aqui no se inventa otra. */
+.respiracion-cierre {
+  animation: respiracion-cierre 900ms ease-in-out both;
+}
+
+@keyframes respiracion-cierre {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .respiracion-cierre {
+    animation: none;
+  }
+}
+
+/* El panel de ajustes en vivo: hoja inferior, sobre la sesion que sigue
+   corriendo detras (RN-RE-NAV-24). */
+.respiracion-ajustes {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: var(--espacio-base);
+  z-index: 50;
+}
+
+/* Visible solo para el lector de pantalla. */
+.respiracion-progreso .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

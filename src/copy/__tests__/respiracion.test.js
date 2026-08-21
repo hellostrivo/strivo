@@ -24,8 +24,11 @@ const CADENAS = hojas(respiracion)
 describe('el namespace existe y está completo (§7.2)', () => {
   it('tiene los nueve bloques que pide el spec', () => {
     expect(Object.keys(respiracion).sort()).toEqual([
+      'accesibilidad',
       'acomodo',
       'cierre',
+      // `configuracion`, `home` y `sesion` los añadió SPEC_16 (§6).
+      'configuracion',
       'controles',
       'duracion',
       // `estados` lo añadió SPEC_14 para RN-RE-VIS-26. Ver el comentario en copy/.
@@ -34,8 +37,10 @@ describe('el namespace existe y está completo (§7.2)', () => {
       'fasesAccesibles',
       // `favoritos` y `sonidos` los añadió SPEC_15 (§4.4).
       'favoritos',
+      'home',
       'patrones',
       'seguridad',
+      'sesion',
       'sonidos',
       'subtitulo',
       'titulo',

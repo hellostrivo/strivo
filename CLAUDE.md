@@ -299,7 +299,7 @@ git status
 | **SPEC_13** | ✅ Completa (Fase 1C) | 20 ago |
 | **SPEC_14** | ✅ Completa (Fase 1C) | 20 ago |
 | **SPEC_15** | ✅ Completa (Fase 1C) | 20 ago |
-| **SPEC_16** | Pendiente — Home, navegación e integración | — |
+| **SPEC_16** | ✅ Completa (Fase 1C) | 20 ago |
 
 **Fase 1 cerrada.** Las doce specs están implementadas y comiteadas.
 
@@ -1044,6 +1044,112 @@ combinaciones guardadas. Sigue sin haber pantalla que lo monte: eso es SPEC_16.
 - **Deshacer una eliminación (RN-RE-FAV-08) y su ventana de 6 s** están en el copy y en la interfaz
   de `ListaFavoritos`, pero **quien cuenta los seis segundos y confirma el borrado al navegar
   (caso 6.11) es la pantalla**, que no existe. La lista solo pinta el aviso que le pasan.
+
+**Respiración — SPEC_16 (Home, navegación e integración), 20 ago. Cierra Fase 1C:**
+
+El tercer acceso en el Home, las dos pantallas y el ensamblado de todo lo que SPEC_13–15 dejaron
+suelto a propósito.
+
+- **Respiración no es un tercer espacio, y el Home tiene dos niveles y no tres elementos iguales.**
+  Lumia y Formia se **habitan**: tienen marca, subtítulo, transición de entrada. Respiración se
+  **toma**: se entra, se usa, se sale. El acceso va en componente propio (RN-RE-NAV-08c) y **fuera
+  del `<nav>` de los espacios**, porque compartir contenedor ya la ascendería de categoría.
+- **No hizo falta tocar la animación de bienvenida.** El caso 8.5 obligaba a parar y pedir permiso
+  antes de recortarla; medido en 360×640, los tres accesos ocupan **466 px de 640** y quedan 174
+  libres. En 320×568 sobran 102. Las tarjetas de Lumia y Formia quedan byte por byte iguales
+  (RN-RE-NAV-08b), y una prueba falla si cambian.
+- **RN-RE-NAV-01 y RN-RE-NAV-06 se contradicen: manda la accesibilidad.** La primera pide que el
+  acceso mida ≈40 % de una tarjeta —34 px— y la segunda un área táctil de 56 px como mínimo. No se
+  puede entregar un blanco de 34 px, y menos a alguien que lo busca porque está mal. Se queda en 56,
+  que es el 66 % de una tarjeta, y **la subordinación la cargan las otras cuatro palancas que la
+  propia regla lista**: sin subtítulo, píldora en vez de tarjeta, peso normal en vez de
+  `font-display`, y un anillo dibujado en vez de un símbolo de marca. Las cuatro están probadas.
+- **Tres reglas salieron gratis porque `espacioDe('/respiracion')` devuelve `null`.** Sin barra de
+  navegación (RN-RE-NAV-12), sin umbral de luz de Lumia (RN-RE-NAV-34) y con el cromo en los neutros
+  de Strivo. No hubo que escribir ninguna de las tres: la función que decide qué es un espacio ya lo
+  decía. Es la señal de que la arquitectura de SPEC_11 estaba bien puesta.
+- **La sesión vive en un contenedor por encima de las dos rutas** (`Respiracion.jsx`, añadido fuera
+  de la lista de §9). Si viviera en `PantallaSesion`, el botón atrás la destruiría al desmontarla, y
+  RN-RE-NAV-10 pide lo contrario: que pause y se retome en su punto exacto. El estado tiene que estar
+  por encima de la ruta, y de ahí cuelgan también RN-RE-NAV-09, 16, 17 y 33.
+- **`useSesionRespiracion` es donde converge todo lo que las tres specs anteriores no podían tener.**
+  Las visuales de SPEC_14 no pueden tener efectos ni temporizadores (RN-RE-VIS-02), así que el bucle
+  de frames vive aquí y les habla por su referencia con `pintar()`. La máquina de SPEC_13 no toca el
+  DOM, así que el oyente de `visibilitychange` vive aquí. La capa de audio de SPEC_15 no conoce el
+  ciclo de vida de una pantalla, así que el `AudioContext` se pide aquí **dentro del gesto**. Es el
+  único punto de la respiración donde un error se manifiesta como "a veces falla": conviene mirar dos
+  veces lo que se le añada.
+- **La primera vez de todas arranca en `entrada-suave`, y no hizo falta un campo nuevo.**
+  RN-RE-NAV-17 lo pide; las preferencias de fábrica de SPEC_13 guardan `calma-553`. Se distingue por
+  `actualizadoEn`, que es nulo mientras nadie haya guardado nada. Empezar aguantando el aire sin
+  haberlo hecho nunca es innecesariamente exigente, y `entrada-suave` no tiene retenciones.
+- **Los controles de la sesión se apagan del todo, no a 0,25, y lo decidió una medición.**
+  RN-RE-NAV-23 pide opacidad 0,25 tras seis segundos sin tocar nada; medido, el texto del botón a
+  0,25 sobre el fondo da **1,67:1**, ilegible. **RN-RE-NAV-46 anticipa exactamente ese caso y da la
+  salida**: "o el texto se oculta del todo en vez de quedar ilegible". A 0,25 se obtiene lo peor de
+  las dos cosas —una mancha que no se lee pero que sigue tirando del ojo—; a 0 la pantalla queda de
+  verdad limpia, que es lo que "cerrar los ojos sin que la pantalla grite" pedía. **Siguen siendo
+  tocables**: `pointer-events` no se toca, y una prueba lo vigila. El 1,67:1 queda anotado en
+  `lint:contraste` como informativo, con el motivo.
+- **La entrada no lleva transición de frase, y es la decisión de fondo del spec.** Quien entra a
+  Lumia va a reflexionar y una frase lo prepara; **quien entra a Respiración puede estar mal en ese
+  momento**. Interponer una pantalla contemplativa ahí es fricción exactamente en el peor instante
+  posible. Una prueba comprueba que ningún archivo de Respiración importa `TransicionLuz`,
+  `frases-apertura` ni `umbralSesion`.
+- **Los favoritos van debajo de "Empezar", y "Empezar" está fijo abajo.** Hacer atravesar un catálogo
+  para llegar al botón es poner una tienda entre alguien y lo que vino a buscar. El orden del DOM lo
+  fija una prueba, no solo el CSS.
+- **El aviso de seguridad es una tarjeta descartable dentro de la pantalla, nunca un modal.** Un modal
+  obliga a leer y aceptar antes de poder hacer nada, y quien abre esto puede estar en mitad de una
+  crisis de ansiedad. Ponerle una puerta delante es el gesto contrario al del producto.
+- **El panel de ajustes en vivo no ofrece patrón ni duración, y esa ausencia es la mitad de su
+  diseño.** Cambiar el ritmo a mitad de sesión no es ajustar: es empezar otra sesión, y hacerlo pasar
+  por un ajuste dejaría a alguien a media exhalación con un patrón que no eligió para este momento.
+- **El `aria-live` de los controles `−`/`+` va en el grupo, no en cada botón** (RN-RE-NAV-43). Puesto
+  en los botones, un lector de pantalla anunciaría el cambio dos veces —una por el botón y otra por
+  el valor— y quien lo usa acabaría oyendo el doble de lo que pidió.
+- **Los tiempos van con coma decimal** (RN-RE-NAV-18) y sin `toLocaleString`: su resultado depende
+  del navegador y de los datos de región instalados, y un separador que cambia de un teléfono a otro
+  no es una decisión de producto, es una lotería.
+- **Tres pruebas de specs anteriores tuvieron que afinarse, y ninguna se ablandó.** El filtro de "ni
+  un string fuera de copy" ganó dos patrones técnicos precisos —la tecla `' '` y los selectores CSS,
+  que llevan corchetes y ningún texto los lleva—; el quitador de comentarios de `navegacion.test.js`
+  aprendió que `/*` solo abre comentario tras un espacio, porque la ruta comodín `"/respiracion/*"`
+  se comía el resto del archivo; y dos pruebas más aprendieron a neutralizar las flechas `=>`, cuyo
+  `>` partía el JSX por la mitad y daba por infractores a componentes que no escriben nada.
+
+| Regla | Enunciado |
+|---|---|
+| **RN-RE-NAV-01/02/06** | El acceso es subordinado: sin subtítulo, píldora, peso normal, sin símbolo. 56 px de área táctil — la accesibilidad gana al 40 %. |
+| **RN-RE-NAV-03/04/05** | Tokens Strivo, siempre debajo de los dos espacios, siempre sobre el pliegue. |
+| **RN-RE-NAV-08/08b/08c** | La bienvenida no se toca, las tarjetas quedan idénticas, el acceso es componente propio. |
+| **RN-RE-NAV-09/10** | La ruta de sesión no es enlazable; el botón atrás pausa y no destruye. |
+| **RN-RE-NAV-12** | Dentro de Respiración no hay barra de navegación. Para ir a otro lado, se sale al Home. |
+| **RN-RE-NAV-14/15** | "Empezar" fijo abajo; favoritos y recientes **debajo** de él. |
+| **RN-RE-NAV-16/17** | Todo llega precargado. La primera vez de todas, `entrada-suave`. |
+| **RN-RE-NAV-18/19** | Coma decimal y paso de 0,5 s; la caja se edita con un solo control. |
+| **RN-RE-NAV-20** | Un patrón inválido **nunca** deshabilita "Empezar": se corrige y se avisa. |
+| **RN-RE-NAV-21/23/45** | La visual domina; los controles se retiran a los 6 s y vuelven al tocar; con teclado no se retiran. |
+| **RN-RE-NAV-24** | En vivo se cambia visual, sonido y volúmenes. **Nunca patrón ni duración.** |
+| **RN-RE-NAV-26** | En `cerrando` el progreso no cambia: no se avisa del último ciclo. |
+| **RN-RE-NAV-27** | Salir no pide confirmación. Pide confirmación quien quiere retener. |
+| **RN-RE-NAV-28** | Wake Lock en `activo` y `cerrando`; se suelta al pausar, completar o salir. Degradación silenciosa. |
+| **RN-RE-NAV-30/32** | Sin felicitación ni puntaje. Menos de un ciclo, sin resumen numérico. |
+| **RN-RE-NAV-34/37** | Sin transición de frase y **sin puente** con Lumia ni Formia: los cruces van por el Home. |
+| **RN-RE-NAV-41/43/44** | Foco inicial al encabezado y al control de pausa; `aria-live` en el grupo; el panel atrapa el foco. |
+
+**Pendiente de SPEC_16 — lo que no puede cerrar el código:**
+- **Los 8 recorridos manuales de §11 están sin hacer**, y con ellos los 15 acumulados de SPEC_14 y
+  SPEC_15: **23 validaciones manuales en total**. Las que más pesan son el recorrido 4 —quince
+  minutos con los ojos cerrados, que es lo que decide si el audio está bien calibrado— y el
+  recorrido 8, cuya última pregunta es la que dice si este spec cumplió su propósito: *¿el tercer
+  acceso se lee como herramienta y no como un tercer espacio?* Eso no lo puede contestar una prueba.
+- **`ROADMAP.md` está actualizado; `INDEX.md` no existe** en este repo y no se creó: inventar un
+  índice nuevo al cerrar una fase es material de documentación, no de código.
+- **Una prueba de Lumia, `journal.test.js` › "viene de la más reciente a la más antigua", falló una
+  vez en una corrida completa y pasó en las tres siguientes y en aislado.** Es un intermitente
+  preexistente —muy probablemente dos entradas con la misma marca de tiempo al milisegundo— y no lo
+  toca este spec. Queda anotado para que quien lo vea no lo busque en Respiración.
 
 **Deuda consciente de Fase 1 (se salda en su spec):**
 - **Los 16 íconos de emoción no se hicieron, y es una decisión, no un olvido.** SPEC_12 §10 excluye

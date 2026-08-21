@@ -102,6 +102,8 @@ const TECNICOS = [
   /^\((?:[\w-]+\s*:\s*[^)]+)\)$/, // consultas de medios: (prefers-reduced-motion: reduce)
   /^x(?:Min|Mid|Max)Y(?:Min|Mid|Max) (?:meet|slice)$/, // preserveAspectRatio
   /[{}]/, // costura entre dos `template literals` dentro de una etiqueta JSX
+  /^\s*$/, // la tecla espacio: `evento.key !== ' '` no es copy, es un nombre de tecla
+  /\[/, // selectores CSS —`[tabindex]:not([tabindex="-1"])`—: ningún texto lleva corchetes
 ]
 
 describe('criterio 19 — ni un string visible fuera de copy/', () => {
@@ -119,7 +121,14 @@ describe('criterio 19 — ni un string visible fuera de copy/', () => {
   it('el filtro de lo técnico no deja pasar texto de verdad', () => {
     // Si esta prueba se ablanda, el criterio 19 deja de valer. Estas cuatro
     // cadenas tienen que seguir siendo sospechosas.
-    const copy = ['Inhala durante 4 segundos', 'En pausa', '¿Cuánto tiempo?', 'Sostén el aire']
+    const copy = [
+      'Inhala durante 4 segundos',
+      'En pausa',
+      '¿Cuánto tiempo?',
+      'Sostén el aire',
+      'Cada lado',
+      'Cómo lo quieres ver',
+    ]
     copy.forEach((texto) => {
       expect(TECNICOS.some((patron) => patron.test(texto))).toBe(false)
     })

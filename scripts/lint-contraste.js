@@ -152,6 +152,17 @@ const PARES = [
   ['Strivo · acento sobre cabecera', MARCA.strivo900, MARCA.strivo100, NO_TEXTO],
   ['Strivo · borde sobre cabecera', MARCA.strivo600, MARCA.strivo100, SEPARADOR],
 
+  // ── Respiracion: el acceso del Home y sus dos pantallas (SPEC_16) ───────────
+  // RN-RE-NAV-07 — El tercer acceso vive sobre el fondo del Home y usa la escala
+  // Strivo, nunca Lumia ni Formia (RN-RE-NAV-03).
+  ['Respiración · acceso del Home', TEXTO.onLight, MARCA.strivo50, CUERPO],
+  ['Respiración · anillo del acceso', MARCA.strivo600, MARCA.strivo50, NO_TEXTO],
+  ['Respiración · borde del acceso', MARCA.strivo600, MARCA.strivo50, SEPARADOR],
+  // RN-RE-NAV-21/25 — El progreso de la sesion va a opacidad 0,40. Es
+  // periferico —se consulta si se busca— y por eso se le pide el umbral de
+  // texto grande y no el de cuerpo.
+  ['Respiración · progreso de sesión (α 0,40)', sobre(TEXTO.onLight, 0.4, MARCA.strivo50), MARCA.strivo50, SEPARADOR],
+
   // ── Respiracion: las cuatro fases (SPEC_14 §5, RN-RE-VIS-16) ────────────────
   // El disco, el arco y la bolita son elementos graficos: su umbral es el 3:1 de
   // WCAG 2.2 1.4.11. **La fase no la comunica el color** (RN-RE-VIS-17) —la dice
@@ -201,6 +212,13 @@ const INFORMATIVOS = [
   ['fase inhalar contra sostén', MARCA.strivo900, MARCA.strivo800],
   ['fase sostén contra exhalar', MARCA.strivo800, MARCA.strivo700],
   ['fase exhalar contra descanso', MARCA.strivo700, MARCA.strivo600],
+  // **El estado atenuado de la sesion, medido, y por eso se apaga del todo.**
+  // RN-RE-NAV-23 pedia opacidad 0,25 para los controles tras seis segundos sin
+  // tocar nada. Esta es la cifra que sale, y es la que hizo que se implementara
+  // a 0 y no a 0,25: RN-RE-NAV-46 da esa salida expresamente —"o el texto se
+  // oculta del todo en vez de quedar ilegible"— y a 0,25 se obtiene lo peor de
+  // las dos cosas, una mancha ilegible que sigue tirando del ojo.
+  ['control de sesión a α 0,25 (NO se usa)', sobre(TEXTO.onLight, 0.25, MARCA.strivo50), MARCA.strivo50],
 ]
 
 console.log('🎨 contraste: midiendo los pares que la app pinta de verdad\n')
