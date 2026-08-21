@@ -22,6 +22,24 @@ const FORMIA_MODULES = [
 ]
 const LUMIA_MODULES = ['./lumia', './lumia.js', '**/lumia', '**/lumia.js', '**/lumia/**']
 
+// SPEC_13 §4.2 — `breathing/` es el tercer hermano y la separación se extiende.
+// Respiración es una herramienta transversal de Strivo, no un tercer espacio:
+// no lee Lumia ni Formia, y ninguno de los dos la lee a ella. El reloj que
+// comparte con Lumia vive en `lib/respiracion/`, que es territorio neutral —esa
+// es toda la razón de que no viva aquí dentro—.
+const BREATHING_MODULES = [
+  './breathing',
+  './breathing.js',
+  '**/breathing',
+  '**/breathing.js',
+  '**/breathing/**',
+]
+
+const RN_BREATHING =
+  'SPEC_13 §4.2: Respiracion no lee lumia/ ni formia/, y ninguno de los dos lee ' +
+  'breathing/. Lo que Lumia y Respiracion comparten es el motor de ritmo, y por ' +
+  'eso vive en lib/respiracion/ y no dentro de un espacio.'
+
 const COMPARTIDO =
   'Un componente de components/shared/ lo usan los dos espacios y el onboarding: ' +
   'no puede depender de lumia/ ni de formia/. Lo que necesite, que llegue por props.'
@@ -40,6 +58,16 @@ const FORMIA_FILES = [
   'src/pages/formia/**/*.{js,jsx}',
   'src/components/formia/**/*.{js,jsx}',
 ]
+
+const BREATHING_FILES = [
+  'src/breathing/**/*.{js,jsx}',
+  'src/pages/breathing/**/*.{js,jsx}',
+  'src/components/breathing/**/*.{js,jsx}',
+]
+
+// El motor no conoce a nadie: ni los dos espacios ni la propia Respiracion.
+// Si algun dia necesitara el catalogo de patrones, dejaria de poder usarlo Lumia.
+const NEUTRAL_FILES = ['src/lib/respiracion/**/*.js']
 
 // Solo se activan las dos reglas que enseñan a `no-unused-vars` a ver el JSX.
 // El resto del conjunto de eslint-plugin-react se queda fuera a propósito:
@@ -105,6 +133,7 @@ export default [
         {
           patterns: [
             { group: FORMIA_MODULES, message: RN_DB4_01 },
+            { group: BREATHING_MODULES, message: RN_BREATHING },
             { group: DB_ENTRYPOINT, importNames: ['formia'], message: RN_DB4_01 },
           ],
         },
@@ -121,6 +150,7 @@ export default [
         {
           patterns: [
             { group: LUMIA_MODULES, message: RN_DB4_01 },
+            { group: BREATHING_MODULES, message: RN_BREATHING },
             { group: DB_ENTRYPOINT, importNames: ['lumia'], message: RN_DB4_01 },
           ],
         },
@@ -141,7 +171,43 @@ export default [
         {
           patterns: [
             { group: [...LUMIA_MODULES, ...FORMIA_MODULES], message: COMPARTIDO },
+            { group: BREATHING_MODULES, message: RN_BREATHING },
             { group: DB_ENTRYPOINT, importNames: ['lumia', 'formia'], message: COMPARTIDO },
+          ],
+        },
+      ],
+    },
+  },
+
+  // ─── Respiracion no conoce ningun espacio ───────────────────────────────────
+  {
+    files: BREATHING_FILES,
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            { group: [...LUMIA_MODULES, ...FORMIA_MODULES], message: RN_BREATHING },
+            { group: DB_ENTRYPOINT, importNames: ['lumia', 'formia'], message: RN_BREATHING },
+          ],
+        },
+      ],
+    },
+  },
+
+  // ─── El motor de ritmo es territorio neutral ────────────────────────────────
+  {
+    files: NEUTRAL_FILES,
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [...LUMIA_MODULES, ...FORMIA_MODULES, ...BREATHING_MODULES],
+              message: RN_BREATHING,
+            },
+            { group: DB_ENTRYPOINT, importNames: ['lumia', 'formia'], message: RN_BREATHING },
           ],
         },
       ],

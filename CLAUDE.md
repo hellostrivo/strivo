@@ -296,8 +296,15 @@ git status
 | **SPEC_10** | ✅ Completa | 11 ago |
 | **SPEC_11** | ✅ Completa | 11 ago |
 | **SPEC_12** | ✅ Completa | 11 ago |
+| **SPEC_13** | ✅ Completa (Fase 1C) | 20 ago |
+| **SPEC_14** | Pendiente — visuales | — |
+| **SPEC_15** | Pendiente — sonido y favoritos | — |
+| **SPEC_16** | Pendiente — Home, navegación e integración | — |
 
 **Fase 1 cerrada.** Las doce specs están implementadas y comiteadas.
+
+**Fase 1C — Respiración** (SPEC_13–16) es trabajo posterior al cierre: añade la herramienta
+transversal de Respiración. SPEC_13 entrega motor, catálogo y datos, sin una sola pantalla.
 
 **Notas:**
 - SPEC_02 pasó 7 criterios de aceptación
@@ -715,6 +722,87 @@ git status
   ni umbral. Lo que sí hace es reordenar el flujo, y por eso está escrito aquí.
 - **Pendiente:** §C7.1 y §C0.2 del blueprint siguen describiendo el flujo anterior. No bloquea el
   código. `docs/specs/SPEC_11.md` ya lleva su cabecera de revisión con el detalle.
+
+**Respiración — SPEC_13 (motor, catálogo y datos), 20 ago:**
+
+Strivo suma un tercer acceso desde el Home: **Respiración**. No es una tercera marca ni un tercer
+espacio: es una **herramienta transversal**, hermana menor de Lumia y Formia. Se entra, se usa, se
+sale. SPEC_13 deja el motor, el catálogo y la capa de datos; **cero UI** (la pintan SPEC_14–16).
+
+- **El motor vive en `src/lib/respiracion/`, no en `src/shared/`.** SPEC_13 §4.3 pedía `shared/`,
+  pero **esa carpeta no existe**: lo neutral de este repo es `src/lib/` —ahí están `constancia.js`,
+  `timeSlot.js`, `umbralSesion.js` y el propio `ritmoRespiracion.js`—. Crear `src/shared/` al lado
+  habría dejado dos carpetas con el mismo significado y ninguna regla que dijera cuál usar. El
+  razonamiento de §4.3 se cumple entero: el motor **no** puede vivir en `breathing/` porque Lumia lo
+  consume y Lumia no puede leer `breathing/`.
+- **`ritmoRespiracion.js` es ahora un envoltorio y su firma no cambió.** Los 46 tests de SPEC_08
+  (ritmo, audio y componente) siguen verdes **sin editar ni una línea**. Traduce en un solo sitio las
+  dos diferencias de vocabulario: la fase que Lumia llama `pausa` es `retenerVacio`, y su `ciclo`
+  empieza en 0 mientras el motor cuenta desde 1.
+- **La curva se unificó en `cosenoElevado`; `smoothstep` desaparece.** SPEC_08 suavizaba con
+  t²(3−2t) y los tests solo fijaban los extremos y la monotonía, así que el cambio cabía. Medido: la
+  diferencia máxima es **0,0100 de amplitud, 0,36 px sobre un círculo de 200 px**. Se unificó porque
+  dos curvas para el mismo gesto es la divergencia silenciosa que la cabecera de `ritmoRespiracion.js`
+  ya advertía, y no compensa por un tercio de píxel. Lo decidió el propietario del producto.
+- **`escalaEn` ya no calcula curva: interpola sobre `amplitud`.** RN-RE-MOT y §6.3 exigen que el
+  círculo, la línea y el volumen lean **el mismo número**. Es lo que garantiza que imagen y sonido no
+  puedan desincronizarse, y por eso ningún consumidor calcula su propia amplitud.
+- **No hay stores nuevos ni migración de IndexedDB, y `DB_VERSION` sigue en 1.** SPEC_13 §8.1 pedía
+  cuatro stores; el almacén de Strivo está **direccionado por ruta** (un solo `records` con la forma
+  de Firestore), así que `breathing/` son cuatro colecciones más dentro de lo que ya existe. Subir la
+  versión habría sido lo arriesgado: una build anterior **no puede abrir** una base con versión mayor
+  que la suya, que es justo el requisito de §4.4. `sync.js` las espeja sin tocar una línea.
+- **Las rutas de `breathing/` viven en `src/breathing/data/esquema.js`, no en `lib/db/schema.js`.**
+  Ese archivo es el modelo canónico de §C5, cuyo árbol tiene **tres raíces** y no recoge `breathing/`.
+  Ampliarlo ponía en rojo el criterio 9 de SPEC_08 —"el modelo canónico no tiene dónde guardar una
+  respiración"—, que **sigue diciendo la verdad**: la respiración diaria de Lumia no se registra. Lo
+  que registra es la herramienta, que es otra cosa. Dos afirmaciones compatibles, cada una en su sitio.
+- **`breathing/` valida corrigiendo; `lib/db/` sigue rechazando.** RN-DB4-08 dice "nada se corrige en
+  silencio" y RN-RE-MOT-07/RN-RE-DAT-08 dicen "nunca lanza". No se contradicen: en `lib/db/` los
+  registros los escribe el código y un campo raro es un error de programación; en `breathing/` los
+  escribe una persona moviendo un control, y frenarla con un error sería castigarla por explorar.
+  **La frontera entre las dos filosofías es la carpeta `src/breathing/data/`.**
+- **El respaldo en memoria del caso 9.8 vive en `repositorioRespiracion.js`, no en `lib/db/local.js`.**
+  Degradar el almacén compartido cambiaría el comportamiento de error de Lumia y Formia, diseñado
+  sobre RN-DB4-08 y sostenido por las pruebas de SPEC_02. El radio se queda dentro de la respiración.
+- **`PATRON_BASE` del motor y el preset `calma-553` del catálogo son los mismos números por
+  duplicado, a propósito.** El motor no puede importar `breathing/` (lo prohíbe el lint), así que una
+  prueba del catálogo comprueba que los dos no se separen.
+- **El léxico clínico de §7.1 se comprueba sobre el namespace `respiracion`, no sobre todo `src/`.**
+  `copy.lumia.journal` ofrece **"Con ansiedad"** como emoción del catálogo de días difíciles (SPEC_07)
+  y `TEMAS_DE_RENDIMIENTO` es maquinaria de SPEC_05: prohibir esas palabras en todo el árbol rompería
+  el build por un motivo equivocado. Es el mismo caso que "Seguro/Segura" con el PIN. `lint-copy.js`
+  importa el copy y recorre `copy.respiracion` hoja por hoja — exacto en vez de aproximado. Sí van
+  globales `productividad`, `maximiza` y `trastorno`, que no son vocabulario de nadie.
+- **`interpolar()` no se creó: `interpolate()` existía desde Fase 0** y usa la misma sintaxis `{n}`.
+- **`retenerVacio` cuenta como retención** para `tieneRetenciones`, que es mecánico —cualquier
+  retención por encima de cero— y no una etiqueta que alguien elige a mano.
+- **En modo `ciclos`, `cerrando` se abre al empezar la última respiración**, no al terminarla. Es
+  información útil ("esta es la última") y no corta nada: RN-RE-MOT-16 se cumple igual.
+- **`notificarAusencia()` la llama la capa visual, no la máquina.** El caso 9.4 necesita
+  `visibilitychange` y la máquina no toca el DOM. SPEC_14 conecta el oyente.
+
+| Regla | Enunciado |
+|---|---|
+| **RN-RE-MOT-01/02** | `inhalar` y `exhalar` ≥ 1,0 s; las retenciones pueden ser 0. |
+| **RN-RE-MOT-03/04** | Fase ≤ 20,0 s. Ciclo entre 6,0 s y 60,0 s. |
+| **RN-RE-MOT-05/06** | Décimas de segundo enteras. Paso de edición 0,5 s (no 0,1 s). |
+| **RN-RE-MOT-07** | La validación **nunca lanza**: corrige al valor válido más cercano y lo explica. |
+| **RN-RE-MOT-08** | Un patrón que deja de coincidir con su preset pasa a `personalizado`. La caja es la excepción: la definen sus cuatro fases iguales, no el preset guardado. |
+| **RN-RE-MOT-11** | El tiempo se calcula **contra el origen**, nunca acumulando deltas por fotograma. |
+| **RN-RE-MOT-13/14** | Pausar congela el punto exacto. Una pestaña oculta no pausa: al volver se recalcula y no se recuperan fotogramas. |
+| **RN-RE-MOT-16** | **El ciclo en curso siempre se completa.** Nunca se corta a media exhalación. |
+| **RN-RE-MOT-17** | Excepción: `terminar()` de la persona corta de inmediato. Su decisión manda. |
+| **RN-RE-MOT-20/21** | El límite por minutos se hace efectivo al final del ciclo, así que la sesión dura entre `valor` y `valor + un ciclo`. El acomodo no cuenta. |
+| **RN-RE-DAT-01** | `guiaSonoraActiva` arranca en `false`. **Silencio por defecto**, como corrigió SPEC_08 en `initShared`. |
+| **RN-RE-DAT-03/04/05** | Cinco recientes como mucho; repetir mueve la fecha en vez de duplicar; lo que ya está en favoritos no entra. |
+| **RN-RE-DAT-06/07** | Las sesiones se purgan a los 90 días y **no se derivan rachas, metas ni logros**. |
+| **RN-RE-DAT-09** | Nada de `breathing/` importa `lumia/` ni `formia/`. Lo vigilan el lint y una prueba. |
+| **RN-RE-COPY-01** | El aviso de seguridad se muestra una vez, es descartable y no bloquea. |
+
+**Pendiente de SPEC_13:** la nota de seguridad (RN-RE-COPY-01/02) tiene copy y campo persistido
+(`avisoSeguridadVisto`) pero **nadie la pinta todavía** — es UI y le toca a SPEC_16. Lo mismo con
+`mantenerPantallaEncendida`: el campo existe, la Wake Lock API del caso 9.4 la conecta SPEC_14.
 
 **Deuda consciente de Fase 1 (se salda en su spec):**
 - **Los 16 íconos de emoción no se hicieron, y es una decisión, no un olvido.** SPEC_12 §10 excluye

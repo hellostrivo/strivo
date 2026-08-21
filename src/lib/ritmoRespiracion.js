@@ -1,14 +1,19 @@
 // src/lib/ritmoRespiracion.js
-// El ritmo de la respiración: **5-5-3, tres ciclos** (§C2.3 · §5.1.2).
+// El ritmo de la respiración diaria de Lumia: **5-5-3, tres ciclos** (§C2.3 · §5.1.2).
 //
-// Este es el único sitio donde vive ese ritmo. La respiración diaria de Lumia y
-// la de P1 del onboarding usan el mismo componente y, por debajo, esta misma
-// tabla (RN-LU-RESP-02): dos implementaciones divergentes es exactamente lo que
-// produjo la contradicción que v4.1 vino a cerrar.
+// **Desde SPEC_13 esto es un envoltorio.** La lógica vive en
+// `lib/respiracion/motorRitmo.js`, que resuelve cualquier patrón de cuatro
+// fases; aquí queda el 5-5-3 expresado en su lenguaje y la firma que ya
+// consumían `Respiracion.jsx` y sus pruebas. La firma pública **no cambió**: si
+// algo de esta cabecera se rompe, se rompió el motor, no el contrato.
 //
-// **La pausa va al final del ciclo, no entre inhalación y exhalación.** Es
-// 5-5-3, no 5-3-5. La distinción se cerró de forma explícita durante la
-// revisión y es una decisión cerrada.
+// El 5-5-3 es `{inhalar: 50, retenerLleno: 0, exhalar: 50, retenerVacio: 30}` en
+// el modelo canónico: décimas de segundo, sin retención con el pulmón lleno, y
+// la pausa al final. **La pausa va al final del ciclo, no entre inhalación y
+// exhalación.** Es 5-5-3, no 5-3-5. La distinción se cerró de forma explícita
+// durante la revisión y es una decisión cerrada; el catálogo de Respiración la
+// hereda tal cual en su preset `calma-553`, que es el mismo ritmo y el puente de
+// identidad entre la herramienta y la app.
 //
 // **Las duraciones no se acortan nunca**, ni siquiera con "reducir movimiento":
 // aquí la duración no es una animación, es el ejercicio (§6.10.1). Una versión
@@ -16,9 +21,34 @@
 // lo que buscaba —aceleraba en vez de calmar—; cualquier regresión hacia una
 // duración menor es un defecto, no una optimización.
 //
-// Aquí no se guarda nada y no hay nada que guardar. La respiración no tiene
-// registro, no cuenta para constancia y no alimenta ningún insight: es una
-// experiencia, no un dato (SPEC_08 §5).
+// Aquí no se guarda nada y no hay nada que guardar. La respiración de Lumia no
+// tiene registro, no cuenta para constancia y no alimenta ningún insight: es una
+// experiencia, no un dato (SPEC_08 §5). Lo que sí registra es la herramienta de
+// Respiración, que es otra cosa y vive en `breathing/`.
+
+import { CURVA_POR_DEFECTO } from './respiracion/curvas.js'
+import { amplitudEn, duracionCiclo, resolverEstado } from './respiracion/motorRitmo.js'
+
+/**
+ * El 5-5-3 en el modelo canónico de cuatro fases (SPEC_13 §5.1).
+ * `retenerLleno: 0` es lo que lo distingue de un 5-5-5-3.
+ */
+export const PATRON_LUMIA = Object.freeze({
+  inhalar: 50,
+  retenerLleno: 0,
+  exhalar: 50,
+  retenerVacio: 30,
+})
+
+/**
+ * Nombre que usa Lumia para `retenerVacio`.
+ *
+ * En Lumia la fase se llamó siempre "pausa" y así la nombran el componente y sus
+ * pruebas. En el modelo canónico es `retenerVacio`, que es lo que de verdad es.
+ * La traducción vive aquí y en ningún otro sitio.
+ */
+const FASE_LUMIA = Object.freeze({ retenerVacio: 'pausa' })
+const FASE_CANONICA = Object.freeze({ pausa: 'retenerVacio' })
 
 /** Las tres fases de un ciclo, en su orden, con su duración en milisegundos. */
 export const FASES = Object.freeze([
@@ -29,8 +59,8 @@ export const FASES = Object.freeze([
 
 export const IDS_FASE = Object.freeze(FASES.map((fase) => fase.id))
 
-/** 13 s exactos (SPEC_08, criterio 1). */
-export const DURACION_CICLO = FASES.reduce((total, fase) => total + fase.duracion, 0)
+/** 13 s exactos (SPEC_08, criterio 1). Sale del patrón, no de una constante. */
+export const DURACION_CICLO = duracionCiclo(PATRON_LUMIA)
 
 /** RN-LU-RESP-02 — Tres, y los mismos en P1 y en la respiración diaria. */
 export const CICLOS = 3
@@ -68,7 +98,8 @@ export function duracionDe(id) {
  *            terminado: boolean}}
  *   `progreso` va de 0 a 1 dentro de la fase; `restante`, en milisegundos, es lo
  *   que le queda — que es lo que necesita el audio para retomar un ciclo a
- *   medias sin volver a empezarlo.
+ *   medias sin volver a empezarlo. `ciclo` empieza en 0, no en 1: el motor los
+ *   cuenta desde 1 y la traducción se hace aquí para no mover el contrato.
  */
 export function faseEn(ms, ciclos = CICLOS) {
   const transcurrido = Math.max(0, Number(ms) || 0)
@@ -78,48 +109,29 @@ export function faseEn(ms, ciclos = CICLOS) {
     return { fase: null, ciclo: ciclos, progreso: 1, restante: 0, terminado: true }
   }
 
-  const ciclo = Math.floor(transcurrido / DURACION_CICLO)
-  let dentro = transcurrido - ciclo * DURACION_CICLO
-
-  for (const fase of FASES) {
-    if (dentro < fase.duracion) {
-      return {
-        fase: fase.id,
-        ciclo,
-        progreso: dentro / fase.duracion,
-        restante: fase.duracion - dentro,
-        terminado: false,
-      }
-    }
-    dentro -= fase.duracion
+  const estado = resolverEstado(PATRON_LUMIA, transcurrido)
+  return {
+    fase: FASE_LUMIA[estado.fase] ?? estado.fase,
+    ciclo: estado.cicloActual - 1,
+    progreso: estado.progresoFase,
+    restante: estado.msRestantesFase,
+    terminado: false,
   }
-
-  // Inalcanzable: las tres fases suman el ciclo entero. Si algún día alguien
-  // cambia una duración y se olvida de otra, esto lo deja en la última fase en
-  // vez de devolver un estado imposible.
-  const ultima = FASES[FASES.length - 1]
-  return { fase: ultima.id, ciclo, progreso: 1, restante: 0, terminado: false }
-}
-
-/**
- * Suavizado del movimiento del círculo.
- *
- * Una interpolación lineal se lee como una máquina; esta curva entra y sale sin
- * tirones, que es lo que hace que se pueda seguir con el cuerpo.
- */
-function suavizar(progreso) {
-  const t = Math.min(1, Math.max(0, progreso))
-  return t * t * (3 - 2 * t)
 }
 
 /**
  * Escala del círculo en una fase (§5.1.2): 1,0 → 1,18 al inhalar, de vuelta al
  * exhalar, y quieto en la pausa. Sin desplazamiento, sin rotación, sin
  * partículas.
+ *
+ * **Ya no calcula su propia curva.** Interpola sobre la `amplitud` del motor,
+ * que es el único número del que cuelgan el círculo, la línea y el volumen
+ * (SPEC_13 §6.3). Antes suavizaba con `smoothstep`; ahora hereda el coseno
+ * elevado, y la diferencia máxima entre las dos es de 0,36 px sobre un círculo
+ * de 200 px.
  */
 export function escalaEn(fase, progreso) {
-  const recorrido = ESCALA_PLENA - ESCALA_REPOSO
-  if (fase === 'inhalar') return ESCALA_REPOSO + recorrido * suavizar(progreso)
-  if (fase === 'exhalar') return ESCALA_PLENA - recorrido * suavizar(progreso)
-  return ESCALA_REPOSO
+  const canonica = FASE_CANONICA[fase] ?? fase
+  const suave = CURVA_POR_DEFECTO(progreso)
+  return ESCALA_REPOSO + (ESCALA_PLENA - ESCALA_REPOSO) * amplitudEn(canonica, suave)
 }

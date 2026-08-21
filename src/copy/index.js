@@ -982,6 +982,116 @@ export const copy = {
   // `insights.empty` y `formia.habitos.empty`— y ninguna se usaba ya. Dos
   // versiones del mismo estado vacío es una invitación a editar la que nadie ve.
 
+  // ─── Respiración (SPEC_13 §7) ─────────────────────────────────────────────
+  // Voz de **Strivo madre**, no de Lumia ni de Formia: sobria, cálida, sin
+  // adornos. Es una herramienta transversal y suena a la marca, no a un espacio.
+  //
+  // Este es el desvío deliberado frente a la referencia externa que se analizó,
+  // que se posiciona como herramienta clínica. Aquí no aparece ni una palabra de
+  // ese registro: Strivo es un refugio, no una consulta. `lint:copy` recorre este
+  // namespace entero y lo comprueba, término por término (SPEC_13 §7.1).
+  respiracion: {
+    titulo: 'Respiración',
+    subtitulo: 'Un momento para bajar el ritmo',
+
+    patrones: {
+      calma553: {
+        nombre: 'Calma 5-5-3',
+        descripcion:
+          'El ritmo de Strivo. Inhalas, exhalas, y dejas una pausa antes de volver a empezar.',
+      },
+      caja: {
+        nombre: 'Respiración en caja',
+        descripcion: 'Cuatro tiempos iguales. Ordena la cabeza cuando anda dispersa.',
+      },
+      cuatroSieteOcho: {
+        nombre: '4-7-8',
+        descripcion: 'Exhalación larga después de una retención. Ayuda a soltar.',
+      },
+      exhalacionLarga: {
+        nombre: 'Exhalación larga',
+        descripcion: 'Sueltas el doble de lo que tomas. Sencillo y hondo.',
+      },
+      coherencia: {
+        nombre: 'Coherencia 5-5',
+        descripcion: 'Simétrica y sostenida. Buena para quedarse un rato.',
+      },
+      entradaSuave: {
+        nombre: 'Entrada suave 4-6',
+        descripcion: 'Sin retenciones. Si es tu primera vez, empieza aquí.',
+      },
+      personalizado: {
+        nombre: 'A tu medida',
+        descripcion: 'Ajusta cada tiempo como te acomode.',
+      },
+    },
+
+    fases: {
+      inhalar: 'Inhala',
+      retenerLleno: 'Sostén',
+      exhalar: 'Exhala',
+      retenerVacio: 'Descansa',
+    },
+
+    // Para lector de pantalla: más explícitas que las visuales, porque quien las
+    // oye no tiene el círculo delante para saber cuánto falta.
+    fasesAccesibles: {
+      inhalar: 'Inhala durante {segundos} segundos',
+      retenerLleno: 'Sostén el aire durante {segundos} segundos',
+      exhalar: 'Exhala durante {segundos} segundos',
+      retenerVacio: 'Descansa durante {segundos} segundos',
+    },
+
+    acomodo: {
+      titulo: 'Acomódate',
+      subtitulo: 'Suelta los hombros. Empezamos en un momento.',
+      saltar: 'Empezar ya',
+    },
+
+    duracion: {
+      titulo: '¿Cuánto tiempo?',
+      modoCiclos: 'Por respiraciones',
+      modoMinutos: 'Por tiempo',
+      modoAbierta: 'Sin final',
+      ciclos: '{n} respiraciones',
+      minutos: 'Unos {n} minutos',
+      abierta: 'Hasta que quieras',
+      // RN-RE-MOT-20 — se dice en voz alta que la cifra es aproximada, porque el
+      // ciclo en curso siempre se termina y eso alarga la sesión unos segundos.
+      aproximado:
+        'Terminamos al cerrar la última respiración, así que puede alargarse unos segundos.',
+    },
+
+    controles: {
+      empezar: 'Empezar',
+      pausar: 'Pausar',
+      reanudar: 'Seguir',
+      terminar: 'Terminar',
+      salir: 'Salir',
+    },
+
+    cierre: {
+      titulo: 'Listo',
+      resumenCiclos: 'Respiraste {n} veces.',
+      resumenTiempo: '{n} minutos contigo.',
+      repetir: 'Otra vez',
+      volverAlInicio: 'Volver al inicio',
+    },
+
+    // RN-RE-COPY-01/02/03 — Una tarjeta calmada que se descarta con un toque, no
+    // un modal que bloquea. Sin lenguaje médico y sin pedir aceptar nada.
+    seguridad: {
+      aviso:
+        'Si en algún momento te mareas o te incomoda, para y respira normal. No hay nada que ganar aguantando.',
+      entendido: 'Entendido',
+    },
+
+    vacio: {
+      sinFavoritos:
+        'Todavía no guardas ninguna. Cuando encuentres un ritmo que te acomode, guárdalo aquí.',
+    },
+  },
+
   // ─── Errores y recuperación ───────────────────────────────────────────────
   errors: {
     generic: {
