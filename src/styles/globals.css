@@ -22,6 +22,11 @@
 @import './tokens-lumia.css';
 @import './tokens-formia.css';
 
+/* La capa visual de Respiración (SPEC_14). Se carga siempre, como las paletas:
+   sus clases solo existen dentro de `src/breathing/`, así que no alcanzan a
+   ninguna pantalla de Lumia ni de Formia. */
+@import '../breathing/styles/respiracion.css';
+
 /* EXPLORACIÓN (rama explora/lumia-am-amanecer) — paletas alternas de
    Lumia·Mañana. Inerte sin `?paleta=a|b` en la URL. Se retira con el archivo. */
 @import './explora-lumia-am.css';
@@ -102,12 +107,30 @@
   --strivo-100: #E9E7E3;
   --strivo-300: #D4D1CD;
   --strivo-600: #6E6A73;
+  /* SPEC_14 — Dos pasos nuevos sobre el eje neutro que ya existia entre 600 y
+     900. Los pidio la respiracion: sobre `strivo-50` solo 600 (4,82:1) y 900
+     (13,32:1) llegan al 3:1 de WCAG 1.4.11, y §5 necesita cuatro fases
+     distinguibles. Interpolados, no inventados: no introducen tono, asi que
+     Strivo sigue siendo acromatico (manual §4.1). */
+  --strivo-700: #58545D;
+  --strivo-800: #423E47;
   --strivo-900: #2B2730;
 
   --espacio-base: var(--strivo-50);
   --espacio-cabecera: var(--strivo-100);
   --espacio-borde: var(--strivo-600);
   --espacio-acento: var(--strivo-900);
+
+  /* SPEC_14 §5 — Las cuatro fases de Respiracion.
+     Se separan por LUMINANCIA y no por tono: §5 pedia un eje calido→frio, y una
+     escala acromatica no lo tiene. RN-RE-VIS-17 ya exige que la fase nunca se
+     comunique solo por color, asi que el dato lo llevan el texto de
+     `EtiquetaFase` y la geometria del disco; el color solo acompana.
+     RN-RE-VIS-00 — ni un token `lumia-*` ni `formia-*` entra aqui. */
+  --respiracion-fase-inhalar: var(--strivo-900);
+  --respiracion-fase-sosten: var(--strivo-800);
+  --respiracion-fase-exhalar: var(--strivo-700);
+  --respiracion-fase-descanso: var(--strivo-600);
 }
 
 [data-surface='light'] {

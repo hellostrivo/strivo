@@ -68,14 +68,44 @@ describe('hay algo que revisar', () => {
   })
 })
 
+/**
+ * Valores que la máquina lee, no una persona.
+ *
+ * SPEC_14 trajo los primeros `.jsx` a `breathing/` y con ellos cadenas que
+ * tienen espacios sin ser copy: una consulta de medios, el
+ * `preserveAspectRatio` de un SVG, y las costuras que deja un `template
+ * literal` partido dentro de una etiqueta JSX. Ninguna se lee en pantalla y
+ * ninguna podría vivir en `copy/`: son parte de la sintaxis de la plataforma.
+ *
+ * La lista es explícita a propósito. Un filtro amplio —"ignora lo que parezca
+ * técnico"— acabaría dejando pasar texto de verdad, que es justo lo que este
+ * criterio existe para cazar.
+ */
+const TECNICOS = [
+  /^\((?:[\w-]+\s*:\s*[^)]+)\)$/, // consultas de medios: (prefers-reduced-motion: reduce)
+  /^x(?:Min|Mid|Max)Y(?:Min|Mid|Max) (?:meet|slice)$/, // preserveAspectRatio
+  /[{}]/, // costura entre dos `template literals` dentro de una etiqueta JSX
+]
+
 describe('criterio 19 — ni un string visible fuera de copy/', () => {
   it.each(ARCHIVOS)('%s no contiene texto de interfaz', (ruta) => {
     const sospechosos = literalesDe(readFileSync(ruta, 'utf8')).filter(
       // Un texto que alguien lee tiene espacios o acentos. Los ids del catálogo
       // y las claves de los almacenes no tienen ni una cosa ni la otra.
-      (literal) => /\s/.test(literal) || /[áéíóúñü¿¡]/i.test(literal),
+      (literal) =>
+        (/\s/.test(literal) || /[áéíóúñü¿¡]/i.test(literal)) &&
+        !TECNICOS.some((patron) => patron.test(literal)),
     )
     expect(sospechosos).toEqual([])
+  })
+
+  it('el filtro de lo técnico no deja pasar texto de verdad', () => {
+    // Si esta prueba se ablanda, el criterio 19 deja de valer. Estas cuatro
+    // cadenas tienen que seguir siendo sospechosas.
+    const copy = ['Inhala durante 4 segundos', 'En pausa', '¿Cuánto tiempo?', 'Sostén el aire']
+    copy.forEach((texto) => {
+      expect(TECNICOS.some((patron) => patron.test(texto))).toBe(false)
+    })
   })
 
   it('el copy de Respiración sí existe, y está donde tiene que estar', async () => {

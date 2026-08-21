@@ -297,7 +297,7 @@ git status
 | **SPEC_11** | ✅ Completa | 11 ago |
 | **SPEC_12** | ✅ Completa | 11 ago |
 | **SPEC_13** | ✅ Completa (Fase 1C) | 20 ago |
-| **SPEC_14** | Pendiente — visuales | — |
+| **SPEC_14** | ✅ Completa (Fase 1C) | 20 ago |
 | **SPEC_15** | Pendiente — sonido y favoritos | — |
 | **SPEC_16** | Pendiente — Home, navegación e integración | — |
 
@@ -780,7 +780,10 @@ sale. SPEC_13 deja el motor, el catálogo y la capa de datos; **cero UI** (la pi
 - **En modo `ciclos`, `cerrando` se abre al empezar la última respiración**, no al terminarla. Es
   información útil ("esta es la última") y no corta nada: RN-RE-MOT-16 se cumple igual.
 - **`notificarAusencia()` la llama la capa visual, no la máquina.** El caso 9.4 necesita
-  `visibilitychange` y la máquina no toca el DOM. SPEC_14 conecta el oyente.
+  `visibilitychange` y la máquina no toca el DOM. ~~SPEC_14 conecta el oyente.~~ **Corregido al
+  cerrar SPEC_14: lo conecta SPEC_16.** Las visuales de SPEC_14 no pueden — RN-RE-VIS-02 les prohíbe
+  tener `useEffect` y temporizadores, y un oyente de `visibilitychange` es exactamente eso. El sitio
+  que queda es la pantalla, que es quien ya posee la máquina y el bucle de frames.
 
 | Regla | Enunciado |
 |---|---|
@@ -802,7 +805,113 @@ sale. SPEC_13 deja el motor, el catálogo y la capa de datos; **cero UI** (la pi
 
 **Pendiente de SPEC_13:** la nota de seguridad (RN-RE-COPY-01/02) tiene copy y campo persistido
 (`avisoSeguridadVisto`) pero **nadie la pinta todavía** — es UI y le toca a SPEC_16. Lo mismo con
-`mantenerPantallaEncendida`: el campo existe, la Wake Lock API del caso 9.4 la conecta SPEC_14.
+`mantenerPantallaEncendida`: el campo existe, la Wake Lock API del caso 9.4 la conecta **SPEC_16**
+—no SPEC_14, como decía esta nota— por el mismo motivo que `visibilitychange`: es un efecto, y la
+capa visual no tiene ninguno a propósito.
+
+**Respiración — SPEC_14 (visuales: círculo y bolita sobre línea), 20 ago:**
+
+Dos guías visuales intercambiables, las dos alimentadas por el mismo `amplitud` del motor de
+SPEC_13. **Sin sonido, sin favoritos y sin pantalla**: la pantalla que las monta es de SPEC_16, y
+hasta entonces esta capa está construida y probada pero no la ve nadie. Es deliberado: el orden lo
+fijan las propias specs.
+
+- **Los cuatro colores de fase salen de la escala Strivo madre, y hubo que ampliarla.** §1.1 obliga a
+  detenerse si la escala no alcanza, y no alcanzaba: sobre `strivo-50`, de los cinco pasos solo
+  `strivo-600` (4,82:1) y `strivo-900` (13,32:1) superan el 3:1 de WCAG 1.4.11, y §5 pide cuatro
+  fases distinguibles. **El propietario del producto eligió añadir dos pasos**, `strivo-700 #58545D`
+  y `strivo-800 #423E47`, interpolados sobre el eje neutro que ya existía entre 600 y 900. No
+  introducen tono: Strivo sigue siendo acromático (manual §4.1). Están en `design-tokens.json`, en
+  `globals.css` y **en el manual §4.2**, que es donde `marca.test.js` exige que viva todo hex de
+  marca — esa prueba fue la que lo cazó.
+- **Las fases se separan por luminancia, no por tono, y §5 pedía otra cosa.** §5 describe un eje
+  cálido→frío ("inhalar: el más luminoso y cálido", "exhalar: más frío y profundo"); una escala
+  acromática no tiene ese eje. Se cumple el propósito —cuatro fases distinguibles, todas ≥3:1— con el
+  único eje que la paleta tiene. **Coste medido y asumido: entre fases contiguas hay 1,4:1**, que no
+  basta para nombrar una fase por su color. Por eso RN-RE-VIS-17 no es aquí un adorno de
+  accesibilidad: es lo que sostiene la lectura. `lint:contraste` mide las cuatro y deja anotadas las
+  contiguas como informativas, con el motivo escrito.
+- **`pintar()` por referencia, no por props: es lo que hace que se sienta suave.** RN-RE-VIS-01 fija
+  las props de una visual en cuatro y RN-RE-VIS-33 prohíbe `setState` por frame. Las dos se cumplen
+  a la vez porque el estado por frame **no pasa por props**: quien monta la visual llama a
+  `pintar(estado)` sobre su `ref`, y eso escribe sobre el nodo. React repinta al cambiar de fase —
+  nueve veces en cuarenta segundos, no dos mil cuatrocientas. Ninguna de las dos visuales tiene
+  `useState`, `useEffect` ni un solo temporizador, y hay pruebas que fallan si aparecen.
+- **La cuenta regresiva también baja por el nodo.** RN-RE-VIS-19 quiere que el número baje de segundo
+  en segundo y §10 que React solo repinte al cambiar de fase. Un dígito no vale un render del árbol,
+  así que `EtiquetaFase` recibe `refCuenta` y `pintar()` le escribe el `textContent` cuando el
+  segundo cambia de verdad.
+- **El anuncio accesible dice lo que DURA la fase, no lo que le queda.** Escrito con el tiempo
+  restante, el texto cambiaba cada segundo y salían **39 anuncios en tres ciclos** en vez de 9: un
+  `aria-live` que se reescribe así se corta a sí mismo y el lector de pantalla queda inservible.
+  `AnuncioAccesible` no recibe ningún valor que cambie dentro de la fase, así que RN-RE-VIS-24 se
+  cumple por construcción y no por vigilancia.
+- **Con movimiento reducido manda un solo reloj.** §7 escalona dos cosas por separado —cuatro pasos
+  de amplitud y un paso de arco por segundo— y gobernadas por separado se turnaban para escribir:
+  **19 actualizaciones en un ciclo de trece segundos**, con RN-RE-VIS-20 pidiendo una por segundo.
+  El portero es ahora el segundo transcurrido de la fase, uno solo. Es la misma idea que sostiene el
+  motor entero: un reloj, no dos.
+- **`prefers-reduced-motion` no apaga la animación, la escalona.** Sin escala continua pero con los
+  cuatro pasos, el arco de segundo en segundo, la onda quieta con un marcador que la recorre, y la
+  estela **fuera del DOM** —no escondida con CSS—. Las duraciones no se tocan: la duración no es una
+  animación, es el ejercicio. Es la misma lectura que SPEC_08 hizo de §6.10.1.
+- **La onda se muestrea una vez y se desplaza.** Es periódica, así que su forma no cambia entre
+  frames: 1.223 puntos memoizados por `(patrón, ancho, alto, posición)` y por frame un `translateX`.
+  Recalcular mil puntos sesenta veces por segundo es el error que hace que una animación de calma se
+  sienta nerviosa. Medido: dos llamadas iguales muestrean una sola vez, y sesenta frames resuelven el
+  motor sesenta veces —una por bolita— y ni una más.
+- **Las mesetas de retención son exactamente planas.** El suavizado une los puntos con cuadráticas
+  que pasan por los puntos medios, y ese esquema tiene la propiedad que hacía falta: sobre un tramo
+  de Y constante, controles y puntos medios comparten esa Y. Varianza cero, comprobada sobre 669
+  puntos. Una meseta que ondula estaría diciendo "sigue moviéndote" justo donde la instrucción es
+  sostener.
+- **La bolita se apoya en el trazo con 0,0076 unidades de error**, no porque se lea del path sino
+  porque las dos alturas salen de la misma amplitud del motor (RN-RE-VIS-09). Dos fuentes de verdad
+  para la misma altura acaban separándose; una no puede.
+- **El disco vacío mide el 32 % del anillo y nunca 0.** Un punto que desaparece del todo se siente
+  como asfixia, y esta app existe para lo contrario.
+- **La cuenta 3-2-1 del acomodo la monta la pantalla, no la visual.** §9 la sitúa en el centro del
+  dibujo, pero vive en `msRestantesAcomodo` de la máquina y RN-RE-VIS-01 fija las props de una visual
+  en cuatro, ninguna de las cuales la lleva. Añadir una quinta abre la puerta a las demás. Lo que sí
+  hace la visual en `acomodando` es la respiración lenta y decorativa de §9. **Le toca a SPEC_16.**
+- **`copy.respiracion.estados.pausado` es copy nuevo, y SPEC_14 §12 decía que no haría falta.**
+  RN-RE-VIS-26 pide anunciar la pausa y no había cómo decirlo: `controles.pausar` es la etiqueta de
+  un botón, es decir una acción, y leerle "Pausar" a quien ya pausó es contarle lo que puede hacer y
+  no lo que pasa. La prueba de bloques de SPEC_13 se actualizó con el motivo escrito al lado.
+- **El filtro de "ni un string fuera de copy" (criterio 19 de SPEC_13) se afinó, no se ablandó.**
+  SPEC_14 trajo los primeros `.jsx` a `breathing/` y con ellos cadenas con espacios que nadie lee:
+  `(prefers-reduced-motion: reduce)`, `xMidYMid meet`, y la costura que deja un `template literal`
+  partido dentro de una etiqueta JSX. La lista de excepciones es explícita —tres patrones— y hay una
+  prueba que falla si esa lista empezara a tragarse texto de verdad.
+- **No se añadió ninguna librería de animación** (§1.3). El repo no tenía ninguna y sigue sin
+  tenerla: todo es SVG con atributos calculados por el motor y transiciones de CSS.
+
+| Regla | Enunciado |
+|---|---|
+| **RN-RE-VIS-00** | Ningún archivo de `src/breathing/**` referencia un token `lumia-*` ni `formia-*`. |
+| **RN-RE-VIS-01/02/03** | Una visual recibe cuatro props, no calcula nada y no conoce la capa de datos. |
+| **RN-RE-VIS-04/05** | El disco vacío es el 32 % del anillo. En las retenciones queda inmóvil. |
+| **RN-RE-VIS-06/07** | El arco mide la **fase actual** y se reinicia en cada cambio. Cambia de color en 200 ms. |
+| **RN-RE-VIS-08** | `preserveAspectRatio="xMidYMid meet"`. El dibujo nunca se deforma. |
+| **RN-RE-VIS-09** | La Y de la bolita sale de la amplitud del motor, jamás de leer el trazo. |
+| **RN-RE-VIS-10** | Las mesetas de retención son planas. Varianza de Y igual a cero. |
+| **RN-RE-VIS-11** | Los dos extremos de la onda se desvanecen. |
+| **RN-RE-VIS-12** | Con movimiento reducido la estela no está en el DOM. |
+| **RN-RE-VIS-14/15** | Solo las marcas futuras llevan texto, y solo si el ciclo llega a 8 s. |
+| **RN-RE-VIS-16** | Los cuatro colores de fase ≥ 3:1 sobre el fondo; el texto asociado, AAA. |
+| **RN-RE-VIS-17** | **La fase nunca se comunica solo por color.** Siempre hay palabra y forma. |
+| **RN-RE-VIS-19** | Cuenta regresiva en segundos enteros; se oculta en fases de menos de 2,0 s. |
+| **RN-RE-VIS-20** | Con movimiento reducido, **como mucho una actualización por segundo**. |
+| **RN-RE-VIS-21/22** | La preferencia del sistema se escucha en vivo, y el interruptor manual la suma. Ninguna manda sobre la otra. |
+| **RN-RE-VIS-24** | El anuncio se actualiza al cambiar de fase, nunca por frame. |
+| **RN-RE-VIS-25/27** | El SVG es `role="img"` con `<title>`; lo de dentro va `aria-hidden` y nada es enfocable. |
+| **RN-RE-VIS-26** | En pausa se anuncia una vez "En pausa" y se callan las fases. |
+| **RN-RE-VIS-28/29** | `inactivo → acomodando` es un cruce. Cambiar de visual en marcha no interrumpe el ritmo. |
+| **RN-RE-VIS-31/32/33** | El muestreo se memoiza, el desplazamiento va por `transform`, y **no hay `setState` por frame**. |
+
+**Pendiente de SPEC_14:** nada de esto se ve todavía. `GuiaVisual` no lo monta ninguna pantalla —eso
+es SPEC_16— y **las 8 validaciones manuales de §14 están sin hacer** por el mismo motivo: no hay
+dónde mirarlas. Se hacen cuando exista la pantalla.
 
 **Deuda consciente de Fase 1 (se salda en su spec):**
 - **Los 16 íconos de emoción no se hicieron, y es una decisión, no un olvido.** SPEC_12 §10 excluye

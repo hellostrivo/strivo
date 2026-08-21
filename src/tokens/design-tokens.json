@@ -5,11 +5,13 @@
   "brand": {
     "comment": "Paletas por marca y momento del manual §4.8, copiadas sin corregir. La paleta de marca dice QUÉ SUPERFICIE usar; el sistema de contraste de `semantic` sigue decidiendo QUÉ TEXTO va encima (manual §4.8, nota técnica).",
     "strivo": {
-      "comment": "Neutros conectores. Constantes: Strivo no cambia con el momento del día.",
+      "comment": "Neutros conectores. Constantes: Strivo no cambia con el momento del día. Los pasos 700 y 800 los añadió SPEC_14: la escala de cinco no alcanzaba para separar las cuatro fases de la respiración cumpliendo RN-RE-VIS-16, porque sobre `strivo-50` solo 600 y 900 llegan a 3:1. Están interpolados sobre el eje neutro que ya existía entre 600 y 900, así que no introducen tono: Strivo sigue siendo acromático (manual §4.1).",
       "50": "#F6F4F1",
       "100": "#E9E7E3",
       "300": "#D4D1CD",
       "600": "#6E6A73",
+      "700": "#58545D",
+      "800": "#423E47",
       "900": "#2B2730"
     },
     "lumia": {
@@ -57,6 +59,13 @@
       "comment": "Manual §4.7, confirmado ✅ — `#5D4766` es morado dentro de la paleta de Formia y es INTENCIONAL: el punto donde 'hacia dentro' y 'hacia delante' se encuentran al final del día. No se corrige para alejarlo del morado.",
       "token": "formia.pm.800",
       "hex": "#5D4766"
+    },
+    "respiracion": {
+      "comment": "SPEC_14 §5 — Las cuatro fases de la herramienta de Respiración. Salen íntegramente de la escala Strivo madre (RN-RE-VIS-00: cero tokens `lumia-*` o `formia-*`). §5 describía un eje cálido→frío; en una escala acromática ese eje no existe, así que las fases se separan por LUMINANCIA. No es una pérdida: RN-RE-VIS-17 ya prohíbe comunicar la fase solo por color, y el texto de `EtiquetaFase` más la geometría del disco llevan el dato.",
+      "inhalar": { "token": "strivo.900", "hex": "#2B2730", "rol": "El más presente. Apertura." },
+      "sosten": { "token": "strivo.800", "hex": "#423E47", "rol": "Un paso atrás. Suspensión." },
+      "exhalar": { "token": "strivo.700", "hex": "#58545D", "rol": "Se retira. Soltar." },
+      "descanso": { "token": "strivo.600", "hex": "#6E6A73", "rol": "El más apagado. Reposo." }
     }
   },
   "colors": {

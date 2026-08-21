@@ -28,6 +28,8 @@ describe('el namespace existe y está completo (§7.2)', () => {
       'cierre',
       'controles',
       'duracion',
+      // `estados` lo añadió SPEC_14 para RN-RE-VIS-26. Ver el comentario en copy/.
+      'estados',
       'fases',
       'fasesAccesibles',
       'patrones',

@@ -79,6 +79,11 @@ const MARCA = {
   strivo100: '#E9E7E3',
   strivo300: '#D4D1CD',
   strivo600: '#6E6A73',
+  // SPEC_14 — Dos pasos nuevos sobre el eje neutro que ya existia entre 600 y
+  // 900. Sin ellos, la respiracion solo tenia dos colores por encima del 3:1 y
+  // §5 necesita cuatro fases distinguibles.
+  strivo700: '#58545D',
+  strivo800: '#423E47',
   strivo900: '#2B2730',
   night: '#191428',
   // El bloque del conmutador de Hoy. Contratono: oscuro sobre la mañana clara,
@@ -146,6 +151,21 @@ const PARES = [
   ['Strivo · cuerpo sobre cabecera', TEXTO.onLight, MARCA.strivo100, CUERPO],
   ['Strivo · acento sobre cabecera', MARCA.strivo900, MARCA.strivo100, NO_TEXTO],
   ['Strivo · borde sobre cabecera', MARCA.strivo600, MARCA.strivo100, SEPARADOR],
+
+  // ── Respiracion: las cuatro fases (SPEC_14 §5, RN-RE-VIS-16) ────────────────
+  // El disco, el arco y la bolita son elementos graficos: su umbral es el 3:1 de
+  // WCAG 2.2 1.4.11. **La fase no la comunica el color** (RN-RE-VIS-17) —la dice
+  // la palabra de `EtiquetaFase` y la geometria—, pero el dibujo tiene que verse
+  // igual, asi que se mide como cualquier indicador.
+  // Se separan por luminancia y no por tono: la escala de Strivo es acromatica
+  // por decision de marca (manual §4.1) y §5 pedia un eje calido→frio que ahi no
+  // existe. Estas cuatro cifras son la prueba de que la luminancia alcanza.
+  ['Respiración · inhalar sobre base', MARCA.strivo900, MARCA.strivo50, NO_TEXTO],
+  ['Respiración · sostén sobre base', MARCA.strivo800, MARCA.strivo50, NO_TEXTO],
+  ['Respiración · exhalar sobre base', MARCA.strivo700, MARCA.strivo50, NO_TEXTO],
+  ['Respiración · descanso sobre base', MARCA.strivo600, MARCA.strivo50, NO_TEXTO],
+  // La etiqueta de fase, que es el texto que de verdad lleva el dato: AAA.
+  ['Respiración · etiqueta de fase sobre base', TEXTO.onLight, MARCA.strivo50, CUERPO],
 ]
 
 /**
@@ -165,6 +185,22 @@ const INFORMATIVOS = [
   ['blanco sobre formia-pm-800 (convergencia)', TEXTO.blanco, MARCA.formiaPm800],
   ['ink sobre lumia-am-100', TEXTO.onLight, MARCA.lumiaAm100],
   ['ink sobre formia-am-400', TEXTO.onLight, MARCA.formiaAm400],
+  // Las marcas de fase de la linea van a opacidad 0,12 y su texto a 0,45. Son
+  // orientacion, no dato: lo que hay que leer lo dice `EtiquetaFase` a tamano
+  // completo. Se anotan para que la cifra conste, no para exigirles un umbral.
+  ['marca de fase de la línea (α 0,12)', sobre(MARCA.strivo600, 0.12, MARCA.strivo50), MARCA.strivo50],
+  ['texto de marca de la línea (α 0,45)', sobre(MARCA.strivo600, 0.45, MARCA.strivo50), MARCA.strivo50],
+  // **Fases contiguas, medidas entre si. Es el limite conocido de separar cuatro
+  // pasos por luminancia sobre una escala acromatica: 1,4:1 entre vecinas.**
+  // No se les exige umbral y no es una laguna disimulada: dos fases nunca se ven
+  // a la vez —el disco tiene un color cada vez y el cambio es temporal, no
+  // espacial—, asi que no hay ninguna adyacencia que WCAG mida. Lo que si dice
+  // esta cifra es que el color, solo, no bastaria para nombrar la fase. Por eso
+  // RN-RE-VIS-17 obliga a la palabra y a la geometria, y por eso ahi la regla no
+  // es un adorno de accesibilidad sino lo que sostiene la lectura.
+  ['fase inhalar contra sostén', MARCA.strivo900, MARCA.strivo800],
+  ['fase sostén contra exhalar', MARCA.strivo800, MARCA.strivo700],
+  ['fase exhalar contra descanso', MARCA.strivo700, MARCA.strivo600],
 ]
 
 console.log('🎨 contraste: midiendo los pares que la app pinta de verdad\n')

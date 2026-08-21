@@ -128,7 +128,21 @@ Uso: UI compartida, navegación entre productos, elementos de "puente" (insights
 | `strivo-100` | `#E9E7E3` | Superficies secundarias, bordes suaves |
 | `strivo-300` | `#D4D1CD` | Bordes, divisores |
 | `strivo-600` | `#6E6A73` | Texto secundario |
+| `strivo-700` | `#58545D` | Indicador gráfico — fase `exhalar` de Respiración |
+| `strivo-800` | `#423E47` | Indicador gráfico — fase `sostén` de Respiración |
 | `strivo-900` | `#2B2730` | Texto principal, fondo del ícono Strivo |
+
+**Sobre `strivo-700` y `strivo-800` (añadidos en SPEC_14, 20 ago 2026).** La
+escala de cinco pasos no alcanzaba para la herramienta de Respiración: sobre
+`strivo-50`, solo `strivo-600` (4,82:1) y `strivo-900` (13,32:1) superan el 3:1
+que WCAG 2.2 (1.4.11) exige a un elemento gráfico, y esa pantalla necesita
+cuatro fases distinguibles. Los dos pasos nuevos están **interpolados sobre el
+eje neutro que ya existía** entre 600 y 900, así que no introducen tono: Strivo
+sigue siendo acromático y §4.1 se mantiene intacta.
+
+Consecuencia asumida: entre pasos contiguos hay 1,4:1, que no basta para
+nombrar una fase por su color. Por eso Respiración nombra siempre la fase con
+texto y con geometría (RN-RE-VIS-17), y el color solo acompaña.
 
 ### 4.3 Lumia — Mañana (claridad suave)
 

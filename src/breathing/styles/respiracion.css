@@ -1,0 +1,291 @@
+/* src/breathing/styles/respiracion.css
+   La piel de la capa visual de Respiracion (SPEC_14).
+
+   RN-RE-VIS-00 — Aqui no entra ni un token `lumia-*` ni `formia-*`. Todo el
+   color sale de la escala Strivo madre a traves de las cuatro variables de
+   fase que `globals.css` define. Ni un hexadecimal escrito a mano (§5).
+
+   Las cuatro fases se separan por LUMINANCIA y no por tono: la escala de
+   Strivo es acromatica por decision de marca (manual §4.1) y §5 pedia un eje
+   calido→frio que ahi no existe. No es una perdida: RN-RE-VIS-17 ya prohibe
+   comunicar la fase solo por color, asi que el dato lo llevan la palabra de
+   `EtiquetaFase` y la geometria. El color acompana. */
+
+.respiracion-visual {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espacio-4, 16px);
+}
+
+/* §3.4 — Dominante sin llegar a los bordes. El `min()` con `vh` es lo que
+   evita que el circulo se salga con el telefono acostado (caso 11.5). */
+.respiracion-circulo {
+  width: min(72vw, 46vh);
+  max-width: 340px;
+  height: auto;
+  display: block;
+}
+
+/* §4.6 — Panoramica. `max-width` en px y ancho relativo: en un viewport de
+   320 px ocupa 320 y no desborda (caso 11.4). */
+.respiracion-linea {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  display: block;
+}
+
+/* ─── Colores de fase ──────────────────────────────────────────────────────
+   Un solo sitio decide el color de cada fase, y lo leen el disco, el arco, la
+   bolita y su halo. RN-RE-VIS-07/13 — 200 ms de transicion, nunca un salto. */
+
+[data-fase='inhalar'] {
+  --fase-actual: var(--respiracion-fase-inhalar);
+}
+[data-fase='retenerLleno'] {
+  --fase-actual: var(--respiracion-fase-sosten);
+}
+[data-fase='exhalar'] {
+  --fase-actual: var(--respiracion-fase-exhalar);
+}
+[data-fase='retenerVacio'] {
+  --fase-actual: var(--respiracion-fase-descanso);
+}
+
+/* ─── Circulo ──────────────────────────────────────────────────────────────
+   §3.1 — Cuatro capas concentricas, de fuera hacia dentro. */
+
+.respiracion-circulo__halo {
+  fill: var(--strivo-600);
+  filter: blur(6px);
+}
+
+.respiracion-circulo__anillo {
+  fill: none;
+  stroke: var(--strivo-600);
+  stroke-width: 2;
+  opacity: 0.35;
+}
+
+.respiracion-circulo__arco {
+  fill: none;
+  stroke: var(--fase-actual, var(--respiracion-fase-descanso));
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke 200ms ease-in-out;
+}
+
+.respiracion-circulo__disco {
+  fill: var(--fase-actual, var(--respiracion-fase-descanso));
+  transition: fill 200ms ease-in-out;
+}
+
+/* ─── Linea ────────────────────────────────────────────────────────────────
+   §4.3 — El pasado se retira y el futuro se adelanta. La opacidad del trazo es
+   la del futuro; el degradado de la mascara apaga los dos extremos. */
+
+.respiracion-linea__onda {
+  fill: none;
+  stroke: var(--strivo-700);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.85;
+}
+
+.respiracion-linea__marca {
+  stroke: var(--strivo-600);
+  stroke-width: 1;
+  opacity: 0.12;
+}
+
+.respiracion-linea__marca-texto {
+  fill: var(--strivo-600);
+  font-size: 10px;
+  opacity: 0.45;
+}
+
+.respiracion-linea__marcador {
+  stroke: var(--strivo-900);
+  stroke-width: 2;
+  opacity: 0.55;
+}
+
+.respiracion-linea__estela,
+.respiracion-linea__halo {
+  fill: var(--fase-actual, var(--respiracion-fase-descanso));
+}
+
+.respiracion-linea__halo {
+  opacity: 0.18;
+  transition: fill 200ms ease-in-out;
+}
+
+.respiracion-linea__bolita {
+  fill: var(--fase-actual, var(--respiracion-fase-descanso));
+  transition: fill 200ms ease-in-out;
+}
+
+/* ─── Etiqueta de fase ─────────────────────────────────────────────────────
+   §6 — Inter en peso ligero. El tamano se escala con el viewport y con la
+   preferencia de cuerpo de letra del sistema, que es lo que arreglo SPEC_12. */
+
+.respiracion-etiqueta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  animation: respiracion-cruce 220ms ease-in-out;
+}
+
+.respiracion-etiqueta__nombre {
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  font-size: clamp(1.25rem, 5.5vw, 1.75rem);
+  color: var(--color-text, var(--strivo-900));
+}
+
+.respiracion-etiqueta__cuenta {
+  font-size: 0.875rem;
+  opacity: 0.55;
+  color: var(--color-text, var(--strivo-900));
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes respiracion-cruce {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ─── Estados de sesion (§9) ───────────────────────────────────────────────── */
+
+/* Se congela en el punto exacto y todo baja de presencia. La visual no escribe
+   nada durante la pausa, asi que la quietud es real y no una animacion parada. */
+[data-sesion='pausado'] .respiracion-circulo,
+[data-sesion='pausado'] .respiracion-linea,
+[data-sesion='pausado'] .respiracion-etiqueta {
+  opacity: 0.45;
+  transition: opacity 250ms ease-in-out;
+}
+
+.respiracion-pausa {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 18px;
+  height: 24px;
+  border-left: 5px solid var(--strivo-900);
+  border-right: 5px solid var(--strivo-900);
+}
+
+/* §9 — El acomodo respira muy despacio y de adorno: seis segundos por vuelta.
+   No es el ritmo del patron, es la senal de que la sesion ya empezo a existir. */
+[data-sesion='acomodando'] .respiracion-circulo__disco {
+  animation: respiracion-acomodo 6s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes respiracion-acomodo {
+  0%,
+  100% {
+    transform: scale(0.94);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+/* §9 — Los 900 ms del cierre son los mismos del cierre del dia. Es el gesto de
+   cierre de Strivo y aqui no se inventa otro. */
+[data-sesion='completado'] .respiracion-circulo,
+[data-sesion='completado'] .respiracion-linea,
+[data-sesion='completado'] .respiracion-etiqueta {
+  opacity: 0;
+  transition: opacity 900ms ease-in-out;
+}
+
+/* §9 — `inactivo` → `acomodando` es un cruce, nunca un corte (RN-RE-VIS-28). */
+[data-sesion='inactivo'] .respiracion-circulo,
+[data-sesion='acomodando'] .respiracion-circulo,
+[data-sesion='inactivo'] .respiracion-linea,
+[data-sesion='acomodando'] .respiracion-linea {
+  transition: opacity 400ms ease-in-out;
+}
+
+/* ─── El anuncio para lector de pantalla ───────────────────────────────────
+   Visualmente oculto, nunca `display: none`: lo que no se renderiza tampoco se
+   lee. */
+
+.respiracion-anuncio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ─── Contraste alto del sistema (caso 11.9) ──────────────────────────────── */
+
+@media (prefers-contrast: more) {
+  .respiracion-circulo__anillo,
+  .respiracion-linea__onda {
+    stroke-width: 3;
+    opacity: 1;
+  }
+  .respiracion-circulo__arco {
+    stroke-width: 3;
+  }
+  .respiracion-circulo__halo,
+  .respiracion-linea__estela {
+    display: none;
+  }
+  .respiracion-linea__marca,
+  .respiracion-linea__marca-texto {
+    opacity: 0.55;
+  }
+}
+
+/* ─── Movimiento reducido (§7) ─────────────────────────────────────────────
+   No es "sin animacion": es sin movimiento CONTINUO. Las transiciones de paso
+   se conservan —400 ms entre escalones— porque son lo que hace que el salto se
+   lea como un cambio y no como un parpadeo. Lo que desaparece es todo lo que
+   se mueve solo. */
+
+@media (prefers-reduced-motion: reduce) {
+  .respiracion-circulo__disco,
+  .respiracion-circulo__halo {
+    transition:
+      r 400ms ease-in-out,
+      fill 0ms;
+    animation: none;
+  }
+  .respiracion-circulo__arco,
+  .respiracion-linea__bolita,
+  .respiracion-linea__halo {
+    transition: none;
+  }
+  .respiracion-etiqueta {
+    animation: none;
+  }
+  [data-sesion='acomodando'] .respiracion-circulo__disco {
+    animation: none;
+  }
+}
+
+/* El interruptor propio de la app (RN-RE-VIS-22): la preferencia del sistema no
+   es la unica forma de pedir esto, asi que la misma regla cuelga de un atributo. */
+[data-reducido='si'] .respiracion-etiqueta,
+.respiracion-etiqueta[data-reducido='si'] {
+  animation: none;
+}

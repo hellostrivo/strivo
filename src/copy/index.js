@@ -1042,6 +1042,15 @@ export const copy = {
       retenerVacio: 'Descansa durante {segundos} segundos',
     },
 
+    // SPEC_14 §12 daba por hecho que no hacía falta copy nuevo, pero
+    // RN-RE-VIS-26 pide anunciar la pausa y no había cómo decirlo: `controles`
+    // tiene la etiqueta del botón ('Pausar'), que es una acción y no un estado.
+    // Leerle "Pausar" a alguien que ya pausó es contarle lo que puede hacer,
+    // no lo que pasa.
+    estados: {
+      pausado: 'En pausa',
+    },
+
     acomodo: {
       titulo: 'Acomódate',
       subtitulo: 'Suelta los hombros. Empezamos en un momento.',
