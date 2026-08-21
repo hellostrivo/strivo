@@ -20,6 +20,20 @@
 //     calma es un fallo grave, no una imperfección.
 //   · RN-AUD-05 — El sonido nunca sustituye a una señal visual. Todo el
 //     ejercicio funciona en silencio.
+//
+// **SPEC_15 §2.1 — El contexto ya no es suyo, se lo prestan.** Antes lo creaba
+// y lo cerraba; ahora lo pide a `lib/audio/contextoAudio.js`, que es el único
+// de la app, y al terminar lo suelta. La diferencia importa el día que el
+// sonido ambiente esté sonando a la vez: cerrar el contexto al acabar la guía
+// dejaría el ambiente mudo a media sesión. El singleton cierra cuando lo suelta
+// el último, así que RN-AUD-04 se cumple igual que antes y ni una prueba de
+// SPEC_08 cambió.
+//
+// Quien inyecta su propia fábrica —las pruebas— conserva la propiedad y cierra
+// su contexto. Es lo correcto además de lo compatible: un contexto de mentira
+// no tiene por qué pasar por el registro de préstamos de la app.
+
+import { adquirir, liberar } from './audio/contextoAudio.js'
 
 /** §6.12.1 — Ganancia máxima contenida: alguien en la cama, con su pareja al lado. */
 export const GANANCIA_MAX = 0.05
@@ -31,12 +45,6 @@ export const FRECUENCIA_ALTA = 294
 /** Rampa mínima para que un corte no se oiga como un chasquido. */
 const SUAVIZADO = 0.08
 
-function contextoPorDefecto() {
-  const Contexto = typeof window === 'undefined' ? null : window.AudioContext
-  if (!Contexto) return null
-  return new Contexto()
-}
-
 /**
  * Crea el motor de audio del ejercicio.
  *
@@ -46,11 +54,16 @@ function contextoPorDefecto() {
  * @param {object} [opciones]
  * @param {Function} [opciones.crearContexto] - Fábrica del `AudioContext`.
  *   Existe para poder probar la limpieza sin un navegador: la prueba pasa un
- *   contexto de mentira y comprueba que al salir no queda nada vivo.
+ *   contexto de mentira y comprueba que al salir no queda nada vivo. Pasarla
+ *   también significa quedarse con la propiedad del contexto: quien lo crea, lo
+ *   cierra. Sin ella se usa el único de la app, que se suelta en vez de cerrarse.
  * @returns {{iniciar: Function, fase: Function, silenciar: Function,
  *            detener: Function, activo: Function}}
  */
-export function crearAudioRespiracion({ crearContexto = contextoPorDefecto } = {}) {
+export function crearAudioRespiracion({ crearContexto = null } = {}) {
+  // Con fábrica propia el contexto es nuestro y lo cerramos; sin ella es
+  // prestado y solo se suelta.
+  const propio = typeof crearContexto === 'function'
   let contexto = null
   let oscilador = null
   let envolvente = null
@@ -83,7 +96,7 @@ export function crearAudioRespiracion({ crearContexto = contextoPorDefecto } = {
      */
     async iniciar() {
       if (contexto || cerrado) return Boolean(contexto)
-      contexto = crearContexto()
+      contexto = propio ? crearContexto() : adquirir()
       if (!contexto) return false
 
       oscilador = contexto.createOscillator()
@@ -163,7 +176,10 @@ export function crearAudioRespiracion({ crearContexto = contextoPorDefecto } = {
       oscilador?.disconnect()
       envolvente?.disconnect()
       maestro?.disconnect()
-      contexto.close?.()
+      // El contexto propio se cierra; el prestado se suelta y lo cierra el
+      // singleton cuando ya no lo tiene nadie más.
+      if (propio) contexto.close?.()
+      else liberar()
       oscilador = null
       envolvente = null
       maestro = null

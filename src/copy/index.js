@@ -1095,6 +1095,58 @@ export const copy = {
       entendido: 'Entendido',
     },
 
+    // SPEC_15 §4.4 — El sonido de fondo. Las descripciones existen porque elegir
+    // un sonido por su nombre es adivinar: "Olas" no dice si rompen o si van y
+    // vienen. La vista previa lo resuelve del todo, pero el texto llega antes.
+    sonidos: {
+      titulo: 'Sonido de fondo',
+      silencio: { nombre: 'Silencio', descripcion: 'Solo tu respiración.' },
+      lluvia: { nombre: 'Lluvia', descripcion: 'Constante, sin tormenta.' },
+      olas: { nombre: 'Olas', descripcion: 'Van y vienen, muy lentas.' },
+      viento: { nombre: 'Viento', descripcion: 'Entre los árboles, a lo lejos.' },
+      cristales: { nombre: 'Cristales', descripcion: 'Notas sueltas que aparecen y se van.' },
+      fuego: { nombre: 'Fuego', descripcion: 'Chisporroteo bajo.' },
+      volumen: 'Volumen',
+      guia: 'Sonido que marca el ritmo',
+      guiaAyuda: 'Un tono suave al empezar cada inhalación y cada exhalación.',
+      volumenGuia: 'Volumen del ritmo',
+      // Caso 6.1 y 6.2 — Nada bloquea: la respiración sigue entera en silencio.
+      sinSoporte: 'Tu navegador no reproduce sonido aquí. La respiración funciona igual.',
+      activar: 'Activar el sonido',
+    },
+
+    favoritos: {
+      titulo: 'Guardadas',
+      recientes: 'Últimas veces',
+      guardar: 'Guardar esta combinación',
+      guardarCambios: 'Guardar cambios',
+      guardarComoNueva: 'Guardar como nueva',
+      modificado: 'Modificado',
+      nombreEtiqueta: '¿Cómo la quieres llamar?',
+      nombrePlaceholder: 'Antes de dormir',
+      nombreVacio: 'Ponle un nombre para poder encontrarla.',
+      nombreLargo: 'Máximo 40 caracteres.',
+      nombreRepetido: 'Ya tienes una con ese nombre.',
+      reemplazar: 'Reemplazar la anterior',
+      yaGuardada: 'Ya la tienes guardada como «{nombre}».',
+      limite: 'Puedes guardar hasta 20. Borra alguna que ya no uses para dejar lugar.',
+      renombrar: 'Cambiar el nombre',
+      eliminar: 'Eliminar',
+      confirmarEliminar: '¿Eliminar «{nombre}»?',
+      eliminada: 'Eliminada',
+      deshacer: 'Deshacer',
+      sonidoNoDisponible: 'El sonido de esta combinación ya no está. La cargamos en silencio.',
+      // RN-RE-FAV-13 — Un patrón que ya no pasa la validación se corrige al
+      // cargarlo y se dice. No se descarta: lo demás de esa combinación vale.
+      patronAjustado: 'Ajustamos un poco los tiempos de esta combinación.',
+      opciones: 'Más opciones',
+      cancelar: 'Cancelar',
+      guardarAccion: 'Guardar',
+      // Es puntuación, pero se ve, y elegirla es una decisión editorial: podría
+      // ser «·», «•» o un guion largo. Vive aquí como todo lo que se lee.
+      separador: ' · ',
+    },
+
     vacio: {
       sinFavoritos:
         'Todavía no guardas ninguna. Cuando encuentres un ritmo que te acomode, guárdalo aquí.',

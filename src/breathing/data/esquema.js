@@ -66,6 +66,16 @@ export const DIAS_RETENCION_SESIONES = 90
 export const MAX_NOMBRE_FAVORITO = 40
 
 /**
+ * RN-RE-FAV-01 — Veinte favoritos. Al intentar el veintiuno se explica el límite
+ * y se ofrece gestionar la lista; **no se borra nada solo**. Una combinación
+ * guardada costó configurarla, y desalojar la más vieja en silencio para hacer
+ * sitio es decidir por alguien sobre algo suyo. Es la diferencia con las
+ * recientes, que sí desalojan: aquellas las escribe la app, estas las escribe
+ * una persona.
+ */
+export const MAX_FAVORITOS = 20
+
+/**
  * Preferencias de fábrica (§8.2).
  *
  * **RN-RE-DAT-01 — `guiaSonoraActiva` arranca en `false`.** Silencio por

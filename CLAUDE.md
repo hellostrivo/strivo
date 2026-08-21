@@ -298,7 +298,7 @@ git status
 | **SPEC_12** | ✅ Completa | 11 ago |
 | **SPEC_13** | ✅ Completa (Fase 1C) | 20 ago |
 | **SPEC_14** | ✅ Completa (Fase 1C) | 20 ago |
-| **SPEC_15** | Pendiente — sonido y favoritos | — |
+| **SPEC_15** | ✅ Completa (Fase 1C) | 20 ago |
 | **SPEC_16** | Pendiente — Home, navegación e integración | — |
 
 **Fase 1 cerrada.** Las doce specs están implementadas y comiteadas.
@@ -912,6 +912,138 @@ fijan las propias specs.
 **Pendiente de SPEC_14:** nada de esto se ve todavía. `GuiaVisual` no lo monta ninguna pantalla —eso
 es SPEC_16— y **las 8 validaciones manuales de §14 están sin hacer** por el mismo motivo: no hay
 dónde mirarlas. Se hacen cuando exista la pantalla.
+
+**Respiración — SPEC_15 (sonido ambiente, guía sonora y favoritos), 20 ago:**
+
+Cinco sonidos de fondo más silencio, todos **sintetizados en tiempo real**, y la gestión de
+combinaciones guardadas. Sigue sin haber pantalla que lo monte: eso es SPEC_16.
+
+- **Síntesis procedural al 100 %, confirmado por el propietario del producto.** Cero archivos de
+  audio, cero dependencias nuevas, cero licencias que resolver, y funciona sin red por construcción.
+  **Medido: la capa de audio entera —singleton, generadores de ruido, las cinco fuentes, mezclador y
+  orquestador— pesa 12,5 kB minificada y 4,2 kB comprimida.** Un solo bucle de lluvia en calidad
+  decente pesa entre 1.500 y 4.000 kB. Una prueba recorre `src/`, `public/` y `docs/` y falla si
+  aparece un `.mp3`, `.ogg`, `.wav`, `.m4a`, `.aac`, `.flac`, `.opus` o `.webm`.
+- **Bosque queda fuera, y es una decisión escrita.** Es el único de los evaluados que la síntesis no
+  resuelve bien: el lecho de ruido sale convincente, pero los cantos de pájaro sintetizados suenan
+  sintéticos y romperían la sensación de refugio. Vale más no tenerlo que tenerlo mal. Si algún día
+  resulta indispensable, entra como **el primer archivo de audio real del repo** y ahí se define su
+  licencia y su precaché — hoy no.
+- **La preferencia de sonido es exclusiva del espacio Respiración**, decidido por el propietario del
+  producto. `shared/preferences.soundEnabled` sigue gobernando la respiración diaria de Lumia y P1
+  (RN-AUD-03 intacta); `breathing/configuracion` lleva ambiente, volúmenes y guía. Silenciar en un
+  sitio no silencia el otro, y es a propósito: son dos herramientas distintas.
+- **Un solo `AudioContext` en toda la app, y el refactor tenía una trampa.** `audioRespiracion.js`
+  cerraba el contexto en `detener()`, y la prueba de SPEC_08 —que está en la lista de "no tocar"—
+  comprueba justamente eso. Con un singleton, cerrarlo al acabar la guía dejaría el ambiente mudo a
+  media sesión. Se resolvió con **préstamos**: quien necesita audio lo pide y lo suelta, y el
+  contexto se cierra cuando lo suelta el último. RN-AUD-04 se cumple igual, y **las 31 pruebas de
+  SPEC_08 siguen verdes sin editar una línea**. Quien inyecta su propia fábrica —las pruebas—
+  conserva la propiedad y cierra lo suyo.
+- **Vive en `src/lib/audio/` y no en `src/shared/audio/`, que es donde lo pedía §2.1.** Misma razón
+  que en SPEC_13: `src/shared/` no existe, y crearlo dejaría dos carpetas con el mismo significado
+  sin ninguna regla que dijera cuál usar. `lib/` es el territorio neutral del repo. El razonamiento
+  de §2.1 se cumple entero: lo consumen Lumia y Respiración, así que no puede vivir en ninguno.
+- **Al pausar, el ambiente baja al 30 % y la guía se calla del todo.** No es una inconsistencia: la
+  guía marca el ritmo y sin ritmo no tiene nada que decir; el ambiente es paisaje y el paisaje sigue
+  ahí. Cortar el fondo en seco sobresalta, que es lo contrario del propósito — y un silencio
+  repentino llama más la atención que el propio sonido.
+- **Ni una asignación directa a `.value` en toda la capa.** Un salto de ganancia es un chasquido
+  audible, y en una app cuyo trabajo es bajarle las pulsaciones a alguien eso es un fallo de
+  producto. El doble de `AudioContext` de las pruebas lleva un `setter` que apunta cualquier
+  asignación, así que la regla la vigila una prueba y no una revisión de código.
+- **El bucle de ruido lleva un cruce de igual potencia, y el motivo no es el chasquido.** Un salto en
+  la costura se oye como un clic, sí, pero se oye **cada cuatro segundos**: el ambiente acabaría
+  teniendo un pulso regular, que es justo lo que RN-RE-SND-07 prohíbe. El fallo empieza siendo un
+  chasquido y termina siendo un metrónomo. Los pesos son senos y no rectas porque al sumar dos
+  señales sin correlación lo que se conserva es la potencia, no la amplitud.
+- **Se encontró una fuga de verdad y se corrigió: 16 nodos al minuto 1, 451 a los sesenta.** La
+  limpieza de las voces efímeras —gotas, chispas, campanas— colgaba solo de `onended`. Ahora hay
+  además una **siega por tiempo en cada tic del planificador**, que no depende de ningún evento del
+  navegador. Una sesión de una hora son miles de gotas: con que un uno por ciento no avisara,
+  quedarían decenas de nodos vivos, y el síntoma no es un error sino un teléfono caliente.
+- **Los intervalos aleatorios no son un capricho** (RN-RE-SND-07). Quien sigue una guía de cinco
+  segundos no necesita un segundo metrónomo discutiéndole el compás por debajo. Se comprueba con una
+  prueba estadística sobre 200 intervalos de cada fuente con eventos.
+- **Las olas y el viento no tienen eventos: su modulación es continua.** Lo que evita el compás ahí
+  son dos LFO con frecuencias distintas (0,05 y 0,03 Hz en el viento), que vuelven a coincidir cada
+  cien segundos — para entonces el oído ya no lo relaciona.
+- **Los cristales usan una pentatónica de Do.** Es la escala sin semitonos: cualesquiera dos notas
+  suenan bien juntas, así que por mucho que el azar solape dos campanas nunca puede salir una
+  disonancia. Con una escala mayor sí podría.
+- **`crearPlanificador` e `impulso.js` no están en la lista de archivos de §7** y se añadieron a
+  propósito: las cinco fuentes necesitan el mismo bucle de anticipación y el mismo gesto de impulso
+  filtrado, y cinco copias serían cinco sitios donde RN-RE-SND-06 y RN-RE-SND-08 se pueden romper sin
+  que nadie lo note.
+- **Elegir `silencio` libera los nodos; poner el volumen a 0 no** (RN-RE-SND-16). Son dos cosas
+  distintas: bajar el control es "ahora no quiero oírlo" y subirlo vuelve a oírse al instante; elegir
+  silencio es "no quiero esto sonando".
+- **La comparación de favoritos incluye la duración; la de recientes no.** `mismaConfiguracion` de
+  SPEC_13 (RN-RE-DAT-04/05) responde "¿son la misma sesión?"; `mismaConfiguracionCompleta` de SPEC_15
+  (RN-RE-FAV-05) responde "¿ya está guardada?". "4-7-8 diez minutos" y "4-7-8 tres minutos" son dos
+  cosas que alguien puede querer tener a la vez. **Los volúmenes quedan fuera de las dos**: son un
+  ajuste del momento —los audífonos, la hora, quién duerme al lado—, y bloquear un guardado porque el
+  volumen está al 55 % en vez de al 60 % sería incomprensible. Pero **sí cuentan para "modificado"**
+  (RN-RE-FAV-11): quien movió el volumen tiene derecho a que le ofrezcan guardarlo.
+- **`MAX_FAVORITOS = 20` vive en `data/esquema.js`**, junto a `MAX_RECIENTES` y
+  `MAX_NOMBRE_FAVORITO`, que es donde ya estaban sus hermanos. Los favoritos **no desalojan** y las
+  recientes sí: aquellas las escribe la app, estas las escribe una persona, y desalojar la más vieja
+  en silencio es decidir por alguien sobre algo suyo.
+- **El límite de 40 caracteres cuenta grafemas con `Intl.Segmenter`.** `'👨‍👩‍👧‍👦'.length` es 11:
+  contar unidades de código dejaría a alguien sin poder escribir seis emojis mientras la app le dice
+  que se pasó de cuarenta.
+- **El filtro de "ni un string fuera de copy" ahora excluye por POSICIÓN, no por forma.** SPEC_15
+  trajo componentes con `className` de Tailwind, que son cadenas con espacios indistinguibles de una
+  frase. Se descarta lo que está **dentro de un `className`** y nada más: cualquier filtro basado en
+  "parece técnico" acabaría tragándose copy de verdad, que es lo que el criterio existe para cazar.
+- **El separador `' · '` de las filas se movió a `copy.respiracion.favoritos.separador`.** Es
+  puntuación, pero se ve, y elegirla es una decisión editorial: podría ser «·», «•» o un guion largo.
+
+| Regla | Enunciado |
+|---|---|
+| **RN-RE-SND-00** | El `dist` no crece por activos de audio. Ni un archivo, ni una dependencia. |
+| **RN-RE-SND-01/02** | `silencio` es el valor de fábrica **y** una opción explícita de la lista. |
+| **RN-RE-SND-03** | `liberar()` deja 0 nodos conectados y 0 eventos programados. |
+| **RN-RE-SND-04/05** | El ruido se genera una vez en un buffer de 4 s, con 200 ms de cruce interno. |
+| **RN-RE-SND-06** | Los eventos se programan con 200 ms de anticipación sobre `ctx.currentTime`. `setTimeout` despierta el planificador; **nunca dispara un sonido**. |
+| **RN-RE-SND-07** | Ningún ambiente tiene un pulso periódico perceptible. |
+| **RN-RE-SND-08** | Toda ganancia se mueve con rampa. **Nunca `.value = x`.** |
+| **RN-RE-SND-09/10/11** | Entrada 2,0 s · cierre 3,0 s · `terminar()` 0,8 s. |
+| **RN-RE-SND-12/13** | Al pausar: ambiente al 30 %, guía a 0. |
+| **RN-RE-SND-14** | Cambio en vivo: cruce de 1,2 s sin silencio intermedio. |
+| **RN-RE-SND-15** | La ganancia maestra se queda en 1: el volumen del sistema es de quien lo tiene. |
+| **RN-RE-SND-16** | Volumen 0 ≠ `silencio`. Lo primero no libera nodos; lo segundo sí. |
+| **RN-RE-SND-19/20/21** | La guía suena al **inicio** de `inhalar` y de `exhalar`, nunca en retenciones, y se dispara desde el cambio de fase del motor. |
+| **RN-RE-SND-27/28/29** | Vista previa inmediata al volumen configurado; se apaga sola a los 20 s; el primer toque es el gesto que crea el contexto. |
+| **RN-RE-FAV-01** | 20 favoritos. Al intentar el 21 se explica; **no se borra nada solo**. |
+| **RN-RE-FAV-02/03** | Nombre de 1 a 40 grafemas, único sin distinguir mayúsculas ni espacios de los extremos. |
+| **RN-RE-FAV-04** | El campo llega prellenado y seleccionado, con sufijo numérico si hace falta. |
+| **RN-RE-FAV-05** | Configuración idéntica → "ya la tienes guardada", no un duplicado. |
+| **RN-RE-FAV-09/10** | Cargar aplica los ocho campos e incrementa `usos`; **no arranca la sesión**. |
+| **RN-RE-FAV-11** | Tras modificar, "Guardar cambios" o "Guardar como nueva". Nunca se sobrescribe en silencio. |
+| **RN-RE-FAV-12/13** | Un sonido o un patrón que ya no valen se corrigen al cargar y se avisa. No falla. |
+| **RN-RE-FAV-14/15/16** | 44 px de área táctil · Enter confirma y Escape cancela · el vacío no ofrece crear de la nada. |
+
+**Pendiente de SPEC_15:**
+- **Nada de esto se ve todavía.** Ninguna pantalla monta `PanelSonido` ni `ListaFavoritos`, así que
+  el bundler **elimina la capa entera por tree-shaking** y el `dist` solo creció ~1 kB (el singleton
+  y el copy). La cifra real —12,5 kB, 4,2 kB comprimida— se midió aparte forzando la inclusión.
+  **Hay que volver a medirla cuando SPEC_16 monte la pantalla.**
+- **Las 7 validaciones manuales de audio de §10 están sin hacer**, y son las que más importan de todo
+  este spec: las pruebas no oyen. Hace falta escuchar cada sonido dos minutos seguidos con audífonos
+  y con la bocina del teléfono, comprobar que ninguno enmascara el ritmo, y sentir si la bajada al
+  30 % al pausar se percibe cuidada o brusca.
+- **La Media Session API (RN-RE-SND-25) y el manejo de `visibilitychange` (RN-RE-SND-23/24/26) no se
+  conectaron.** Son efectos de pantalla, igual que la Wake Lock: le tocan a SPEC_16, que es quien
+  tiene el ciclo de vida. La lógica que necesitan —`restablecer()` con rampa de 400 ms— ya está en el
+  mezclador y probada.
+- **Caso 6.14 (dos pestañas abiertas): la última escritura gana**, sin bloqueo optimista. Queda como
+  limitación conocida, tal como la propia spec pide documentar.
+- **Caso 6.15: los cambios sin guardar se pierden al salir, sin advertencia.** Es coherente con que
+  la configuración sea efímera hasta que se guarda, y la spec pide anotarlo aquí.
+- **Deshacer una eliminación (RN-RE-FAV-08) y su ventana de 6 s** están en el copy y en la interfaz
+  de `ListaFavoritos`, pero **quien cuenta los seis segundos y confirma el borrado al navegar
+  (caso 6.11) es la pantalla**, que no existe. La lista solo pinta el aviso que le pasan.
 
 **Deuda consciente de Fase 1 (se salda en su spec):**
 - **Los 16 íconos de emoción no se hicieron, y es una decisión, no un olvido.** SPEC_12 §10 excluye

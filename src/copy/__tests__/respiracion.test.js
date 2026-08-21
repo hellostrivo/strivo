@@ -32,8 +32,11 @@ describe('el namespace existe y está completo (§7.2)', () => {
       'estados',
       'fases',
       'fasesAccesibles',
+      // `favoritos` y `sonidos` los añadió SPEC_15 (§4.4).
+      'favoritos',
       'patrones',
       'seguridad',
+      'sonidos',
       'subtitulo',
       'titulo',
       'vacio',

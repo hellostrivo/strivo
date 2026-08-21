@@ -49,8 +49,25 @@ function soloCodigo(fuente) {
     .join('\n')
 }
 
+/**
+ * Quita las clases de estilo antes de buscar texto.
+ *
+ * Un `className` de Tailwind es una cadena con espacios —`'flex flex-col gap-6'`—
+ * y por forma es indistinguible de una frase. Se excluye **por posición y no por
+ * aspecto**: cualquier filtro basado en "parece técnico" acabaría tragándose
+ * copy de verdad, que es justo lo que este criterio existe para cazar. Aquí lo
+ * que se descarta es lo que está dentro de un `className`, y nada más.
+ */
+function sinClases(codigo) {
+  return codigo
+    .replace(/className="[^"]*"/g, 'className=""')
+    .replace(/className=\{[\s\S]*?\}\n/g, 'className={}\n')
+    .replace(/className=\{`[^`]*`\}/g, 'className={}')
+    .replace(/className=\{clsx\([\s\S]*?\)\}/g, 'className={}')
+}
+
 function literalesDe(fuente) {
-  const codigo = soloCodigo(fuente)
+  const codigo = sinClases(soloCodigo(fuente))
   return (
     codigo
       .split('\n')
