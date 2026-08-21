@@ -548,6 +548,11 @@ export const copy = {
           titulo: 'Mi diario de hoy',
           placeholder: 'Lo que sea',
         },
+        // Salida intencional del editor. No es un botón de guardar —el journal
+        // se guarda solo (§5.8)— y por eso no dice "Guardar": diría que sin
+        // tocarlo no se guardó. Es el cierre del flujo de escritura, la misma
+        // palabra con la que Respiración cierra el suyo.
+        listo: 'Listo',
         borrar: 'Borrar esta entrada',
         borrarConfirmar: '¿Borrarla del todo?',
       },

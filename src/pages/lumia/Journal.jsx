@@ -24,6 +24,7 @@ import {
   ID_OTRA,
   MAX_PALABRA,
   alternarEmocion,
+  etiquetaPropia,
   etiquetasDe,
   primeraPalabra,
 } from '@/lumia/emocionesJournal'
@@ -151,10 +152,18 @@ function JournalAbierto({ uid, pin, onHideNav }) {
               placeholder: textos.editor.emociones.otra.placeholder,
               maxLength: MAX_PALABRA,
               valor: borrador.otherText ?? '',
+              // La palabra que enseña el chip cuando hay algo escrito. Sale del
+              // mismo sitio que la de la lista de entradas, así que se lee igual
+              // mientras se escribe y una vez guardada.
+              etiquetaValor: etiquetaPropia(borrador.otherText),
+              // Enter no guarda distinto: vuelca lo mismo que el autoguardado
+              // habría escrito 800 ms después. Es adelantarlo, no otra vía.
+              onConfirmar: acciones.volcar,
               // El límite es duro **en el campo** y no solo al guardar
               // (§5.4.1): un campo que acepta dos palabras y guarda una las
               // está corrigiendo en silencio, que es justo lo que RN-DB4-08
-              // prohíbe. Lo que se ve escrito es lo que se guarda.
+              // prohíbe. Lo que se ve escrito es lo que se guarda. Por eso
+              // Enter no necesita validar: llega con la regla ya aplicada.
               onCambiarValor: (valor) => acciones.escribir({ otherText: primeraPalabra(valor) }),
             }}
           />
@@ -173,6 +182,15 @@ function JournalAbierto({ uid, pin, onHideNav }) {
             aria-label={textos.editor.texto.titulo}
           />
         </section>
+
+        {/* Cierre natural del flujo de escritura. Llama al **mismo**
+            `cerrarEditor` que "Volver": no hay un guardado propio de "Listo" ni
+            distinto del de arriba, porque el journal ya se guarda solo (§5.8).
+            Nunca se deshabilita — no hay contenido mínimo que validar, y una
+            entrada vacía sale sin dejar rastro (RN-JR-03, "nada bloquea"). */}
+        <Button fullWidth onClick={cerrarEditor}>
+          {textos.editor.listo}
+        </Button>
 
         {borrador.id && (
           <div>

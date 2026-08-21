@@ -1,6 +1,7 @@
 // src/lumia/__tests__/emocionesJournal.test.js
 // El catálogo de emociones del Journal (§5.8.1) y su regla de selección.
 
+import { readFileSync } from 'fs'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -11,11 +12,23 @@ import {
   MAX_PALABRA,
   alternarEmocion,
   etiquetaDe,
+  etiquetaPropia,
   etiquetasDe,
   paraGuardar,
   primeraPalabra,
 } from '../emocionesJournal.js'
 import { CATALOGO as CATALOGO_MANANA } from '../emociones.js'
+
+const CHIPS = 'src/components/lumia/ChipsEmociones.jsx'
+const JOURNAL = 'src/pages/lumia/Journal.jsx'
+const MANANA = 'src/components/lumia/DiarioManana.jsx'
+
+/** El código sin comentarios: lo que se ejecuta, no lo que se explica. */
+function codigoDe(ruta) {
+  return readFileSync(ruta, 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '')
+}
 
 describe('el catálogo (§5.8.1)', () => {
   it('tiene quince emociones, en orden fijo', () => {
@@ -126,5 +139,88 @@ describe('lo que se guarda', () => {
 
   it('sin emociones, `otherText` es null y no una cadena vacía', () => {
     expect(paraGuardar([], '').otherText).toBeNull()
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// El chip "+ Otra" acusa recibo, y Enter es una forma válida de confirmarlo.
+//
+// Antes no lo era: el campo solo tenía `onChange` desde SPEC_07, así que Enter
+// no hacía absolutamente nada. Y como tampoco había acuse por ninguna otra vía
+// —ni botón, ni `onBlur`—, escribir la palabra no cambiaba un solo píxel en
+// pantalla, aunque sí se estuviera guardando. Las dos mitades se arreglan
+// juntas: sin la primera, Enter seguiría sin verse; sin la segunda, seguiría
+// sin ocurrir.
+
+describe('la palabra propia se presenta igual en todas partes', () => {
+  it('va entrecomillada, se escriba donde se escriba', () => {
+    expect(etiquetaPropia('serena')).toBe('«serena»')
+    expect(etiquetasDe([ID_OTRA], 'serena', 'f')).toEqual([etiquetaPropia('serena')])
+  })
+
+  it('sin palabra no hay etiqueta, así que el chip conserva su rótulo', () => {
+    expect(etiquetaPropia('')).toBe('')
+    expect(etiquetaPropia('   ')).toBe('')
+    expect(etiquetaPropia(null)).toBe('')
+  })
+
+  it('aplica la regla de una sola palabra, igual que al guardar', () => {
+    expect(etiquetaPropia('muy serena hoy')).toBe('«muy»')
+    expect(etiquetaPropia('a'.repeat(MAX_PALABRA + 8))).toBe(`«${'a'.repeat(MAX_PALABRA)}»`)
+  })
+})
+
+describe('Enter confirma la palabra propia', () => {
+  it('el campo escucha Enter y suelta el foco', () => {
+    const codigo = codigoDe(CHIPS)
+    expect(codigo).toMatch(/evento\.key !== 'Enter'/)
+    expect(codigo).toMatch(/onConfirmar\?\.\(\)/)
+    expect(codigo).toMatch(/currentTarget\.blur\(\)/)
+  })
+
+  it('confirma con lo que ya está en el borrador: no valida por su cuenta', () => {
+    // La regla de una sola palabra corre en `onCambiarValor`, en cada tecla.
+    // Si Enter tuviera su propio `primeraPalabra`, habría dos sitios donde vive
+    // la misma regla y uno de los dos envejecería.
+    const chips = codigoDe(CHIPS)
+    expect(chips).not.toMatch(/primeraPalabra/)
+    expect(codigoDe(JOURNAL)).toMatch(/onCambiarValor: \(valor\) =>[\s\S]{0,80}primeraPalabra/)
+  })
+
+  it('Enter vuelca lo mismo que el autoguardado, no una segunda vía', () => {
+    expect(codigoDe(JOURNAL)).toMatch(/onConfirmar: acciones\.volcar/)
+  })
+
+  it('un espacio no puede colarse por ninguna vía', () => {
+    // Lo que Enter confirma es lo que hay en el borrador, y ahí no hay espacios.
+    expect(primeraPalabra('serena y en paz')).toBe('serena')
+    expect(paraGuardar([ID_OTRA], 'serena y en paz').otherText).toBe('serena')
+  })
+})
+
+describe('el acuse vive en el chip', () => {
+  it('con el chip elegido y palabra escrita, el chip muestra la palabra', () => {
+    const codigo = codigoDe(CHIPS)
+    expect(codigo).toMatch(/seleccion\.includes\(otra\.id\) && otra\.etiquetaValor/)
+    expect(codigo).toMatch(/<span>\{textoDeOtra\}<\/span>/)
+  })
+
+  it('el lector de pantalla oye lo mismo que se ve', () => {
+    expect(codigoDe(CHIPS)).toMatch(/aria-label=\{`\$\{textoDeOtra\}/)
+  })
+
+  it('el formato no se construye en el componente: llega ya hecho', () => {
+    // El componente lo comparten dos catálogos y no puede conocer el de uno.
+    expect(codigoDe(CHIPS)).not.toMatch(/«/)
+    expect(codigoDe(JOURNAL)).toMatch(/etiquetaValor: etiquetaPropia/)
+  })
+})
+
+describe('la mañana no tiene palabra propia (§5.3.2)', () => {
+  it('su catálogo no ofrece "+ Otra", así que el arreglo no la alcanza', () => {
+    const manana = codigoDe(MANANA)
+    const monta = manana.slice(manana.indexOf('<ChipsEmociones'))
+    expect(monta.slice(0, monta.indexOf('/>'))).not.toMatch(/\botra=/)
+    expect(CATALOGO_MANANA.some((emocion) => emocion.id === ID_OTRA)).toBe(false)
   })
 })

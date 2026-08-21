@@ -684,6 +684,45 @@ transversal de Respiración. SPEC_13 entrega motor, catálogo y datos, sin una s
   entero en cualquiera. Con eso la prop `ayudas` se queda sin un solo consumidor y se retira de
   `CampoGratitud` y de `FilasDinamicas`. **La noche no se toca**: conserva "algo de hoy".
 
+- **El editor del Journal cierra con "Listo", 20 ago.** Un botón de ancho completo al final del
+  contenido —tras la tarjeta de texto y por encima de "Borrar esta entrada"—, en `primary`: es la
+  única acción principal de la pantalla y el resto de sus botones son `surface`. **No es un botón de
+  guardar y por eso no dice "Guardar"**: el journal se guarda solo desde SPEC_07 (tecla a los
+  800 ms, blur, cierre y desmontaje), y una etiqueta de guardado sugeriría que sin tocarlo no se
+  guardó. Es la misma palabra con la que Respiración cierra su sesión.
+- **"Listo" y "Volver" son el mismo camino, literalmente el mismo handler.** Los dos llaman a
+  `cerrarEditor`, que es `acciones.cerrar()` de `useJournal` y nada más. Dos salidas con dos
+  guardados distintos serían dos comportamientos que envejecen por separado — el mismo motivo por el
+  que N6 reutilizaba `CierreDelDia` en vez de tener ceremonia propia. "Volver" se queda arriba sin
+  cambios: sigue siendo la salida disponible en cualquier momento.
+- **No se deshabilita nunca.** No hay contenido mínimo que validar ("nada bloquea, todo es
+  saltable"), y salir de una entrada vacía no deja rastro porque `journal.guardar` no la escribe.
+
+- **El chip "+ Otra" del Journal acusa recibo, y Enter lo confirma, 20 ago.** Se reportó como
+  regresión de Bloque 06 y **no lo era**: el campo nació con SPEC_07 (`e615cb6`) —Bloque 06 creó
+  `ChipsEmociones` sin la prop `otra`— y en ninguna versión tuvo `onKeyDown`. Enter **nunca** hizo
+  nada. SPEC_12 no tocó ese bloque.
+- **El diagnóstico de fondo era otro: no había acuse por ninguna vía.** Ese `CampoLinea` solo tenía
+  `onChange` —sin botón y sin `onBlur`—, así que la palabra se escribía al borrador en cada tecla y
+  la guardaba el autoguardado de los 800 ms. **Se guardaba de verdad**, pero nada en pantalla lo
+  decía: el chip seguía diciendo "Otra" y el campo seguía abierto. Arreglar solo Enter habría dejado
+  el mismo bug reportable desde el blur, así que se arreglan las dos mitades.
+- **El chip muestra la palabra mientras está elegido**, con el mismo formato `«palabra»` que ya usaba
+  la lista de entradas. El formato salió a `etiquetaPropia()` en `src/lumia/emocionesJournal.js`, que
+  es ahora el **único** sitio donde vive —`etiquetasDe` lo reusa—. Al soltar el chip vuelve el
+  rótulo: `paraGuardar` descarta la palabra sin selección, y seguir enseñándola diría que hay algo
+  guardado que no lo está.
+- **Enter vuelca y suelta el foco; no valida por su cuenta.** `onConfirmar: acciones.volcar` adelanta
+  lo que el autoguardado iba a escribir de todos modos — no es una segunda vía de guardado, que es el
+  mismo criterio con el que "Listo" y "Volver" comparten handler. La regla de una sola palabra vive
+  **solo** en `onCambiarValor`, que ya corrió en cada tecla: una prueba comprueba que
+  `ChipsEmociones` no nombra `primeraPalabra`, porque dos sitios con la misma regla envejecen
+  distinto. El `blur` es lo que cierra el teclado en móvil.
+- **`ChipsEmociones` sigue sin conocer el catálogo que lo monta.** `etiquetaValor` llega ya formateada
+  desde `Journal.jsx`, igual que el catálogo y la regla de selección: una prueba falla si aparece un
+  `«` dentro del componente. **La mañana no se ve afectada** —`DiarioManana` no pasa `otra` y su
+  catálogo no tiene `ID_OTRA`—, y hay una prueba que lo fija por si algún día lo pasara.
+
 **Home de Strivo — revisión de SPEC_11 y de §C0.2/§C7.1, 19 ago:**
 - **Cada apertura aterriza en un Home de marca** (`src/pages/Home.jsx`, ruta `/`): símbolo de
   Strivo, una animación de bienvenida sin texto y dos accesos —"Lumia · Reflexión / ¿Cómo estoy?"

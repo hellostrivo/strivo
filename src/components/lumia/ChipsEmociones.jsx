@@ -22,7 +22,13 @@ import { resolveGender } from '@copy/gender'
  * @param {object[]} catalogo - `{ id, emoji, label: {m,f,n} }`.
  * @param {Function} alternar - Regla de selección del catálogo correspondiente.
  * @param {object} [otra] - Chip de palabra propia: `{ id, chip, label,
- *   placeholder, valor, onCambiarValor, maxLength }`. Sin él no se pinta.
+ *   placeholder, valor, onCambiarValor, maxLength, etiquetaValor, onConfirmar }`.
+ *   Sin él no se pinta — y hoy solo lo pasa el Journal (§5.8.1): la mañana
+ *   pregunta qué cultivar y su catálogo no admite palabra propia.
+ *
+ *   `etiquetaValor` es la palabra ya formateada por quien monta el chip. El
+ *   componente no la construye: el formato de la palabra propia es del catálogo
+ *   que la ofrece, igual que el catálogo y la regla de selección.
  */
 export default function ChipsEmociones({
   catalogo,
@@ -43,6 +49,12 @@ export default function ChipsEmociones({
   }
 
   const total = catalogo.length + (otra ? 1 : 0)
+
+  // La palabra solo sustituye al rótulo mientras el chip está elegido: al
+  // soltarlo la palabra deja de contar (`paraGuardar` la descarta), así que
+  // seguir enseñándola diría que hay algo guardado que no lo está.
+  const textoDeOtra =
+    otra && seleccion.includes(otra.id) && otra.etiquetaValor ? otra.etiquetaValor : otra?.chip
 
   const clases = (elegida, punteado) =>
     clsx(
@@ -77,16 +89,20 @@ export default function ChipsEmociones({
           )
         })}
 
-        {/* Borde punteado para distinguirlo de los chips de catálogo (§5.8.1). */}
+        {/* Borde punteado para distinguirlo de los chips de catálogo (§5.8.1).
+            Con una palabra escrita el chip **la muestra**: es el único acuse de
+            que quedó registrada, y llega por cualquier vía —tecleando, con
+            Enter o al salir del campo—. Sin él, escribir la palabra no produce
+            ni un cambio en pantalla y parece que no se guardó. */}
         {otra && (
           <button
             type="button"
             onClick={() => tocar(otra.id)}
             aria-pressed={seleccion.includes(otra.id)}
-            aria-label={`${otra.chip}, ${total} de ${total}`}
+            aria-label={`${textoDeOtra}, ${total} de ${total}`}
             className={clases(seleccion.includes(otra.id), true)}
           >
-            <span>{otra.chip}</span>
+            <span>{textoDeOtra}</span>
           </button>
         )}
       </div>
@@ -96,6 +112,19 @@ export default function ChipsEmociones({
           value={otra.valor}
           maxLength={otra.maxLength}
           onChange={(evento) => otra.onCambiarValor(evento.target.value)}
+          // Enter es una forma legítima de decir "ya está": vuelca lo pendiente
+          // y suelta el foco, que en móvil es lo que cierra el teclado. No
+          // valida nada por su cuenta ni puede colar una frase — la regla de
+          // una sola palabra vive en `onCambiarValor` y ya corrió en cada
+          // tecla, así que el valor que Enter confirma es el que se ve escrito.
+          // `preventDefault` es por si algún día este editor fuera un <form>:
+          // ahí Enter lo enviaría, y enviar no es lo que se está pidiendo.
+          onKeyDown={(evento) => {
+            if (evento.key !== 'Enter') return
+            evento.preventDefault()
+            otra.onConfirmar?.()
+            evento.currentTarget.blur()
+          }}
           placeholder={otra.placeholder}
           aria-label={otra.label}
           className="max-w-xs"

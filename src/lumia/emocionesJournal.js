@@ -111,11 +111,25 @@ export function paraGuardar(seleccion, otra) {
 }
 
 /**
+ * La palabra propia, lista para presentarse: entrecomillada y sin transformar,
+ * igual que en el estado de sueño (§5.4.1). Vacía si no hay palabra.
+ *
+ * **Este es el único sitio donde vive ese formato.** Lo leen la lista de
+ * entradas y el propio chip "+ Otra", que es lo que hace que la palabra se
+ * presente igual mientras se escribe y una vez guardada: dos formatos para lo
+ * mismo acabarían separándose.
+ */
+export function etiquetaPropia(texto) {
+  const palabra = primeraPalabra(texto)
+  return palabra === '' ? '' : `«${palabra}»`
+}
+
+/**
  * Etiquetas para presentar una entrada guardada. La palabra propia va
  * entrecomillada y sin transformar, igual que en el estado de sueño (§5.4.1).
  */
 export function etiquetasDe(seleccion, otra, genero) {
   return (seleccion ?? []).map((id) =>
-    id === ID_OTRA ? `«${primeraPalabra(otra)}»` : etiquetaDe(id, genero),
+    id === ID_OTRA ? etiquetaPropia(otra) : etiquetaDe(id, genero),
   )
 }
