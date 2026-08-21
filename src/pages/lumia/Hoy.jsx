@@ -60,7 +60,7 @@ function Fondo({ momento }) {
   )
 }
 
-export default function Hoy({ uid, onHideNav }) {
+export default function Hoy({ uid, onHideNav, onMomento }) {
   const { estado, carga, error, acciones, reintentar } = useDiario(uid)
   const [momento, setMomento] = useState(momentoInicial)
   const [vista, setVista] = useState('hoy')
@@ -84,6 +84,24 @@ export default function Hoy({ uid, onHideNav }) {
   }
 
   const superficie = momento === 'manana' ? 'light' : 'dark'
+
+  /**
+   * El momento sube a la raíz de la app, que es el único ancestro común con la
+   * barra inferior: los tokens del tema viajan por el árbol del DOM, y la barra
+   * es hermana de `<main>`, no descendiente de esta pantalla.
+   *
+   * **RN-HOY-05 sigue intacta**: el conmutador continúa siendo el único origen
+   * del tema. Esto no lo decide en otro sitio, lo cuenta — el estado no se ha
+   * movido de aquí. Es el mismo trato que `onHideNav`.
+   *
+   * Al desmontarse avisa con `null`: el Journal y el Historial no tienen
+   * momento, y dejar el atributo puesto teñiría su barra con la sección de una
+   * pantalla que ya no está.
+   */
+  useEffect(() => {
+    onMomento?.(momento)
+    return () => onMomento?.(null)
+  }, [momento, onMomento])
 
   /**
    * §C7.5 — El umbral se cruza al mostrarse la mañana, una vez por sesión.

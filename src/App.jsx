@@ -105,6 +105,12 @@ function Espacios({ uid }) {
   // `null`. Con "reducir movimiento" no se muestra: entrar es inmediato.
   const [entrando, setEntrando] = useState(null)
 
+  // La sección que muestra Hoy, o `null` fuera de ella. No es un segundo origen
+  // del tema —lo sigue eligiendo el conmutador (RN-HOY-05)—: es el eco que
+  // necesita el cromo. La barra inferior es hermana de `<main>`, así que sin
+  // esto no hay forma de que herede los tokens de Lumia, que viajan por el DOM.
+  const [momentoLumia, setMomentoLumia] = useState(null)
+
   const { pathname } = useLocation()
   const espacio = espacioDe(pathname)
 
@@ -146,6 +152,9 @@ function Espacios({ uid }) {
     <div
       data-space={espacio}
       data-moment={momentoDe()}
+      // `data-moment` lo decide el reloj y `data-lumia` lo decide quien mira:
+      // no son lo mismo y por eso conviven. Sin atributo fuera de Hoy.
+      data-lumia={momentoLumia ?? undefined}
       data-paleta={paletaExplorada()}
       data-surface="light"
       className="flex min-h-screen flex-col bg-espacio font-sans text-on-surface"
@@ -158,7 +167,10 @@ function Espacios({ uid }) {
         <Routes>
           <Route path="/" element={<Home rutaDe={(id) => ultima.current[id] ?? INICIO[id]} />} />
 
-          <Route path="/lumia/hoy" element={<Hoy uid={uid} onHideNav={setHideNav} />} />
+          <Route
+            path="/lumia/hoy"
+            element={<Hoy uid={uid} onHideNav={setHideNav} onMomento={setMomentoLumia} />}
+          />
           <Route path="/lumia/journal" element={<Journal uid={uid} onHideNav={setHideNav} />} />
           <Route path="/lumia/historial" element={<Historial uid={uid} />} />
 

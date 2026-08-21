@@ -15,6 +15,12 @@
 //
 // RN-DB4-01 — Aquí no hay un solo enlace a Formia. El único cruce entre
 // espacios es la barra de abajo (§C7.7.3).
+//
+// **No nombra ni un color.** Pide superficies por su papel —`espacio-cabecera`,
+// `on-surface`, `espacio-acento`— y quien decide qué son es el tema (RN-SURF-01).
+// Por eso vestirla de contratono en la mañana no toca este archivo más que para
+// darle su clase: las tres secciones conservan forma, peso y borde, y solo se
+// invierte lo que hay debajo de ellas.
 
 import { NavLink } from 'react-router-dom'
 import { clsx } from 'clsx'
@@ -35,7 +41,11 @@ export default function NavLumia() {
     // `fixed` que cubre la ventana entera, y sin esto la cabecera queda debajo
     // —presente en el DOM, invisible en pantalla—. Por debajo de la barra de
     // espacios (z-40) y de las secuencias de cierre (z-50), que sí mandan.
-    <header className="relative z-30 flex flex-col gap-3 border-b border-espacio bg-espacio-cabecera px-5 pb-3 pt-safe">
+    // `cabecera-espacio` no pinta nada por sí sola: es el asidero para que el
+    // momento de Hoy pueda vestirla desde `globals.css`, igual que a la barra de
+    // abajo. En la mañana las dos van en el contratono del conmutador; en el
+    // Journal y en el Historial, donde no hay momento, manda lo de siempre.
+    <header className="cabecera-espacio relative z-30 flex flex-col gap-3 border-b border-espacio bg-espacio-cabecera px-5 pb-3 pt-safe transicion-tema">
       <p className="flex items-center gap-2 text-sm text-on-surface-soft">
         <Simbolo marca="lumia" alto={18} />
         {textos.lumia.cabecera}

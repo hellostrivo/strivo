@@ -13,6 +13,13 @@
 //
 // Se queda abajo, donde el pulgar ya la busca, y lleva el símbolo de la marca
 // madre. Es el segundo sitio donde aparece, después del arranque de sesión.
+//
+// **No conoce el espacio en el que está.** Declara la clase `barra-strivo` y el
+// tema lo pone `globals.css`: dentro de Lumia toma el contratono del conmutador
+// Mañana/Noche, y fuera conserva el gris del cromo. Es la misma decisión que
+// SPEC_10 tomó con el velo de `TransicionLuz` —el tema en el CSS, no en props—,
+// y por el mismo motivo: un componente compartido que recibiera el momento de
+// Lumia por prop dejaría de ser compartido.
 
 import { NavLink } from 'react-router-dom'
 import { clsx } from 'clsx'
@@ -26,9 +33,17 @@ export default function BarraStrivo() {
     <nav
       aria-label={textos.barraLabel}
       className={clsx(
+        // `barra-strivo` no pinta nada por sí sola: es el asidero para que cada
+        // espacio decida cómo se ve la barra desde `globals.css`. Hoy solo Lumia
+        // lo usa, y le da el contratono de su conmutador. Sin regla que la
+        // alcance —Formia, Journal, Historial— manda lo de siempre.
+        'barra-strivo',
         'fixed bottom-0 left-0 right-0 z-40',
         'flex items-stretch',
         'border-t border-espacio bg-espacio-cabecera/95 backdrop-blur-sm',
+        // El cambio de sección de Hoy la recolorea: acompaña al cruce del fondo
+        // en vez de saltar a destiempo.
+        'transicion-tema',
         'pb-safe',
       )}
     >

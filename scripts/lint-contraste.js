@@ -94,6 +94,14 @@ const MARCA = {
   // §6.3.9 — El círculo de la respiración, en sus dos versiones.
   breathAm: '#E8A54A',
   breathPm: '#DCCFF1',
+  // El símbolo de Strivo lleva su color dentro del `.svg` (manual §3.2: el tono
+  // de firma no es el primario de la paleta y no se toca). Sobre el contratono
+  // de la mañana no se ve, así que ahí se pinta la versión monocromática que el
+  // manual §9 tiene pendiente. Se miden los dos.
+  simbolo: '#2B2730',
+  simboloMono: '#FFFFFF',
+  // La vela de Lumia, también horneada en su `.svg`.
+  velaLumia: '#7563A7',
 }
 
 const CUERPO = 7
@@ -115,6 +123,17 @@ const PARES = [
   ['Lumia·AM · borde sobre cabecera', MARCA.lumiaPm400, MARCA.lumiaAm300, SEPARADOR],
   ['Lumia·AM · cuerpo sobre conmutador', TEXTO.onDark, MARCA.conmutadorAm, CUERPO],
   ['Lumia·AM · conmutador sobre base', MARCA.conmutadorAm, MARCA.lumiaAm50, NO_TEXTO],
+  // La barra inferior toma ese mismo contratono, así que su texto es el par de
+  // arriba. Lo propio suyo es el símbolo, que sobre el oscuro va en monocromo.
+  ['Lumia·AM · símbolo mono sobre barra', MARCA.simboloMono, MARCA.conmutadorAm, NO_TEXTO],
+  // La cabecera del espacio comparte ese contratono en la sección Mañana.
+  ['Lumia·AM · cabecera sobre base', MARCA.conmutadorAm, MARCA.lumiaAm50, NO_TEXTO],
+  ['Lumia·AM · rótulo sobre cabecera', TEXTO.onDarkSoft, MARCA.conmutadorAm, CUERPO],
+  ['Lumia·AM · sección sobre cabecera', TEXTO.onDark, MARCA.conmutadorAm, CUERPO],
+  // El borde de la sección activa. `lumia-pm-500` daría 2,97:1 y por eso ahí se
+  // usa el lavanda claro de la misma paleta.
+  ['Lumia·AM · borde activo sobre cabecera', MARCA.lumiaAm100, MARCA.conmutadorAm, NO_TEXTO],
+  ['Lumia·AM · vela mono sobre cabecera', MARCA.simboloMono, MARCA.conmutadorAm, NO_TEXTO],
 
   // ── Lumia · Noche ───────────────────────────────────────────────────────────
   ['Lumia·PM · cuerpo sobre base', TEXTO.onLight, MARCA.lumiaPm50, CUERPO],
@@ -128,6 +147,8 @@ const PARES = [
   ['Hoy·noche · secundario sobre degradado', TEXTO.onDarkSoft, MARCA.night, GRANDE],
   ['Lumia·PM · cuerpo sobre conmutador', TEXTO.onLight, MARCA.conmutadorPm, CUERPO],
   ['Lumia·PM · conmutador sobre degradado', MARCA.conmutadorPm, MARCA.night, NO_TEXTO],
+  // De noche la barra es la pieza clara y el símbolo va tal cual sale del .svg.
+  ['Lumia·PM · símbolo sobre barra', MARCA.simbolo, MARCA.conmutadorPm, NO_TEXTO],
 
   // ── Formia · Mañana ─────────────────────────────────────────────────────────
   ['Formia·AM · cuerpo sobre base', TEXTO.onLight, MARCA.formiaAm50, CUERPO],

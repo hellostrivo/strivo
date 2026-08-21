@@ -723,6 +723,66 @@ transversal de Respiración. SPEC_13 entrega motor, catálogo y datos, sin una s
   `«` dentro del componente. **La mañana no se ve afectada** —`DiarioManana` no pasa `otra` y su
   catálogo no tiene `ID_OTRA`—, y hay una prueba que lo fija por si algún día lo pasara.
 
+- **La barra de Strivo toma el contratono del conmutador dentro de Lumia, 21 ago.** Iba en
+  `espacio-cabecera` —`strivo-100`, un gris cálido fijo a cualquier hora— y se perdía contra las dos
+  secciones de Hoy. Ahora lee **el mismo `--lumia-conmutador`** que el conmutador Mañana/Noche:
+  `#1D1833` de día, `#F2DDE7` de noche. No es un color parecido elegido a ojo, es el mismo token, y
+  una prueba comprueba que en su regla no haya ni un hex escrito a mano. Lo pidió el propietario del
+  producto. Fuera de Hoy —Journal, Historial, todo Formia— no hay atributo, no hay regla, y la barra
+  conserva su gris.
+- **El tema va en `globals.css`, no en props.** `BarraStrivo` está en `components/shared/` y no puede
+  conocer Lumia: solo declara la clase `barra-strivo` y el espacio en el que esté decide cómo se ve.
+  Es la misma decisión que SPEC_10 tomó con el velo de `TransicionLuz`, y una prueba falla si la
+  barra llega a nombrar un color o la palabra "lumia". El texto se invierte redefiniendo las
+  variables de superficie en esa regla, que es lo que hace el conmutador con su `data-surface`.
+- **El momento sube a la raíz de la app, y RN-HOY-05 queda intacta.** Los tokens del tema viajan por
+  el árbol del DOM y la barra es **hermana** de `<main>`, no descendiente de Hoy: sin subirlo, no hay
+  forma de que herede nada. `Hoy` lo cuenta con `onMomento`, igual que ya contaba `onHideNav`, y
+  `App` lo refleja en `data-lumia`. **El estado no se ha movido**: el conmutador sigue siendo el
+  único que lo decide, y una prueba comprueba que `App` nunca llama a `setMomentoLumia` por su
+  cuenta. Al desmontarse Hoy el atributo se retira, o el Journal heredaría la sección de una
+  pantalla que ya no está.
+- **`data-lumia` y `data-moment` conviven porque no son lo mismo.** El segundo lo decide el reloj y
+  elige la paleta de marca (SPEC_12); el primero lo decide quien mira. A las diez de la mañana con el
+  conmutador en Noche son distintos, y ese es justo el caso que hacía falta resolver bien.
+- **El símbolo de Strivo va en monocromo blanco sobre el contratono de la mañana.** Su color vive
+  dentro del `.svg` (`#2B2730`, manual §3.2) y sobre `#1D1833` se queda en **1,17:1** — invisible. El
+  blanco da 17,06:1. Es la **versión monocromática que el manual §9 tiene pendiente**: "se puede
+  derivar de los SVG actuales cambiando el stroke a un solo valor, pero conviene que el diseñador la
+  apruebe". Está derivada con un filtro en el CSS y **no** como archivo nuevo, para que aprobarla —o
+  sustituirla por la del diseñador— sea borrar tres líneas. **Pendiente de esa aprobación.** De noche
+  no hace falta: el símbolo tal cual da 11,33:1 sobre `#F2DDE7`.
+- **`lint:contraste` mide los dos símbolos**, no solo los textos. Fue lo que puso número al 1,17:1
+  antes de escribir el arreglo.
+
+- **La cabecera de Lumia acompaña a la barra en la sección Mañana, 21 ago.** Sobre `lumia-am-300`
+  —un rosa pálido— la franja se comía con la mañana clara. Ahora toma el mismo `--lumia-conmutador`:
+  arriba y abajo son el mismo bloque de color, con el contenido de la pantalla entre los dos. Lo
+  pidió el propietario del producto. Mismo mecanismo que la barra: `NavLumia` solo declara la clase
+  `cabecera-espacio` y el tema lo pone `globals.css`.
+- **Solo en Mañana, y es deliberado.** De noche la cabecera se queda en `lumia-am-100`, que es lo que
+  **SPEC_12 decidió** para que su texto siga saliendo de los tokens AAA sobre claro —"poner cromo
+  oscuro sobre páginas claras habría dejado una costura"—. Ahí no se pierde: la barra de abajo
+  también es la pieza clara. El contratono resuelve la mañana, que era el caso roto. Una prueba falla
+  si alguien añade la regla para la noche sin volver a mirar esa decisión.
+- **Las tres secciones conservan forma, peso y borde; lo que cambia es la superficie que tienen
+  debajo.** "Quedan iguales" es sobre su diseño: literalmente iguales serían tinta oscura sobre
+  `#1D1833`, es decir invisibles. La inversión llega sola porque `NavLumia` **no nombra ni un color**
+  —pide superficies por su papel (RN-SURF-01)—, así que vestirla de contratono no tocó ese archivo
+  más que para darle su clase.
+- **El borde de la sección activa sí hubo que cambiarlo, y lo cazó la medición.** `lumia-pm-500` sobre
+  el contratono da **2,97:1**, por debajo del 3:1 que WCAG 1.4.11 pide a un indicador. Dentro de la
+  cabecera en contratono `--espacio-acento` pasa a `lumia-am-100`: 11,57:1, sigue siendo color de
+  Lumia, y el estado activo además lleva peso y relleno, así que nunca se comunica solo por color
+  (criterio 7 de SPEC_11).
+- **La vela va en monocromo blanco sobre el contratono.** En su `#7563A7` da 3,33:1: pasa el umbral
+  de no-texto, pero se apaga —que es lo que se reportó—. En blanco, 17,06:1. Es la **misma versión
+  monocromática pendiente del manual §9** que usa el símbolo de Strivo en la barra, derivada del
+  mismo modo y con la misma nota: **pendiente de aprobación del diseñador**, y hoy son las dos únicas
+  dos reglas de filtro del repo.
+- **Las dos franjas pierden su línea de borde en contratono.** Lo que las separa es el bloque de
+  color entero; contra la mañana clara un borde no tiene nada que hacer.
+
 **Home de Strivo — revisión de SPEC_11 y de §C0.2/§C7.1, 19 ago:**
 - **Cada apertura aterriza en un Home de marca** (`src/pages/Home.jsx`, ruta `/`): símbolo de
   Strivo, una animación de bienvenida sin texto y dos accesos —"Lumia · Reflexión / ¿Cómo estoy?"
