@@ -258,11 +258,98 @@ describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
   })
 
   it('la respiración es la entrada de las dos secciones, sin ramas', () => {
-    // El mismo enlace de día y de noche: lo que cambia es la paleta, no el
+    // La misma tarjeta de día y de noche: lo que cambia es la paleta, no el
     // destino. La versión nocturna del acento vive en el CSS.
     expect(hoy.match(/abrir\('respiracion'\)/g) ?? []).toHaveLength(1)
+    expect(hoy.match(/<TarjetaRespiracion/g) ?? []).toHaveLength(1)
     const css = readFileSync('src/styles/globals.css', 'utf8')
     expect(css).toMatch(/\[data-lumia='noche'\][\s\S]*?--color-breath:/)
+  })
+
+  it('la entrada a la respiración es una tarjeta seleccionable entera', () => {
+    // Era un enlace en el registro de las ayudas y se pasaba por alto. Ahora es
+    // un recuadro, y el recuadro **es** el control: un botón dentro de una caja
+    // dejaría zona tocable sin cubrir, que es una invitación que se retira en
+    // cuanto la aceptas.
+    const tarjeta = codigoDe('src/components/lumia/TarjetaRespiracion.jsx')
+    const marcado = tarjeta.slice(tarjeta.indexOf('return ('))
+    expect(marcado).toMatch(/<button/)
+    expect(marcado).not.toMatch(/<a\b|role="button"/)
+    expect(marcado).toMatch(/min-h-touch\b/)
+    // Mide lo que mide su texto: no se estira al ancho de la columna, que es
+    // el de los bloques del Diario. Conserva los 56 px de alto, así que
+    // ceñirla no la deja sin blanco cómodo.
+    expect(marcado).not.toMatch(/w-full/)
+    expect(marcado).toMatch(/self-start/)
+    // Destaca por luminancia sobre el fondo (RN-HOY-07), no solo por borde, y
+    // se lee como invitación principal: peso de display y cuerpo grande.
+    expect(marcado).toMatch(/bg-lumia-tarjeta/)
+    expect(marcado).toMatch(/shadow-elev-2/)
+    // El rótulo va en cursiva y un escalón por encima del conmutador: 20 px
+    // frente a los 16 px de "Mañana"/"Noche". `text-lg` (25 px) se probó y era
+    // demasiado para una pieza que se ciñe a su texto.
+    const conmutador = codigoDe('src/components/lumia/SelectorMomento.jsx')
+    expect(conmutador).toMatch(/text-base font-medium/)
+    expect(marcado).toMatch(/italic/)
+    expect(marcado).toMatch(/text-md font-medium/)
+    expect(marcado).not.toMatch(/font-display|text-lg|text-xl/)
+    // Sin subtítulo: el rótulo es toda su superficie de texto.
+    expect(marcado).not.toMatch(/text-on-surface-soft/)
+  })
+
+  it('la tarjeta va entre el conmutador y la frase del día', () => {
+    // El orden del héroe es fecha → conmutador → respiración → frase. La frase
+    // es el aire previo a la primera pregunta del Diario, así que lo que se
+    // ofrece antes de escribir va antes de ese aire y no partiéndolo.
+    const heroe = codigoDe('src/components/lumia/HeroeHoy.jsx')
+    const marcado = heroe.slice(heroe.indexOf('<header'))
+    const orden = ['{conmutador}', '{respiracion}', '<FraseDelDia']
+    const posiciones = orden.map((pieza) => marcado.indexOf(pieza))
+    posiciones.forEach((p) => expect(p).toBeGreaterThan(-1))
+    expect(posiciones).toEqual([...posiciones].sort((a, b) => a - b))
+    // Es un hueco propio: `conmutador` sigue siendo el conmutador y nada más.
+    expect(hoy).toMatch(/respiracion=\{\s*<TarjetaRespiracion/)
+    expect(hoy).toMatch(
+      /conmutador=\{<SelectorMomento momento=\{momento\} onCambiar=\{setMomento\} \/>\}/,
+    )
+  })
+
+  it('el conmutador se ciñe a sus dos botones dentro de la columna del héroe', () => {
+    // El héroe es una columna flex y estira a sus hijos: sin `self-start`, un
+    // `inline-flex` se va al ancho completo y el contratono queda como una
+    // franja de borde a borde.
+    expect(codigoDe('src/components/lumia/SelectorMomento.jsx')).toMatch(
+      /className="self-start inline-flex/,
+    )
+  })
+
+  it('la cursiva de la tarjeta es real, no la que improvisa el navegador', () => {
+    // `@fontsource-variable/inter` solo trae los cortes verticales. Sin la hoja
+    // itálica, `font-style: italic` se resuelve inclinando la vertical por
+    // software y las curvas salen deformadas — justo lo que el manual §5.1
+    // evita al fijar una familia bien servida.
+    const css = readFileSync('src/styles/globals.css', 'utf8')
+    expect(css).toMatch(/@import '@fontsource-variable\/inter\/wght-italic\.css';/)
+  })
+
+  it('la tarjeta no nombra ni un color ni conoce el momento (RN-SURF-01)', () => {
+    // La mañana y la noche se resuelven solas por los tokens de superficie del
+    // tema que tenga encima. Una rama por momento serían dos que envejecen
+    // distinto.
+    const tarjeta = codigoDe('src/components/lumia/TarjetaRespiracion.jsx')
+    const codigo = tarjeta.slice(tarjeta.indexOf('export default'))
+    expect(codigo).not.toMatch(/#[0-9a-f]{3,8}\b/i)
+    expect(codigo).not.toMatch(/momento|manana|noche|data-lumia/)
+  })
+
+  it('no queda rastro de la duración en la entrada de ninguna de las dos secciones', () => {
+    // "Poco más de medio minuto" se retiró entero: era el texto que hacía leer
+    // la respiración como una ficha informativa. Lo que dura se sigue diciendo
+    // en la pantalla del ejercicio, antes del botón que lo arranca.
+    expect(copy.lumia.respiracion.entrada.ayuda).toBeUndefined()
+    expect(JSON.stringify(copy.lumia.respiracion.entrada)).not.toMatch(/minuto|segundo/i)
+    expect(hoy).not.toMatch(/entrada\.ayuda/)
+    expect(codigoDe('src/components/lumia/TarjetaRespiracion.jsx')).not.toMatch(/minuto/i)
   })
 
   it('no hay un recorrido guiado paralelo: cerrar el día es escribir la noche', () => {

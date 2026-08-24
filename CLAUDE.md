@@ -1719,6 +1719,72 @@ suelto a propósito.
   preexistente —muy probablemente dos entradas con la misma marca de tiempo al milisegundo— y no lo
   toca este spec. Queda anotado para que quien lo vea no lo busque en Respiración.
 
+**La entrada a la respiración pasa a ser una tarjeta, 24 ago:**
+
+En las dos secciones de Hoy —Mañana y Noche— el acceso al ejercicio de respiración era un enlace de
+texto pequeño bajo el conmutador, en `text-on-surface-soft`: el mismo registro con el que se pintan
+las ayudas y los pies de campo. Se leía como información de apoyo y se pasaba por alto. Lo pidió el
+propietario del producto. Ahora es un recuadro a ancho completo, con el rótulo **"Respira un
+momento"** centrado.
+
+- **La tarjeta entera es el control, no un botón dentro de una caja.** `TarjetaRespiracion.jsx` es
+  un `<button>` con `min-h-touch`: un recuadro con una zona tocable más pequeña que él mismo es una
+  invitación que se retira en cuanto la aceptas.
+- **Mide lo que mide su texto, no el ancho de la columna.** Se probó a ancho completo y competía con
+  los bloques del Diario, que sí ocupan la columna entera. Ceñida y alineada a la izquierda —con el
+  mismo borde de arranque que el conmutador— se lee como lo que es: una pieza suelta que se ofrece.
+  Conserva los 56 px de alto, así que el blanco sigue siendo cómodo.
+- **Destaca por luminancia y no por borde** (RN-HOY-07). Usa `bg-lumia-tarjeta`, que es el escalón
+  más claro del momento —por encima de `bg-lumia-campo`, el de los bloques del Diario de más abajo—
+  más `shadow-elev-2`. No compite con el conmutador porque aquel va en contratono y no juega en esta
+  escala; hoy es la única superficie de Hoy en el tono más claro, que es lo que RN-HOY-07 pedía.
+- **Sigue siendo una sola pieza para las dos secciones, sin ramas.** El componente **no recibe el
+  momento ni lo consulta**: pide superficies por su papel y la mañana y la noche se resuelven solas
+  (RN-SURF-01). Dos pruebas lo fijan — que no aparezca ni un hex ni la palabra `manana`/`noche`
+  dentro, y que `abrir('respiracion')` siga apareciendo una sola vez en `Hoy.jsx`.
+- **Va pegada al conmutador y por delante de la frase del día.** El orden del héroe es fecha →
+  conmutador → respiración → frase: la frase es el aire previo a la primera pregunta del Diario, así
+  que lo que se ofrece antes de escribir se ofrece antes de ese aire y no partiéndolo. Lo pidió el
+  propietario del producto, y descarta el sitio que se le había dado primero —entre el héroe y el
+  Diario, debajo de la frase—.
+- **`HeroeHoy` gana un segundo hueco, `respiracion`, en vez de meterla en el primero.** `conmutador`
+  es el conmutador y nada más; dos piezas distintas en un hueco llamado por una de ellas es un
+  nombre que empieza a mentir. El héroe sigue sin saber a dónde lleva ninguna de las dos.
+- **`SelectorMomento` necesitó `self-start`, y es un arreglo de paso.** El héroe es una columna flex
+  y estira a sus hijos: sin él, un `inline-flex` se va al ancho completo y el contratono queda como
+  una franja de borde a borde. Lo sostenía el `items-start` del envoltorio que la entrada vieja
+  compartía con él, y al separarlos se cayó. Ahora lo declara el propio componente, que es quien
+  sabe que quiere ceñirse.
+- **"Poco más de medio minuto" se retiró entero**, y con él el campo `entrada.ayuda` del copy. Era
+  el único texto secundario de la entrada y la devolvía al registro informativo del que se la quiso
+  sacar. `entrada` se queda con una sola cadena y una prueba falla si vuelve a nombrar minutos o
+  segundos. **RN-LU-RESP-01 se sigue cumpliendo**: lo que dura y que se puede salir se dicen en
+  `lead`, que es la pantalla donde está el botón "Empezar" — es decir, donde alguien decide de
+  verdad, no donde solo se le invita.
+- **Sin ícono y sin subtítulo.** Un símbolo aquí sería material de marca inventado en código, que es
+  justo lo que la deuda de los 16 íconos de emoción dice que no se hace; y una segunda línea en gris
+  reabriría el registro de apoyo. El rótulo es toda su superficie de texto.
+- **El rótulo va en cursiva, a `text-md` (20 px)**: un escalón por encima de los 16 px del
+  conmutador. La escala pasó por los tres peldaños hasta dar con este — `font-display text-lg`
+  (25 px) era demasiado, `text-base` se confundía con el conmutador, y el propietario del producto
+  fijó el punto intermedio. Una prueba compara los dos archivos, así que si el conmutador cambia de
+  cuerpo se entera.
+- **La cursiva es real y costó una hoja de fuente.** `@fontsource-variable/inter` solo trae los
+  cortes verticales: sin importar nada más, `font-style: italic` lo resuelve el navegador inclinando
+  la vertical por software —falsa cursiva, con las curvas deformadas—, que es justo lo que el manual
+  §5.1 evita al fijar una familia bien servida. `globals.css` importa ahora
+  `@fontsource-variable/inter/wght-italic.css`. **Coste medido: el subconjunto latino son 51,8 kB**
+  y los demás no se descargan (van por `unicode-range`); el precaché del service worker sube 2 kB
+  —solo el CSS—, porque `globPatterns` no incluye `woff2` y las fuentes nunca se precachearon.
+- **Medido y registrado en `lint:contraste`:** el cuerpo sobre la tarjeta da 14,47:1 en el peor caso
+  de la mañana y 9,46:1 en el peor de la noche, los dos AAA. Son dos pares nuevos en el script, con
+  el velo compuesto sobre la parada más desfavorable de cada degradado.
+- **`npm run lint`, `test`, `build`, `lint:copy`, `lint:contraste` y `format:check` en verde ·
+  1457 pruebas** (7 nuevas).
+- **Pendiente: sin validar en navegador.** Falta ver la tarjeta en un teléfono real en las dos
+  secciones — sobre todo si de noche, con el velo al 10 % sobre el degradado, se percibe como
+  recuadro o se disuelve en el fondo.
+
 **Deuda consciente de Fase 1 (se salda en su spec):**
 - **Los 16 íconos de emoción no se hicieron, y es una decisión, no un olvido.** SPEC_12 §10 excluye
   "ilustraciones nuevas" y §7 dice que los íconos de UI siguen pendientes en el manual v1.1 y que hay

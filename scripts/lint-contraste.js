@@ -134,6 +134,9 @@ const PARES = [
   // usa el lavanda claro de la misma paleta.
   ['Lumia·AM · borde activo sobre cabecera', MARCA.lumiaAm100, MARCA.conmutadorAm, NO_TEXTO],
   ['Lumia·AM · vela mono sobre cabecera', MARCA.simboloMono, MARCA.conmutadorAm, NO_TEXTO],
+  // La tarjeta de la respiración: `--lumia-tarjeta`, blanco al 72 %, sobre la
+  // parada más oscura del degradado de la mañana, que es su peor caso.
+  ['Lumia·AM · cuerpo sobre tarjeta de respiración', TEXTO.onLight, sobre('#FFFFFF', 0.72, MARCA.lumiaAm100), CUERPO],
 
   // ── Lumia · Noche ───────────────────────────────────────────────────────────
   ['Lumia·PM · cuerpo sobre base', TEXTO.onLight, MARCA.lumiaPm50, CUERPO],
@@ -149,6 +152,9 @@ const PARES = [
   ['Lumia·PM · conmutador sobre degradado', MARCA.conmutadorPm, MARCA.night, NO_TEXTO],
   // De noche la barra es la pieza clara y el símbolo va tal cual sale del .svg.
   ['Lumia·PM · símbolo sobre barra', MARCA.simbolo, MARCA.conmutadorPm, NO_TEXTO],
+  // La misma tarjeta de noche: `--lumia-tarjeta` es ahí un velo claro al 10 %,
+  // medido sobre la parada más clara del degradado, que es su peor caso.
+  ['Lumia·PM · cuerpo sobre tarjeta de respiración', TEXTO.onDark, sobre('#F2EEF7', 0.10, '#2C2350'), CUERPO],
 
   // ── Formia · Mañana ─────────────────────────────────────────────────────────
   ['Formia·AM · cuerpo sobre base', TEXTO.onLight, MARCA.formiaAm50, CUERPO],

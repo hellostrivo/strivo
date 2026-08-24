@@ -703,7 +703,9 @@ export const copy = {
     // **RN-LU-RESP-01 se nota en el copy.** Los 39 segundos solo son aceptables
     // porque nada de esto se abre solo ni retiene a nadie, y el texto lo dice
     // sin que haya que descubrirlo: se anuncia lo que dura y se anuncia que se
-    // puede salir, antes de empezar.
+    // puede salir, antes de empezar. Eso ocurre en `lead`, en la pantalla del
+    // ejercicio, que es la que tiene el botón que lo arranca; la entrada de las
+    // dos secciones de Hoy solo invita.
     //
     // El copy de Fase 0 —"Antes de empezar, respira una vez"— quedó sin objeto
     // (§C7.7.6): "antes de empezar" presuponía un ritual que venía después, y
@@ -711,9 +713,18 @@ export const copy = {
     // exclamaciones, sin lenguaje de meditación guiada y sin prometer que nadie
     // se va a sentir mejor.
     respiracion: {
+      // La entrada es una tarjeta, no una línea de apoyo, y por eso el rótulo
+      // es toda su superficie de texto: un subtítulo la devolvería al registro
+      // informativo del que se la quiso sacar.
+      //
+      // **Sin duración aquí.** "Poco más de medio minuto" se retiró de las dos
+      // secciones: en la tarjeta era el único texto secundario y hacía que la
+      // invitación se leyera como una etiqueta. Lo que dura se sigue diciendo
+      // antes de empezar, en `lead`, que es la pantalla donde hay un botón que
+      // arranca el ejercicio — RN-LU-RESP-01 se cumple ahí, que es donde
+      // alguien decide de verdad.
       entrada: {
-        abrir: 'Respirar un momento',
-        ayuda: 'Poco más de medio minuto',
+        abrir: 'Respira un momento',
       },
       titulo: 'Un momento para respirar',
       lead: 'Tres ciclos. Puedes salir cuando quieras.',

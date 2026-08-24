@@ -17,6 +17,16 @@
 */
 @import '@fontsource-variable/inter';
 
+/* La cursiva **real** de Inter, no la que el navegador se inventa.
+   `@fontsource-variable/inter` solo trae los cortes verticales; sin esta
+   segunda hoja, cualquier `font-style: italic` se resuelve inclinando la
+   vertical por software —una falsa cursiva, con las curvas deformadas— y eso
+   es exactamente lo que el manual §5.1 evita al fijar una sola familia bien
+   servida. Los subconjuntos van por `unicode-range`, así que un navegador de
+   aquí descarga el latino (~52 kB) y ni un byte de los demás. La usa el rótulo
+   de la tarjeta de respiración. */
+@import '@fontsource-variable/inter/wght-italic.css';
+
 /* Paletas de marca por espacio y momento (manual §4). Se cargan siempre; el
    `data-space` de la raíz de cada espacio decide cuál se aplica. */
 @import './tokens-lumia.css';

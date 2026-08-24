@@ -56,7 +56,11 @@ describe('no se abre sola (RN-LU-RESP-01, criterio 2)', () => {
   })
 
   it('entrar en la sección Mañana no la dispara: se abre desde un toque', () => {
-    expect(hoy).toMatch(/onClick=\{\(\) => abrir\('respiracion'\)\}/)
+    // El toque es el de la tarjeta, que es toda ella el control. La entrada
+    // cambió de forma —era un enlace de apoyo— pero no de naturaleza: sigue
+    // siendo un gesto de quien mira y nunca algo que la pantalla decida.
+    expect(hoy).toMatch(/onAbrir=\{\(\) => abrir\('respiracion'\)\}/)
+    expect(hoy).toMatch(/<TarjetaRespiracion/)
     // La vista solo cambia a 'respiracion' por ese toque, nunca por un efecto.
     const efectos = hoy.match(/useEffect\([\s\S]*?\n {2}\}/g) ?? []
     efectos.forEach((efecto) => expect(efecto).not.toMatch(/respiracion/))
@@ -109,8 +113,21 @@ describe('el copy invita, no vende (SPEC_08 §8)', () => {
   })
 
   it('dice lo que dura y que se puede salir, antes de empezar', () => {
-    expect(textos.entrada.ayuda).toMatch(/medio minuto/i)
+    // RN-LU-RESP-01 sigue cumpliéndose, y se cumple donde importa: `lead` es la
+    // pantalla que tiene el botón "Empezar", así que lo que dura y que se puede
+    // salir se leen justo antes de arrancar el ejercicio.
+    expect(textos.lead).toMatch(/tres ciclos/i)
     expect(textos.lead).toMatch(/salir/i)
+  })
+
+  it('la entrada de Hoy no anuncia la duración: es una invitación, no una ficha', () => {
+    // "Poco más de medio minuto" se retiró de las dos secciones. En la tarjeta
+    // era el único texto secundario y la devolvía al registro informativo del
+    // que se la quiso sacar. La entrada tiene un solo rótulo y nada más.
+    expect(Object.keys(textos.entrada)).toEqual(['abrir'])
+    expect(textos.entrada.abrir).toBe('Respira un momento')
+    const entrada = JSON.stringify(textos.entrada)
+    expect(entrada).not.toMatch(/minuto|segundo|dura/i)
   })
 
   it('el copy de fase es la única señal textual: sin números ni cuenta atrás', () => {

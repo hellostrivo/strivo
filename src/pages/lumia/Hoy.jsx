@@ -27,6 +27,7 @@ import DiarioManana from '@components/lumia/DiarioManana'
 import DiarioNoche from '@components/lumia/DiarioNoche'
 import HeroeHoy from '@components/lumia/HeroeHoy'
 import SelectorMomento from '@components/lumia/SelectorMomento'
+import TarjetaRespiracion from '@components/lumia/TarjetaRespiracion'
 import Respiracion from '@components/shared/Respiracion'
 import TransicionLuz, { prefiereMenosMovimiento } from '@components/shared/TransicionLuz'
 import { cruzarUmbral, umbralPendiente } from '@lib/umbralSesion'
@@ -181,17 +182,6 @@ export default function Hoy({ uid, onHideNav, onMomento }) {
 
   const saludo = copy.lumia.hoy.saludo[franjaDelSaludo()]
 
-  /* La entrada a la respiración, la misma en las dos secciones. Va como
-     enlace discreto justo debajo del conmutador, que es donde estaba cuando la
-     tarjeta del día existía: se encuentra sin desplazarse y no interrumpe la
-     escritura de más abajo.
-
-     RN-LU-RESP-01 — La respiración se abre desde aquí y **solo** desde aquí.
-     Mostrar una sección no la dispara, y por eso los 39 segundos que dura son
-     aceptables. */
-  const enlace =
-    'self-start rounded-full px-3 py-2 min-h-touch-sm text-left text-sm text-on-surface-soft hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30'
-
   return marco(
     <div className="flex min-h-screen flex-col gap-8 px-5 pb-24 pt-10">
       {/* El conmutador va dentro del héroe, justo debajo de la fecha: es el
@@ -201,13 +191,21 @@ export default function Hoy({ uid, onHideNav, onMomento }) {
           después de lo que gobierna. */}
       <HeroeHoy
         estado={estado}
-        conmutador={
-          <div className="flex flex-col items-start gap-1">
-            <SelectorMomento momento={momento} onCambiar={setMomento} />
-            <button type="button" onClick={() => abrir('respiracion')} className={enlace}>
-              {`${copy.lumia.respiracion.entrada.abrir} · ${copy.lumia.respiracion.entrada.ayuda}`}
-            </button>
-          </div>
+        conmutador={<SelectorMomento momento={momento} onCambiar={setMomento} />}
+        /* La entrada a la respiración, la misma en las dos secciones: lo que
+           cambia entre ellas es la paleta, no el destino. Va pegada al
+           conmutador y por delante de la frase del día, que es el aire previo
+           a la primera pregunta del Diario: se ofrece antes de ese aire, no
+           interrumpiéndolo.
+
+           RN-LU-RESP-01 — La respiración se abre desde aquí y **solo** desde
+           aquí. Mostrar una sección no la dispara, y por eso los 39 segundos
+           que dura son aceptables. */
+        respiracion={
+          <TarjetaRespiracion
+            etiqueta={copy.lumia.respiracion.entrada.abrir}
+            onAbrir={() => abrir('respiracion')}
+          />
         }
         saludo={
           estado.nombre

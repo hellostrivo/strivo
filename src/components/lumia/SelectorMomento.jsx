@@ -36,7 +36,10 @@ export default function SelectorMomento({ momento, onCambiar }) {
       role="group"
       aria-label={textos.label}
       data-surface={momento === 'manana' ? 'dark' : 'light'}
-      className="inline-flex gap-1 rounded-full bg-lumia-conmutador p-1 transicion-tema"
+      // `self-start` para que se ciña a sus dos botones: el héroe es una
+      // columna flex y sin él un `inline-flex` se estira al ancho de la
+      // columna, que dejaría el contratono como una franja de borde a borde.
+      className="self-start inline-flex gap-1 rounded-full bg-lumia-conmutador p-1 transicion-tema"
     >
       {MOMENTOS.map((id) => {
         const activo = momento === id
