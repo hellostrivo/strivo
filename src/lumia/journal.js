@@ -55,7 +55,6 @@ export async function cargarDeDia(uid, fecha) {
  *
  * Borrar la que se vació no contradice RN-JR-01: lo que esa regla protege es lo
  * escrito, y una entrada sin texto ni emociones nunca llegó a ser una entrada.
- * Es la misma distinción que separa vaciar una fila de victoria de "dejarla ir".
  *
  * @param {string} uid
  * @param {{id: ?string, date: string, text: string, emotions: string[], otherText: ?string}} entrada

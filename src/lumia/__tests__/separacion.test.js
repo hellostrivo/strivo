@@ -143,9 +143,12 @@ describe('la intención del día se retiró entera (deroga SPEC_09)', () => {
     // toca, y por eso no hay nada más que comprobar aquí.
     const manana = codigoDe('src/components/lumia/DiarioManana.jsx')
     const posicion = (etiqueta) => manana.indexOf(etiqueta)
+    expect(posicion('<ChipsEmociones')).toBeGreaterThan(-1)
     expect(posicion('<ChipsEmociones')).toBeLessThan(posicion('<CampoGratitud'))
     expect(posicion('<CampoGratitud')).toBeLessThan(posicion('{textos.granVision.titulo}'))
-    expect(posicion('{textos.granVision.titulo}')).toBeLessThan(posicion('<ListaVictorias'))
+    // La gran visión cierra la mañana: el bloque de victorias que iba detrás se
+    // retiró el 23 ago y no hay nada después de ella.
+    expect(manana.slice(posicion('{textos.granVision.titulo}'))).not.toMatch(/<[A-Z]\w*Victoria/)
   })
 
   it('la mañana conserva sus dos preguntas', () => {
@@ -338,5 +341,60 @@ describe('la voz de Lumia (§3.6)', () => {
       const literales = codigoDe(ruta).match(/>[^<>{}\n]{12,}</g) ?? []
       expect(`${ruta}: ${literales.join(' | ')}`).toBe(`${ruta}: `)
     })
+  })
+})
+
+describe('las victorias y el checklist de logros se retiraron (23 ago)', () => {
+  // La mañana dejó de pedir "Tres victorias que quisiera conseguir hoy", y sin
+  // victorias de origen la noche no tiene nada que heredar: se fueron con ella
+  // el checklist de victorias heredadas y el bloque de logros no planeados.
+  //
+  // El concepto no desaparece de la experiencia: lo que se logró sin haberlo
+  // previsto se anota libremente en el Journal (§5.8), que no es un campo
+  // estructurado y ya existía.
+
+  it('no quedan ni los dos componentes ni el módulo de dominio', () => {
+    expect(existsSync('src/components/lumia/ListaVictorias.jsx')).toBe(false)
+    expect(existsSync('src/components/lumia/VictoriasHeredadas.jsx')).toBe(false)
+    expect(existsSync('src/lumia/victorias.js')).toBe(false)
+  })
+
+  it('el modelo canónico no tiene dónde guardarlas', () => {
+    expect(FIELDS.victory).toBeUndefined()
+    expect(COLLECTIONS.victories).toBeUndefined()
+    expect(FIELDS.nightRitual).not.toContain('newWins')
+    expect(FIELDS.nightRitual).not.toContain('inheritedWins')
+  })
+
+  it('nadie las escribe ni las lee, en ningún espacio', () => {
+    // Mismo listón que la intención: el árbol entero de Lumia más la capa de
+    // datos. Si reaparecen, esta prueba falla antes que nadie las vea.
+    ARCHIVOS.concat(archivosDe('src/lib/db')).forEach((ruta) =>
+      expect(`${ruta}: ${codigoDe(ruta)}`).not.toMatch(
+        /victor|newWins|inheritedWins|lograda|soltada/i,
+      ),
+    )
+  })
+
+  it('el copy no ofrece ni un texto de victoria o de logro', () => {
+    expect(copy.lumia.diario.manana.victorias).toBeUndefined()
+    expect(copy.lumia.diario.noche.victorias).toBeUndefined()
+    expect(copy.lumia.diario.noche.logros).toBeUndefined()
+    expect(copy.lumia.historial.dia.victorias).toBeUndefined()
+    expect(copy.lumia.historial.dia.logros).toBeUndefined()
+    // Y el cierre pierde sus tres templates de recuento de logros.
+    const cierre = copy.lumia.diario.noche.cierre
+    expect(cierre.unLogro).toBeUndefined()
+    expect(cierre.logrosTemplate).toBeUndefined()
+    expect(cierre.ambosTemplate).toBeUndefined()
+    expect(cierre.soloLogrosTemplate).toBeUndefined()
+  })
+
+  it('el espacio libre donde queda el concepto es el Journal, y sigue mudo', () => {
+    // RN-JR-03 — El Journal no sugiere texto ni pregunta nada. Que las
+    // victorias se anoten ahí no le añade un campo ni una pista.
+    const journal = codigoDe('src/pages/lumia/Journal.jsx')
+    expect(journal).toMatch(/CampoTexto/)
+    expect(journal).not.toMatch(/victor|logro/i)
   })
 })

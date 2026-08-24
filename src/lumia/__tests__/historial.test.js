@@ -89,33 +89,30 @@ describe('puntos de ánimo (§5.10 · §6.3.5)', () => {
 })
 
 describe('vista de día completo: solo Lumia (§C7.7.2)', () => {
-  it('trae mañana, noche, victorias y journal', async () => {
+  it('trae mañana, noche y journal', async () => {
     await lumia.saveMorningEntry(UID, '2026-08-10', { gratitude: ['el café'] })
     await lumia.saveNightRitual(UID, '2026-08-10', { learning: 'Que se puede pedir ayuda' })
-    await lumia.createVictory(UID, {
-      text: 'Salir a caminar',
-      date: '2026-08-10',
-      state: 'lograda',
-    })
     await guardar(UID, { ...entradaNueva('2026-08-10'), text: 'Hoy escribí' })
 
     const dia = await cargarDia(UID, '2026-08-10')
     expect(dia.morning.gratitude).toEqual(['el café'])
     expect(dia.night.learning).toBe('Que se puede pedir ayuda')
-    expect(dia.victorias).toHaveLength(1)
     expect(dia.journal).toHaveLength(1)
   })
 
   it('lo devuelto no tiene ni un campo de hábitos', async () => {
     await lumia.saveNightRitual(UID, '2026-08-10', { gratitude: ['algo'] })
     const dia = await cargarDia(UID, '2026-08-10')
-    expect(Object.keys(dia).sort()).toEqual(['fecha', 'journal', 'morning', 'night', 'victorias'])
+    expect(Object.keys(dia).sort()).toEqual(['fecha', 'journal', 'morning', 'night'])
     expect(JSON.stringify(dia)).not.toMatch(/habit/i)
   })
 
-  it('una victoria soltada no reaparece en el día', async () => {
-    await lumia.createVictory(UID, { text: 'Llamar', date: '2026-08-10', state: 'soltada' })
-    expect((await cargarDia(UID, '2026-08-10')).victorias).toHaveLength(0)
+  it('las victorias se retiraron: el día no las trae ni como lista vacía', async () => {
+    // El 23 ago se eliminó `lumia/victories` del modelo. Un día ya escrito
+    // conserva sus registros en el almacén, pero el Historial no los lee.
+    const dia = await cargarDia(UID, '2026-08-10')
+    expect(dia).not.toHaveProperty('victorias')
+    expect(lumia.listVictoriesByDate).toBeUndefined()
   })
 
   it('un día en blanco se reconoce como tal, sin llamarlo perdido', async () => {

@@ -783,6 +783,63 @@ transversal de Respiración. SPEC_13 entrega motor, catálogo y datos, sin una s
 - **Las dos franjas pierden su línea de borde en contratono.** Lo que las separa es el bloque de
   color entero; contra la mañana clara un borde no tiene nada que hacer.
 
+- **Las victorias y el checklist de logros se retiraron enteros, 23 ago.** Se fue el bloque "Tres
+  victorias que quisiera conseguir hoy" de la Vista de Mañana y, como consecuencia directa, el
+  checklist de la Vista de Noche: las victorias heredadas con sus decisiones (lograda / pasarla a
+  mañana / dejarla ir / deshacer) y el bloque de logros no planeados. Sin victorias de origen no hay
+  nada que heredar, y un inventario de logros aparte convertía el cierre en un balance.
+- **El concepto no desaparece de la experiencia: queda implícito en el Journal**, que **ya existía y
+  no hubo que diseñarlo** (`src/pages/lumia/Journal.jsx`, §5.8). Es escritura libre, sin estructura y
+  con el sistema completamente mudo (RN-JR-03), así que lo que se logró sin haberlo previsto se anota
+  ahí si surge. **No se le añadió ni un campo, ni una pista, ni una pregunta**: hacerlo lo convertiría
+  en el campo estructurado que se acaba de retirar. Una prueba comprueba que el Journal no nombra
+  victorias ni logros.
+- **Se eliminó el modelo entero, no solo la escritura.** Lo decidió el propietario del producto con
+  el coste sobre la mesa. Se fueron `src/lumia/victorias.js`, `ListaVictorias.jsx`,
+  `VictoriasHeredadas.jsx`, **la colección `lumia/victories`** (`FIELDS.victory`,
+  `COLLECTIONS.victories`, `validateVictory`, `VICTORY_STATES` y las seis funciones de
+  `lib/db/lumia.js`), **los campos `nightRitual.newWins` e `inheritedWins`**, las cinco acciones de
+  `useDiario` y los dos límites de `filas.js`.
+- **Coste asumido y consciente: el Historial pierde esos bloques en días ya guardados.** Es la
+  diferencia con la intención, que nunca se pintó en ninguna vista histórica. `VistaDiaCompleto` ya
+  no lee victorias ni `newWins`, así que un día del que solo se hubiera registrado eso **aparece
+  ahora en blanco**, con "Este día no tiene nada escrito. También estuviste." Los datos **no se
+  borran**: siguen inertes en el almacén, como los de `dailyIntention`, porque `COLLECTIONS` es solo
+  una etiqueta al escribir y la cola de sincronización trabaja por ruta.
+- **`nightRitual` los rechaza al escribir, y eso es lo correcto.** Salieron de `FIELDS.nightRitual`,
+  así que un intento de volver a escribir `newWins` lanza `UNKNOWN_FIELD` (RN-DB4-08): en `lib/db/`
+  los registros los escribe el código y un campo fuera de lista es un error de programación, no una
+  persona explorando. Dejarlo en la lista los habría reabierto a la escritura sin que nadie los pinte.
+- **La ceremonia de cierre cuenta solo gratitud.** `recuentoDelDia` devuelve `{ gracias }` y
+  `sintesisDelDia` recibe un argumento en vez de dos. Se retiran del copy `unLogro`, `logrosTemplate`,
+  `ambosTemplate` y `soloLogrosTemplate`; sobreviven `unaGracia`, `graciasTemplate`,
+  `soloGraciasTemplate` y —sin tocar— **"Hoy solo viniste. También cuenta."**, que es a donde cae
+  ahora un día con estado de sueño y aprendizaje pero sin agradecimientos. El cierre sigue nombrando
+  evidencia propia y no un balance; lo que ya no puede es contar dos cosas.
+- **`historial.js` deja de contar victorias para el punto de ánimo.** Un día del que solo hubiera una
+  victoria escrita ya no tiene punto en el calendario ni cuenta como día con contenido. Es coherente
+  con que la vista de ese día tampoco las muestre: el punto anunciaba algo que al abrirlo no está.
+- **`desdeRegistros` y `conIdsDe` se retiraron de `filas.js`**, no se dejaron huérfanas. Existían
+  solo para las filas con registro propio, que eran las victorias; los agradecimientos son texto
+  suelto. Sus tres pruebas se fueron con ellas. **`FilasDinamicas` se queda genérico** —recibe
+  límites, copy y etiqueta— aunque hoy su único uso sea la gratitud: nada de él es de la gratitud.
+- **Se comprobó que no quedaba nada más colgando antes de borrar**, con el mismo chequeo que la
+  intención: el Ritual de Noche guiado ya no existe (se retiró el 19 ago), Formia, `constancia.js`,
+  `lib/db/formia.js` y `breathing/` solo lo **nombraban en comentarios** para decir que no lo leen, y
+  no había analítica ni ningún registro colgado del bloque. Una prueba recorre `src/lumia`,
+  `src/pages/lumia`, `src/components/lumia` y `src/lib/db` entero y falla si reaparece `victor`,
+  `newWins`, `inheritedWins`, `lograda` o `soltada`.
+- **`sugerirIdentidad.js` se queda donde está.** Las victorias lo reutilizaban para deducir su
+  vínculo con un área (§C7.7.5) y eran su segundo consumidor; hoy solo lo usan los hábitos de Formia.
+  Sigue en `lib/` porque la regla que implementa es de §C3.6.1, no del espacio que la llame.
+- **Deroga el bloque de victorias de §5.3 y los Bloques 1 y 2 de §5.4**, y con ellos RN-VM-02,
+  RN-VN-03 y la parte de §C7.7.5 que da a las victorias su `identityRef` opcional. **La documentación
+  del blueprint está pendiente de reescribir esas secciones**; no bloquea el código. La Vista de
+  Mañana queda en tres bloques (emociones, agradecimientos, gran visión) y la de Noche en cinco
+  (agradecimientos, aprendizaje, estado de sueño, síntesis, cierre).
+- **`npm run lint`, `test`, `build`, `lint:copy`, `lint:contraste` y `format:check` en verde ·
+  1287 pruebas.**
+
 **Home de Strivo — revisión de SPEC_11 y de §C0.2/§C7.1, 19 ago:**
 - **Cada apertura aterriza en un Home de marca** (`src/pages/Home.jsx`, ruta `/`): símbolo de
   Strivo, una animación de bienvenida sin texto y dos accesos —"Lumia · Reflexión / ¿Cómo estoy?"

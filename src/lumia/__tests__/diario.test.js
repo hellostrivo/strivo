@@ -10,12 +10,12 @@ import {
   cargarDia,
   guardarEstadoSueno,
   guardarManana,
+  guardarNoche,
   mananaEscrita,
   nocheEscrita,
   recuentoDelDia,
   sintesisDelDia,
 } from '../diario.js'
-import { guardarFilas } from '../victorias.js'
 
 const HOY = '2026-08-10'
 
@@ -42,7 +42,6 @@ describe('el día de Lumia', () => {
     const dia = await cargarDia(UID, HOY)
     expect(dia.morning).toBeNull()
     expect(dia.night).toBeNull()
-    expect(dia.victorias).toEqual([])
     expect(await lumia.getMorningEntry(UID, HOY)).toBeNull()
   })
 
@@ -67,45 +66,46 @@ describe('el día de Lumia', () => {
     expect(mananaEscrita({ gratitude: [] })).toBe(false)
     expect(mananaEscrita({ emotions: ['en_paz'] })).toBe(true)
 
-    expect(nocheEscrita(null, [])).toBe(false)
-    expect(nocheEscrita({ sleepState: ['en_paz'] }, [])).toBe(true)
-    expect(nocheEscrita(null, [{ state: 'lograda' }])).toBe(true)
+    expect(nocheEscrita(null)).toBe(false)
+    expect(nocheEscrita({})).toBe(false)
+    expect(nocheEscrita({ sleepState: ['en_paz'] })).toBe(true)
+    expect(nocheEscrita({ gratitude: ['el café'] })).toBe(true)
+    expect(nocheEscrita({ learning: 'que se puede pedir ayuda' })).toBe(true)
   })
 
   describe('síntesis de cierre', () => {
-    it('cuenta victorias logradas y logros no planeados', () => {
-      const night = { newWins: ['ayudé a alguien'], gratitude: ['el café', 'la tarde'] }
-      const victorias = [{ state: 'lograda' }, { state: 'pendiente' }]
-      expect(recuentoDelDia(night, victorias)).toEqual({ logros: 2, gracias: 2 })
-      expect(sintesisDelDia(night, victorias)).toBe(
-        'Hoy reconociste 2 logros y agradeciste 2 cosas.',
-      )
+    // Desde el 23 ago el recuento es solo de gratitud: las victorias y el
+    // checklist de logros se retiraron, y con ellos los tres templates que los
+    // nombraban. Lo que queda sigue siendo evidencia propia, no un balance.
+    it('cuenta los agradecimientos del día', () => {
+      const night = { gratitude: ['el café', 'la tarde'] }
+      expect(recuentoDelDia(night)).toEqual({ gracias: 2 })
+      expect(sintesisDelDia(night)).toBe('Hoy encontraste 2 cosas que agradecer.')
     })
 
     it('concuerda el singular', () => {
-      expect(sintesisDelDia({ gratitude: ['el café'] }, [{ state: 'lograda' }])).toBe(
-        'Hoy reconociste un logro y agradeciste una cosa.',
+      expect(sintesisDelDia({ gratitude: ['el café'] })).toBe(
+        'Hoy encontraste una cosa que agradecer.',
       )
     })
 
-    it('solo agradecimientos, solo logros', () => {
-      expect(sintesisDelDia({ gratitude: ['uno', 'dos'] }, [])).toBe(
-        'Hoy encontraste 2 cosas que agradecer.',
-      )
-      expect(sintesisDelDia(null, [{ state: 'lograda' }, { state: 'lograda' }])).toBe(
-        'Hoy reconociste 2 logros que lograste.',
+    it('no cuenta nada que no sea gratitud', () => {
+      // Un día con estado de sueño y aprendizaje pero sin agradecimientos cae
+      // en la frase de presencia: no se inventa un recuento con otra cosa.
+      expect(sintesisDelDia({ sleepState: ['en_paz'], learning: 'que se puede pedir ayuda' })).toBe(
+        'Hoy solo viniste. También cuenta.',
       )
     })
 
     it('con el día en blanco, el cierre funciona igual', () => {
-      expect(sintesisDelDia(null, [])).toBe('Hoy solo viniste. También cuenta.')
+      expect(sintesisDelDia(null)).toBe('Hoy solo viniste. También cuenta.')
     })
 
     it('cierra bien un día escrito de principio a fin', async () => {
-      const victorias = await guardarFilas(UID, HOY, [{ id: null, texto: 'caminar' }], 'lograda')
+      await guardarNoche(UID, HOY, { gratitude: ['el café'] })
       await guardarEstadoSueno(UID, HOY, ['en_paz'], '')
       const dia = await cargarDia(UID, HOY)
-      expect(sintesisDelDia(dia.night, victorias)).toBe('Hoy reconociste un logro que lograste.')
+      expect(sintesisDelDia(dia.night)).toBe('Hoy encontraste una cosa que agradecer.')
     })
   })
 

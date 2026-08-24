@@ -6,8 +6,6 @@ import { describe, expect, it } from 'vitest'
 import {
   LIMITES,
   alSalirDeFila,
-  conIdsDe,
-  desdeRegistros,
   desdeTextos,
   escribirEn,
   filasIniciales,
@@ -97,44 +95,9 @@ describe('filas dinámicas', () => {
     expect(textosDe(filas)).toEqual(['uno', 'dos'])
   })
 
-  describe('conIdsDe', () => {
-    it('recoge el id de lo recién guardado sin tocar el resto', () => {
-      const filas = [
-        { id: null, texto: 'salir a correr' },
-        { id: null, texto: 'llamar a mi hermana' },
-      ]
-      const guardadas = [{ id: 'v1', text: 'salir a correr' }]
-      expect(conIdsDe(filas, guardadas)).toEqual([
-        { id: 'v1', texto: 'salir a correr' },
-        { id: null, texto: 'llamar a mi hermana' },
-      ])
-    })
-
-    it('no borra lo que se escribió mientras el guardado iba y venía', () => {
-      // La fila 2 se escribió después de pedir el guardado: no está en la
-      // respuesta y tiene que seguir en pantalla.
-      const filas = [
-        { id: 'v1', texto: 'salir a correr' },
-        { id: null, texto: 'recién escrito' },
-      ]
-      expect(conIdsDe(filas, [{ id: 'v1', text: 'salir a correr' }])).toEqual(filas)
-    })
-
-    it('no reparte el mismo id a dos filas con el mismo texto', () => {
-      const filas = [
-        { id: null, texto: 'caminar' },
-        { id: null, texto: 'caminar' },
-      ]
-      const guardadas = [
-        { id: 'v1', text: 'caminar' },
-        { id: 'v2', text: 'caminar' },
-      ]
-      expect(conIdsDe(filas, guardadas).map((fila) => fila.id)).toEqual(['v1', 'v2'])
-    })
-  })
-
-  it('las victorias arrastran su id y los agradecimientos no', () => {
-    expect(desdeRegistros([{ id: 'v1', text: 'correr' }])).toEqual([{ id: 'v1', texto: 'correr' }])
+  it('los agradecimientos nacen sin id', () => {
+    // `desdeRegistros` y `conIdsDe` se fueron el 23 ago con las victorias, que
+    // eran las únicas filas con registro propio. Lo que queda es texto suelto.
     expect(desdeTextos(['gracias'])).toEqual([{ id: null, texto: 'gracias' }])
   })
 })

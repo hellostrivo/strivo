@@ -54,14 +54,26 @@ describe('registros por fecha', () => {
   })
 
   it('el ritual de noche se guarda por partes sin perder lo anterior', async () => {
-    await lumia.saveNightRitual(UID, DATE, { newWins: ['Salí a caminar'] })
+    await lumia.saveNightRitual(UID, DATE, { learning: 'Que se puede pedir ayuda' })
     await lumia.saveNightRitual(UID, DATE, { gratitude: ['El café de la mañana'] })
     await lumia.saveNightRitual(UID, DATE, { sleepState: 'tranquilo' })
 
     const ritual = await lumia.getNightRitual(UID, DATE)
-    expect(ritual.newWins).toEqual(['Salí a caminar'])
+    expect(ritual.learning).toBe('Que se puede pedir ayuda')
     expect(ritual.gratitude).toEqual(['El café de la mañana'])
     expect(ritual.sleepState).toBe('tranquilo')
+  })
+
+  // El checklist de logros se retiró el 23 ago con las victorias. El campo sale
+  // del modelo canónico, así que volver a escribirlo se rechaza como cualquier
+  // otro campo fuera de lista (RN-DB4-08): nada se corrige en silencio.
+  it('el ritual de noche ya no admite newWins ni inheritedWins', async () => {
+    await expect(lumia.saveNightRitual(UID, DATE, { newWins: ['x'] })).rejects.toMatchObject({
+      code: ERROR_CODES.UNKNOWN_FIELD,
+    })
+    await expect(lumia.saveNightRitual(UID, DATE, { inheritedWins: [] })).rejects.toMatchObject({
+      code: ERROR_CODES.UNKNOWN_FIELD,
+    })
   })
 
   // La Vista de Mañana escribe dos campos del mismo día casi a la vez: marcar
@@ -95,26 +107,21 @@ describe('registros por fecha', () => {
   })
 })
 
-describe('victorias', () => {
-  it('se guardan sin identidad', async () => {
-    const victory = await lumia.createVictory(UID, {
-      text: 'Terminé lo que había empezado',
-      date: DATE,
-      state: 'lograda',
-    })
-
-    expect(victory.id).toBeTruthy()
-    expect(victory.identityRef).toBeUndefined()
-    expect(await lumia.listVictoriesByDate(UID, DATE)).toHaveLength(1)
-  })
-
-  it('admiten identidad cuando la hay', async () => {
-    const victory = await lumia.createVictory(UID, {
-      text: 'Caminé media hora',
-      date: DATE,
-      identityRef: 'salud',
-    })
-    expect(victory.identityRef).toBe('salud')
+// La colección `lumia/victories` se eliminó el 23 ago junto con el bloque de
+// victorias de la mañana y el checklist de la noche. Los registros ya escritos
+// se quedan inertes en el almacén: nada los lee y nada los borra.
+describe('victorias (retiradas)', () => {
+  it('la capa de datos no ofrece ninguna función de victoria', () => {
+    for (const nombre of [
+      'createVictory',
+      'updateVictory',
+      'getVictory',
+      'listVictories',
+      'listVictoriesByDate',
+      'deleteVictory',
+    ]) {
+      expect(lumia[nombre]).toBeUndefined()
+    }
   })
 })
 

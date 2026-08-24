@@ -79,7 +79,6 @@ export const IDENTITY_CENTRAL = 'central'
 export const AREA_STATES = Object.freeze(['activa', 'pausada', 'archivada'])
 export const HABIT_STATES = Object.freeze(['activo', 'pausado', 'archivado'])
 export const HABIT_CONTEXTS = Object.freeze(['manana', 'noche'])
-export const VICTORY_STATES = Object.freeze(['pendiente', 'lograda', 'no_se_dio', 'soltada'])
 export const MOODS = Object.freeze(['agotado', 'inquieto', 'normal', 'tranquilo', 'en_paz'])
 export const GENDERS = Object.freeze(['m', 'f', 'n'])
 
@@ -97,15 +96,11 @@ export const FIELDS = Object.freeze({
   // lumia/
   journal: Object.freeze(['date', 'text', 'emotions', 'otherText', 'createdAt', 'updatedAt']),
   morningEntry: Object.freeze(['granVision', 'gratitude', 'emotions']),
-  nightRitual: Object.freeze([
-    'inheritedWins',
-    'newWins',
-    'gratitude',
-    'learning',
-    'sleepState',
-    'sleepStateOther',
-  ]),
-  victory: Object.freeze(['text', 'date', 'state', 'identityRef', 'originId']),
+  // `inheritedWins` y `newWins` se retiraron el 23 ago con las victorias y el
+  // checklist de logros. Los días ya escritos conservan sus datos en el
+  // almacén; nadie los lee, y volver a nombrarlos aquí los reabriría a la
+  // escritura.
+  nightRitual: Object.freeze(['gratitude', 'learning', 'sleepState', 'sleepStateOther']),
   dayState: Object.freeze(['mood']),
   pinConfig: Object.freeze(['salt', 'hash', 'iterations', 'algorithm', 'enabled']),
 
@@ -135,7 +130,6 @@ export const COLLECTIONS = Object.freeze({
   journal: 'lumia/journal',
   morningEntry: 'lumia/morningEntry',
   nightRitual: 'lumia/nightRitual',
-  victories: 'lumia/victories',
   dayState: 'lumia/dayState',
   lumiaDoc: 'lumia',
   habits: 'formia/habits',
@@ -269,26 +263,6 @@ export function validateJournalEntry(entry) {
     throw new StrivoDataError(ERROR_CODES.FIELD_TYPE, 'journal.emotions: se esperaba un arreglo.')
   }
   return entry
-}
-
-export function validateVictory(victory) {
-  assertFields(victory, FIELDS.victory, 'lumia/victories')
-  if (victory.date !== undefined) assertDateKey(victory.date, 'victory.date')
-  if (victory.state !== undefined) {
-    assertEnum(victory.state, VICTORY_STATES, ERROR_CODES.STATE_INVALID, 'victory.state')
-  }
-  // `identityRef` es OPCIONAL en una victoria, a diferencia del hábito (§C5.3).
-  // Una victoria es un hecho que ocurrió; no se justifica ante ninguna identidad.
-  if (victory.identityRef !== undefined && victory.identityRef !== null) {
-    if (!isValidIdentityRef(victory.identityRef)) {
-      throw new StrivoDataError(
-        ERROR_CODES.HABIT_IDENTITY_UNKNOWN,
-        `victory.identityRef sin destino: ${String(victory.identityRef)}.`,
-        { identityRef: victory.identityRef },
-      )
-    }
-  }
-  return victory
 }
 
 export function validateDayState(dayState) {

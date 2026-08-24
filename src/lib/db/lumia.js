@@ -24,7 +24,6 @@ import {
   paths,
   validateDayState,
   validateJournalEntry,
-  validateVictory,
 } from './schema.js'
 
 // ─── journal ──────────────────────────────────────────────────────────────────
@@ -129,72 +128,6 @@ export async function saveNightRitual(uid, date, ritual) {
   })
 }
 
-// ─── victories ────────────────────────────────────────────────────────────────
-// `identityRef` es OPCIONAL aquí, a diferencia del hábito (§C5.3). Una victoria
-// es un hecho que ocurrió; no necesita justificarse ante ninguna identidad.
-
-function victorySpec(uid, victoryId) {
-  return {
-    uid,
-    path: paths.lumiaItem(uid, 'victories', victoryId),
-    collection: COLLECTIONS.victories,
-    id: victoryId,
-  }
-}
-
-/**
- * @param {string} uid
- * @param {object} victory
- * @param {string} [victoryId] - Id propuesto por quien llama. Existe porque las
- *   victorias son la única colección que se presenta **en el orden en que se
- *   escribió** (§5.4, criterio 1) y no tiene campo de orden ni marca de tiempo
- *   en el modelo canónico. `src/lumia/victorias.js` compone ids ordenables por
- *   fecha y posición; quien no lo necesite recibe un id aleatorio como siempre.
- */
-export async function createVictory(uid, victory, victoryId = newId()) {
-  assertUid(uid)
-  assertId(victoryId, 'victoryId')
-  validateVictory(victory)
-  await writePath({ ...victorySpec(uid, victoryId), data: victory })
-  return { id: victoryId, ...victory }
-}
-
-export async function updateVictory(uid, victoryId, patch) {
-  assertUid(uid)
-  assertId(victoryId, 'victoryId')
-  validateVictory(patch)
-  const data = await mergePath({ ...victorySpec(uid, victoryId), patch })
-  return { id: victoryId, ...data }
-}
-
-export async function getVictory(uid, victoryId) {
-  assertUid(uid)
-  assertId(victoryId, 'victoryId')
-  return readPath(paths.lumiaItem(uid, 'victories', victoryId))
-}
-
-export async function listVictories(uid) {
-  assertUid(uid)
-  return readCollection(uid, COLLECTIONS.victories)
-}
-
-export async function listVictoriesByDate(uid, date) {
-  assertUid(uid)
-  assertDateKey(date)
-  return readCollectionByDate(uid, COLLECTIONS.victories, date)
-}
-
-/**
- * Borra una victoria. Es para deshacer lo que nunca llegó a ser una victoria
- * —una fila que se escribió y se vació— y no para renunciar a una: eso es
- * "dejarla ir", que la archiva con estado `soltada` y conserva su historia.
- */
-export async function deleteVictory(uid, victoryId) {
-  assertUid(uid)
-  assertId(victoryId, 'victoryId')
-  await deletePath({ uid, path: paths.lumiaItem(uid, 'victories', victoryId) })
-}
-
 // ─── dayState ─────────────────────────────────────────────────────────────────
 
 export async function getDayState(uid, date) {
@@ -254,9 +187,9 @@ export async function clearPinConfig(uid) {
 // ─── Árbol de un usuario nuevo ────────────────────────────────────────────────
 
 /**
- * `lumia/` no necesita ningún registro inicial: journal,
- * morningEntry, nightRitual, victories y dayState nacen vacíos y pinConfig no
- * existe hasta que alguien decide poner un PIN.
+ * `lumia/` no necesita ningún registro inicial: journal, morningEntry,
+ * nightRitual y dayState nacen vacíos y pinConfig no existe hasta que alguien
+ * decide poner un PIN.
  *
  * Se declara para que `initUserTree()` documente la rama, no para escribirla:
  * crear un día vacío inventaría un registro que nadie escribió (RN-DB4-08).

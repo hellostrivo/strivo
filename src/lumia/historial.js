@@ -19,7 +19,6 @@
 import { lumia } from '@/lib/db'
 import { animoDerivado } from './estadoSueno.js'
 import { fechaDeClave } from './fechas.js'
-import { ordenar } from './victorias.js'
 
 /** Los cinco tonos de §6.3.5, por id. El color vive en `globals.css`. */
 export const ANIMOS = Object.freeze(['agotado', 'inquieto', 'normal', 'tranquilo', 'en_paz'])
@@ -87,26 +86,20 @@ export function numeroDeDia(dateKey) {
 export async function cargarMes(uid, mes) {
   const dias = diasDelMes(mes)
 
-  const [rituales, mananas, journal, victorias] = await Promise.all([
+  const [rituales, mananas, journal] = await Promise.all([
     Promise.all(dias.map((fecha) => lumia.getNightRitual(uid, fecha))),
     Promise.all(dias.map((fecha) => lumia.getMorningEntry(uid, fecha))),
     lumia.listJournalEntries(uid),
-    lumia.listVictories(uid),
   ])
 
   const conJournal = new Set(journal.map((entrada) => entrada.date))
-  const conVictoria = new Set(victorias.map((victoria) => victoria.date))
 
   return dias.map((fecha, indice) => {
     const night = rituales[indice]
     const morning = mananas[indice]
     const sueno = night?.sleepState ?? []
 
-    const hayContenido =
-      hayAlgoDeNoche(night) ||
-      hayAlgoDeManana(morning) ||
-      conJournal.has(fecha) ||
-      conVictoria.has(fecha)
+    const hayContenido = hayAlgoDeNoche(night) || hayAlgoDeManana(morning) || conJournal.has(fecha)
 
     return {
       fecha,
@@ -119,7 +112,6 @@ export async function cargarMes(uid, mes) {
 function hayAlgoDeNoche(night) {
   if (!night) return false
   return (
-    (night.newWins?.length ?? 0) > 0 ||
     (night.gratitude?.length ?? 0) > 0 ||
     (night.sleepState?.length ?? 0) > 0 ||
     String(night.learning ?? '').trim() !== ''
@@ -138,7 +130,7 @@ function hayAlgoDeManana(morning) {
 // ─── Vista de día completo ────────────────────────────────────────────────────
 
 /**
- * Todo lo de Lumia de un día: mañana, noche, victorias y journal.
+ * Todo lo de Lumia de un día: mañana, noche y journal.
  *
  * **Sin hábitos** (§C7.7.2). Esta función no importa `formia/` y no tiene forma
  * de hacerlo: el lint lo impide y la prueba de separación lo comprueba.
@@ -149,10 +141,9 @@ function hayAlgoDeManana(morning) {
  * que solo tape la vista se cae con el primer fallo de opacidad.
  */
 export async function cargarDia(uid, fecha, { conJournal = true } = {}) {
-  const [morning, night, victorias, journal] = await Promise.all([
+  const [morning, night, journal] = await Promise.all([
     lumia.getMorningEntry(uid, fecha),
     lumia.getNightRitual(uid, fecha),
-    lumia.listVictoriesByDate(uid, fecha),
     conJournal ? lumia.listJournalEntriesByDate(uid, fecha) : Promise.resolve([]),
   ])
 
@@ -160,7 +151,6 @@ export async function cargarDia(uid, fecha, { conJournal = true } = {}) {
     fecha,
     morning,
     night,
-    victorias: ordenar(victorias).filter((victoria) => victoria.state !== 'soltada'),
     journal: [...journal].sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt))),
   }
 }
@@ -170,7 +160,6 @@ export function diaVacio(dia) {
   return (
     !hayAlgoDeManana(dia?.morning) &&
     !hayAlgoDeNoche(dia?.night) &&
-    (dia?.victorias?.length ?? 0) === 0 &&
     (dia?.journal?.length ?? 0) === 0
   )
 }

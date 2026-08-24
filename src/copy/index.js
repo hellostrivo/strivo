@@ -120,7 +120,7 @@ export const copy = {
         },
       },
 
-      // Filas dinámicas de agradecimientos, logros y victorias (§5.3, Bloque 2).
+      // Filas dinámicas de agradecimientos (§5.3, Bloque 2).
       filas: {
         anadir: 'Añadir otra',
         quitar: 'Quitar',
@@ -248,41 +248,12 @@ export const copy = {
           // Aparece tras 8 s sin escribir (§5.3, Bloque 4).
           sugerencia: '¿Cómo te gustaría sentirte a las diez de la noche?',
         },
-
-        victorias: {
-          titulo: 'Tres victorias que quisiera conseguir hoy',
-          ayuda: 'Tres cosas que, si pasan hoy, el día valió la pena.',
-          placeholder: 'Algo que quieres que pase hoy',
-        },
       },
 
       noche: {
         titulo: 'Tu noche',
         // §5.4, Bloque 1 — frase de apertura con el día de la semana.
         aperturaTemplate: 'Vamos a cerrar el {dia}.',
-
-        victorias: {
-          titulo: 'Mis logros de hoy',
-          // Sin victorias por la mañana, el bloque cambia de pregunta. Nunca se
-          // muestra un vacío que recuerde una omisión (§5.4, Bloque 2).
-          tituloVacio: '¿Qué lograste hoy?',
-          placeholder: 'Algo que sí pasó hoy',
-          lograda: 'Lo lograste',
-          marcar: 'Marcar como lograda',
-          noSeDio: 'No se dio hoy',
-          pasar: 'Pasarla a mañana',
-          soltar: 'Dejarla ir',
-          soltada: 'Soltar también es avanzar.',
-          pasada: 'Mañana estará esperándote.',
-          deAyer: 'Viene de ayer',
-        },
-
-        logros: {
-          titulo: '¿Qué más logré hoy que no había planeado?',
-          placeholder: 'Algo que no estaba en el plan',
-          sugerencia:
-            '¿Ayudaste a alguien? ¿Resolviste algo pequeño? ¿Te sostuviste en un momento difícil?',
-        },
 
         gratitud: {
           titulo: '¿Qué agradezco de este día?',
@@ -371,13 +342,11 @@ export const copy = {
         // §5.4, "Secuencia de cierre" + §3.3 (etapa 4).
         cierre: {
           cta: 'Cerrar mi día',
-          unLogro: 'un logro',
-          logrosTemplate: '{n} logros',
+          // Los recuentos de logros se retiraron el 23 ago con las victorias y
+          // el checklist de la noche. La gratitud es la evidencia que queda.
           unaGracia: 'una cosa',
           graciasTemplate: '{m} cosas',
-          ambosTemplate: 'Hoy reconociste {logros} y agradeciste {gracias}.',
           soloGraciasTemplate: 'Hoy encontraste {gracias} que agradecer.',
-          soloLogrosTemplate: 'Hoy reconociste {logros} que lograste.',
           // Uno de los mensajes más importantes del producto (§5.4).
           nada: 'Hoy solo viniste. También cuenta.',
           // Frase de cierre del día normal, y la del día que pesó.
@@ -662,11 +631,9 @@ export const copy = {
         manana: 'Tu mañana',
         noche: 'Tu noche',
         journal: 'Lo que escribiste',
-        victorias: 'Tus logros',
         emociones: 'Cómo querías sentirte',
         gratitud: 'Lo que agradeciste',
         granVision: 'Cómo imaginabas el día',
-        logros: 'Lo que no estaba en el plan',
         aprendizaje: 'Lo que aprendiste',
         // Un día en blanco no es un día perdido.
         vacio: 'Este día no tiene nada escrito. También estuviste.',

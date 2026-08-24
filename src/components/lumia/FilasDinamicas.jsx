@@ -1,5 +1,8 @@
 // src/components/lumia/FilasDinamicas.jsx
-// Las tres listas que crecen solas: agradecimientos, logros y victorias.
+// La lista que crece sola. Hoy solo la usan los agradecimientos, de la mañana
+// y de la noche: los logros y las victorias, que eran los otros dos usos, se
+// retiraron el 23 ago. El componente se queda genérico a propósito —recibe
+// límites, copy y etiqueta— porque nada de él es de la gratitud.
 //
 // La mecánica está en `src/lumia/filas.js` y aquí solo se pinta: al escribir en
 // la última fila nace otra, al salir de una fila vacía creada sobre la marcha
@@ -11,7 +14,7 @@
 // `onEnfocar`, `onDesenfocar` y `debajoDeFila` son opcionales y existen para
 // que quien monta las filas pueda tener algo propio de UNA fila —hoy, las ideas
 // de agradecimiento, que son del renglón enfocado y no del bloque. Quien no los
-// pasa (victorias, logros) no nota ninguna diferencia.
+// pasa no nota ninguna diferencia.
 
 import { useState } from 'react'
 import { clsx } from 'clsx'

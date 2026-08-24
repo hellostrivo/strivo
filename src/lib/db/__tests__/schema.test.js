@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 
 import {
   AREA_IDS,
+  COLLECTIONS,
   ERROR_CODES,
+  FIELDS,
   MAX_SELECTED_AREAS,
   StrivoDataError,
   assertCentralIdentity,
@@ -15,7 +17,6 @@ import {
   validateHabit,
   validateHabitLog,
   validateJournalEntry,
-  validateVictory,
 } from '../schema.js'
 import { strivoDateKey, toDateKey } from '../dates.js'
 
@@ -163,14 +164,14 @@ describe('registros de Lumia', () => {
     expect(codeOf(() => validateJournalEntry({ titulo: 'x' }))).toBe(ERROR_CODES.UNKNOWN_FIELD)
   })
 
-  it('la victoria admite identityRef, pero no lo exige (§C5.3)', () => {
-    expect(validateVictory({ text: 'Salí a caminar', date: '2026-08-10' })).toBeTruthy()
-    expect(
-      validateVictory({ text: 'Salí a caminar', date: '2026-08-10', identityRef: 'salud' }),
-    ).toBeTruthy()
-    expect(codeOf(() => validateVictory({ text: 'x', identityRef: 'deportes' }))).toBe(
-      ERROR_CODES.HABIT_IDENTITY_UNKNOWN,
-    )
+  // La victoria salió del modelo el 23 ago: no hay validador, no hay lista de
+  // campos y no hay etiqueta de colección. `nightRitual` pierde con ella sus
+  // dos campos de logros.
+  it('la victoria ya no existe en el modelo canónico', () => {
+    expect(FIELDS.victory).toBeUndefined()
+    expect(COLLECTIONS.victories).toBeUndefined()
+    expect(FIELDS.nightRitual).not.toContain('newWins')
+    expect(FIELDS.nightRitual).not.toContain('inheritedWins')
   })
 
   it('dayState solo guarda mood, con la paleta de ánimo de §6.3.5', () => {

@@ -1,11 +1,16 @@
 // src/lib/sugerirIdentidad.js
 // Sugerencia de identidad por el texto del hábito (§C3.6.1, RN-FO-H3-04..07).
 //
-// Es el mismo mecanismo que §5.3 define para las victorias —"si el texto
-// contiene señales claras de un área, la app **sugiere** el área con un chip
-// tenue que el usuario confirma o ignora"— así que vive en `lib/` y no dentro
-// de un espacio: recibe texto y una lista de áreas permitidas, y no lee datos
-// de Lumia ni de Formia. Cuando las victorias se construyan, reutilizan esto.
+// Es el mismo mecanismo que §5.3 describía —"si el texto contiene señales
+// claras de un área, la app **sugiere** el área con un chip tenue que el
+// usuario confirma o ignora"— así que vive en `lib/` y no dentro de un espacio:
+// recibe texto y una lista de áreas permitidas, y no lee datos de Lumia ni de
+// Formia.
+//
+// **Hoy su único consumidor son los hábitos de Formia.** Las victorias de Lumia
+// lo reutilizaban para deducir su vínculo con una identidad y se retiraron el
+// 23 ago; el módulo se queda en `lib/` de todos modos, porque la regla que
+// implementa es de §C3.6.1 y no del espacio que la llame.
 //
 // Las dos reglas que gobiernan el motor:
 //

@@ -33,7 +33,6 @@ export {
   MAX_SELECTED_AREAS,
   MOODS,
   StrivoDataError,
-  VICTORY_STATES,
   emptyAreasMap,
   isValidIdentityRef,
   paths,

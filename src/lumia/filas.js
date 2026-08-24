@@ -1,69 +1,33 @@
 // src/lumia/filas.js
-// Filas dinámicas: agradecimientos, logros no planeados y victorias (§5.3, B2).
+// Filas dinámicas: hoy solo los agradecimientos (§5.3, B2).
 //
-// Las tres listas se comportan igual y por eso la regla vive en un solo sitio:
-// al escribir en la última fila nace otra debajo, al vaciar una fila creada
-// sobre la marcha desaparece, y nunca hay dos filas vacías a la vez.
+// La regla vive en un solo sitio: al escribir en la última fila nace otra
+// debajo, al vaciar una fila creada sobre la marcha desaparece, y nunca hay dos
+// filas vacías a la vez.
 //
-// Una fila es `{ id, texto }`. Los agradecimientos y los logros se guardan como
-// texto suelto dentro de su registro del día y nacen con `id: null`; las
-// victorias son registros propios y arrastran el suyo. Es la misma mecánica
-// para las tres, con un campo de más que solo usa quien lo necesita.
+// Una fila es `{ id, texto }`. Los agradecimientos se guardan como texto suelto
+// dentro del registro de su día y nacen con `id: null`. El campo `id` es lo que
+// queda de las victorias y los logros, que eran registros propios y se
+// retiraron el 23 ago: se conserva porque la forma de una fila es contrato con
+// `FilasDinamicas` y `CampoGratitud`.
 //
 // Nada de esto es obligatorio. Una lista entera vacía es un estado válido: la
 // vista se puede recorrer y cerrar sin escribir una palabra (RN-VM-01).
 
-/** Mínimos y máximos por lista (§5.3, B2 y B5 · §5.4, B3 · RN-VM-03). */
+/** Mínimos y máximos por lista (§5.3, B2 · RN-VM-03). */
 export const LIMITES = Object.freeze({
   gratitud: Object.freeze({ min: 3, max: 10 }),
-  victorias: Object.freeze({ min: 3, max: 6 }),
-  logros: Object.freeze({ min: 1, max: 6 }),
 })
 
 export function filaVacia() {
   return { id: null, texto: '' }
 }
 
-/** Filas a partir de texto suelto guardado (agradecimientos, logros). */
+/** Filas a partir de texto suelto guardado. */
 export function desdeTextos(textos) {
   return (Array.isArray(textos) ? textos : [])
     .map((texto) => ({ id: null, texto: String(texto ?? '') }))
     .filter((fila) => fila.texto.trim() !== '')
-}
-
-/** Filas a partir de registros con id (victorias). */
-export function desdeRegistros(registros, campo = 'text') {
-  return (Array.isArray(registros) ? registros : []).map((registro) => ({
-    id: registro.id,
-    texto: String(registro[campo] ?? ''),
-  }))
-}
-
-/**
- * Devuelve las filas con el id que les corresponde de los registros guardados.
- *
- * Se usa al volver de un guardado, y **no** se sustituyen las filas por lo que
- * devolvió la base: mientras la escritura iba y venía, la persona ha seguido
- * tecleando. Rehacer la lista desde el registro borraría esas teclas. Lo único
- * que falta en pantalla es el id de lo que acaba de nacer, así que es lo único
- * que se trae.
- */
-export function conIdsDe(filas, registros, campo = 'text') {
-  const actuales = Array.isArray(filas) ? filas : []
-  const usados = new Set(actuales.map((fila) => fila.id).filter(Boolean))
-  const libres = (Array.isArray(registros) ? registros : []).filter(
-    (registro) => !usados.has(registro.id),
-  )
-
-  return actuales.map((fila) => {
-    if (fila.id || fila.texto.trim() === '') return fila
-    const posicion = libres.findIndex(
-      (registro) => String(registro[campo] ?? '').trim() === fila.texto.trim(),
-    )
-    if (posicion === -1) return fila
-    const [registro] = libres.splice(posicion, 1)
-    return { ...fila, id: registro.id }
-  })
 }
 
 /**

@@ -1,6 +1,6 @@
 // src/lumia/useDiario.js
-// Estado de React sobre `diario.js` y `victorias.js`, con la misma forma que
-// `useHabitos.js`: `{ estado, carga, error, acciones, reintentar }`.
+// Estado de React sobre `diario.js`, con la misma forma que `useHabitos.js`:
+// `{ estado, carga, error, acciones, reintentar }`.
 //
 // Una sola instancia sostiene la pantalla Hoy y las dos vistas del Diario, así
 // que lo que se escribe en la mañana se ve en la noche sin sincronizar nada:
@@ -13,7 +13,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import * as diario from './diario.js'
-import * as victorias from './victorias.js'
 
 /** §5.3 — Retraso del autoguardado desde el último carácter. */
 export const RETRASO_AUTOGUARDADO = 800
@@ -24,7 +23,6 @@ const ESTADO_VACIO = {
   genero: 'n',
   morning: null,
   night: null,
-  victorias: [],
   frase: null,
 }
 
@@ -156,8 +154,6 @@ export function useDiario(uid, fechaPedida = null) {
     }
   }, [uid, estado.fecha])
 
-  const refrescarVictorias = async (lista) => ({ victorias: lista })
-
   const acciones = {
     /** Escritura continua: se guarda sola a los 800 ms. */
     escribirManana: (patch) => programar('manana', patch),
@@ -175,32 +171,6 @@ export function useDiario(uid, fechaPedida = null) {
       ejecutar(async () => ({
         night: await diario.guardarEstadoSueno(uid, estado.fecha, seleccion, otro),
       })),
-
-    /**
-     * `filas` puede ser una función. Las escrituras van en fila, y entre que
-     * esta se encola y le toca el turno la persona ha seguido escribiendo: si
-     * las filas se capturan al encolar, la victoria que acaba de nacer se
-     * guarda dos veces. La función se llama cuando le toca, no antes.
-     */
-    guardarVictorias: (filas, state) =>
-      ejecutar(async () =>
-        refrescarVictorias(
-          await victorias.guardarFilas(
-            uid,
-            estado.fecha,
-            typeof filas === 'function' ? filas() : filas,
-            state,
-          ),
-        ),
-      ),
-    alternarLograda: (victoria) =>
-      ejecutar(async () => refrescarVictorias(await victorias.alternarLograda(uid, victoria))),
-    pasarAManana: (victoria) =>
-      ejecutar(async () => refrescarVictorias(await victorias.pasarAManana(uid, victoria))),
-    dejarIr: (victoria) =>
-      ejecutar(async () => refrescarVictorias(await victorias.dejarIr(uid, victoria))),
-    deshacerDecision: (victoria) =>
-      ejecutar(async () => refrescarVictorias(await victorias.deshacerDecision(uid, victoria))),
   }
 
   return { estado, carga, error, acciones, reintentar: cargar }

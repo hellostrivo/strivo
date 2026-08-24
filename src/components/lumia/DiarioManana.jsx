@@ -1,10 +1,14 @@
 // src/components/lumia/DiarioManana.jsx
-// Vista de Mañana del Diario (§5.3). Cuatro bloques:
+// Vista de Mañana del Diario (§5.3). Tres bloques:
 //
 //   1. Emociones — "¿Cómo me quiero sentir hoy?"
 //   2. Agradecimientos
 //   3. Gran visión
-//   4. Victorias
+//
+// **No hay bloque de victorias.** "Tres victorias que quisiera conseguir hoy"
+// se retiró el 23 ago: la mañana ya no pide planear el día. Lo que surja sin
+// haberse previsto se anota libremente en el Journal, que es el espacio de
+// escritura sin estructura (§5.8), y no como un campo aparte.
 //
 // **Las emociones van primero**, invirtiendo el orden de §5.3: la pregunta más
 // fácil de responder —un toque, sin escribir— abre la pantalla, y las que piden
@@ -31,17 +35,9 @@
 import { useEffect, useRef, useState } from 'react'
 import CampoGratitud from './CampoGratitud'
 import ChipsEmociones from './ChipsEmociones'
-import ListaVictorias from './ListaVictorias'
 import { CampoTexto } from './Campo'
 import { copy } from '@copy'
-import {
-  LIMITES,
-  conIdsDe,
-  desdeRegistros,
-  desdeTextos,
-  filasIniciales,
-  textosDe,
-} from '@/lumia/filas'
+import { LIMITES, desdeTextos, filasIniciales, textosDe } from '@/lumia/filas'
 import { CATALOGO, alternarEmocion } from '@/lumia/emociones'
 
 const textos = copy.lumia.diario.manana
@@ -51,14 +47,6 @@ const RETRASO_GRAN_VISION = 8000
 
 export default function DiarioManana({ estado, acciones }) {
   const [gratitud, setGratitud] = useState([])
-  const [victorias, verVictorias] = useState([])
-  // Las filas también viven en una referencia: el guardado las lee cuando le
-  // toca el turno, no cuando se pidió, y para entonces pueden haber cambiado.
-  const filasRef = useRef([])
-  const setVictorias = (filas) => {
-    filasRef.current = filas
-    verVictorias(filas)
-  }
   const [granVision, setGranVision] = useState('')
   const [emociones, setEmociones] = useState([])
   const [aviso, setAviso] = useState(false)
@@ -69,7 +57,6 @@ export default function DiarioManana({ estado, acciones }) {
   // manda lo que se está escribiendo, y el guardado va detrás.
   useEffect(() => {
     setGratitud(filasIniciales(desdeTextos(estado.morning?.gratitude), LIMITES.gratitud))
-    setVictorias(filasIniciales(desdeRegistros(estado.victorias), LIMITES.victorias))
     setGranVision(estado.morning?.granVision ?? '')
     setEmociones(estado.morning?.emotions ?? [])
   }, [estado.fecha])
@@ -95,17 +82,6 @@ export default function DiarioManana({ estado, acciones }) {
     setEmociones(siguiente)
     setAviso(false)
     acciones.guardarManana({ emotions: siguiente })
-  }
-
-  // Al volcar, las victorias vuelven con su id: sin esto, la siguiente
-  // escritura crearía un registro nuevo con el mismo texto. Solo se recoge el
-  // id, nunca la lista entera: mientras el guardado iba y venía se ha podido
-  // escribir en la fila siguiente.
-  const volcarVictorias = async () => {
-    const resultado = await acciones.guardarVictorias(() => filasRef.current)
-    if (resultado?.victorias) {
-      setVictorias(conIdsDe(filasRef.current, resultado.victorias))
-    }
   }
 
   return (
@@ -159,8 +135,6 @@ export default function DiarioManana({ estado, acciones }) {
           </p>
         )}
       </section>
-
-      <ListaVictorias filas={victorias} onCambiar={setVictorias} onVolcar={volcarVictorias} />
     </div>
   )
 }

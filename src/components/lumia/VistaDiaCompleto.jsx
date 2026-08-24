@@ -7,6 +7,11 @@
 // facto y no puede vivir en Lumia sin leer `formia/`. Si algún día se quiere la
 // vista unificada, será una superficie de Strivo Intelligence.
 //
+// **Sin victorias ni logros.** Los dos bloques se retiraron del producto el
+// 23 ago junto con la colección `lumia/victories` y el campo
+// `nightRitual.newWins`; un día guardado antes de esa fecha conserva sus datos
+// escritos, pero aquí ya no se leen ni se pintan.
+//
 // Un día en blanco no es un día perdido y no se presenta como tal: se dice que
 // también estuvo, y se sale por donde se entró.
 
@@ -43,7 +48,7 @@ function Lista({ textos: lineas }) {
 }
 
 export default function VistaDiaCompleto({ dia, genero, onVolver }) {
-  const { morning, night, victorias, journal } = dia
+  const { morning, night, journal } = dia
   const vacio = diaVacio(dia)
 
   const emocionesDeManana = (morning?.emotions ?? []).map((id) => etiquetaDeManana(id, genero))
@@ -92,25 +97,11 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
       )}
 
       {/* ─── Noche ──────────────────────────────────────────────────────── */}
-      {(victorias.length > 0 ||
-        (night?.newWins?.length ?? 0) > 0 ||
-        (night?.gratitude?.length ?? 0) > 0 ||
+      {((night?.gratitude?.length ?? 0) > 0 ||
         String(night?.learning ?? '').trim() !== '' ||
         estadoDeSueno.length > 0) && (
         <div className="flex flex-col gap-4 rounded-md border border-on-surface bg-lumia-campo p-4">
           <h2 className="font-display text-md text-on-surface">{textos.noche}</h2>
-
-          {victorias.length > 0 && (
-            <Bloque titulo={textos.victorias}>
-              <Lista textos={victorias.map((victoria) => victoria.text)} />
-            </Bloque>
-          )}
-
-          {(night?.newWins?.length ?? 0) > 0 && (
-            <Bloque titulo={textos.logros}>
-              <Lista textos={night.newWins} />
-            </Bloque>
-          )}
 
           {(night?.gratitude?.length ?? 0) > 0 && (
             <Bloque titulo={textos.gratitud}>
