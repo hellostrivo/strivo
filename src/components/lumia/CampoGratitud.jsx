@@ -27,6 +27,9 @@ export default function CampoGratitud({
   sugerencias,
   etiqueta,
   placeholder,
+  maxLength,
+  textoAnadir,
+  textoTope,
 }) {
   // `null` es el estado de partida y el de después de salir: sin foco no hay
   // ideas en ningún renglón.
@@ -120,6 +123,9 @@ export default function CampoGratitud({
         onEnfocar={setEnfocada}
         onDesenfocar={desenfocar}
         debajoDeFila={ideasDe}
+        maxLength={maxLength}
+        textoAnadir={textoAnadir}
+        textoTope={textoTope}
       />
     </div>
   )

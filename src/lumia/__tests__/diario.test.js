@@ -47,9 +47,9 @@ describe('el día de Lumia', () => {
 
   it('guarda por bloques: escribir uno no borra los demás', async () => {
     await guardarManana(UID, HOY, { gratitude: ['uno'] })
-    await guardarManana(UID, HOY, { granVision: 'un día sin prisa' })
+    await guardarManana(UID, HOY, { action: 'salir a caminar' })
     const morning = await lumia.getMorningEntry(UID, HOY)
-    expect(morning).toEqual({ gratitude: ['uno'], granVision: 'un día sin prisa' })
+    expect(morning).toEqual({ gratitude: ['uno'], action: 'salir a caminar' })
   })
 
   it('no persiste el ánimo derivado: es una vista, no un dato (§5.4.1)', async () => {
@@ -64,7 +64,11 @@ describe('el día de Lumia', () => {
   it('reconoce si la mañana y la noche tienen algo escrito', async () => {
     expect(mananaEscrita(null)).toBe(false)
     expect(mananaEscrita({ gratitude: [] })).toBe(false)
+    expect(mananaEscrita({ feeling: 'calma' })).toBe(true)
+    expect(mananaEscrita({ action: 'salir a caminar' })).toBe(true)
+    // Un día de la versión anterior sigue contando como día con algo escrito.
     expect(mananaEscrita({ emotions: ['en_paz'] })).toBe(true)
+    expect(mananaEscrita({ granVision: 'un día sin prisa' })).toBe(true)
 
     expect(nocheEscrita(null)).toBe(false)
     expect(nocheEscrita({})).toBe(false)

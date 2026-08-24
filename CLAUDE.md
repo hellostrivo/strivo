@@ -187,8 +187,12 @@ shared/ {
 
 lumia/ {
   journal/{entryId}: { date, text, emotions[], otherText, createdAt, updatedAt },
-  dailyIntention/{date}: { intentionText },  // ex-R5
-  nightRitual/{date}: { inheritedWins, newWins, gratitude, learning, sleepState },
+  // La mañana de tres momentos (23 ago). `emotions` y `granVision` son de la
+  // versión anterior: se leen, no se escriben.
+  morningEntry/{date}: { version, updatedAt, completedAt, skipped[],
+                         feeling, feelingOther, intention, intentionOther,
+                         gratitude[], action, reflectionId, reflection },
+  nightRitual/{date}: { gratitude, learning, sleepState, sleepStateOther },
   pinConfig: { salt, hash, iterations, algorithm, enabled }
 }
 
@@ -839,6 +843,200 @@ transversal de Respiración. SPEC_13 entrega motor, catálogo y datos, sin una s
   (agradecimientos, aprendizaje, estado de sueño, síntesis, cierre).
 - **`npm run lint`, `test`, `build`, `lint:copy`, `lint:contraste` y `format:check` en verde ·
   1287 pruebas.**
+
+**La mañana pasa a tres momentos, 23 ago. Deroga §5.3 entera:**
+
+La Vista de Mañana deja de ser tres bloques a la vista y pasa a ser un recorrido
+de tres momentos con un cierre propio. Lo pidió el propietario del producto con
+la especificación completa —redacción exacta, tipos de respuesta, reglas de
+interacción, personalización, almacenamiento y estados visuales—, y esta sección
+es la única fuente de verdad de lo que se implementó.
+
+```
+1 de 3  ·  ¿Cómo me siento esta mañana?        (selección única, 11 + Algo más)
+2 de 3  ·  ¿Qué agradezco hoy?                 (1 a 3 elementos, uno al abrir)
+3 de 3  ·  ¿Cómo me gustaría sentirme…?        (selección única, 9 + Algo más)
+           ¿Qué puedo hacer hoy…?              (texto libre + ideas)
+   +    ·  Si quieres, una última pausa        (opcional, algunos días)
+   →       Tu intención · Tu paso · «Comenzar mi día»
+   →       La consulta: lo respondido, con las preguntas delante
+```
+
+- **La intención va con la acción, no con el punto de partida.** Es una
+  corrección de flujo del propietario del producto del mismo 23 ago, y arregla
+  algo que estaba mal: "¿Qué puedo hacer hoy para acercarme a **esa sensación**?"
+  es un pronombre sin antecedente si la sensación se eligió dos pantallas atrás.
+  Juntas se explican solas, y además **las ideas de abajo cambian en el momento**
+  en que se toca un chip de arriba — elegir "En calma" hace aparecer las ideas de
+  la calma sin cambiar de pantalla. La pantalla 1 queda con una sola pregunta,
+  que es la más fácil de responder y la puerta del recorrido.
+- **Siguen siendo tres momentos**, así que el indicador no se movió y
+  `PREGUNTAS` tampoco: los ids de las cinco preguntas son los mismos y ningún
+  dato guardado cambia de forma. Lo que cambió es en qué pantalla se hacen.
+
+- **Se retiran de la mañana la gran visión y las emociones a cultivar.** La
+  spec define el recorrido entero y no las recoge; conservarlas habría dejado el
+  indicador en "1 de 4" y roto el objetivo de uno o dos minutos. **Lo decidió el
+  propietario del producto** entre tres opciones sobre la mesa. `granVision` y
+  `emotions` **salen de `FIELDS.morningEntry`**, así que un intento de volver a
+  escribirlos lanza `UNKNOWN_FIELD` — el mismo trato que recibieron las
+  victorias. Deroga el bloque de emociones y el de gran visión de §5.3, y con
+  ellos RN-VM-03 tal como estaba escrita.
+- **Y a diferencia de las victorias, aquí el Historial no pierde nada.**
+  `VistaDiaCompleto` lee las **dos** versiones y cada bloque aparece solo si
+  tiene contenido: un día de agosto muestra ánimo, intención, gratitud, paso y
+  pausa; uno de julio muestra sus emociones y su gran visión. §9 de la spec lo
+  exige literalmente —"no sobrescribas ni elimines información histórica"— y era
+  barato cumplirlo porque los campos viejos nunca compartieron nombre con los
+  nuevos. `src/lumia/emociones.js` **se queda entero como catálogo heredado**,
+  con su copy movido a `manana.emocionesHeredadas`, y su único consumidor es esa
+  vista.
+- **`ChipsEmociones` no se reutilizó, y no es duplicación por descuido.** Aquel
+  admite tres selecciones y una palabra de 24 caracteres sin espacios (§5.8.1);
+  este admite una y hasta 30 caracteres tal como se escriban. Meter las dos
+  reglas en un componente serían dos ramas que envejecen por separado — el mismo
+  criterio con el que `NavLumia` y `NavFormia` siguen separados. Lo que sí se
+  comparte es la píldora, que es idéntica.
+- **La selección única se suelta tocándola otra vez, y esa es la forma de
+  omitir.** No hay botón de "ninguna": tocar el chip elegido lo deja en blanco.
+  Por eso los chips son botones con `aria-pressed` y no radios — un radio no se
+  puede deseleccionar, y anunciar como radio algo que sí se suelta sería mentir
+  al lector de pantalla.
+- **"Algo más" no se suelta tocando el chip: se edita.** Tocarlo cuando ya está
+  elegido reabre el campo, y quitarlo tiene su propio control al lado. Editar y
+  borrar no pueden ser el mismo gesto cuando hay texto de por medio.
+- **La gratitud abre con UN campo, no con tres.** `LIMITES.gratitudManana` es
+  `{min: 1, max: 3, crecerSola: false}` y `crecerSola` es el campo nuevo que
+  separa las dos gratitudes: la de la noche sigue abriendo con sus tres
+  renglones y creciendo sola, la de la mañana espera a "Añadir otro". Sin él,
+  tres campos vacíos a la vez se leen como tres huecos por rellenar.
+- **Las ideas de gratitud de los 5 s se conservan tal cual.** La spec no las
+  nombra, pero tampoco las contradice: se ofrecen bajo el renglón enfocado,
+  nunca rellenan el campo y se callan tras dos "Ahora no". Retirarlas habría
+  sido resolver por omisión algo que el propietario diseñó el 19 ago. Es el
+  mismo `CampoGratitud` que usa la noche, con otros límites.
+- **Tocar una idea de acción NO la guarda todavía** (§5 de la spec). Mientras
+  solo se ha tocado, lo que hay en el campo es una propuesta de la app y no algo
+  que alguien haya dicho de sí mismo; se escribe al continuar o al terminar.
+  Es la única excepción al autoguardado de Lumia y está anotada en el código.
+  **Coste asumido:** abandonar justo ahí pierde esa línea, que es exactamente lo
+  que la regla pide.
+- **"Ideas que elegiste antes" solo mira `morningEntry`, y solo la misma
+  intención.** Máximo dos, ventana de 30 días, sin repetir, sin el día en curso.
+  Una intención escrita a mano **no se compara con nada** y recibe las generales:
+  deducir de una palabra qué le pasa a alguien es diagnosticar. Nunca se dice
+  que le funcionaran —la app no tiene forma de saberlo— y una prueba recorre
+  `mananaAcciones.js` para comprobar que no nombra journal ni noche.
+- **Las ideas ofrecidas descuentan las que ya están delante como propias.** Por
+  eso una lista de intención puede ofrecer dos en vez de tres: "hasta tres" no
+  es "siempre tres", y rellenar el hueco con una idea de otra intención sería
+  ofrecer algo que no viene de la que se eligió. La lista general tiene cuatro
+  precisamente para que ese descuento no la deje corta.
+- **La pausa opcional se decide leyendo lo guardado, sin contador aparte.**
+  Máximo tres en siete días, nunca en días consecutivos, y rotación que no
+  repite hasta haber pasado por las demás. **Aparecer cuenta aunque no se
+  conteste**: `reflectionId` se escribe en cuanto la tarjeta se muestra, o quien
+  nunca responde la vería todas las mañanas. Dentro del mismo día la decisión no
+  cambia, porque se lee del propio registro de hoy.
+- **"Comenzar mi día" vuelve, y no es el botón que se retiró el 19 ago.** Aquel
+  estaba al final de una pantalla que ya guardaba sola y sugería que sin tocarlo
+  no se había guardado. Este es el único control del cierre —la ceremonia de §8,
+  hermana de "Cerrar mi día"— y no aparece en ninguna pantalla de escritura. Una
+  prueba lo fija por si alguien lo mueve. **`AperturaDelDia` es hermano de
+  `CierreDelDia`, no una copia**: aquel oscurece y despide, este aclara y suelta.
+- **La pantalla de consulta repite las preguntas, no las resume.** Se ve igual
+  que las del recorrido —misma tipografía, mismo aire, misma superficie— y lo
+  único que cambia es que no hay nada que tocar. Un resumen con etiquetas cortas
+  —"Cómo empezaste · Cansada"— sería un inventario con otro vocabulario, y §6
+  pide que las preguntas se digan siempre igual. Por eso `copy…manana.resumen`
+  se quedó con **una sola cadena**, "Cambiar algo": las demás las pone la propia
+  pregunta. La pausa trae la pregunta que salió ese día, que sin `reflectionId`
+  no se podría titular. Todo cabe en una pantalla: no se pagina ni se pliega.
+- **Sin etiqueta de "hecho".** Con el contenido delante, decir "ya definiste tu
+  día" es contarle a alguien lo que está leyendo — el mismo criterio con el que
+  se retiró RN-HOY-03 el 19 ago. Los bloques en blanco no aparecen: no hay
+  marcador de ausencia. Volver a entrar es "Cambiar algo" y no pide confirmación.
+- **`resumenDeManana` vive en `manana.js`, no en el componente.** Qué bloques
+  hay, en qué orden y con qué título es una regla, y las reglas de Lumia van en
+  un módulo puro que se prueba sin montar React. `ResumenManana` solo pinta.
+- **Las dos respuestas emocionales vuelven en su píldora, con su emoji.** Se
+  eligieron tocando una y se releen en una: la respuesta se reconoce porque tiene
+  el aspecto que tenía al elegirla, y la consulta deja de ser una columna de
+  texto. Cada bloque del resumen trae `forma: 'chip' | 'texto'` y su `emoji`; la
+  gratitud, la acción y la pausa siguen siendo texto suelto, porque nunca fueron
+  una píldora.
+- **La forma de la píldora salió a `components/lumia/manana/pildora.js`.** La
+  comparten `ChipsUnicos` y `ResumenManana`, y ninguno de los dos escribe ya
+  `border-current` ni `bg-lumia-tarjeta` por su cuenta — dos copias de la misma
+  píldora acabarían separándose, que es el motivo por el que `habitAreaLabel.js`
+  y `constancia.js` también viven solos. Lo que se queda en `ChipsUnicos` es lo
+  propio de un control que se toca: la transición, el anillo de foco y el borde
+  punteado del chip de palabra propia.
+- **La píldora de la consulta es un `<span>`, no un botón.** Parecerse a un
+  control sin serlo es aceptable cuando toda la pantalla es de lectura; darle
+  apariencia de tocable y que no responda, no lo sería. El emoji va
+  `aria-hidden`: la etiqueta ya dice la emoción, y leerlo dos veces sobra.
+- **A la respuesta escrita a mano no se le pone emoji**, ni siquiera aquí. §3 lo
+  prohíbe expresamente y elegirle uno sería la app interpretando lo que alguien
+  acaba de nombrar. Sale su palabra entre comillas, en la misma píldora.
+- **El indicador cuenta momentos, no campos, y la pausa no entra en la cuenta.**
+  Un contador de campos convertiría una mañana escrita a medias en una barra a
+  medio llenar. Y un total que cambia de un día para otro deja de orientar. La
+  palabra "progreso" no aparece en el copy: la prueba de vocabulario de Lumia la
+  prohíbe desde SPEC_06 y con razón.
+- **Nada bloquea, y está probado en negativo.** Ningún control del recorrido
+  lleva `disabled`, `required` ni `aria-invalid`, y el copy no contiene
+  "incompleto", "te faltó", "obligatorio" ni "sin responder". `skipped` anota lo
+  que quedó en blanco **solo de las preguntas que llegaron a hacerse**: una
+  pausa que no se mostró no es una pausa omitida.
+- **`updatedAt` es hora local con desfase, no `toISOString()`.** §9 pide "fecha
+  y hora local" y normalizar a UTC perdería justo el dato que se pide: a qué
+  hora era esto para quien lo escribió.
+- **`version: 2` se guarda con cada mañana.** Las de la versión 1 no traen el
+  campo y se reconocen por su ausencia, que es todo lo que hace falta para
+  leerlas bien.
+- **`cargarDia` trae ahora `recientes`**, las mañanas ya escritas, con una sola
+  lectura de colección. Solo alimentan las ideas anteriores y la rotación de la
+  pausa; las dos están hechas de lo que la propia persona escribió y ninguna
+  sale de `lumia/` (RN-DB4-01 intacta).
+- **Criterio 10 comprobado en positivo:** `FIELDS.nightRitual` no cambia,
+  `LIMITES.gratitud` conserva sus tres renglones y su lista de diez, "Cerrar mi
+  día" sigue donde estaba, y una prueba falla si un archivo de la mañana nombra
+  la noche, el journal o Formia.
+- **Archivos nuevos:** `src/lumia/seleccionUnica.js`, `mananaEmociones.js`,
+  `mananaAcciones.js`, `mananaPausa.js`, `manana.js` y
+  `src/components/lumia/manana/` (ChipsUnicos, MomentoAnimo, MomentoGratitud,
+  MomentoIntencionAccion, MomentoPausa, Pasos, AperturaDelDia, ResumenManana).
+  Una pantalla, un archivo — una prueba falla si reaparecen `MomentoInicio` o
+  `MomentoAccion`, que fueron el reparto anterior.
+  `DiarioManana.jsx` se queda como contenedor: sigue siendo la sección Mañana
+  del Diario y sigue entrando por el mismo sitio en Hoy.
+- **`npm run lint`, `test`, `build`, `lint:copy`, `lint:contraste` y
+  `format:check` en verde · 1373 pruebas** (83 nuevas en `manana.test.js`, una
+  por criterio de aceptación, por regla de §3 a §10, por pantalla del flujo y
+  por pieza de la consulta).
+
+**Pendiente de la actualización de la mañana:**
+- **Sin validar en navegador.** Lo comprobado es la lógica y el marcado; falta
+  ver el recorrido entero en un teléfono real: el teclado sobre los campos de
+  los momentos 2 y 3, el chip "Algo más" con el teclado abierto, y si el cierre
+  se siente ceremonia o interrupción. **La pregunta que ninguna prueba contesta
+  es si el recorrido cabe de verdad en uno o dos minutos.**
+- **Los dos catálogos nuevos están sin revisar editorialmente**, como las frases
+  del día y las de apertura. Pasan §3.6 con prueba automática; qué emociones se
+  ofrecen y cómo se nombran es del propietario del producto. En particular, las
+  formas neutras se redactaron aquí: "Pensando", "Con demasiado encima",
+  "Con cansancio", "Con ligereza".
+- **Las 27 ideas de acción y las 4 generales tampoco están revisadas.** Salen
+  literales de la spec, salvo "Dividir una tarea en un primer paso", que decía
+  "tarea" —léxico prohibido de §3.6— y se redactó como "Dividir algo grande en
+  un primer paso".
+- **El blueprint sigue describiendo §5.3 como estaba.** Con esta actualización
+  caen su bloque de emociones, el de gran visión y el orden de los bloques.
+  **La documentación está pendiente de reescribir esa sección**; no bloquea el
+  código, igual que quedó pendiente con SPEC_09 y con las victorias.
+- **Caso conocido:** con dos pestañas abiertas sobre el mismo día, la última
+  escritura gana. Es el mismo comportamiento que el resto de Lumia.
 
 **Home de Strivo — revisión de SPEC_11 y de §C0.2/§C7.1, 19 ago:**
 - **Cada apertura aterriza en un Home de marca** (`src/pages/Home.jsx`, ruta `/`): símbolo de

@@ -1,17 +1,17 @@
 // src/lumia/emociones.js
-// Emociones de la Vista de Mañana: "¿Cómo me quiero sentir hoy?" (§5.3, B3).
+// **Catálogo heredado.** Fue la pregunta "¿Cómo me quiero sentir hoy?" de la
+// Vista de Mañana (§5.3, B3): quince emociones positivas, hasta tres a la vez,
+// guardadas en `morning.emotions`.
 //
-// Son **quince, todas positivas y en futuro**: esto pregunta qué quieres
-// cultivar, y ofrecer "Ansiosa" como algo a cultivar sería absurdo y dañino.
-// Las emociones difíciles viven en el Journal, que pregunta qué hay (§5.3.2).
+// La actualización del 23 ago la sustituyó por dos preguntas de selección única
+// —"¿Cómo me siento esta mañana?" y "¿Cómo me gustaría sentirme durante el día
+// de hoy?"— que viven en `mananaEmociones.js`. Ninguna pantalla de escritura
+// ofrece ya este catálogo.
 //
-// **Representación.** SPEC_06 §4.2 fija chips tipo píldora con emoji y quince
-// entradas; §5.3 y §5.8.1 describían dieciséis tarjetas con ícono propio y sin
-// emoji. Se resolvió a favor de SPEC_06 el 10 ago 2026, con dos consecuencias
-// anotadas en CLAUDE.md: la mañana y el Journal comparten representación, y el
-// catálogo baja a quince retirando "Abundante", el más cercano a "Próspero".
-// Lo que **no** cambia es que los dos catálogos siguen siendo distintos: quince
-// positivas aquí, quince con las difíciles incluidas en el Journal.
+// **Se conserva entero para leer los días que lo usaron** (§9: nada de lo ya
+// escrito se sobrescribe ni desaparece). Su único consumidor es la vista de día
+// completo del Historial. Si algún día no queda ni una mañana con `emotions`,
+// este módulo y su copy se pueden retirar juntos.
 //
 // RN-GEN-04 — Se persiste el `id`. La etiqueta se resuelve al pintar, así que
 // cambiar el género del perfil reescribe también los días ya guardados.
@@ -19,7 +19,7 @@
 import { copy } from '@copy'
 import { resolveGender } from '@copy/gender'
 
-const textos = copy.lumia.diario.manana.emociones
+const textos = copy.lumia.diario.manana.emocionesHeredadas
 
 /** Orden fijo: por frecuencia esperada y equilibrio temático (§5.3). */
 export const CATALOGO = Object.freeze(textos.catalogo)

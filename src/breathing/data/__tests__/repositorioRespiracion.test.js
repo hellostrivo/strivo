@@ -279,9 +279,9 @@ describe('sesiones (§8.5)', () => {
 describe('criterio 16 — nada de lo que ya había se toca', () => {
   it('los datos de Lumia y de Formia siguen intactos tras usar Respiración', async () => {
     await lumia.saveMorningEntry(UID, '2026-08-20', {
-      granVision: 'Un día tranquilo',
+      action: 'Salir a caminar',
       gratitude: ['el café'],
-      emotions: ['tranquilo'],
+      feeling: 'calma',
     })
     await formia.setCentralIdentity(UID, 'Alguien que crece')
     const habito = await formia.createHabit(UID, {
@@ -301,7 +301,7 @@ describe('criterio 16 — nada de lo que ya había se toca', () => {
     })
 
     expect(await lumia.getMorningEntry(UID, '2026-08-20')).toMatchObject({
-      granVision: 'Un día tranquilo',
+      action: 'Salir a caminar',
       gratitude: ['el café'],
     })
     expect(await formia.getCentralIdentity(UID)).toBe('Alguien que crece')

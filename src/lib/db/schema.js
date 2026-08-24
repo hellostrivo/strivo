@@ -95,7 +95,25 @@ export const FIELDS = Object.freeze({
 
   // lumia/
   journal: Object.freeze(['date', 'text', 'emotions', 'otherText', 'createdAt', 'updatedAt']),
-  morningEntry: Object.freeze(['granVision', 'gratitude', 'emotions']),
+  // La mañana de tres momentos (actualización del 23 ago). `granVision` y
+  // `emotions` salieron de la lista con las preguntas que los escribían: los
+  // días ya guardados los conservan y el Historial los sigue leyendo, pero
+  // nadie vuelve a escribirlos. Un intento lanza UNKNOWN_FIELD, que es lo
+  // correcto: en `lib/db/` los registros los escribe el código.
+  morningEntry: Object.freeze([
+    'version',
+    'updatedAt',
+    'completedAt',
+    'skipped',
+    'feeling',
+    'feelingOther',
+    'intention',
+    'intentionOther',
+    'gratitude',
+    'action',
+    'reflectionId',
+    'reflection',
+  ]),
   // `inheritedWins` y `newWins` se retiraron el 23 ago con las victorias y el
   // checklist de logros. Los días ya escritos conservan sus datos en el
   // almacén; nadie los lee, y volver a nombrarlos aquí los reabriría a la

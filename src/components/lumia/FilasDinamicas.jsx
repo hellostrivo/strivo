@@ -24,6 +24,7 @@ import {
   alSalirDeFila,
   escribirEn,
   pideConfirmacion,
+  puedeAnadir,
   quitarFila,
   topeAlcanzado,
 } from '@/lumia/filas'
@@ -41,6 +42,11 @@ export default function FilasDinamicas({
   onEnfocar,
   onDesenfocar,
   debajoDeFila,
+  maxLength,
+  textoAnadir = textos.anadir,
+  // La frase del tope es de una lista que puede llegar a diez. Una de tres no
+  // necesita que le anuncien que llegó al final: se ve. `null` la retira.
+  textoTope = textos.tope,
 }) {
   const [confirmando, setConfirmando] = useState(null)
   const tope = topeAlcanzado(filas, limites)
@@ -80,6 +86,7 @@ export default function FilasDinamicas({
                 salir(indice)
                 onDesenfocar?.(indice, evento)
               }}
+              maxLength={maxLength}
               placeholder={placeholder}
               aria-label={`${etiqueta}, ${indice + 1}`}
             />
@@ -102,11 +109,13 @@ export default function FilasDinamicas({
         </div>
       ))}
 
-      {tope ? (
+      {tope && textoTope && (
         <p className="text-sm text-on-surface-soft" role="status">
-          {textos.tope}
+          {textoTope}
         </p>
-      ) : (
+      )}
+
+      {puedeAnadir(filas, limites) && (
         <button
           type="button"
           onClick={() => onCambiar([...filas, { id: null, texto: '' }])}
@@ -116,7 +125,7 @@ export default function FilasDinamicas({
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30',
           )}
         >
-          {textos.anadir}
+          {textoAnadir}
         </button>
       )}
     </div>

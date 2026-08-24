@@ -21,6 +21,7 @@ import { lumia, shared, strivoDateKey } from '@/lib/db'
 import { copy, interpolate } from '@copy'
 import { fraseDelDia } from '@/content/frases-del-dia'
 import { animoDerivado, paraGuardar as suenoParaGuardar } from './estadoSueno.js'
+import { hayAlgoEscrito } from './manana.js'
 import { sumarDias } from './fechas.js'
 
 /** Días hacia atrás que se miran para saber si el ánimo reciente es bajo. */
@@ -53,14 +54,15 @@ export async function animoBajoReciente(uid, fecha) {
   return animos.every((animo) => ANIMOS_BAJOS.includes(animo))
 }
 
-/** ¿Hay algo escrito en la mañana? Decide el copy de la tarjeta de Hoy. */
+/**
+ * ¿Hay algo escrito en la mañana?
+ *
+ * La regla vive en `manana.js`, que es donde está el resto de lo que sabe leer
+ * una mañana, e incluye los campos de la versión 1 —emociones a cultivar y gran
+ * visión— porque un día que solo tenga eso sigue siendo un día con algo escrito.
+ */
 export function mananaEscrita(morning) {
-  if (!morning) return false
-  return (
-    (morning.gratitude?.length ?? 0) > 0 ||
-    (morning.emotions?.length ?? 0) > 0 ||
-    String(morning.granVision ?? '').trim() !== ''
-  )
+  return hayAlgoEscrito(morning)
 }
 
 /**
@@ -87,11 +89,12 @@ export function nocheEscrita(night) {
 export async function cargarDia(uid, fechaPedida = null) {
   const fecha = fechaPedida ?? (await fechaDeHoy(uid))
 
-  const [perfil, morning, night, animoBajo] = await Promise.all([
+  const [perfil, morning, night, animoBajo, recientes] = await Promise.all([
     shared.getProfile(uid),
     lumia.getMorningEntry(uid, fecha),
     lumia.getNightRitual(uid, fecha),
     animoBajoReciente(uid, fecha),
+    lumia.listMorningEntries(uid),
   ])
 
   return {
@@ -100,6 +103,11 @@ export async function cargarDia(uid, fechaPedida = null) {
     genero: perfil?.gender ?? 'n',
     morning,
     night,
+    // Las mañanas ya escritas. Solo sirven para dos cosas, las dos hechas de lo
+    // que la propia persona escribió: las ideas de acción que ya eligió para
+    // una intención y la rotación de la pausa opcional. Nada de esto sale de
+    // `lumia/` ni se cruza con nada (RN-DB4-01).
+    recientes,
     frase: fraseDelDia(fecha, { animoBajoReciente: animoBajo }),
   }
 }

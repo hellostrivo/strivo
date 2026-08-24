@@ -14,9 +14,17 @@
 // Nada de esto es obligatorio. Una lista entera vacía es un estado válido: la
 // vista se puede recorrer y cerrar sin escribir una palabra (RN-VM-01).
 
-/** Mínimos y máximos por lista (§5.3, B2 · RN-VM-03). */
+/**
+ * Mínimos y máximos por lista (§5.3, B2 · RN-VM-03).
+ *
+ * `crecerSola` es lo que separa las dos gratitudes. La de la noche abre con sus
+ * tres renglones y va abriendo otro en cuanto se escribe en el último. La de la
+ * mañana abre con **uno**: varios campos vacíos a la vez se leen como huecos
+ * por rellenar, y el segundo lo pide quien escribe tocando "Añadir otro".
+ */
 export const LIMITES = Object.freeze({
-  gratitud: Object.freeze({ min: 3, max: 10 }),
+  gratitud: Object.freeze({ min: 3, max: 10, crecerSola: true }),
+  gratitudManana: Object.freeze({ min: 1, max: 3, crecerSola: false }),
 })
 
 export function filaVacia() {
@@ -34,11 +42,11 @@ export function desdeTextos(textos) {
  * Las filas con las que se abre la vista: lo ya escrito, completado hasta el
  * mínimo con filas vacías, y una vacía al final si aún cabe.
  */
-export function filasIniciales(filas, { min, max }) {
+export function filasIniciales(filas, { min, max, crecerSola = true }) {
   const iniciales = [...(Array.isArray(filas) ? filas : [])]
   while (iniciales.length < min) iniciales.push(filaVacia())
   const ultima = iniciales[iniciales.length - 1]
-  if (iniciales.length < max && ultima && ultima.texto.trim() !== '') {
+  if (crecerSola && iniciales.length < max && ultima && ultima.texto.trim() !== '') {
     iniciales.push(filaVacia())
   }
   return iniciales
@@ -48,7 +56,7 @@ export function filasIniciales(filas, { min, max }) {
  * Escribe en una fila. Si era la última y ahora tiene contenido, nace otra
  * debajo — una sola, y solo si no se ha llegado al tope.
  */
-export function escribirEn(filas, indice, texto, { max }) {
+export function escribirEn(filas, indice, texto, { max, crecerSola = true }) {
   const actuales = Array.isArray(filas) ? filas : []
   if (indice < 0 || indice >= actuales.length) return actuales
 
@@ -56,7 +64,7 @@ export function escribirEn(filas, indice, texto, { max }) {
   siguientes[indice] = { ...siguientes[indice], texto: String(texto ?? '') }
 
   const esUltima = indice === siguientes.length - 1
-  if (esUltima && siguientes[indice].texto.trim() !== '' && siguientes.length < max) {
+  if (crecerSola && esUltima && siguientes[indice].texto.trim() !== '' && siguientes.length < max) {
     siguientes.push(filaVacia())
   }
   return siguientes
@@ -66,12 +74,16 @@ export function escribirEn(filas, indice, texto, { max }) {
  * Al salir de una fila vacía, la fila se va — salvo que sea una de las
  * primeras, que siempre se mantienen, o la última, que es la invitación a
  * seguir escribiendo.
+ *
+ * Sin `crecerSola` esa última excepción no aplica: ahí la invitación es el
+ * botón "Añadir otro", así que una fila vacía al final no invita a nada y
+ * además impide que el botón vuelva a ofrecerse.
  */
-export function alSalirDeFila(filas, indice, { min }) {
+export function alSalirDeFila(filas, indice, { min, crecerSola = true }) {
   const actuales = Array.isArray(filas) ? filas : []
   if (indice < min || indice >= actuales.length) return actuales
   if (actuales[indice].texto.trim() !== '') return actuales
-  if (indice === actuales.length - 1) return actuales
+  if (crecerSola && indice === actuales.length - 1) return actuales
   return actuales.filter((_, posicion) => posicion !== indice)
 }
 
@@ -101,4 +113,18 @@ export function textosDe(filas) {
 
 export function topeAlcanzado(filas, { max }) {
   return (Array.isArray(filas) ? filas : []).length >= max
+}
+
+/**
+ * ¿Se puede ofrecer una fila más?
+ *
+ * Con `crecerSola` la fila vacía ya está ahí y el botón solo adelanta trabajo.
+ * Sin ella, ofrecer otra mientras hay una en blanco sería invitar a rellenar
+ * dos huecos a la vez, que es justo lo que abrir con un campo evita.
+ */
+export function puedeAnadir(filas, limites) {
+  const actuales = Array.isArray(filas) ? filas : []
+  if (topeAlcanzado(actuales, limites)) return false
+  if (limites.crecerSola !== false) return true
+  return actuales.every((fila) => String(fila.texto ?? '').trim() !== '')
 }

@@ -23,6 +23,7 @@ const ESTADO_VACIO = {
   genero: 'n',
   morning: null,
   night: null,
+  recientes: [],
   frase: null,
 }
 

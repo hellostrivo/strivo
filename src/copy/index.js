@@ -130,24 +130,143 @@ export const copy = {
         tope: 'Diez cosas. Nada mal.',
       },
 
+      // ─── La mañana, en tres momentos (§5.3, actualización del 23 ago) ──────
+      // El recorrido pregunta, por este orden: cómo estoy, cómo me gustaría
+      // estar, qué agradezco y qué puedo hacer hoy. Después, algunos días, una
+      // pausa opcional. Nada bloquea y todo se puede dejar en blanco.
+      //
+      // Las preguntas principales **no cambian de redacción nunca**: la
+      // estabilidad es lo que las vuelve familiares (§6 de la actualización).
+      // Lo que se personaliza son las ideas de apoyo, y solo esas.
       manana: {
         titulo: 'Tu mañana',
 
+        // El indicador cuenta momentos, no campos: "1 de 3" habla de dónde
+        // estás en el recorrido, no de cuánto te falta por rellenar.
+        pasos: {
+          etiqueta: 'Momentos de la mañana',
+          indicadorTemplate: '{n} de {total}',
+          atras: 'Atrás',
+          siguiente: 'Continuar',
+          finalizar: 'Listo',
+        },
+
+        // ─── Momento 1A — punto de partida ───────────────────────────────────
+        // Selección única: se nombra un estado, no se hace un inventario.
+        // Aquí sí caben las emociones difíciles, porque la pregunta es qué hay.
+        animo: {
+          titulo: '¿Cómo me siento esta mañana?',
+          lead: 'Elige lo que más se acerque a cómo estás.',
+          // Palabra propia: hasta 30 caracteres, sin emoji automático y
+          // siempre editable. No pasa por el helper de género (RN-GEN-06).
+          otra: {
+            chip: '＋ Algo más',
+            label: 'Cómo me siento esta mañana, en mis palabras',
+            placeholder: 'en tus palabras',
+            confirmar: 'Listo',
+            quitar: 'Quitar',
+          },
+          catalogo: [
+            { id: 'calma', emoji: '😌', label: { m: 'En calma', f: 'En calma', n: 'En calma' } },
+            {
+              id: 'energia',
+              emoji: '⚡',
+              label: { m: 'Con energía', f: 'Con energía', n: 'Con energía' },
+            },
+            { id: 'alegre', emoji: '😊', label: { m: 'Alegre', f: 'Alegre', n: 'Alegre' } },
+            {
+              id: 'motivado',
+              emoji: '✨',
+              label: { m: 'Motivado', f: 'Motivada', n: 'Con motivación' },
+            },
+            { id: 'neutral', emoji: '😐', label: { m: 'Neutral', f: 'Neutral', n: 'Neutral' } },
+            {
+              id: 'pensativo',
+              emoji: '🤔',
+              label: { m: 'Pensativo', f: 'Pensativa', n: 'Pensando' },
+            },
+            {
+              id: 'cansado',
+              emoji: '😴',
+              label: { m: 'Cansado', f: 'Cansada', n: 'Con cansancio' },
+            },
+            {
+              id: 'poca_energia',
+              emoji: '🪫',
+              label: { m: 'Con poca energía', f: 'Con poca energía', n: 'Con poca energía' },
+            },
+            {
+              id: 'inquieto',
+              emoji: '😟',
+              label: { m: 'Inquieto', f: 'Inquieta', n: 'Con inquietud' },
+            },
+            {
+              id: 'abrumado',
+              emoji: '😵‍💫',
+              label: { m: 'Abrumado', f: 'Abrumada', n: 'Con demasiado encima' },
+            },
+            { id: 'triste', emoji: '😔', label: { m: 'Triste', f: 'Triste', n: 'Triste' } },
+          ],
+        },
+
+        // ─── Momento 1B — intención ──────────────────────────────────────────
+        // Una intención acompaña; no es una meta que haya que alcanzar. La
+        // distancia entre 1A y 1B no se mide, no se nombra y no se colorea.
+        intencion: {
+          titulo: '¿Cómo me gustaría sentirme durante el día de hoy?',
+          lead: 'Elige una intención para acompañar tu día.',
+          otra: {
+            chip: '＋ Algo más',
+            label: 'Cómo me gustaría sentirme, en mis palabras',
+            placeholder: 'en tus palabras',
+            confirmar: 'Listo',
+            quitar: 'Quitar',
+          },
+          catalogo: [
+            { id: 'calma', emoji: '😌', label: { m: 'En calma', f: 'En calma', n: 'En calma' } },
+            {
+              id: 'energia',
+              emoji: '⚡',
+              label: { m: 'Con energía', f: 'Con energía', n: 'Con energía' },
+            },
+            { id: 'enfocado', emoji: '🎯', label: { m: 'Enfocado', f: 'Enfocada', n: 'Con foco' } },
+            {
+              id: 'motivado',
+              emoji: '✨',
+              label: { m: 'Motivado', f: 'Motivada', n: 'Con motivación' },
+            },
+            {
+              id: 'confianza',
+              emoji: '🧭',
+              label: { m: 'Con confianza', f: 'Con confianza', n: 'Con confianza' },
+            },
+            { id: 'ligero', emoji: '🪶', label: { m: 'Ligero', f: 'Ligera', n: 'Con ligereza' } },
+            { id: 'presente', emoji: '🌿', label: { m: 'Presente', f: 'Presente', n: 'Presente' } },
+            {
+              id: 'paciencia',
+              emoji: '🌱',
+              label: { m: 'Con paciencia', f: 'Con paciencia', n: 'Con paciencia' },
+            },
+            { id: 'alegre', emoji: '😊', label: { m: 'Alegre', f: 'Alegre', n: 'Alegre' } },
+          ],
+        },
+
+        // ─── Momento 2 — gratitud ────────────────────────────────────────────
+        // Abre con **un** campo. Varios campos vacíos a la vez se leen como
+        // huecos por rellenar, y esto no es un formulario.
         gratitud: {
-          titulo: '¿Qué agradezco esta mañana?',
-          // Bajo la pregunta, una sola línea que no pide nada: la certeza de
-          // que hay respuesta antes de buscarla.
-          lead: 'Siempre hay algo que agradecer.',
-          // La pista de qué cabe aquí va dentro de los campos, en gris de
-          // marcador de posición, y es la misma en los tres renglones: no se
-          // reparte una idea por fila —eso era decirle a cada renglón de qué
-          // tiene que hablar—. Corta a propósito: en un campo de una línea, en
-          // móvil, todo lo que no quepa se corta con puntos suspensivos.
-          placeholder: 'Puede ser desde algo pequeño',
+          titulo: '¿Qué agradezco hoy?',
+          lead: 'Puede ser algo pequeño.',
+          placeholder: 'Una persona, un momento o algo cotidiano…',
+          anadir: 'Añadir otro',
+          // Salida discreta, sin nada que reprochar al volver mañana.
+          omitir: 'Omitir por hoy',
+          // Las ideas de apoyo se conservan de la versión anterior: se ofrecen
+          // bajo el renglón enfocado tras 5 s sin escribir en él, y **nunca**
+          // rellenan el campo — abren una pregunta detonante y ahí acaban.
+          // Ninguna da por hecho que la mañana esté siendo agradable.
           sugerencias: {
             titulo: '¿Te ayudo con una idea?',
-            // RN dura de §5.3: tocar una idea NUNCA rellena el campo. Abre una
-            // pregunta detonante; escribir sigue siendo cosa de la persona.
             descartar: 'Ahora no',
             opciones: [
               {
@@ -179,18 +298,129 @@ export const copy = {
           },
         },
 
-        emociones: {
-          titulo: '¿Cómo me quiero sentir hoy?',
-          lead: 'Elige las emociones que quieres cultivar',
-          // Al intentar la cuarta se suelta la más antigua. No es un error y no
-          // se dice como tal (§5.3, Bloque 3).
-          max: 'Tres es un buen número.',
-          // Las 15 emociones de la mañana: todas positivas, en futuro, en orden
-          // fijo. Se persiste el `id`, nunca la etiqueta (RN-GEN-04).
-          //
-          // "Conectado con Dios" se conserva por su relevancia cultural (§5.3).
-          // El ajuste que lo cambia por "Conectado conmigo" es §5.12, fuera de
-          // esta spec: aquí está siempre presente.
+        // ─── Momento 3 — acción del día ──────────────────────────────────────
+        // Una acción, no una lista de pendientes. Las ideas se ofrecen; tocar
+        // una la deja en el campo para que se pueda cambiar entera.
+        accion: {
+          titulo: '¿Qué puedo hacer hoy para acercarme a esa sensación?',
+          lead: 'Piensa en algo sencillo y posible.',
+          placeholder: 'Hoy puedo…',
+          ideasTitulo: 'Por si te sirve',
+          // §6 — Solo lo que la propia persona escribió antes para esa misma
+          // intención. Nunca se afirma que le funcionara: eso no se sabe.
+          anterioresTitulo: 'Ideas que elegiste antes',
+          ideas: {
+            calma: [
+              'Hacer una pausa consciente',
+              'Silenciar notificaciones un momento',
+              'Respirar durante tres minutos',
+            ],
+            energia: [
+              'Dar una caminata breve',
+              'Tomar agua al comenzar',
+              'Empezar con algo sencillo',
+            ],
+            enfocado: [
+              'Elegir una prioridad',
+              'Trabajar 25 minutos sin interrupciones',
+              'Despejar mi espacio',
+            ],
+            motivado: [
+              'Empezar solo por cinco minutos',
+              'Dividir algo grande en un primer paso',
+              'Reconocer un pequeño avance',
+            ],
+            confianza: [
+              'Dar un paso que he pospuesto',
+              'Recordar algo que sé hacer bien',
+              'Pedir el apoyo que necesito',
+            ],
+            ligero: [
+              'Dejar fuera algo no esencial',
+              'Hacer una cosa a la vez',
+              'Tomarme una pausa sin culpa',
+            ],
+            presente: [
+              'Hacer una actividad sin el teléfono',
+              'Prestar atención a una comida',
+              'Volver a mi respiración',
+            ],
+            paciencia: [
+              'Hacer una pausa antes de responder',
+              'Dejar espacio entre actividades',
+              'Avanzar sin apresurarme',
+            ],
+            alegre: [
+              'Buscar un momento que disfrute',
+              'Escuchar algo que me anime',
+              'Compartir tiempo con alguien',
+            ],
+            // Para una intención escrita a mano, o sin intención elegida. No
+            // se interpreta lo que alguien escribió: se ofrece lo general.
+            generales: [
+              'Dar un paso pequeño',
+              'Hacer una pausa',
+              'Elegir una prioridad',
+              'Cuidar algo que necesito',
+            ],
+          },
+        },
+
+        // ─── Pausa opcional (§7) ─────────────────────────────────────────────
+        // No es una afirmación positiva y no se llama así: cabe el ánimo, el
+        // permiso, la perspectiva o el trato amable, sin obligación de sonar
+        // optimista.
+        reflexion: {
+          titulo: 'Si quieres, una última pausa',
+          opcional: 'Opcional',
+          omitir: 'Ahora no',
+          banco: [
+            {
+              id: 'recordarme',
+              titulo: '¿Qué necesito recordarme hoy?',
+              lead: 'Escribe una frase que quieras llevar contigo.',
+            },
+            {
+              id: 'tratarme',
+              titulo: '¿Cómo quiero tratarme hoy?',
+              lead: 'Piensa en el tono con el que quieres acompañarte.',
+            },
+            {
+              id: 'sencillo',
+              titulo: '¿Qué puedo hacer más sencillo hoy?',
+              lead: 'No todo necesita la misma energía.',
+            },
+          ],
+        },
+
+        // ─── Cierre (§8) ─────────────────────────────────────────────────────
+        // Sin puntuación, sin porcentajes y sin felicitación. Con todo en
+        // blanco cierra igual, y lo dice sin señalar el vacío.
+        cierre: {
+          intencionTemplate: 'Tu intención para hoy: {intencion}',
+          accionTemplate: 'Un paso que puedes dar: {accion}',
+          vacio: 'Tu día puede comenzar desde donde estás.',
+          cta: 'Comenzar mi día',
+        },
+
+        // La pantalla de consulta. **No tiene etiquetas propias**: repite las
+        // preguntas del recorrido, con la misma redacción y la misma
+        // tipografía, y debajo lo que se respondió. Un resumen con etiquetas
+        // cortas —"Cómo empezaste · Cansada"— sería un inventario con otro
+        // vocabulario, y §6 pide que las preguntas se digan siempre igual.
+        //
+        // Tampoco hay etiqueta de "hecho": el contenido está a la vista y
+        // decirlo sería contarle a alguien lo que está leyendo.
+        resumen: {
+          editar: 'Cambiar algo',
+        },
+
+        // Catálogo heredado. Las mañanas escritas antes de esta actualización
+        // guardaron hasta tres emociones de esta lista en `morning.emotions`;
+        // se conserva **solo para leerlas** en el Historial (§9: nada de lo ya
+        // escrito se sobrescribe ni desaparece). Ninguna pantalla de escritura
+        // lo ofrece.
+        emocionesHeredadas: {
           catalogo: [
             {
               id: 'agradecido',
@@ -240,13 +470,6 @@ export const copy = {
               label: { m: 'Próspero', f: 'Próspera', n: 'Con prosperidad' },
             },
           ],
-        },
-
-        granVision: {
-          titulo: '¿Qué haría que hoy sea un gran día?',
-          placeholder: 'Imagina tu día ideal',
-          // Aparece tras 8 s sin escribir (§5.3, Bloque 4).
-          sugerencia: '¿Cómo te gustaría sentirte a las diez de la noche?',
         },
       },
 
@@ -631,10 +854,17 @@ export const copy = {
         manana: 'Tu mañana',
         noche: 'Tu noche',
         journal: 'Lo que escribiste',
-        emociones: 'Cómo querías sentirte',
+        animo: 'Cómo empezaste',
+        intencion: 'Tu intención',
         gratitud: 'Lo que agradeciste',
-        granVision: 'Cómo imaginabas el día',
+        accion: 'Tu paso de ese día',
+        pausa: 'Tu pausa',
         aprendizaje: 'Lo que aprendiste',
+        // Las dos etiquetas de las mañanas de la versión 1. Ninguna pantalla
+        // vuelve a escribir esos campos; los días que los tienen se siguen
+        // leyendo igual (§9).
+        emociones: 'Cómo querías sentirte',
+        granVision: 'Cómo imaginabas el día',
         // Un día en blanco no es un día perdido.
         vacio: 'Este día no tiene nada escrito. También estuviste.',
       },

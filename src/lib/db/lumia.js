@@ -92,6 +92,18 @@ export async function getMorningEntry(uid, date) {
   return readPath(paths.lumiaItem(uid, 'morningEntry', date))
 }
 
+/**
+ * Todas las mañanas guardadas, cada una con su fecha en `id`.
+ *
+ * La lee la mañana para dos cosas que solo pueden salir de lo que la propia
+ * persona escribió antes: las ideas de acción que ya eligió para una intención
+ * y la rotación de la pausa opcional. Ninguna de las dos sale de `lumia/`.
+ */
+export async function listMorningEntries(uid) {
+  assertUid(uid)
+  return readCollection(uid, COLLECTIONS.morningEntry)
+}
+
 export async function saveMorningEntry(uid, date, entry) {
   assertUid(uid)
   assertDateKey(date)

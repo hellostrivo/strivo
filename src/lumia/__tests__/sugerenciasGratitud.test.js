@@ -20,7 +20,9 @@ import {
 
 const CAMPO = 'src/components/lumia/CampoGratitud.jsx'
 const FILAS = 'src/components/lumia/FilasDinamicas.jsx'
-const MANANA = 'src/components/lumia/DiarioManana.jsx'
+// El bloque de gratitud de la mañana vive en su momento desde la actualización
+// del 23 ago: la pantalla pasó a tener tres momentos y cada uno es su archivo.
+const MANANA = 'src/components/lumia/manana/MomentoGratitud.jsx'
 
 /** El código sin comentarios: lo que se ejecuta, no lo que se explica. */
 function codigoDe(ruta) {
@@ -119,13 +121,17 @@ describe('el componente no vuelve al estado compartido', () => {
 
 describe('lo que se lee en el bloque de la mañana antes de escribir', () => {
   it('bajo la pregunta, una línea que no pide nada', () => {
-    expect(copy.lumia.diario.manana.gratitud.lead).toBe('Siempre hay algo que agradecer.')
-    expect(codigoDe(MANANA)).toMatch(/\{textos\.gratitud\.lead\}/)
+    // La redacción la fijó la actualización del 23 ago; el patrón —título más
+    // una línea que no pide nada— es el mismo de antes.
+    expect(copy.lumia.diario.manana.gratitud.lead).toBe('Puede ser algo pequeño.')
+    expect(codigoDe(MANANA)).toMatch(/\{textos\.lead\}/)
   })
 
   it('la pista de qué cabe va dentro de los campos, en el gris del marcador', () => {
-    expect(copy.lumia.diario.manana.gratitud.placeholder).toBe('Puede ser desde algo pequeño')
-    expect(codigoDe(MANANA)).toMatch(/placeholder=\{textos\.gratitud\.placeholder\}/)
+    expect(copy.lumia.diario.manana.gratitud.placeholder).toBe(
+      'Una persona, un momento o algo cotidiano…',
+    )
+    expect(codigoDe(MANANA)).toMatch(/placeholder=\{textos\.placeholder\}/)
   })
 
   it('es la misma en los tres renglones: ninguno tiene la suya', () => {

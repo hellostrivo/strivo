@@ -136,28 +136,18 @@ describe('la intención del día se retiró entera (deroga SPEC_09)', () => {
     )
   })
 
-  it('las emociones abren la pantalla, antes de todo lo que se escribe', () => {
-    // La pregunta que se responde con un toque va primero; las que piden
-    // escribir, después. Los temporizadores de gratitud (5 s) y gran visión
-    // (8 s) cuentan desde que se montan, no desde que se ven: el orden no los
-    // toca, y por eso no hay nada más que comprobar aquí.
-    const manana = codigoDe('src/components/lumia/DiarioManana.jsx')
-    const posicion = (etiqueta) => manana.indexOf(etiqueta)
-    expect(posicion('<ChipsEmociones')).toBeGreaterThan(-1)
-    expect(posicion('<ChipsEmociones')).toBeLessThan(posicion('<CampoGratitud'))
-    expect(posicion('<CampoGratitud')).toBeLessThan(posicion('{textos.granVision.titulo}'))
-    // La gran visión cierra la mañana: el bloque de victorias que iba detrás se
-    // retiró el 23 ago y no hay nada después de ella.
-    expect(manana.slice(posicion('{textos.granVision.titulo}'))).not.toMatch(/<[A-Z]\w*Victoria/)
+  it('la intención emocional de la mañana no es aquella intención', () => {
+    // La actualización del 23 ago trae una "intención" que es una **emoción**
+    // elegida de un catálogo, no el texto libre de SPEC_09. Se guarda en
+    // `intention`, dentro de `morningEntry`, y no resucita ni la colección
+    // `dailyIntention` ni el campo `intentionText`, que es lo que comprueban
+    // las dos pruebas de arriba.
+    expect(FIELDS.morningEntry).toContain('intention')
+    expect(FIELDS.morningEntry).not.toContain('intentionText')
   })
 
-  it('la mañana conserva sus dos preguntas', () => {
-    // Se va la intención; se quedan las emociones y la gran visión, que es la
-    // que §C2.4.1 distinguía de ella y la única que la noche recupera.
-    const manana = codigoDe('src/components/lumia/DiarioManana.jsx')
-    expect(manana).toMatch(/granVision/)
-    expect(manana).toMatch(/emociones/i)
-    expect(heroe).not.toMatch(/granVision/)
+  it('el héroe no pregunta nada: las preguntas son del recorrido', () => {
+    expect(heroe).not.toMatch(/granVision|intencion|intention/i)
   })
 
   it('el héroe no importa formia', () => {
@@ -229,8 +219,23 @@ describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
     expect(copy.lumia.hoy.tarjeta).toBeUndefined()
     expect(copy.lumia.hoy.hecho).toBeUndefined()
     const todo = JSON.stringify(copy.lumia)
-    ;['Empieza tu día', 'Cerrar tu día', 'Comenzar mi día', 'Volver a Hoy'].forEach((cadena) =>
+    ;['Empieza tu día', 'Cerrar tu día', 'Volver a Hoy'].forEach((cadena) =>
       expect(todo).not.toContain(cadena),
+    )
+  })
+
+  it('"Comenzar mi día" vuelve, y no es aquel botón', () => {
+    // Se retiró el 19 ago porque era un botón de guardar disfrazado al final
+    // de una pantalla que ya guardaba sola: sugería que sin tocarlo no se había
+    // guardado. Vuelve en otro sitio y con otro trabajo — es el único control
+    // del cierre de la mañana (§8), la ceremonia que cierra el recorrido, y su
+    // hermano es "Cerrar mi día", no un botón de navegación.
+    expect(copy.lumia.diario.manana.cierre.cta).toBe('Comenzar mi día')
+    expect(codigoDe('src/components/lumia/manana/AperturaDelDia.jsx')).toMatch(/textos\.cta/)
+    // No está al final de ninguna pantalla de escritura.
+    ;['MomentoAnimo', 'MomentoGratitud', 'MomentoIntencionAccion', 'MomentoPausa'].forEach(
+      (nombre) =>
+        expect(codigoDe(`src/components/lumia/manana/${nombre}.jsx`)).not.toMatch(/cierre/),
     )
   })
 

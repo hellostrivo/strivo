@@ -12,6 +12,13 @@
 // `nightRitual.newWins`; un día guardado antes de esa fecha conserva sus datos
 // escritos, pero aquí ya no se leen ni se pintan.
 //
+// **La mañana se lee en sus dos versiones.** La de tres momentos —cómo empecé,
+// mi intención, lo que agradecí, mi paso y la pausa— y la de §5.3, que guardaba
+// emociones a cultivar y una gran visión. Los días viejos se siguen viendo
+// enteros: nada de lo ya escrito se sobrescribe ni desaparece. Cada bloque
+// aparece solo si tiene contenido, así que un día no arrastra los huecos del
+// otro.
+//
 // Un día en blanco no es un día perdido y no se presenta como tal: se dice que
 // también estuvo, y se sale por donde se entró.
 
@@ -19,7 +26,8 @@ import { copy, interpolate } from '@copy'
 import { diaVacio } from '@/lumia/historial'
 import { etiquetasDe as etiquetasDeEmocion } from '@/lumia/emocionesJournal'
 import { etiquetasDe as etiquetasDeSueno } from '@/lumia/estadoSueno'
-import { etiquetaDe as etiquetaDeManana } from '@/lumia/emociones'
+import { etiquetaDe as etiquetaHeredada } from '@/lumia/emociones'
+import { etiquetaDeAnimo, etiquetaDeIntencion, hayAlgoEscrito } from '@/lumia/manana'
 import { horaDe } from '@/lumia/journal'
 import { fechaLarga } from '@/lumia/fechas'
 
@@ -51,7 +59,12 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
   const { morning, night, journal } = dia
   const vacio = diaVacio(dia)
 
-  const emocionesDeManana = (morning?.emotions ?? []).map((id) => etiquetaDeManana(id, genero))
+  const animo = etiquetaDeAnimo(morning, genero)
+  const intencion = etiquetaDeIntencion(morning, genero)
+  const accion = String(morning?.action ?? '').trim()
+  const pausa = String(morning?.reflection ?? '').trim()
+  const granVision = String(morning?.granVision ?? '').trim()
+  const emocionesHeredadas = (morning?.emotions ?? []).map((id) => etiquetaHeredada(id, genero))
   const estadoDeSueno = etiquetasDeSueno(night?.sleepState, night?.sleepStateOther, genero)
 
   return (
@@ -70,15 +83,19 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
       {vacio && <p className="text-base text-on-surface-soft">{textos.vacio}</p>}
 
       {/* ─── Mañana ─────────────────────────────────────────────────────── */}
-      {(emocionesDeManana.length > 0 ||
-        (morning?.gratitude?.length ?? 0) > 0 ||
-        String(morning?.granVision ?? '').trim() !== '') && (
+      {hayAlgoEscrito(morning) && (
         <div className="flex flex-col gap-4 rounded-md border border-on-surface bg-lumia-campo p-4">
           <h2 className="font-display text-md text-on-surface">{textos.manana}</h2>
 
-          {emocionesDeManana.length > 0 && (
-            <Bloque titulo={textos.emociones}>
-              <p className="text-base text-on-surface">{emocionesDeManana.join(' · ')}</p>
+          {animo !== '' && (
+            <Bloque titulo={textos.animo}>
+              <p className="text-base text-on-surface">{animo}</p>
+            </Bloque>
+          )}
+
+          {intencion !== '' && (
+            <Bloque titulo={textos.intencion}>
+              <p className="text-base text-on-surface">{intencion}</p>
             </Bloque>
           )}
 
@@ -88,9 +105,29 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
             </Bloque>
           )}
 
-          {String(morning?.granVision ?? '').trim() !== '' && (
+          {accion !== '' && (
+            <Bloque titulo={textos.accion}>
+              <p className="text-base text-on-surface whitespace-pre-wrap">{accion}</p>
+            </Bloque>
+          )}
+
+          {pausa !== '' && (
+            <Bloque titulo={textos.pausa}>
+              <p className="text-base text-on-surface whitespace-pre-wrap">{pausa}</p>
+            </Bloque>
+          )}
+
+          {/* Las dos preguntas de la versión anterior. Solo aparecen en los
+              días que las respondieron. */}
+          {emocionesHeredadas.length > 0 && (
+            <Bloque titulo={textos.emociones}>
+              <p className="text-base text-on-surface">{emocionesHeredadas.join(' · ')}</p>
+            </Bloque>
+          )}
+
+          {granVision !== '' && (
             <Bloque titulo={textos.granVision}>
-              <p className="text-base text-on-surface">{morning.granVision}</p>
+              <p className="text-base text-on-surface">{granVision}</p>
             </Bloque>
           )}
         </div>

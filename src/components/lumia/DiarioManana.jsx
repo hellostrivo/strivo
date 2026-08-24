@@ -1,140 +1,272 @@
 // src/components/lumia/DiarioManana.jsx
-// Vista de Mañana del Diario (§5.3). Tres bloques:
+// La mañana de Lumia, en tres momentos (actualización del 23 ago a §5.3).
 //
-//   1. Emociones — "¿Cómo me quiero sentir hoy?"
-//   2. Agradecimientos
-//   3. Gran visión
+//   1. Cómo me siento esta mañana
+//   2. Qué agradezco hoy
+//   3. Cómo me gustaría sentirme · qué puedo hacer hoy    (dos preguntas)
+//   +  Una pausa opcional, algunos días
+//   →  El cierre: la intención y el paso, y "Comenzar mi día"
+//   →  La consulta: lo respondido, con las preguntas delante
 //
-// **No hay bloque de victorias.** "Tres victorias que quisiera conseguir hoy"
-// se retiró el 23 ago: la mañana ya no pide planear el día. Lo que surja sin
-// haberse previsto se anota libremente en el Journal, que es el espacio de
-// escritura sin estructura (§5.8), y no como un campo aparte.
+// **La intención va con la acción, no con el punto de partida.** "¿Qué puedo
+// hacer hoy para acercarme a *esa sensación*?" es un pronombre sin antecedente
+// si la sensación se eligió dos pantallas atrás. Juntas, además, las ideas de
+// abajo cambian en el momento en que se toca un chip de arriba.
 //
-// **Las emociones van primero**, invirtiendo el orden de §5.3: la pregunta más
-// fácil de responder —un toque, sin escribir— abre la pantalla, y las que piden
-// escribir vienen después. Los dos temporizadores de más abajo no se enteran de
-// la mudanza: el de las sugerencias de gratitud vive dentro de `CampoGratitud`
-// y cuenta desde que se monta y desde cada tecla, no desde que se ve.
+// **Nada bloquea.** Se puede avanzar con todo en blanco, volver atrás, cambiar
+// cualquier respuesta y cerrar sin haber escrito una palabra. No hay
+// "incompleto", no hay campos en rojo y no hay ninguna frase que cuente lo que
+// falta. Lo que quedó sin contestar se anota en `skipped` para saber qué se
+// preguntó, no para reprochárselo a nadie.
 //
-// El bloque 1 de §5.3 —la frase del día— sigue en pantalla y sigue siendo el
-// primero que se lee: lo pinta el héroe de Hoy, una vez, para las dos
-// secciones. Aquí se repetiría.
+// **Se guarda solo, todo el rato** (RN-02). Los toques se escriben al momento y
+// lo que se teclea a los 800 ms, igual que en el resto de Lumia: salir a media
+// frase no pierde nada. La única excepción, y es de diseño, está en las ideas
+// de la acción — el comentario de `MomentoAccion` lo explica.
 //
-// **No hay sexto bloque.** El checklist de hábitos de Fase 0 no se construye
-// aquí ni en ningún sitio de Lumia: no se elimina nada, nunca existió en este
-// código (§C2.6).
+// **Se muestra empotrada en Hoy**, bajo el conmutador: no trae cabecera, ni
+// fecha, ni frase del día —eso es del héroe— ni botón de volver. Lo único que
+// ocupa la pantalla entera es el cierre, que es una ceremonia y dura lo que
+// dura un toque.
 //
-// Ningún campo es obligatorio y ninguno bloquea (RN-VM-01). Se puede mirar la
-// pantalla entera sin escribir una palabra.
-//
-// **Se muestra empotrada en Hoy, no como pantalla aparte.** Por eso no trae
-// cabecera —el saludo, la fecha y la frase del día son del héroe— ni botón de
-// volver ni de terminar: no hay a dónde volver, y lo escrito se guarda solo
-// mientras se escribe.
+// La mañana ya cerrada se queda a la vista como pantalla de consulta, con el
+// mismo aspecto que las del recorrido y un enlace discreto para cambiar algo.
+// No hay etiqueta de "hecho": el contenido está delante.
 
 import { useEffect, useRef, useState } from 'react'
-import CampoGratitud from './CampoGratitud'
-import ChipsEmociones from './ChipsEmociones'
-import { CampoTexto } from './Campo'
-import { copy } from '@copy'
+import AperturaDelDia from './manana/AperturaDelDia'
+import MomentoAnimo from './manana/MomentoAnimo'
+import MomentoGratitud from './manana/MomentoGratitud'
+import MomentoIntencionAccion from './manana/MomentoIntencionAccion'
+import MomentoPausa from './manana/MomentoPausa'
+import ResumenManana from './manana/ResumenManana'
+import { IndicadorPasos, NavegacionPasos } from './manana/Pasos'
 import { LIMITES, desdeTextos, filasIniciales, textosDe } from '@/lumia/filas'
-import { CATALOGO, alternarEmocion } from '@/lumia/emociones'
+import {
+  MOMENTOS,
+  VERSION,
+  camposOmitidos,
+  estaCerrada,
+  lineasDeCierre,
+  marcaLocal,
+  resumenDeManana,
+} from '@/lumia/manana'
+import { ANIMO, INTENCION } from '@/lumia/mananaEmociones'
+import { ideasAnteriores, ideasGenerales } from '@/lumia/mananaAcciones'
+import { debeAparecer, siguientePregunta } from '@/lumia/mananaPausa'
 
-const textos = copy.lumia.diario.manana
+/** El paso de la pausa opcional, que va detrás de los tres momentos. */
+const PASO_PAUSA = MOMENTOS.length
 
-/** §5.3, Bloque 4 — la pregunta de apoyo aparece tras 8 s sin escribir. */
-const RETRASO_GRAN_VISION = 8000
+const VALORES_VACIOS = Object.freeze({
+  animo: null,
+  animoPropio: '',
+  intencion: null,
+  intencionPropia: '',
+  accion: '',
+  reflexion: '',
+})
 
 export default function DiarioManana({ estado, acciones }) {
+  const [vista, setVista] = useState('recorrido')
+  const [paso, setPaso] = useState(0)
+  const [valores, setValores] = useState(VALORES_VACIOS)
   const [gratitud, setGratitud] = useState([])
-  const [granVision, setGranVision] = useState('')
-  const [emociones, setEmociones] = useState([])
-  const [aviso, setAviso] = useState(false)
-  const [pistaGranVision, setPistaGranVision] = useState(false)
-  const temporizador = useRef(null)
+  const marco = useRef(null)
+  const primerRender = useRef(true)
 
-  // Se copia el día guardado al estado local una sola vez: a partir de ahí
-  // manda lo que se está escribiendo, y el guardado va detrás.
+  const morning = estado.morning
+
+  // El día guardado se copia al estado local una sola vez por fecha: a partir
+  // de ahí manda lo que se está escribiendo y el guardado va detrás.
   useEffect(() => {
-    setGratitud(filasIniciales(desdeTextos(estado.morning?.gratitude), LIMITES.gratitud))
-    setGranVision(estado.morning?.granVision ?? '')
-    setEmociones(estado.morning?.emotions ?? [])
+    setValores({
+      animo: morning?.feeling ?? null,
+      animoPropio: morning?.feelingOther ?? '',
+      intencion: morning?.intention ?? null,
+      intencionPropia: morning?.intentionOther ?? '',
+      accion: morning?.action ?? '',
+      reflexion: morning?.reflection ?? '',
+    })
+    setGratitud(filasIniciales(desdeTextos(morning?.gratitude), LIMITES.gratitudManana))
+    setVista(estaCerrada(morning) ? 'resumen' : 'recorrido')
+    setPaso(0)
+    // Solo al cambiar de día: releer en cada guardado pisaría lo que se escribe.
   }, [estado.fecha])
 
-  useEffect(() => () => clearTimeout(temporizador.current), [])
+  // Cambiar de momento lleva la tarjeta arriba del todo. Sin esto, con el
+  // teclado abierto la pregunta nueva puede quedar fuera de la ventana.
+  useEffect(() => {
+    if (primerRender.current) {
+      primerRender.current = false
+      return
+    }
+    marco.current?.scrollIntoView({ block: 'start', behavior: 'auto' })
+  }, [paso, vista])
 
-  const guardarGratitud = (filas) => {
-    setGratitud(filas)
-    acciones.escribirManana({ gratitude: textosDe(filas) })
+  const conPausa = debeAparecer(estado.recientes, estado.fecha, morning)
+  const pregunta = siguientePregunta(estado.recientes, estado.fecha, morning)
+
+  /** Un toque se guarda al momento; lo escrito, a los 800 ms. */
+  const sello = () => ({ version: VERSION, updatedAt: marcaLocal() })
+  const guardar = (patch) => acciones.guardarManana({ ...patch, ...sello() })
+  const escribir = (patch) => acciones.escribirManana({ ...patch, ...sello() })
+
+  const cambiarEmocion = (patch) => {
+    const siguientes = { ...valores, ...patch }
+    setValores(siguientes)
+
+    const animo = ANIMO.paraGuardar(siguientes.animo, siguientes.animoPropio)
+    const intencion = INTENCION.paraGuardar(siguientes.intencion, siguientes.intencionPropia)
+    const registro = {
+      feeling: animo.valor,
+      feelingOther: animo.otro,
+      intention: intencion.valor,
+      intentionOther: intencion.otro,
+    }
+
+    // Tocar un chip es un toque y se guarda ya. Escribir la palabra propia es
+    // escribir, y espera como todo lo demás.
+    const tecleando = 'animoPropio' in patch || 'intencionPropia' in patch
+    if (tecleando) escribir(registro)
+    else guardar(registro)
   }
 
-  const guardarGranVision = (texto) => {
-    setGranVision(texto)
-    acciones.escribirManana({ granVision: texto })
-    setPistaGranVision(false)
-    clearTimeout(temporizador.current)
-    if (texto.trim() === '') {
-      temporizador.current = setTimeout(() => setPistaGranVision(true), RETRASO_GRAN_VISION)
+  const cambiarGratitud = (filas) => {
+    setGratitud(filas)
+    escribir({ gratitude: textosDe(filas) })
+  }
+
+  const cambiarAccion = (texto) => {
+    setValores((previos) => ({ ...previos, accion: texto }))
+    escribir({ action: texto })
+  }
+
+  /**
+   * Tocar una idea la deja en el campo y **no la guarda todavía** (§5): hasta
+   * que la persona continúe, lo que hay escrito es una propuesta de la app y no
+   * algo que alguien haya dicho de sí mismo.
+   */
+  const elegirIdea = (idea) => setValores((previos) => ({ ...previos, accion: idea }))
+
+  const cambiarReflexion = (texto) => {
+    setValores((previos) => ({ ...previos, reflexion: texto }))
+    escribir({ reflection: texto })
+  }
+
+  /** Lo que hay ahora mismo, mezclando lo guardado con lo que está en pantalla. */
+  const entradaActual = () => {
+    const animo = ANIMO.paraGuardar(valores.animo, valores.animoPropio)
+    const intencion = INTENCION.paraGuardar(valores.intencion, valores.intencionPropia)
+    return {
+      ...morning,
+      feeling: animo.valor,
+      feelingOther: animo.otro,
+      intention: intencion.valor,
+      intentionOther: intencion.otro,
+      gratitude: textosDe(gratitud),
+      action: valores.accion,
+      reflection: valores.reflexion,
     }
   }
 
-  const guardarEmociones = (siguiente) => {
-    setEmociones(siguiente)
-    setAviso(false)
-    acciones.guardarManana({ emotions: siguiente })
+  const terminar = async () => {
+    await acciones.volcar()
+    const entrada = entradaActual()
+    await guardar({
+      action: entrada.action,
+      reflection: entrada.reflection,
+      gratitude: entrada.gratitude,
+      skipped: camposOmitidos(entrada, { conPausa }),
+      completedAt: marcaLocal(),
+    })
+    setVista('cierre')
   }
 
+  const avanzar = () => {
+    if (paso < MOMENTOS.length - 1) return setPaso(paso + 1)
+    if (paso === MOMENTOS.length - 1 && conPausa) {
+      // Aparecer cuenta aunque no se conteste: si solo contáramos las pausas
+      // respondidas, quien nunca responde la vería todas las mañanas.
+      if (!morning?.reflectionId) guardar({ reflectionId: pregunta.id })
+      return setPaso(PASO_PAUSA)
+    }
+    return terminar()
+  }
+
+  if (vista === 'cierre') {
+    return (
+      <AperturaDelDia
+        lineas={lineasDeCierre(entradaActual(), estado.genero)}
+        onTerminar={() => setVista('resumen')}
+      />
+    )
+  }
+
+  if (vista === 'resumen') {
+    return (
+      <div ref={marco}>
+        <ResumenManana
+          bloques={resumenDeManana(morning, estado.genero)}
+          onEditar={() => {
+            setPaso(0)
+            setVista('recorrido')
+          }}
+        />
+      </div>
+    )
+  }
+
+  const anteriores = ideasAnteriores(estado.recientes, valores.intencion, estado.fecha)
+  const enPausa = paso === PASO_PAUSA
+  const esUltimo = enPausa || (paso === MOMENTOS.length - 1 && !conPausa)
+
   return (
-    <div className="flex flex-col gap-8">
-      <section className="flex flex-col gap-3">
-        <div className="flex flex-col gap-1">
-          <h2 className="font-display text-md text-on-surface">{textos.emociones.titulo}</h2>
-          <p className="text-sm text-on-surface-soft">{textos.emociones.lead}</p>
-        </div>
-        <ChipsEmociones
-          catalogo={CATALOGO}
-          alternar={alternarEmocion}
-          seleccion={emociones}
-          genero={estado.genero}
-          etiqueta={textos.emociones.titulo}
-          aviso={aviso}
-          avisoTexto={textos.emociones.max}
-          onCambiar={guardarEmociones}
-          onDesplazada={() => setAviso(true)}
-        />
-      </section>
+    <div ref={marco} className="flex flex-col gap-8 scroll-mt-4">
+      {!enPausa && <IndicadorPasos indice={paso} total={MOMENTOS.length} />}
 
-      <section className="flex flex-col gap-3">
-        <div className="flex flex-col gap-1">
-          <h2 className="font-display text-md text-on-surface">{textos.gratitud.titulo}</h2>
-          <p className="text-sm text-on-surface-soft">{textos.gratitud.lead}</p>
-        </div>
-        <CampoGratitud
+      {paso === 0 && (
+        <MomentoAnimo valores={valores} genero={estado.genero} onCambiar={cambiarEmocion} />
+      )}
+
+      {paso === 1 && (
+        <MomentoGratitud
           filas={gratitud}
-          limites={LIMITES.gratitud}
-          onCambiar={guardarGratitud}
+          onCambiar={cambiarGratitud}
           onVolcar={acciones.volcar}
-          sugerencias={textos.gratitud.sugerencias}
-          etiqueta={textos.gratitud.titulo}
-          placeholder={textos.gratitud.placeholder}
+          onOmitir={avanzar}
         />
-      </section>
+      )}
 
-      <section className="flex flex-col gap-3">
-        <h2 className="font-display text-md text-on-surface">{textos.granVision.titulo}</h2>
-        <CampoTexto
-          value={granVision}
-          onChange={(evento) => guardarGranVision(evento.target.value)}
-          onBlur={acciones.volcar}
-          placeholder={textos.granVision.placeholder}
-          aria-label={textos.granVision.titulo}
+      {paso === 2 && (
+        <MomentoIntencionAccion
+          valores={valores}
+          genero={estado.genero}
+          anteriores={anteriores}
+          generales={ideasGenerales(valores.intencion, anteriores)}
+          onCambiar={cambiarEmocion}
+          onCambiarAccion={cambiarAccion}
+          onElegirIdea={elegirIdea}
+          onVolcar={acciones.volcar}
         />
-        {pistaGranVision && granVision.trim() === '' && (
-          <p className="text-sm text-on-surface-soft animate-fade-up motion-reduce:animate-none">
-            {textos.granVision.sugerencia}
-          </p>
-        )}
-      </section>
+      )}
+
+      {enPausa && (
+        <MomentoPausa
+          pregunta={pregunta}
+          valor={valores.reflexion}
+          onCambiar={cambiarReflexion}
+          onVolcar={acciones.volcar}
+          onOmitir={terminar}
+        />
+      )}
+
+      <NavegacionPasos
+        hayAtras={paso > 0}
+        esUltimo={esUltimo}
+        onAtras={() => setPaso(enPausa ? MOMENTOS.length - 1 : paso - 1)}
+        onSiguiente={avanzar}
+      />
     </div>
   )
 }

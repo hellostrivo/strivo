@@ -18,6 +18,7 @@
 
 import { lumia } from '@/lib/db'
 import { animoDerivado } from './estadoSueno.js'
+import { hayAlgoEscrito } from './manana.js'
 import { fechaDeClave } from './fechas.js'
 
 /** Los cinco tonos de §6.3.5, por id. El color vive en `globals.css`. */
@@ -118,13 +119,14 @@ function hayAlgoDeNoche(night) {
   )
 }
 
+/**
+ * La regla vive en `manana.js`, junto al resto de lo que sabe leer una mañana.
+ * Cubre las dos versiones del recorrido: la de tres momentos y la de §5.3, que
+ * guardaba emociones a cultivar y gran visión. Un día de la versión vieja sigue
+ * teniendo su punto en el calendario.
+ */
 function hayAlgoDeManana(morning) {
-  if (!morning) return false
-  return (
-    (morning.gratitude?.length ?? 0) > 0 ||
-    (morning.emotions?.length ?? 0) > 0 ||
-    String(morning.granVision ?? '').trim() !== ''
-  )
+  return hayAlgoEscrito(morning)
 }
 
 // ─── Vista de día completo ────────────────────────────────────────────────────

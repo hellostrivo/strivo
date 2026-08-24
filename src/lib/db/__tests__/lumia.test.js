@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 
 import * as lumia from '../lumia.js'
 import { ERROR_CODES } from '../schema.js'
-import { listQueue } from '../local.js'
+import { listQueue, writePath } from '../local.js'
 import { UID, resetLocalDB } from './helpers.js'
 
 const DATE = '2026-08-10'
@@ -46,10 +46,10 @@ describe('journal', () => {
 
 describe('registros por fecha', () => {
   it('morningEntry y nightRitual son un registro por día', async () => {
-    await lumia.saveMorningEntry(UID, DATE, { granVision: 'Un día tranquilo.' })
+    await lumia.saveMorningEntry(UID, DATE, { action: 'Salir a caminar.' })
     await lumia.saveNightRitual(UID, DATE, { learning: 'Descansar también cuenta.' })
 
-    expect((await lumia.getMorningEntry(UID, DATE)).granVision).toBe('Un día tranquilo.')
+    expect((await lumia.getMorningEntry(UID, DATE)).action).toBe('Salir a caminar.')
     expect((await lumia.getNightRitual(UID, DATE)).learning).toBe('Descansar también cuenta.')
   })
 
@@ -83,27 +83,55 @@ describe('registros por fecha', () => {
   it('dos escrituras simultáneas del mismo día no se pisan', async () => {
     await Promise.all([
       lumia.saveMorningEntry(UID, DATE, { gratitude: ['El café'] }),
-      lumia.saveMorningEntry(UID, DATE, { emotions: ['en_paz'] }),
-      lumia.saveMorningEntry(UID, DATE, { granVision: 'Un día sin prisa.' }),
+      lumia.saveMorningEntry(UID, DATE, { feeling: 'calma' }),
+      lumia.saveMorningEntry(UID, DATE, { action: 'Salir a caminar.' }),
     ])
 
     expect(await lumia.getMorningEntry(UID, DATE)).toEqual({
       gratitude: ['El café'],
-      emotions: ['en_paz'],
-      granVision: 'Un día sin prisa.',
+      feeling: 'calma',
+      action: 'Salir a caminar.',
     })
   })
 
-  it('morningEntry solo admite los tres campos de SPEC_02 §5', async () => {
+  it('morningEntry solo admite los campos de su lista', async () => {
     await expect(lumia.saveMorningEntry(UID, DATE, { smallAction: 'x' })).rejects.toMatchObject({
       code: ERROR_CODES.UNKNOWN_FIELD,
     })
   })
 
+  // Las dos preguntas de la versión 1 salieron de la lista con la actualización
+  // del 23 ago. Los días que las tienen se siguen leyendo enteros; lo que ya no
+  // se puede es volver a escribirlas, que es lo que las mantendría vivas.
+  it('la mañana ya no admite emotions ni granVision', async () => {
+    for (const campo of [{ emotions: ['en_paz'] }, { granVision: 'x' }]) {
+      await expect(lumia.saveMorningEntry(UID, DATE, campo)).rejects.toMatchObject({
+        code: ERROR_CODES.UNKNOWN_FIELD,
+      })
+    }
+  })
+
+  it('un día escrito con la versión anterior se sigue leyendo entero', async () => {
+    // Se escribe por debajo de la capa de datos, como habría quedado en el
+    // almacén antes de la actualización.
+    await writePath({
+      uid: UID,
+      path: `users/${UID}/lumia/morningEntry/items/${DATE}`,
+      collection: 'lumia/morningEntry',
+      id: DATE,
+      data: { emotions: ['en_paz'], granVision: 'Un día sin prisa.' },
+    })
+
+    expect(await lumia.getMorningEntry(UID, DATE)).toEqual({
+      emotions: ['en_paz'],
+      granVision: 'Un día sin prisa.',
+    })
+  })
+
   it('exige una fecha con forma YYYY-MM-DD', async () => {
-    await expect(
-      lumia.saveMorningEntry(UID, '10-08-2026', { granVision: 'x' }),
-    ).rejects.toMatchObject({ code: ERROR_CODES.DATE_INVALID })
+    await expect(lumia.saveMorningEntry(UID, '10-08-2026', { action: 'x' })).rejects.toMatchObject({
+      code: ERROR_CODES.DATE_INVALID,
+    })
   })
 })
 
