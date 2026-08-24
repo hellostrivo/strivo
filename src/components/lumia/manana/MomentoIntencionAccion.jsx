@@ -32,7 +32,7 @@
 // nunca aparece nada escrito en otra superficie.
 
 import { clsx } from 'clsx'
-import ChipsUnicos from './ChipsUnicos'
+import ChipsUnicos from '../ChipsUnicos'
 import { CampoTexto } from '../Campo'
 import { copy } from '@copy'
 import { MAX_ACCION } from '@/lumia/manana'

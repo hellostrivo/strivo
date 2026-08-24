@@ -1,22 +1,31 @@
 // src/lumia/__tests__/estadoSueno.test.js
-// "¿Cómo te vas a dormir?" (§5.4.1, sus seis criterios de aceptación).
+// "¿Cómo te vas a dormir?" — **catálogo heredado** (§5.4.1).
+//
+// La pregunta se retiró el 23 ago: la sustituyó "¿Cómo me siento al cerrar el
+// día?" (`nocheEmociones.js`, `noche.test.js`). Lo que se comprueba aquí es que
+// las noches escritas antes de esa fecha se siguen leyendo enteras, y que del
+// módulo se fue todo lo de escritura: nadie puede volver a guardar un estado de
+// sueño sin darse cuenta.
 
 import { describe, expect, it } from 'vitest'
 
+import * as estadoSueno from '../estadoSueno.js'
 import {
   IDS,
-  MAX_ESTADOS,
   OPCIONES,
-  alternarEstado,
   animoDerivado,
-  disparaCompasion,
   etiquetaDe,
   etiquetasDe,
-  paraGuardar,
   primeraPalabra,
 } from '../estadoSueno.js'
 
-describe('estado de sueño', () => {
+describe('estado de sueño (catálogo heredado)', () => {
+  it('ya no exporta nada que escriba: la pregunta se retiró con su escritura', () => {
+    ;['alternarEstado', 'paraGuardar', 'MAX_ESTADOS', 'disparaCompasion'].forEach((nombre) =>
+      expect(estadoSueno[nombre]).toBeUndefined(),
+    )
+  })
+
   it('son nueve opciones en orden fijo, con "Algo más" al final', () => {
     expect(OPCIONES).toHaveLength(9)
     expect(IDS[0]).toBe('en_paz')
@@ -35,31 +44,9 @@ describe('estado de sueño', () => {
     expect(etiquetaDe('tranquilo', 'n')).toBe('En calma')
   })
 
-  it('no es posible seleccionar tres', () => {
-    const { seleccion, desplazada } = alternarEstado(['en_paz', 'agradecido'], 'cansado')
-    expect(seleccion).toHaveLength(MAX_ESTADOS)
-    expect(seleccion).toEqual(['agradecido', 'cansado'])
-    expect(desplazada).toBe('en_paz')
-  })
-
-  it('se puede cerrar el día sin elegir nada', () => {
-    expect(paraGuardar([], '')).toEqual({ sleepState: [], sleepStateOther: null })
-  })
-
-  it('"Algo más" acepta una palabra y solo una, y la guarda literalmente', () => {
+  it('"Algo más" se guardó como una palabra y así se relee', () => {
     expect(primeraPalabra('  serena  y algo más ')).toBe('serena')
     expect(primeraPalabra('x'.repeat(40))).toHaveLength(24)
-    expect(paraGuardar(['otro'], 'serena')).toEqual({
-      sleepState: ['otro'],
-      sleepStateOther: 'serena',
-    })
-  })
-
-  it('descarta "Algo más" si no se escribió ninguna palabra', () => {
-    expect(paraGuardar(['en_paz', 'otro'], '  ')).toEqual({
-      sleepState: ['en_paz'],
-      sleepStateOther: null,
-    })
   })
 
   it('presenta la palabra propia entrecomillada y sin transformar', () => {
@@ -84,12 +71,5 @@ describe('estado de sueño', () => {
       expect(animoDerivado(['agradecido', 'cansado'])).toBe('agotado')
       expect(animoDerivado(['tranquilo', 'inquieto'])).toBe('inquieto')
     })
-  })
-
-  it('cansado e inquieto activan el cierre compasivo; pensativo no', () => {
-    expect(disparaCompasion(['cansado'])).toBe(true)
-    expect(disparaCompasion(['inquieto'])).toBe(true)
-    expect(disparaCompasion(['pensativo'])).toBe(false)
-    expect(disparaCompasion(['en_paz', 'orgulloso'])).toBe(false)
   })
 })

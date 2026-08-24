@@ -12,12 +12,18 @@
 // `nightRitual.newWins`; un día guardado antes de esa fecha conserva sus datos
 // escritos, pero aquí ya no se leen ni se pintan.
 //
-// **La mañana se lee en sus dos versiones.** La de tres momentos —cómo empecé,
-// mi intención, lo que agradecí, mi paso y la pausa— y la de §5.3, que guardaba
-// emociones a cultivar y una gran visión. Los días viejos se siguen viendo
-// enteros: nada de lo ya escrito se sobrescribe ni desaparece. Cada bloque
-// aparece solo si tiene contenido, así que un día no arrastra los huecos del
-// otro.
+// **La mañana y la noche se leen en sus dos versiones.** La mañana de tres
+// momentos —cómo empecé, mi intención, lo que agradecí, mi paso y la pausa— y la
+// de §5.3, que guardaba emociones a cultivar y una gran visión; la noche de tres
+// momentos —lo que reconocí, mi reflexión, cómo cerré y lo que dejé aquí— y la de
+// §5.4, que guardaba gratitud, aprendizaje y estado de sueño. Los días viejos se
+// siguen viendo enteros: nada de lo ya escrito se sobrescribe ni desaparece.
+// Cada bloque aparece solo si tiene contenido, así que una versión no arrastra
+// los huecos de la otra.
+//
+// La reflexión de la noche se titula con **la pregunta que salió esa noche**:
+// rota, así que una etiqueta genérica dejaría la respuesta sin contexto. La
+// ligada a la intención de esa mañana se reconstruye con ella.
 //
 // Un día en blanco no es un día perdido y no se presenta como tal: se dice que
 // también estuvo, y se sale por donde se entró.
@@ -28,6 +34,14 @@ import { etiquetasDe as etiquetasDeEmocion } from '@/lumia/emocionesJournal'
 import { etiquetasDe as etiquetasDeSueno } from '@/lumia/estadoSueno'
 import { etiquetaDe as etiquetaHeredada } from '@/lumia/emociones'
 import { etiquetaDeAnimo, etiquetaDeIntencion, hayAlgoEscrito } from '@/lumia/manana'
+import {
+  etiquetaDeEmocion,
+  hayAlgoEscrito as hayAlgoDeNoche,
+  hayDescarga,
+  hayReconocimiento,
+  hayReflexion,
+} from '@/lumia/noche'
+import { preguntaGuardada } from '@/lumia/nocheReflexion'
 import { horaDe } from '@/lumia/journal'
 import { fechaLarga } from '@/lumia/fechas'
 
@@ -66,6 +80,8 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
   const granVision = String(morning?.granVision ?? '').trim()
   const emocionesHeredadas = (morning?.emotions ?? []).map((id) => etiquetaHeredada(id, genero))
   const estadoDeSueno = etiquetasDeSueno(night?.sleepState, night?.sleepStateOther, genero)
+  const emocionDeCierre = etiquetaDeEmocion(night, genero)
+  const preguntaDeEsaNoche = preguntaGuardada(night, morning, genero)
 
   return (
     <article className="flex flex-col gap-8 px-5 pb-12 pt-6">
@@ -134,12 +150,36 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
       )}
 
       {/* ─── Noche ──────────────────────────────────────────────────────── */}
-      {((night?.gratitude?.length ?? 0) > 0 ||
-        String(night?.learning ?? '').trim() !== '' ||
-        estadoDeSueno.length > 0) && (
+      {hayAlgoDeNoche(night) && (
         <div className="flex flex-col gap-4 rounded-md border border-on-surface bg-lumia-campo p-4">
           <h2 className="font-display text-md text-on-surface">{textos.noche}</h2>
 
+          {hayReconocimiento(night) && (
+            <Bloque titulo={textos.reconocimiento}>
+              <Lista textos={night.recognized} />
+            </Bloque>
+          )}
+
+          {hayReflexion(night) && (
+            <Bloque titulo={preguntaDeEsaNoche?.titulo ?? textos.reflexion}>
+              <p className="text-base text-on-surface whitespace-pre-wrap">{night.reflection}</p>
+            </Bloque>
+          )}
+
+          {emocionDeCierre !== '' && (
+            <Bloque titulo={textos.emocionCierre}>
+              <p className="text-base text-on-surface">{emocionDeCierre}</p>
+            </Bloque>
+          )}
+
+          {hayDescarga(night) && (
+            <Bloque titulo={textos.descarga}>
+              <p className="text-base text-on-surface whitespace-pre-wrap">{night.release}</p>
+            </Bloque>
+          )}
+
+          {/* Los tres bloques de la versión anterior. Solo aparecen en las
+              noches que los respondieron. */}
           {(night?.gratitude?.length ?? 0) > 0 && (
             <Bloque titulo={textos.gratitud}>
               <Lista textos={night.gratitude} />

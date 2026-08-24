@@ -10,14 +10,15 @@
 // **Un día sin registro no se marca de ningún modo.** No hay huecos, no hay
 // grises acusatorios y no hay días perdidos: simplemente no tiene punto.
 //
-// El punto de ánimo se **deriva al vuelo** del estado de sueño con
-// `animoDerivado`, y no se lee de `dayState.mood`. §5.4.1 dice expresamente que
+// El punto de ánimo se **deriva al vuelo** de cómo se cerró el día con
+// `animoDeNoche`, y no se lee de `dayState.mood`. §5.4.1 dice expresamente que
 // esa derivación es una vista y no un dato, y SPEC_06 decidió en consecuencia
 // no escribir nunca `dayState`. Calcularlo aquí mantiene una sola respuesta a
-// la pregunta "¿cómo se fue a dormir ese día?".
+// la pregunta "¿cómo cerró ese día?", y `animoDeNoche` lee las dos versiones:
+// la emoción de cierre de hoy y el estado de sueño de las noches viejas.
 
 import { lumia } from '@/lib/db'
-import { animoDerivado } from './estadoSueno.js'
+import { animoDeNoche, hayAlgoEscrito as hayAlgoDeNocheEscrito } from './noche.js'
 import { hayAlgoEscrito } from './manana.js'
 import { fechaDeClave } from './fechas.js'
 
@@ -77,10 +78,10 @@ export function numeroDeDia(dateKey) {
 /**
  * Un mes de días, cada uno con su ánimo si lo hay.
  *
- * `animo` es `null` cuando no hay estado de sueño registrado: la casilla no
- * pinta punto. Un día con algo escrito pero sin estado de sueño se marca en
- * `normal`, que es exactamente lo que devuelve `animoDerivado([])` — hubo día,
- * no hubo ánimo declarado, y la app no se inventa uno más luminoso.
+ * `animo` es `null` cuando el día no declaró ninguno: la casilla no pinta
+ * punto. Un día con algo escrito pero sin emoción de cierre se marca en
+ * `normal` — hubo día, no hubo ánimo declarado, y la app no se inventa uno más
+ * luminoso.
  *
  * @returns {Promise<Array<{fecha: string, animo: ?string, hayContenido: boolean}>>}
  */
@@ -98,25 +99,25 @@ export async function cargarMes(uid, mes) {
   return dias.map((fecha, indice) => {
     const night = rituales[indice]
     const morning = mananas[indice]
-    const sueno = night?.sleepState ?? []
+    const animo = animoDeNoche(night)
 
     const hayContenido = hayAlgoDeNoche(night) || hayAlgoDeManana(morning) || conJournal.has(fecha)
 
     return {
       fecha,
-      animo: sueno.length > 0 ? animoDerivado(sueno) : hayContenido ? 'normal' : null,
+      animo: animo ?? (hayContenido ? 'normal' : null),
       hayContenido,
     }
   })
 }
 
+/**
+ * La regla vive en `noche.js`, junto al resto de lo que sabe leer una noche.
+ * Cubre las dos versiones: la de tres momentos y la de §5.4, que guardaba
+ * gratitud, aprendizaje y estado de sueño.
+ */
 function hayAlgoDeNoche(night) {
-  if (!night) return false
-  return (
-    (night.gratitude?.length ?? 0) > 0 ||
-    (night.sleepState?.length ?? 0) > 0 ||
-    String(night.learning ?? '').trim() !== ''
-  )
+  return hayAlgoDeNocheEscrito(night)
 }
 
 /**

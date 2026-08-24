@@ -473,82 +473,214 @@ export const copy = {
         },
       },
 
+      // ─── La noche, en tres momentos (actualización del 23 ago a §5.4) ─────
+      //
+      //   1 de 3 · ¿Qué quiero reconocer de hoy?     (lista de 1 a 3, uno al abrir)
+      //   2 de 3 · Una reflexión breve               (rotativa, o ligada a la mañana)
+      //   3 de 3 · ¿Cómo me siento al cerrar el día? (selección única, 12 + Algo más)
+      //      +   · Si quieres, deja algo aquí        (por la emoción, o a mano)
+      //      →     El cierre: "Tu día puede terminar aquí."
+      //
+      // **La noche no evalúa el día.** No pide que nada haya salido bien, no
+      // exige una lección, no pregunta si se cumplió lo que se dijo por la
+      // mañana y no cuenta nada de lo escrito. Reconocer no es lo mismo que
+      // agradecer: cabe lo que costó, lo que se intentó y lo que se atravesó.
+      //
+      // La pregunta reflexiva **cambia de una noche a otra** y es la única del
+      // recorrido que lo hace: las otras dos se dicen siempre igual, porque la
+      // estabilidad es lo que las vuelve familiares.
       noche: {
         titulo: 'Tu noche',
         // §5.4, Bloque 1 — frase de apertura con el día de la semana.
         aperturaTemplate: 'Vamos a cerrar el {dia}.',
 
-        gratitud: {
-          titulo: '¿Qué agradezco de este día?',
-          placeholder: 'algo de hoy',
-          // §5.4, Bloque 4 — lo de la mañana se muestra plegado y no se vuelve
-          // a pedir.
-          mananaTemplate: 'Esta mañana agradeciste: {textos}',
-          ver: 'Ver',
-          ocultar: 'Cerrar',
-          sugerencias: {
-            titulo: '¿Te ayudo con una idea?',
-            descartar: 'Ahora no',
-            opciones: [
-              {
-                id: 'alguien',
-                label: 'alguien de hoy',
-                pregunta: '¿Quién te hizo el día más fácil?',
-              },
-              {
-                id: 'inesperado',
-                label: 'algo que no esperabas',
-                pregunta: '¿Qué te sorprendió hoy?',
-              },
-              {
-                id: 'cuerpo',
-                label: 'tu cuerpo',
-                pregunta: '¿Qué te sostuvo hoy sin que lo pidieras?',
-              },
-              {
-                id: 'pequeno',
-                label: 'algo pequeño',
-                pregunta: '¿Qué momento de hoy duró poco y valió la pena?',
-              },
-              {
-                id: 'tuyo',
-                label: 'algo tuyo',
-                pregunta: '¿Qué hiciste hoy que agradeces haber hecho?',
-              },
-            ],
+        // El indicador cuenta momentos, no campos. La descarga opcional no
+        // entra en la cuenta: no está todas las noches, y un total que cambia
+        // de un día para otro deja de orientar.
+        pasos: {
+          etiqueta: 'Momentos de la noche',
+          indicadorTemplate: '{n} de {total}',
+          atras: 'Atrás',
+          siguiente: 'Continuar',
+          finalizar: 'Listo',
+        },
+
+        // ─── Momento 1 — reconocimiento del día ──────────────────────────────
+        // Sustituye a "¿Qué agradezco de este día?". La redacción es más ancha
+        // a propósito: no pide que el día haya sido bueno, ni que lo escrito
+        // suene positivo. Abre con **un** campo; el segundo lo pide quien
+        // escribe.
+        reconocimiento: {
+          titulo: '¿Qué quiero reconocer de hoy?',
+          lead: 'Puede ser algo que disfrutaste, intentaste, enfrentaste o resolviste.',
+          placeholder: 'Algo que hice, sentí o atravesé…',
+          anadir: 'Añadir otro',
+          // Salida discreta, sin nada que reprochar al volver mañana.
+          omitir: 'Omitir por hoy',
+        },
+
+        // ─── Momento 2 — reflexión rotativa (§4, §5, §6) ─────────────────────
+        // Una sola pregunta por noche, nunca dos. El banco rota sin repetirse
+        // hasta haber pasado por las demás, y algunas noches lo sustituye la
+        // pregunta ligada a la intención de esa misma mañana.
+        reflexion: {
+          opcional: 'Opcional',
+          omitir: 'Ahora no',
+          placeholder: 'Lo que se te ocurra',
+          banco: [
+            {
+              id: 'general',
+              titulo: '¿Qué me dejó el día de hoy?',
+              lead: 'Una emoción, un aprendizaje o algo que quieras recordar.',
+            },
+            {
+              id: 'autoconocimiento',
+              titulo: '¿Qué aprendí hoy sobre mí?',
+              lead: 'No necesita ser una gran conclusión.',
+            },
+            {
+              id: 'memoria',
+              titulo: '¿Qué quiero recordar de este día?',
+              lead: 'Puede ser un instante muy pequeño.',
+            },
+            {
+              id: 'espacio',
+              titulo: '¿Qué ocupó más espacio en mí hoy?',
+              lead: 'Una emoción, una preocupación, una persona o una idea.',
+            },
+            {
+              id: 'soltar',
+              titulo: '¿Qué necesito soltar por hoy?',
+              lead: 'No tienes que resolverlo esta noche.',
+            },
+          ],
+          // §6 — La única personalización del recorrido. Nombra la intención
+          // que se eligió por la mañana y pregunta qué se notó; **nunca** si se
+          // cumplió, y nunca convierte la respuesta en una medida.
+          manana: {
+            tituloTemplate:
+              'Esta mañana elegiste {emocion} como intención. ¿Qué notaste al respecto?',
+            lead: 'No importa si el día resultó distinto a lo que esperabas.',
           },
         },
 
-        aprendizaje: {
-          tituloTemplate: 'Reflexiones del {fecha}',
-          pregunta: '¿Qué aprendí hoy de mí, de los demás o de la vida?',
-          placeholder: 'Lo que se te ocurra',
-          otraPregunta: 'Otra pregunta',
-          // §5.4, Bloque 6 — banco de preguntas, distinto cada día.
-          preguntas: [
-            '¿Qué momento de hoy te gustaría recordar dentro de un año?',
-            '¿Qué te sorprendió?',
-            '¿Qué necesitaste hoy y no pediste?',
-            '¿Dónde te reconociste?',
-            '¿A quién le debes un gracias?',
+        // ─── Momento 3 — cómo se cierra el día ───────────────────────────────
+        // Sustituye a "¿Cómo te vas a dormir?". Selección única: nombrar un
+        // estado no es hacer un inventario.
+        //
+        // Las emociones difíciles comparten jerarquía con las agradables: mismo
+        // tamaño, mismo borde, mismo orden de lectura. No hay rojo, no hay
+        // aviso y no hay ninguna que esté peor contestada que otra.
+        emocion: {
+          titulo: '¿Cómo me siento al cerrar el día?',
+          lead: 'Elige lo que más se acerque a cómo estás.',
+          // Palabra propia: hasta 30 caracteres, sin emoji automático y
+          // siempre editable. No pasa por el helper de género (RN-GEN-06).
+          otra: {
+            chip: '＋ Algo más',
+            label: 'Cómo me siento al cerrar el día, en mis palabras',
+            placeholder: 'en tus palabras',
+            confirmar: 'Listo',
+            quitar: 'Quitar',
+          },
+          catalogo: [
+            { id: 'en_paz', emoji: '😌', label: { m: 'En paz', f: 'En paz', n: 'En paz' } },
+            {
+              id: 'tranquilo',
+              emoji: '🌿',
+              label: { m: 'Tranquilo', f: 'Tranquila', n: 'En calma' },
+            },
+            {
+              id: 'agradecido',
+              emoji: '🤍',
+              label: { m: 'Agradecido', f: 'Agradecida', n: 'Con gratitud' },
+            },
+            {
+              id: 'orgulloso',
+              emoji: '✨',
+              label: { m: 'Orgulloso', f: 'Orgullosa', n: 'Con orgullo' },
+            },
+            {
+              id: 'aliviado',
+              emoji: '😮‍💨',
+              label: { m: 'Aliviado', f: 'Aliviada', n: 'Con alivio' },
+            },
+            {
+              id: 'pensativo',
+              emoji: '🤔',
+              label: { m: 'Pensativo', f: 'Pensativa', n: 'Pensando' },
+            },
+            { id: 'neutral', emoji: '😐', label: { m: 'Neutral', f: 'Neutral', n: 'Neutral' } },
+            {
+              id: 'cansado',
+              emoji: '😴',
+              label: { m: 'Cansado', f: 'Cansada', n: 'Con cansancio' },
+            },
+            {
+              id: 'inquieto',
+              emoji: '😟',
+              label: { m: 'Inquieto', f: 'Inquieta', n: 'Con inquietud' },
+            },
+            {
+              id: 'frustrado',
+              emoji: '😣',
+              label: { m: 'Frustrado', f: 'Frustrada', n: 'Con frustración' },
+            },
+            { id: 'triste', emoji: '😔', label: { m: 'Triste', f: 'Triste', n: 'Triste' } },
+            {
+              id: 'abrumado',
+              emoji: '😵‍💫',
+              label: { m: 'Abrumado', f: 'Abrumada', n: 'Con demasiado encima' },
+            },
           ],
-          // Contraste amable con la gran visión de la mañana. Nunca se pregunta
-          // si se cumplió (§5.3, Bloque 4).
-          granVisionTitulo: 'Esta mañana escribiste esto',
-          granVisionPregunta: '¿Cómo se parece a lo que pasó?',
         },
 
-        // §5.4.1 — Bloque 7 rediseñado. El subtítulo es la única defensa de la
-        // pantalla contra la sensación de examen: no se acorta ni se reescribe.
+        // ─── Descarga opcional (§8) ──────────────────────────────────────────
+        // Un espacio para dejar algo, no una intervención. La app no interpreta
+        // lo que se escriba aquí, no responde y no propone nada: se guarda y se
+        // cierra el día.
+        descarga: {
+          // El enlace va debajo de las emociones, siempre y para todas. Que
+          // aparezca solo tras una emoción difícil convertiría el catálogo en
+          // un diagnóstico.
+          abrir: 'Necesito soltar algo antes de cerrar',
+          opcional: 'Opcional',
+          titulo: '¿Hay algo que quieras dejar aquí por hoy?',
+          lead: 'No necesitas resolverlo ahora.',
+          placeholder: 'Lo que quieras dejar aquí',
+          omitir: 'Ahora no',
+          cta: 'Dejarlo aquí y cerrar mi día',
+        },
+
+        // ─── Cierre (§10) ────────────────────────────────────────────────────
+        // Sin recuento, sin porcentaje, sin comparar la mañana con la noche y
+        // sin prometer que nadie se va a sentir mejor. Dos líneas fijas, una de
+        // ellas distinta si se dejó algo escrito en la descarga, y —si hay algo
+        // reconocido— una sola de esas líneas, la primera.
+        cierre: {
+          titulo: 'Tu día puede terminar aquí.',
+          lead: 'Lo que viviste hoy no necesita quedar resuelto esta noche.',
+          leadDescarga: 'Por ahora, puedes dejarlo aquí.',
+          reconocidoTitulo: 'Algo que reconoces de hoy',
+          cta: 'Cerrar mi día',
+          despedida: 'Buenas noches.',
+          reabrir: 'Puedes volver y cambiar lo que quieras.',
+        },
+
+        // La pantalla de consulta. Repite las preguntas del recorrido con su
+        // redacción exacta; no tiene etiquetas propias ni marca de "hecho".
+        resumen: {
+          editar: 'Cambiar algo',
+        },
+
+        // ─── Catálogo heredado: "¿Cómo te vas a dormir?" ─────────────────────
+        // Las noches escritas antes de esta actualización guardaron hasta dos
+        // estados de esta lista en `nightRitual.sleepState`; se conserva **solo
+        // para leerlas** en el Historial (§11: nada de lo ya escrito se
+        // sobrescribe ni desaparece). Ninguna pantalla de escritura lo ofrece.
         sueno: {
-          titulo: '¿Cómo te vas a dormir?',
-          lead: 'Elige una o dos. No hay una forma correcta de cerrar el día',
           guardadoTemplate: 'Te fuiste a dormir: {estados}',
           separador: ' · ',
-          otro: {
-            label: 'Una palabra',
-            placeholder: 'Como quieras decirlo',
-          },
           opciones: [
             { id: 'en_paz', label: { m: 'En paz', f: 'En paz', n: 'En paz' } },
             { id: 'agradecido', label: { m: 'Agradecido', f: 'Agradecida', n: 'Con gratitud' } },
@@ -560,24 +692,6 @@ export const copy = {
             { id: 'inquieto', label: { m: 'Inquieto', f: 'Inquieta', n: 'Con inquietud' } },
             { id: 'otro', label: { m: 'Algo más', f: 'Algo más', n: 'Algo más' } },
           ],
-        },
-
-        // §5.4, "Secuencia de cierre" + §3.3 (etapa 4).
-        cierre: {
-          cta: 'Cerrar mi día',
-          // Los recuentos de logros se retiraron el 23 ago con las victorias y
-          // el checklist de la noche. La gratitud es la evidencia que queda.
-          unaGracia: 'una cosa',
-          graciasTemplate: '{m} cosas',
-          soloGraciasTemplate: 'Hoy encontraste {gracias} que agradecer.',
-          // Uno de los mensajes más importantes del producto (§5.4).
-          nada: 'Hoy solo viniste. También cuenta.',
-          // Frase de cierre del día normal, y la del día que pesó.
-          paz: 'En paz con tu día.',
-          despedida: 'Buenas noches.',
-          // RN-VN-04 — Con un estado pesado no hay celebración de ningún tipo.
-          compasivo: 'Hoy pesó. Cerrarlo ya es bastante.',
-          reabrir: 'Puedes volver y cambiar lo que quieras.',
         },
       },
     },
@@ -859,6 +973,16 @@ export const copy = {
         gratitud: 'Lo que agradeciste',
         accion: 'Tu paso de ese día',
         pausa: 'Tu pausa',
+        // La noche de tres momentos (actualización del 23 ago).
+        reconocimiento: 'Lo que reconociste',
+        // La reflexión se titula con la pregunta que salió esa noche; esta
+        // etiqueta es el respaldo para las noches guardadas sin `reflectionId`.
+        reflexion: 'Tu reflexión',
+        emocionCierre: 'Cómo cerraste el día',
+        descarga: 'Lo que dejaste ahí',
+        // Las dos etiquetas de las noches de la versión 1. Ninguna pantalla
+        // vuelve a escribir esos campos; las noches que los tienen se siguen
+        // leyendo igual (§11).
         aprendizaje: 'Lo que aprendiste',
         // Las dos etiquetas de las mañanas de la versión 1. Ninguna pantalla
         // vuelve a escribir esos campos; los días que los tienen se siguen

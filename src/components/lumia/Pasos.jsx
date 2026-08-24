@@ -1,5 +1,7 @@
-// src/components/lumia/manana/Pasos.jsx
-// El indicador del recorrido y sus dos controles.
+// src/components/lumia/Pasos.jsx
+// El indicador de un recorrido y sus dos controles. Los montan la mañana y la
+// noche, cada una con su copy: **el componente no sabe de cuál de las dos es**,
+// y por eso recibe `textos` en vez de alcanzar un namespace.
 //
 // **Cuenta momentos, no campos.** "1 de 3" dice dónde estás, no cuánto te falta
 // por rellenar: un contador de campos convertiría una mañana escrita a medias
@@ -9,16 +11,15 @@
 // Es discreto a propósito —texto pequeño y tres puntos— y no ocupa el lugar de
 // nada: la pregunta sigue siendo lo primero que se lee.
 //
-// La pausa opcional no entra en la cuenta. No está todos los días, y un total
-// que cambia de una mañana a otra deja de orientar.
+// El momento opcional del final —la pausa de la mañana, la descarga de la
+// noche— no entra en la cuenta. No está todos los días, y un total que cambia
+// de un día para otro deja de orientar.
 
 import { clsx } from 'clsx'
 import Button from '@components/ui/Button'
-import { copy, interpolate } from '@copy'
+import { interpolate } from '@copy'
 
-const textos = copy.lumia.diario.manana.pasos
-
-export function IndicadorPasos({ indice, total }) {
+export function IndicadorPasos({ textos, indice, total }) {
   return (
     <div className="flex items-center gap-3" role="group" aria-label={textos.etiqueta}>
       <p className="text-sm text-on-surface-soft" role="status">
@@ -40,7 +41,7 @@ export function IndicadorPasos({ indice, total }) {
   )
 }
 
-export function NavegacionPasos({ hayAtras, esUltimo, onAtras, onSiguiente }) {
+export function NavegacionPasos({ textos, hayAtras, esUltimo, onAtras, onSiguiente }) {
   return (
     <div className="flex flex-wrap items-center gap-3">
       <Button variant="surface" onClick={onSiguiente}>

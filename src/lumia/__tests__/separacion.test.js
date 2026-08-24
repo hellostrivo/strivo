@@ -241,9 +241,12 @@ describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
 
   it('la ceremonia de cierre no era ese botón y se queda donde estaba', () => {
     // "Cerrar mi día" es el Bloque 7 de §5.4, no un paso de navegación: es la
-    // ceremonia, y la ceremonia nunca falla (no-negociable 3).
+    // ceremonia, y la ceremonia nunca falla (no-negociable 3). Cambió de
+    // archivo con la actualización del 23 ago —`CierreDelDia` pasó a
+    // `noche/CierreDeLaNoche`, sin recuento— pero no de sitio ni de trabajo.
     expect(copy.lumia.diario.noche.cierre.cta).toBe('Cerrar mi día')
-    expect(codigoDe('src/components/lumia/DiarioNoche.jsx')).toMatch(/<CierreDelDia/)
+    expect(codigoDe('src/components/lumia/DiarioNoche.jsx')).toMatch(/<CierreDeLaNoche/)
+    expect(existsSync('src/components/lumia/CierreDelDia.jsx')).toBe(false)
   })
 
   it('las dos vistas empotradas no repiten el héroe ni piden salir', () => {
@@ -270,7 +273,7 @@ describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
     expect(existsSync('src/components/lumia/RitualNoche.jsx')).toBe(false)
     expect(existsSync('src/components/lumia/ritual')).toBe(false)
     expect(existsSync('src/lumia/ritualNoche.js')).toBe(false)
-    expect(codigoDe('src/components/lumia/DiarioNoche.jsx')).toMatch(/<CierreDelDia/)
+    expect(codigoDe('src/components/lumia/DiarioNoche.jsx')).toMatch(/<CierreDeLaNoche/)
   })
 })
 

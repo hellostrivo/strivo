@@ -192,7 +192,11 @@ lumia/ {
   morningEntry/{date}: { version, updatedAt, completedAt, skipped[],
                          feeling, feelingOther, intention, intentionOther,
                          gratitude[], action, reflectionId, reflection },
-  nightRitual/{date}: { gratitude, learning, sleepState, sleepStateOther },
+  // La noche de tres momentos (23 ago). `gratitude`, `learning`, `sleepState` y
+  // `sleepStateOther` son de la versión anterior: se leen, no se escriben.
+  nightRitual/{date}: { version, updatedAt, completedAt, skipped,
+                        recognized[], reflectionId, reflectionSource, reflection,
+                        closingFeeling, closingFeelingOther, release },
   pinConfig: { salt, hash, iterations, algorithm, enabled }
 }
 
@@ -1036,6 +1040,216 @@ es la única fuente de verdad de lo que se implementó.
   **La documentación está pendiente de reescribir esa sección**; no bloquea el
   código, igual que quedó pendiente con SPEC_09 y con las victorias.
 - **Caso conocido:** con dos pestañas abiertas sobre el mismo día, la última
+  escritura gana. Es el mismo comportamiento que el resto de Lumia.
+
+**La noche pasa a tres momentos, 23 ago. Deroga §5.4 entera:**
+
+La Vista de Noche deja de ser cinco bloques a la vista y pasa a ser un recorrido
+de tres momentos con un cierre propio. Lo pidió el propietario del producto con
+la especificación completa —redacción exacta, tipos de respuesta, reglas de
+rotación, personalización, almacenamiento y cierre emocional—, y esta sección es
+la única fuente de verdad de lo que se implementó.
+
+```
+1 de 3  ·  ¿Qué quiero reconocer de hoy?        (lista de 1 a 3, uno al abrir)
+2 de 3  ·  Una reflexión breve                  (rotativa, o ligada a la mañana)
+3 de 3  ·  ¿Cómo me siento al cerrar el día?    (selección única, 12 + Algo más)
+   +    ·  ¿Hay algo que quieras dejar aquí?    (por la emoción, o a mano)
+   →       Tu día puede terminar aquí · «Cerrar mi día» · Buenas noches
+   →       La consulta: lo respondido, con las preguntas delante
+```
+
+- **"Reconocer" sustituye a "agradecer", y ese es el cambio de fondo.** "¿Qué
+  agradezco de este día?" dejaba fuera el día que costó: quien lo atravesó a
+  duras penas no tenía dónde ponerlo. La pregunta nueva admite lo que se
+  disfrutó, lo que se intentó, lo que se enfrentó y lo que simplemente se
+  resolvió, y el texto de apoyo lo dice entero. **Ninguna prueba puede comprobar
+  que esto se sienta distinto; es la apuesta de la actualización.**
+- **La estructura es hermana de la mañana, no una copia.** Mismo indicador
+  ("1 de 3"), mismo momento opcional fuera de la cuenta, misma ceremonia de
+  cierre a pantalla completa y misma pantalla de consulta con las preguntas
+  delante. Lo que cambia es todo lo demás.
+
+- **Se retiran de la noche el bloque de gratitud, el aprendizaje y el estado de
+  sueño.** Los tres los sustituyen las tres preguntas nuevas. `gratitude`,
+  `learning`, `sleepState` y `sleepStateOther` **salen de `FIELDS.nightRitual`**,
+  así que un intento de volver a escribirlos lanza `UNKNOWN_FIELD` — el mismo
+  trato que recibieron las victorias y los campos de la mañana.
+- **El Historial no pierde nada.** `VistaDiaCompleto` lee las **dos** versiones y
+  cada bloque aparece solo si tiene contenido: una noche de agosto muestra
+  reconocimiento, reflexión, emoción de cierre y descarga; una de julio muestra
+  su gratitud, su aprendizaje y su estado de sueño. §11 lo exige literalmente y
+  era barato cumplirlo porque los campos viejos nunca compartieron nombre con los
+  nuevos. `src/lumia/estadoSueno.js` **se queda como catálogo heredado de solo
+  lectura**, con su copy en `noche.sueno`, y su único consumidor es esa vista más
+  `animoDeNoche`.
+- **Coste conocido y asumido:** una noche de la versión 1 **no se relee dentro
+  del recorrido**, solo en el Historial. Sin `completedAt` el recorrido se abre
+  en blanco. Es la misma decisión que tomó la mañana con sus días viejos.
+
+- **La escala de cinco ánimos no crece, y el coste está medido.** El punto del
+  calendario y las frases del día necesitan una escala corta; `triste`,
+  `frustrado` y `abrumado` caen todos en `inquieto`, que el Historial rotula "Con
+  inquietud". Es una etiqueta gruesa para tres estados distintos. Ampliarla
+  exigiría un color de marca nuevo en §6.3.5 y ningún hex se escribe a mano, así
+  que la respuesta exacta se lee donde está: en la vista del día. La tabla vive
+  en `nocheEmociones.js` y `animoDeNoche` (`noche.js`) es el **único** sitio que
+  decide el ánimo de una noche, leyendo las dos versiones.
+- **La palabra propia devuelve `normal`.** Colocar en una escala lo que alguien
+  acaba de escribir sería el diagnóstico que §9 prohíbe.
+
+- **La reflexión rota, y rota de forma predecible.** Cinco preguntas, se
+  descartan las cuatro últimas usadas, así que queda exactamente una candidata:
+  la rotación es completa y determinista, nunca aleatoria. La primera noche de
+  todas sale "¿Qué me dejó el día de hoy?", que es la más ancha.
+- **`reflectionId` se congela al mostrarse la pregunta, no al contestarla.**
+  Aparecer cuenta aunque nadie escriba: si solo contáramos las respondidas, quien
+  nunca responde vería siempre la primera del banco. Y es lo que sostiene "no
+  cambia si sales y vuelves la misma noche" (§5) cuando la mañana se termina más
+  tarde que la noche se empieza. Mismo mecanismo que `mananaPausa.js`.
+- **Las noches que se llevó la pregunta de la mañana no consumen turno de la
+  rotación.** Esa pregunta *sustituye* a la rotativa; no avanza por ella.
+
+- **La conexión con la mañana lee la intención y nada más** (§6). Exige mañana
+  cerrada (`completedAt`) e intención elegida; como mucho dos en siete días y
+  nunca en noches seguidas. `nocheReflexion.js` importa **una** cosa de la
+  mañana —cómo se lee la intención— y una prueba falla si aparece `gratitude`,
+  `action`, `granVision` o `feeling`.
+- **La intención escrita a mano entra literal y sin comillas.** §6 pide
+  "exactamente el texto escrito por la persona": la frase ya lo enmarca
+  —"Esta mañana elegiste con menos prisa como intención"— y entrecomillarlo sería
+  la app opinando sobre una palabra que no es suya. Es la única cadena de Lumia
+  donde una palabra propia se presenta sin `«»`, y es a propósito.
+
+- **`reflectionSource` se guarda; "estándar o personalizada" no.** §11 pide los
+  dos. El primero se guarda porque hace el registro legible por sí solo dentro de
+  un año, sin depender del banco vigente. El segundo **no se añade como campo**:
+  `closingFeeling === 'otra'` con su `closingFeelingOther` ya es esa indicación,
+  y un segundo campo derivable es exactamente lo que se retiró en
+  `nightRitual.inheritedWins` —dos respuestas a la misma pregunta acaban
+  separándose—. **Queda anotado por si el propietario prefiere el campo
+  explícito.**
+
+- **La descarga aparece por dos vías y se ve igual en las dos.** La eligió una de
+  las cuatro emociones difíciles, o la abrió quien quiso desde el enlace. Si la
+  versión automática se presentara distinta, sería la app diciendo "te veo mal".
+- **El enlace va debajo de todas las emociones, no solo de las cuatro.** Si
+  apareciera solo tras una emoción difícil, el catálogo se convertiría en un
+  diagnóstico: la app estaría señalando cuáles son las respuestas preocupantes.
+  `MomentoEmocion` no conoce siquiera la lista de las cuatro — una prueba lo fija.
+- **La lista de las cuatro es cerrada y explícita.** La palabra propia **no**
+  dispara nada: deducir de un texto que alguien está mal es diagnosticar (§9).
+- **La descarga es el cuarto paso y no entra en la cuenta**, como la pausa de la
+  mañana. Trae sus dos controles de §8 —"Dejarlo aquí y cerrar mi día" y "Ahora
+  no"— más un "Atrás", que §2 pide y §8 no nombra: son tres cosas distintas y
+  "Ahora no" cierra el día mientras "Atrás" no cierra nada.
+- **Criterio 9 se resuelve en el lado de la descarga.** §5 dice que "¿Qué
+  necesito soltar por hoy?" no debe usarse como rotativa si luego se activa la
+  descarga, y eso no se puede saber por adelantado; §8 da la regla operativa. Con
+  la rotativa en `soltar`, **se cierran las dos vías a la vez**: ni tarjeta
+  automática ni enlace. Dejar el enlace habría dejado la pregunta dos veces.
+
+- **El cierre deja de contar.** Se fue `sintesisDelDia` —"Hoy encontraste 2 cosas
+  que agradecer"—, y con ella `recuentoDelDia` y sus cuatro plantillas: un número
+  al final del día es una nota, y §10 prohíbe los recuentos. Las dos líneas son
+  fijas, y la segunda solo cambia si se dejó algo en la descarga.
+- **Se fueron también el punto de luz cálida y el cierre compasivo.** El primero
+  era una celebración condicionada al estado con el que se cerraba, es decir una
+  calificación emocional del día; el segundo —"Hoy pesó. Cerrarlo ya es
+  bastante."— interpretaba lo que alguien acababa de nombrar. Con ellos se retiró
+  `disparaCompasion` de `estadoSueno.js`: dejar un escritor en un catálogo
+  retirado invita a reabrirlo sin darse cuenta.
+- **Sobrevive la despedida**, que no celebra nada: "Buenas noches." y "Puedes
+  volver y cambiar lo que quieras." `CierreDelDia.jsx` pasó a
+  `noche/CierreDeLaNoche.jsx` — mismo sitio, mismo trabajo, otro contenido.
+  No-negociable 3 intacto: la ceremonia nunca falla y con la noche en blanco se
+  cierra igual.
+- **De lo reconocido se muestra uno, no todos** (§10). Se elige el primero porque
+  se escribió primero, no porque sea el mejor: la app no ordena por importancia
+  lo que alguien nombró.
+
+- **La pantalla de consulta es nueva y no la pedía la spec.** §2 pide poder
+  volver y cambiar respuestas y §10 pide un cierre; sin ella, reabrir Hoy de
+  noche tras cerrar el día devolvería el recorrido al paso 1 sobre respuestas ya
+  escritas. Es la misma pieza que la mañana estrenó el 23 ago, con su "Cambiar
+  algo" y sin etiqueta de "hecho".
+- **La reflexión se titula con la pregunta que salió esa noche**, en la consulta
+  y en el Historial: rota, así que una etiqueta genérica dejaría la respuesta sin
+  contexto. La ligada a la mañana se reconstruye con la intención de ese día.
+
+- **Tres piezas subieron un nivel: `ChipsUnicos.jsx`, `Pasos.jsx` y
+  `pildora.js`.** Estaban en `components/lumia/manana/` y las monta también la
+  noche; un componente que sirve a los dos recorridos no es de ninguno de los
+  dos. `Pasos` **recibe su copy por props** en vez de alcanzar
+  `copy.lumia.diario.manana.pasos` — es el único cambio que la mañana notó, y es
+  de una línea. Una prueba falla si cualquiera de los tres vuelve a nombrar el
+  namespace de un recorrido.
+- **`ChipsUnicos` se reutiliza tal cual y `ChipsEmociones` no.** Aquel admite
+  tres selecciones y una palabra sin espacios (§5.8.1); la noche necesita una y
+  hasta 30 caracteres, que es exactamente el contrato de `ChipsUnicos`. Reutilizar
+  el de la mañana es lo correcto; reutilizar el del Journal habría sido meter dos
+  reglas de selección en un componente.
+- **`LIMITES.gratitud` (3–10, `crecerSola: true`) se retiró**: era la gratitud de
+  la noche y ninguna lista del producto crece sola ya. La mecánica sigue en
+  `filas.js` y `FilasDinamicas`, y `filas.test.js` la ejercita con un límite de
+  prueba en vez de con un preset que ya no existe. `LIMITES.reconocimiento` es
+  `{min: 1, max: 3, crecerSola: false}`, igual que la gratitud de la mañana.
+- **El reconocimiento no ofrece ideas de apoyo, y no es un olvido.** La gratitud
+  de la mañana las tiene porque nombrar algo que agradecer puede costar; aquí la
+  pregunta ya trae su abanico en el texto de apoyo, y una lista de sugerencias
+  encima sería decirle a alguien de qué tiene que hablar su día.
+- **La línea de apertura ("Vamos a cerrar el jueves.") va solo en el primer
+  momento.** Repetirla en las tres pantallas la convertiría en una cabecera.
+
+- **`updatedAt` es hora local con desfase**, como en la mañana: §11 pide "fecha y
+  hora local" y `toISOString()` perdería justo ese dato. `marcaLocal` se movió de
+  `manana.js` a `fechas.js` —es formato de fecha, no algo de la mañana— y las dos
+  la reexportan, así que ningún importador se enteró.
+- **`version: 2` se guarda con cada noche.** Las de la versión 1 no traen el campo
+  y se reconocen por su ausencia.
+- **`cargarDia` trae ahora `noches`**, con una sola lectura de colección
+  (`lumia.listNightRituals`). Alimentan **solo** la rotación: se leen fechas e
+  ids de pregunta, nunca una palabra de lo escrito, y nada sale de `lumia/`
+  (RN-DB4-01 intacta).
+- **`useDiario` pierde `guardarEstadoSueno`** y `diario.js` pierde esa función,
+  `sintesisDelDia` y `recuentoDelDia`. Tres pruebas comprueban que ya no existen.
+- **Nada bloquea, y está probado en negativo.** Ningún control del recorrido
+  lleva `disabled`, `required` ni `aria-invalid`, y el copy no contiene
+  "incompleto", "te faltó", "obligatorio" ni "sin responder". `skipped` anota lo
+  que quedó en blanco **solo de las preguntas que llegaron a hacerse**: una
+  descarga que no se mostró no es una descarga omitida.
+- **Archivos nuevos:** `src/lumia/noche.js`, `nocheEmociones.js`,
+  `nocheReflexion.js` y `src/components/lumia/noche/` (MomentoReconocimiento,
+  MomentoReflexion, MomentoEmocion, MomentoDescarga, CierreDeLaNoche,
+  ResumenNoche). Una pantalla, un archivo. `DiarioNoche.jsx` se queda como
+  contenedor: sigue siendo la sección Noche del Diario y sigue entrando por el
+  mismo sitio en Hoy. Se borraron `CierreDelDia.jsx` y `EstadoSueno.jsx`.
+- **`npm run lint`, `test`, `build`, `lint:copy`, `lint:contraste` y
+  `format:check` en verde · 1450 pruebas** (79 nuevas en `noche.test.js`, una por
+  criterio de aceptación, por regla de §2 a §12, por pantalla del flujo y por
+  pieza de la consulta).
+
+**Pendiente de la actualización de la noche:**
+- **Sin validar en navegador.** Lo comprobado es la lógica y el marcado; falta
+  ver el recorrido entero en un teléfono real: el teclado sobre los campos de los
+  momentos 1, 2 y 4, el chip "Algo más" con el teclado abierto, y si el cierre se
+  siente ceremonia o interrupción ahora que ya no cuenta nada. **La pregunta que
+  ninguna prueba contesta es si el recorrido cabe de verdad en uno o dos
+  minutos**, y la otra es si "reconocer" se siente más ancho que "agradecer".
+- **El catálogo de doce emociones y las cinco preguntas del banco están sin
+  revisar editorialmente.** Salen literales de la spec; pasan §3.6 con prueba
+  automática. Las formas neutras se redactaron aquí: "En calma", "Con gratitud",
+  "Con orgullo", "Con alivio", "Pensando", "Con cansancio", "Con inquietud",
+  "Con frustración", "Con demasiado encima".
+- **"Indicación de si la emoción fue estándar o personalizada" no es un campo
+  propio.** Se deduce de `closingFeeling === 'otra'`. Si el propietario lo quiere
+  explícito, es una línea en `FIELDS.nightRitual` y otra en el guardado.
+- **El blueprint sigue describiendo §5.4 como estaba.** Con esta actualización
+  caen su bloque de gratitud, el de aprendizaje, §5.4.1 entera y la síntesis de
+  cierre. **La documentación está pendiente de reescribir esa sección**; no
+  bloquea el código, igual que quedó pendiente con SPEC_09, con las victorias y
+  con la mañana.
+- **Caso conocido:** con dos pestañas abiertas sobre la misma noche, la última
   escritura gana. Es el mismo comportamiento que el resto de Lumia.
 
 **Home de Strivo — revisión de SPEC_11 y de §C0.2/§C7.1, 19 ago:**

@@ -24,6 +24,7 @@ const ESTADO_VACIO = {
   morning: null,
   night: null,
   recientes: [],
+  noches: [],
   frase: null,
 }
 
@@ -168,10 +169,6 @@ export function useDiario(uid, fechaPedida = null) {
       ejecutar(async () => ({ morning: await diario.guardarManana(uid, estado.fecha, patch) })),
     guardarNoche: (patch) =>
       ejecutar(async () => ({ night: await diario.guardarNoche(uid, estado.fecha, patch) })),
-    guardarEstadoSueno: (seleccion, otro) =>
-      ejecutar(async () => ({
-        night: await diario.guardarEstadoSueno(uid, estado.fecha, seleccion, otro),
-      })),
   }
 
   return { estado, carga, error, acciones, reintentar: cargar }

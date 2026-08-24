@@ -50,6 +50,23 @@ export function diaDeLaSemana(dateKey) {
   return fecha.toLocaleDateString(LOCALE, { weekday: 'long' })
 }
 
+/**
+ * Fecha y hora local, con su desfase horario.
+ *
+ * La escriben la mañana y la noche en `updatedAt` y en `completedAt`. No se usa
+ * `toISOString()`: normaliza a UTC y perdería justamente el dato que se pide,
+ * que es a qué hora era esto para quien lo escribió.
+ */
+export function marcaLocal(ahora = new Date()) {
+  const dos = (n) => String(n).padStart(2, '0')
+  const desfase = -ahora.getTimezoneOffset()
+  const signo = desfase >= 0 ? '+' : '-'
+  const abs = Math.abs(desfase)
+  const dia = `${ahora.getFullYear()}-${dos(ahora.getMonth() + 1)}-${dos(ahora.getDate())}`
+  const hora = `${dos(ahora.getHours())}:${dos(ahora.getMinutes())}:${dos(ahora.getSeconds())}`
+  return `${dia}T${hora}${signo}${dos(Math.floor(abs / 60))}:${dos(abs % 60)}`
+}
+
 /** Desplaza una clave de fecha tantos días como se le pida, hacia donde sea. */
 export function sumarDias(dateKey, dias) {
   const fecha = fechaDeClave(dateKey)

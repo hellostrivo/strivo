@@ -127,6 +127,19 @@ export async function getNightRitual(uid, date) {
   return readPath(paths.lumiaItem(uid, 'nightRitual', date))
 }
 
+/**
+ * Todas las noches guardadas, cada una con su fecha en `id`.
+ *
+ * La lee la noche para una sola cosa, y hecha por completo de lo que la propia
+ * persona ya escribió: saber qué preguntas reflexivas salieron, para no
+ * repetirlas (§5 y §6 de la actualización del 23 ago). No sale de `lumia/` y no
+ * se cruza con nada (RN-DB4-01).
+ */
+export async function listNightRituals(uid) {
+  assertUid(uid)
+  return readCollection(uid, COLLECTIONS.nightRitual)
+}
+
 export async function saveNightRitual(uid, date, ritual) {
   assertUid(uid)
   assertDateKey(date)

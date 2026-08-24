@@ -48,6 +48,10 @@ const codigoDe = (ruta) =>
     .replace(/^\s*\/\/.*$/gm, '')
 
 const MOMENTO = (nombre) => codigoDe(`src/components/lumia/manana/${nombre}.jsx`)
+// `ChipsUnicos`, `Pasos` y `pildora` subieron un nivel el 23 ago: los monta
+// también la noche, y un componente que sirve a los dos recorridos no es de
+// ninguno de los dos.
+const COMPARTIDO = (nombre) => codigoDe(`src/components/lumia/${nombre}`)
 const CONTENEDOR = codigoDe('src/components/lumia/DiarioManana.jsx')
 
 // ─── Criterio 1 ───────────────────────────────────────────────────────────────
@@ -171,12 +175,12 @@ describe('criterio 2 — las dos preguntas emocionales son de selección única'
   it('lo elegido no se distingue solo por color (§10)', () => {
     // La forma de la píldora vive en `pildora.js`, que es de donde la toman el
     // recorrido y la consulta; el chip añade lo suyo de control que se toca.
-    const pildora = codigoDe('src/components/lumia/manana/pildora.js')
+    const pildora = COMPARTIDO('pildora.js')
     expect(pildora).toMatch(/border-current/)
     expect(pildora).toMatch(/font-medium/)
     expect(pildora).toMatch(/shadow-elev-2/)
 
-    const chips = MOMENTO('ChipsUnicos')
+    const chips = COMPARTIDO('ChipsUnicos.jsx')
     expect(chips).toMatch(/aria-pressed=/)
     expect(chips).toMatch(/PILDORA_ELEGIDA/)
     expect(chips).toMatch(/MARCA/)
@@ -211,11 +215,11 @@ describe('criterio 3 — "Algo más" se crea, se elige, se edita y se quita', ()
 
   it('no se le asigna ningún emoji', () => {
     expect(textos.animo.otra.chip).not.toMatch(/[\u{1F300}-\u{1FAFF}]/u)
-    expect(MOMENTO('ChipsUnicos')).not.toMatch(/otra[\s\S]{0,40}emoji/)
+    expect(COMPARTIDO('ChipsUnicos.jsx')).not.toMatch(/otra[\s\S]{0,40}emoji/)
   })
 
   it('el componente ofrece confirmar, editar y quitar', () => {
-    const chips = MOMENTO('ChipsUnicos')
+    const chips = COMPARTIDO('ChipsUnicos.jsx')
     expect(chips).toMatch(/onKeyDown/)
     expect(chips).toMatch(/textosOtra\.confirmar/)
     expect(chips).toMatch(/textosOtra\.quitar/)
@@ -267,11 +271,12 @@ describe('criterio 4 — la gratitud admite hasta tres elementos independientes'
     expect(textosDe(filas)).toEqual(['el café', 'la ducha'])
   })
 
-  it('la noche conserva sus tres renglones y su lista de diez', () => {
-    // Criterio 10: la actualización es de la mañana y no toca lo demás.
-    expect(LIMITES.gratitud).toEqual({ min: 3, max: 10, crecerSola: true })
-    expect(filasIniciales([], LIMITES.gratitud)).toHaveLength(3)
-    expect(puedeAnadir([{ id: null, texto: '' }], LIMITES.gratitud)).toBe(true)
+  it('la gratitud de la mañana es suya y la noche no la comparte', () => {
+    // La lista de diez de la noche era `LIMITES.gratitud` y se retiró el 23 ago
+    // con "¿Qué agradezco de este día?". Lo que la noche tiene ahora es su
+    // propio reconocimiento, con sus propios límites.
+    expect(LIMITES.gratitud).toBeUndefined()
+    expect(Object.keys(LIMITES).sort()).toEqual(['gratitudManana', 'reconocimiento'])
   })
 
   it('cada línea cabe en 120 caracteres y el campo lo aplica', () => {
@@ -470,7 +475,7 @@ describe('criterio 7 — la pausa opcional rota y respeta sus límites', () => {
 
 describe('criterio 8 — todas las preguntas se pueden omitir', () => {
   it('ningún control del recorrido se deshabilita nunca', () => {
-    const pasos = codigoDe('src/components/lumia/manana/Pasos.jsx')
+    const pasos = COMPARTIDO('Pasos.jsx')
     expect(pasos).not.toMatch(/disabled/)
     ;['MomentoAnimo', 'MomentoGratitud', 'MomentoIntencionAccion', 'MomentoPausa'].forEach(
       (nombre) => expect(MOMENTO(nombre)).not.toMatch(/disabled|required|aria-invalid/),
@@ -788,29 +793,58 @@ describe('§3 — los adjetivos siguen al género del perfil', () => {
 // ─── Criterio 10 ──────────────────────────────────────────────────────────────
 
 describe('criterio 10 — la noche y el resto de Lumia no se tocan', () => {
-  it('la noche conserva sus cinco bloques y su copy', () => {
-    const noche = codigoDe('src/components/lumia/DiarioNoche.jsx')
-    expect(noche).toMatch(/<CampoGratitud/)
-    expect(noche).toMatch(/<EstadoSueno/)
-    expect(noche).toMatch(/<CierreDelDia/)
-    expect(copy.lumia.diario.noche.cierre.cta).toBe('Cerrar mi día')
-    expect(copy.lumia.diario.noche.gratitud.placeholder).toBe('algo de hoy')
+  // Este criterio se escribió cuando la actualizada era la mañana. La noche se
+  // actualizó después, el 23 ago, y sus criterios viven en `noche.test.js`; lo
+  // que se comprueba aquí es la otra mitad, que sigue siendo verdad en los dos
+  // sentidos: **la mañana no se enteró**. Su copy, su modelo y sus momentos
+  // están intactos, y ningún archivo suyo nombra la noche.
+
+  it('la mañana conserva su copy, su modelo y sus tres momentos', () => {
+    expect(textos.animo.titulo).toBe('¿Cómo me siento esta mañana?')
+    expect(textos.gratitud.titulo).toBe('¿Qué agradezco hoy?')
+    expect(textos.cierre.cta).toBe('Comenzar mi día')
+    expect(MOMENTOS).toEqual(['animo', 'gratitud', 'intencion-accion'])
+    expect(FIELDS.morningEntry).toEqual([
+      'version',
+      'updatedAt',
+      'completedAt',
+      'skipped',
+      'feeling',
+      'feelingOther',
+      'intention',
+      'intentionOther',
+      'gratitude',
+      'action',
+      'reflectionId',
+      'reflection',
+    ])
   })
 
-  it('el modelo de la noche no cambia', () => {
-    expect(FIELDS.nightRitual).toEqual(['gratitude', 'learning', 'sleepState', 'sleepStateOther'])
+  it('la ceremonia de la mañana sigue siendo la suya y no la de la noche', () => {
+    expect(copy.lumia.diario.noche.cierre.cta).toBe('Cerrar mi día')
+    expect(CONTENEDOR).toMatch(/<AperturaDelDia/)
+    expect(CONTENEDOR).not.toMatch(/CierreDeLaNoche|CierreDelDia/)
   })
 
   it('ningún archivo de la mañana toca la noche ni el journal', () => {
-    ;[
-      'ChipsUnicos',
-      'MomentoAnimo',
-      'MomentoGratitud',
-      'MomentoIntencionAccion',
-      'MomentoPausa',
-    ].forEach((nombre) => expect(MOMENTO(nombre)).not.toMatch(/noche|night|journal/i))
+    // `ChipsUnicos` salió de esta lista al subir un nivel: dejó de ser un
+    // archivo de la mañana el día en que la noche también lo montó.
+    ;['MomentoAnimo', 'MomentoGratitud', 'MomentoIntencionAccion', 'MomentoPausa'].forEach(
+      (nombre) => expect(MOMENTO(nombre)).not.toMatch(/noche|night|journal/i),
+    )
     ;['manana', 'mananaAcciones', 'mananaPausa', 'mananaEmociones', 'seleccionUnica'].forEach(
       (nombre) => expect(codigoDe(`src/lumia/${nombre}.js`)).not.toMatch(/night|journal|formia/i),
     )
+  })
+
+  it('lo que comparten los dos recorridos no conoce a ninguno de los dos', () => {
+    // Subieron un nivel el 23 ago. Un componente compartido que alcanzara el
+    // copy de un recorrido volvería a ser de ese recorrido, disfrazado.
+    ;['ChipsUnicos.jsx', 'Pasos.jsx', 'pildora.js'].forEach((nombre) =>
+      expect(`${nombre}: ${COMPARTIDO(nombre)}`).not.toMatch(/diario\.manana|diario\.noche/),
+    )
+    // `Pasos` recibe su copy por props, que es lo que le permite contar los
+    // momentos de la mañana y los de la noche sin saber de cuál son.
+    expect(COMPARTIDO('Pasos.jsx')).toMatch(/function IndicadorPasos\(\{ textos/)
   })
 })

@@ -140,8 +140,10 @@ describe('lo que se lee en el bloque de la mañana antes de escribir', () => {
     expect(codigoDe(FILAS)).not.toMatch(/ayudas/)
   })
 
-  it('la noche conserva el suyo: esto era solo de la mañana', () => {
-    expect(copy.lumia.diario.noche.gratitud.placeholder).toBe('algo de hoy')
+  it('la noche ya no tiene un bloque de gratitud: se retiró el 23 ago', () => {
+    // "¿Qué agradezco de este día?" la sustituyó "¿Qué quiero reconocer de
+    // hoy?", que no lleva ideas de apoyo. Este bloque es solo de la mañana.
+    expect(copy.lumia.diario.noche.gratitud).toBeUndefined()
   })
 })
 
@@ -163,7 +165,12 @@ describe('el repertorio de ideas no se toca: esto era del disparador', () => {
     expect(codigoDe(CAMPO)).not.toMatch(/onCambiar\([^)]*opcion/)
   })
 
-  it('la noche conserva las suyas', () => {
-    expect(copy.lumia.diario.noche.gratitud.sugerencias.opciones).toHaveLength(5)
+  it('el reconocimiento de la noche no ofrece ideas, y no es un olvido', () => {
+    // La pregunta ya trae su propio abanico en el texto de apoyo; una lista de
+    // sugerencias encima sería decirle a alguien de qué tiene que hablar su día.
+    expect(copy.lumia.diario.noche.reconocimiento.sugerencias).toBeUndefined()
+    expect(codigoDe('src/components/lumia/noche/MomentoReconocimiento.jsx')).not.toMatch(
+      /CampoGratitud|sugerencias/,
+    )
   })
 })

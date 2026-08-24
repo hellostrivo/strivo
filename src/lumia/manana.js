@@ -61,18 +61,11 @@ export const MAX_REFLEXION = 180
 /**
  * Fecha y hora local, con su desfase horario (§9).
  *
- * No se usa `toISOString()`: normaliza a UTC y perdería justamente el dato que
- * se pide, que es a qué hora era esto para quien lo escribió.
+ * Vive en `fechas.js` desde que la noche escribe la suya con la misma regla: es
+ * formato de fecha, no algo de la mañana. Se reexporta para que quien ya la
+ * importaba de aquí no tenga que enterarse.
  */
-export function marcaLocal(ahora = new Date()) {
-  const dos = (n) => String(n).padStart(2, '0')
-  const desfase = -ahora.getTimezoneOffset()
-  const signo = desfase >= 0 ? '+' : '-'
-  const abs = Math.abs(desfase)
-  const dia = `${ahora.getFullYear()}-${dos(ahora.getMonth() + 1)}-${dos(ahora.getDate())}`
-  const hora = `${dos(ahora.getHours())}:${dos(ahora.getMinutes())}:${dos(ahora.getSeconds())}`
-  return `${dia}T${hora}${signo}${dos(Math.floor(abs / 60))}:${dos(abs % 60)}`
-}
+export { marcaLocal } from './fechas.js'
 
 // ─── Lectura de una mañana guardada ──────────────────────────────────────────
 

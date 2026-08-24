@@ -114,11 +114,29 @@ export const FIELDS = Object.freeze({
     'reflectionId',
     'reflection',
   ]),
-  // `inheritedWins` y `newWins` se retiraron el 23 ago con las victorias y el
-  // checklist de logros. Los días ya escritos conservan sus datos en el
-  // almacén; nadie los lee, y volver a nombrarlos aquí los reabriría a la
-  // escritura.
-  nightRitual: Object.freeze(['gratitude', 'learning', 'sleepState', 'sleepStateOther']),
+  // La noche de tres momentos (actualización del 23 ago). `gratitude`,
+  // `learning`, `sleepState` y `sleepStateOther` salieron de la lista con las
+  // preguntas que los escribían: las noches ya guardadas los conservan y el
+  // Historial los sigue leyendo, pero nadie vuelve a escribirlos. Un intento
+  // lanza UNKNOWN_FIELD, que es lo correcto: en `lib/db/` los registros los
+  // escribe el código, y un campo fuera de lista es un error de programación.
+  //
+  // `inheritedWins` y `newWins` se retiraron antes, con las victorias y el
+  // checklist de logros. Volver a nombrar cualquiera de los seis aquí los
+  // reabriría a la escritura.
+  nightRitual: Object.freeze([
+    'version',
+    'updatedAt',
+    'completedAt',
+    'skipped',
+    'recognized',
+    'reflectionId',
+    'reflectionSource',
+    'reflection',
+    'closingFeeling',
+    'closingFeelingOther',
+    'release',
+  ]),
   dayState: Object.freeze(['mood']),
   pinConfig: Object.freeze(['salt', 'hash', 'iterations', 'algorithm', 'enabled']),
 

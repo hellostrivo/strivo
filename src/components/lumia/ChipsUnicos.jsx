@@ -1,6 +1,11 @@
-// src/components/lumia/manana/ChipsUnicos.jsx
-// Chips de **selección única** con emoji, para las dos preguntas emocionales de
-// la mañana.
+// src/components/lumia/ChipsUnicos.jsx
+// Chips de **selección única** con emoji. Los usan las tres preguntas
+// emocionales del día: las dos de la mañana —cómo me siento, cómo me gustaría
+// sentirme— y la de la noche —cómo me siento al cerrar el día—.
+//
+// Vive aquí y no dentro de `manana/` desde que la noche también lo monta: un
+// componente que sirve a los dos recorridos no es de ninguno de los dos. No
+// conoce ningún catálogo: recibe el suyo, su copy y su etiqueta.
 //
 // Es primo de `ChipsEmociones` —la píldora es la misma— pero no es él: aquel
 // admite tres selecciones y una palabra de 24 caracteres sin espacios; este
@@ -17,7 +22,7 @@
 
 import { useState } from 'react'
 import { clsx } from 'clsx'
-import { CampoLinea } from '../Campo'
+import { CampoLinea } from './Campo'
 import { PILDORA, PILDORA_ELEGIDA, PILDORA_LIBRE } from './pildora'
 import { resolveGender } from '@copy/gender'
 import { ID_OTRA, MAX_PALABRA_PROPIA, etiquetaPropia } from '@/lumia/seleccionUnica'

@@ -1,14 +1,20 @@
 // src/lumia/estadoSueno.js
-// "¿Cómo te vas a dormir?" — el último bloque de la Vista de Noche (§5.4.1).
+// "¿Cómo te vas a dormir?" — **catálogo heredado, solo lectura** (§5.4.1).
 //
-// Nueve opciones en orden fijo, de lo más ligero a lo más pesado, con "Algo
-// más" siempre al final. El orden no se personaliza ni se reordena por uso: la
-// estabilidad de posición es parte de la calma de la pantalla.
+// La pregunta se retiró el 23 ago: la sustituyó "¿Cómo me siento al cerrar el
+// día?", que es de selección única y vive en `nocheEmociones.js`. Este módulo se
+// queda por el mismo motivo que `emociones.js` en la mañana: las noches
+// escritas antes de esa fecha guardaron hasta dos estados en
+// `nightRitual.sleepState`, y §11 pide que nada de lo ya escrito se sobrescriba
+// ni desaparezca. El Historial las sigue leyendo enteras.
 //
-// El catálogo **incluye estados difíciles** a propósito. Cerrar el día en falso
-// no le sirve a nadie (§3.4).
+// **Aquí ya no hay nada de escritura.** Se fueron con la pregunta `alternar`,
+// `paraGuardar`, el máximo de dos estados y `disparaCompasion` —el cierre
+// compasivo dejó de existir cuando §10 fijó las dos líneas del cierre—. Dejar
+// un escritor en un catálogo retirado es invitar a que alguien lo reabra sin
+// darse cuenta.
 //
-// RN-GEN-04 — Se persisten los `id`, que son opacos y estables. Su forma
+// RN-GEN-04 — Se persistieron los `id`, que son opacos y estables. Su forma
 // masculina es un accidente del código, no una etiqueta: nunca se muestran.
 
 import { copy } from '@copy'
@@ -19,13 +25,10 @@ const textos = copy.lumia.diario.noche.sueno
 export const OPCIONES = Object.freeze(textos.opciones)
 export const IDS = Object.freeze(OPCIONES.map((opcion) => opcion.id))
 
-/** El único id que abre un campo de texto. */
+/** El único id que abrió un campo de texto. */
 export const ID_OTRO = 'otro'
 
-/** §5.4.1 — Máximo dos. Mínimo cero: el bloque nunca bloquea el cierre. */
-export const MAX_ESTADOS = 2
-
-/** Longitud máxima de la palabra de "Algo más". */
+/** Longitud de la palabra de "Algo más" con la que se guardó. */
 export const MAX_PALABRA = 24
 
 export function esEstado(id) {
@@ -37,33 +40,7 @@ export function etiquetaDe(id, genero) {
   return opcion ? resolveGender(opcion.label, genero) : ''
 }
 
-/**
- * Toca un estado. Igual que las emociones de la mañana: la tercera entra y la
- * más antigua sale, sin mensaje de error.
- *
- * @returns {{seleccion: string[], desplazada: string|null}}
- */
-export function alternarEstado(seleccion, id) {
-  const actual = Array.isArray(seleccion) ? seleccion : []
-  if (!esEstado(id)) return { seleccion: actual, desplazada: null }
-
-  if (actual.includes(id)) {
-    return { seleccion: actual.filter((otro) => otro !== id), desplazada: null }
-  }
-
-  if (actual.length < MAX_ESTADOS) {
-    return { seleccion: [...actual, id], desplazada: null }
-  }
-
-  const [masAntiguo, ...resto] = actual
-  return { seleccion: [...resto, id], desplazada: masAntiguo }
-}
-
-/**
- * "Algo más" acepta **una** palabra y solo una: los espacios no crean una
- * segunda. Se guarda tal cual, sin autocorrección y sin pasar por el helper de
- * género (RN-GEN-06).
- */
+/** La palabra propia tal como se guardó: una sola, sin transformar. */
 export function primeraPalabra(texto) {
   const limpio = String(texto ?? '').trim()
   if (limpio === '') return ''
@@ -71,22 +48,9 @@ export function primeraPalabra(texto) {
 }
 
 /**
- * Lo que de verdad se guarda. Si alguien eligió "Algo más" y no escribió nada,
- * la selección se descarta al salir del bloque: no se guarda una opción vacía.
- */
-export function paraGuardar(seleccion, otro) {
-  const palabra = primeraPalabra(otro)
-  const estados = (seleccion ?? []).filter((id) => id !== ID_OTRO || palabra !== '')
-  return {
-    sleepState: estados,
-    sleepStateOther: estados.includes(ID_OTRO) ? palabra : null,
-  }
-}
-
-/**
  * Etiquetas para presentar el estado guardado (§5.4.1):
  * "Te fuiste a dormir: En paz · Agradecida". La palabra propia va entrecomillada
- * y sin transformar.
+ * y sin transformar (RN-GEN-06).
  */
 export function etiquetasDe(seleccion, otro, genero) {
   return (seleccion ?? []).map((id) =>
@@ -96,8 +60,8 @@ export function etiquetasDe(seleccion, otro, genero) {
 
 // ─── animoDerivado (§5.4.1) ───────────────────────────────────────────────────
 // Es una **vista, no un dato**: se calcula al vuelo y no se escribe nunca, ni en
-// IndexedDB ni en Firestore. Si mañana cambia el catálogo, cambia esta tabla y
-// no hay migración que hacer.
+// IndexedDB ni en Firestore. Hoy solo la llama `animoDeNoche` de `noche.js`,
+// para las noches de la versión 1.
 
 const ANIMO_POR_ESTADO = Object.freeze({
   en_paz: 'en_paz',
@@ -115,9 +79,9 @@ const ANIMO_POR_ESTADO = Object.freeze({
 const ORDEN_DE_PESO = Object.freeze(['agotado', 'inquieto', 'normal', 'tranquilo', 'en_paz'])
 
 /**
- * El ánimo de cinco estados que necesitan el Historial y los Insights.
+ * El ánimo de cinco estados de una noche de la versión 1.
  *
- * Un día en que alguien se va "Agradecida y Cansada" se representa como
+ * Una noche en que alguien se fue "Agradecida y Cansada" se representa como
  * agotado: la app no maquilla el estado de nadie para que el calendario se vea
  * mejor.
  *
@@ -130,14 +94,4 @@ export function animoDerivado(seleccion) {
     .filter((animo) => animo !== undefined)
   if (animos.length === 0) return 'normal'
   return ORDEN_DE_PESO.find((animo) => animos.includes(animo)) ?? 'normal'
-}
-
-/**
- * RN-VN-04 y regla de sensibilidad de §5.4.1: `cansado` e `inquieto` cambian la
- * secuencia de cierre a la variante compasiva, sin celebración.
- *
- * `pensativo` **no** la dispara: pensar mucho no es lo mismo que estar mal.
- */
-export function disparaCompasion(seleccion) {
-  return (seleccion ?? []).some((id) => id === 'cansado' || id === 'inquieto')
 }

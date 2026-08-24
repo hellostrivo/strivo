@@ -1,5 +1,6 @@
 // src/lumia/filas.js
-// Filas dinámicas: hoy solo los agradecimientos (§5.3, B2).
+// Filas dinámicas: la gratitud de la mañana (§5.3, B2) y el reconocimiento de
+// la noche (§3 de la actualización del 23 ago).
 //
 // La regla vive en un solo sitio: al escribir en la última fila nace otra
 // debajo, al vaciar una fila creada sobre la marcha desaparece, y nunca hay dos
@@ -15,16 +16,22 @@
 // vista se puede recorrer y cerrar sin escribir una palabra (RN-VM-01).
 
 /**
- * Mínimos y máximos por lista (§5.3, B2 · RN-VM-03).
+ * Mínimos y máximos por lista.
  *
- * `crecerSola` es lo que separa las dos gratitudes. La de la noche abre con sus
- * tres renglones y va abriendo otro en cuanto se escribe en el último. La de la
- * mañana abre con **uno**: varios campos vacíos a la vez se leen como huecos
- * por rellenar, y el segundo lo pide quien escribe tocando "Añadir otro".
+ * Las dos listas del producto abren con **un** campo y llegan hasta tres: la
+ * gratitud de la mañana (§5.3, B2) y el reconocimiento de la noche (§3 de la
+ * actualización del 23 ago). Varios campos vacíos a la vez se leen como huecos
+ * por rellenar, y esto no es un formulario: el segundo lo pide quien escribe,
+ * tocando "Añadir otro".
+ *
+ * `crecerSola` era lo que separaba a la gratitud de la noche —tres renglones de
+ * salida, uno nuevo en cuanto se escribía en el último— y esa lista se retiró
+ * con la actualización de la noche. La mecánica se queda porque es de
+ * `FilasDinamicas` y no de ninguna lista en concreto; hoy no la usa nadie.
  */
 export const LIMITES = Object.freeze({
-  gratitud: Object.freeze({ min: 3, max: 10, crecerSola: true }),
   gratitudManana: Object.freeze({ min: 1, max: 3, crecerSola: false }),
+  reconocimiento: Object.freeze({ min: 1, max: 3, crecerSola: false }),
 })
 
 export function filaVacia() {

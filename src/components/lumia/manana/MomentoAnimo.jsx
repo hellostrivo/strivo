@@ -14,7 +14,7 @@
 // sensación**?" es un pronombre sin antecedente si la sensación se eligió dos
 // pantallas atrás.
 
-import ChipsUnicos from './ChipsUnicos'
+import ChipsUnicos from '../ChipsUnicos'
 import { copy } from '@copy'
 import { ANIMO } from '@/lumia/mananaEmociones'
 

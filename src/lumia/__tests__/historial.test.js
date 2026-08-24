@@ -55,19 +55,19 @@ describe('puntos de ánimo (§5.10 · §6.3.5)', () => {
     expect(dias.every((dia) => dia.hayContenido === false)).toBe(true)
   })
 
-  it('el punto sale del estado de sueño, derivado al vuelo', async () => {
-    await lumia.saveNightRitual(UID, '2026-08-10', { sleepState: ['en_paz'] })
+  it('el punto sale de la emoción de cierre, derivada al vuelo', async () => {
+    await lumia.saveNightRitual(UID, '2026-08-10', { closingFeeling: 'en_paz' })
     const dias = await cargarMes(UID, AGOSTO)
     expect(dias.find((dia) => dia.fecha === '2026-08-10').animo).toBe('en_paz')
   })
 
-  it('con dos estados gana el más pesado: la app no maquilla el día', async () => {
-    await lumia.saveNightRitual(UID, '2026-08-10', { sleepState: ['agradecido', 'cansado'] })
+  it('una emoción difícil no se maquilla para que el calendario se vea mejor', async () => {
+    await lumia.saveNightRitual(UID, '2026-08-10', { closingFeeling: 'triste' })
     const dias = await cargarMes(UID, AGOSTO)
-    expect(dias.find((dia) => dia.fecha === '2026-08-10').animo).toBe('agotado')
+    expect(dias.find((dia) => dia.fecha === '2026-08-10').animo).toBe('inquieto')
   })
 
-  it('un día con algo escrito pero sin estado de sueño se marca en normal', async () => {
+  it('un día con algo escrito pero sin emoción de cierre se marca en normal', async () => {
     await guardar(UID, { ...entradaNueva('2026-08-11'), text: 'Escribí sin cerrar el día' })
     const dias = await cargarMes(UID, AGOSTO)
     const dia = dias.find((entrada) => entrada.fecha === '2026-08-11')
@@ -76,13 +76,13 @@ describe('puntos de ánimo (§5.10 · §6.3.5)', () => {
   })
 
   it('todo ánimo que se pinta está en la paleta de cinco', async () => {
-    await lumia.saveNightRitual(UID, '2026-08-10', { sleepState: ['inquieto'] })
+    await lumia.saveNightRitual(UID, '2026-08-10', { closingFeeling: 'inquieto' })
     const dias = await cargarMes(UID, AGOSTO)
     dias.filter((dia) => dia.animo !== null).forEach((dia) => expect(ANIMOS).toContain(dia.animo))
   })
 
   it('el ánimo no se persiste: `dayState` sigue sin escribirse (§5.4.1)', async () => {
-    await lumia.saveNightRitual(UID, '2026-08-10', { sleepState: ['en_paz'] })
+    await lumia.saveNightRitual(UID, '2026-08-10', { closingFeeling: 'en_paz' })
     await cargarMes(UID, AGOSTO)
     expect(await lumia.getDayState(UID, '2026-08-10')).toBeNull()
   })
@@ -91,17 +91,17 @@ describe('puntos de ánimo (§5.10 · §6.3.5)', () => {
 describe('vista de día completo: solo Lumia (§C7.7.2)', () => {
   it('trae mañana, noche y journal', async () => {
     await lumia.saveMorningEntry(UID, '2026-08-10', { gratitude: ['el café'] })
-    await lumia.saveNightRitual(UID, '2026-08-10', { learning: 'Que se puede pedir ayuda' })
+    await lumia.saveNightRitual(UID, '2026-08-10', { reflection: 'Que se puede pedir ayuda' })
     await guardar(UID, { ...entradaNueva('2026-08-10'), text: 'Hoy escribí' })
 
     const dia = await cargarDia(UID, '2026-08-10')
     expect(dia.morning.gratitude).toEqual(['el café'])
-    expect(dia.night.learning).toBe('Que se puede pedir ayuda')
+    expect(dia.night.reflection).toBe('Que se puede pedir ayuda')
     expect(dia.journal).toHaveLength(1)
   })
 
   it('lo devuelto no tiene ni un campo de hábitos', async () => {
-    await lumia.saveNightRitual(UID, '2026-08-10', { gratitude: ['algo'] })
+    await lumia.saveNightRitual(UID, '2026-08-10', { recognized: ['algo'] })
     const dia = await cargarDia(UID, '2026-08-10')
     expect(Object.keys(dia).sort()).toEqual(['fecha', 'journal', 'morning', 'night'])
     expect(JSON.stringify(dia)).not.toMatch(/habit/i)
@@ -130,11 +130,11 @@ describe('con PIN puesto, el journal no se lee desde aquí (RN-JR-PIN-01)', () =
   })
 
   it('el resto del día se sigue viendo entero', async () => {
-    await lumia.saveNightRitual(UID, '2026-08-10', { gratitude: ['el café'] })
+    await lumia.saveNightRitual(UID, '2026-08-10', { recognized: ['el café'] })
     await guardar(UID, { ...entradaNueva('2026-08-10'), text: 'Privado' })
 
     const conPin = await cargarDia(UID, '2026-08-10', { conJournal: false })
-    expect(conPin.night.gratitude).toEqual(['el café'])
+    expect(conPin.night.recognized).toEqual(['el café'])
     expect(conPin.journal).toEqual([])
   })
 })

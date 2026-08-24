@@ -40,7 +40,8 @@ import MomentoGratitud from './manana/MomentoGratitud'
 import MomentoIntencionAccion from './manana/MomentoIntencionAccion'
 import MomentoPausa from './manana/MomentoPausa'
 import ResumenManana from './manana/ResumenManana'
-import { IndicadorPasos, NavegacionPasos } from './manana/Pasos'
+import { IndicadorPasos, NavegacionPasos } from './Pasos'
+import { copy } from '@copy'
 import { LIMITES, desdeTextos, filasIniciales, textosDe } from '@/lumia/filas'
 import {
   MOMENTOS,
@@ -57,6 +58,9 @@ import { debeAparecer, siguientePregunta } from '@/lumia/mananaPausa'
 
 /** El paso de la pausa opcional, que va detrás de los tres momentos. */
 const PASO_PAUSA = MOMENTOS.length
+
+/** El copy del indicador. `Pasos` sirve a los dos recorridos y no lo alcanza. */
+const PASOS = copy.lumia.diario.manana.pasos
 
 const VALORES_VACIOS = Object.freeze({
   animo: null,
@@ -223,7 +227,7 @@ export default function DiarioManana({ estado, acciones }) {
 
   return (
     <div ref={marco} className="flex flex-col gap-8 scroll-mt-4">
-      {!enPausa && <IndicadorPasos indice={paso} total={MOMENTOS.length} />}
+      {!enPausa && <IndicadorPasos textos={PASOS} indice={paso} total={MOMENTOS.length} />}
 
       {paso === 0 && (
         <MomentoAnimo valores={valores} genero={estado.genero} onCambiar={cambiarEmocion} />
@@ -262,6 +266,7 @@ export default function DiarioManana({ estado, acciones }) {
       )}
 
       <NavegacionPasos
+        textos={PASOS}
         hayAtras={paso > 0}
         esUltimo={esUltimo}
         onAtras={() => setPaso(enPausa ? MOMENTOS.length - 1 : paso - 1)}

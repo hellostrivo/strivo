@@ -1,9 +1,10 @@
-// src/components/lumia/manana/pildora.js
+// src/components/lumia/pildora.js
 // La píldora de emoción: su geometría y sus dos superficies, en un solo sitio.
 //
-// La usan dos pantallas que hacen cosas distintas con ella. En el recorrido es
-// un botón que se toca (`ChipsUnicos`); en la consulta es texto que se lee
-// (`ResumenManana`). Lo que comparten es la **forma**, y esa forma es lo que
+// La usan pantallas que hacen cosas distintas con ella. En los recorridos de la
+// mañana y de la noche es un botón que se toca (`ChipsUnicos`); en las dos
+// pantallas de consulta es texto que se lee (`ResumenManana`, `ResumenNoche`).
+// Lo que comparten es la **forma**, y esa forma es lo que
 // hace que consultar lo escrito se parezca a haberlo escrito: la respuesta se
 // reconoce porque tiene el aspecto que tenía al elegirla.
 //

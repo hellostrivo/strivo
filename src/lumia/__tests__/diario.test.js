@@ -5,16 +5,14 @@ import { beforeEach, describe, expect, it } from 'vitest'
 
 import { initUserTree, lumia, shared } from '@/lib/db'
 import { UID, resetLocalDB } from '../../lib/db/__tests__/helpers.js'
+import * as diario from '../diario.js'
 import {
   animoBajoReciente,
   cargarDia,
-  guardarEstadoSueno,
   guardarManana,
   guardarNoche,
   mananaEscrita,
   nocheEscrita,
-  recuentoDelDia,
-  sintesisDelDia,
 } from '../diario.js'
 
 const HOY = '2026-08-10'
@@ -53,12 +51,19 @@ describe('el día de Lumia', () => {
   })
 
   it('no persiste el ánimo derivado: es una vista, no un dato (§5.4.1)', async () => {
-    await guardarEstadoSueno(UID, HOY, ['cansado'], '')
+    await guardarNoche(UID, HOY, { closingFeeling: 'cansado' })
     expect(await lumia.getDayState(UID, HOY)).toBeNull()
-    expect(await lumia.getNightRitual(UID, HOY)).toEqual({
-      sleepState: ['cansado'],
-      sleepStateOther: null,
-    })
+    expect(await lumia.getNightRitual(UID, HOY)).toEqual({ closingFeeling: 'cansado' })
+  })
+
+  it('el estado de sueño se fue con su pregunta: ya no hay quien lo escriba', () => {
+    expect(diario.guardarEstadoSueno).toBeUndefined()
+  })
+
+  it('la síntesis de cierre se retiró: §10 prohíbe los recuentos', () => {
+    // "Hoy encontraste 2 cosas que agradecer" era una nota al final del día.
+    expect(diario.sintesisDelDia).toBeUndefined()
+    expect(diario.recuentoDelDia).toBeUndefined()
   })
 
   it('reconoce si la mañana y la noche tienen algo escrito', async () => {
@@ -72,45 +77,14 @@ describe('el día de Lumia', () => {
 
     expect(nocheEscrita(null)).toBe(false)
     expect(nocheEscrita({})).toBe(false)
+    expect(nocheEscrita({ recognized: ['aguanté el día'] })).toBe(true)
+    expect(nocheEscrita({ closingFeeling: 'cansado' })).toBe(true)
+    expect(nocheEscrita({ reflection: 'me costó' })).toBe(true)
+    expect(nocheEscrita({ release: 'la conversación pendiente' })).toBe(true)
+    // Una noche de la versión anterior sigue contando como noche con algo escrito.
     expect(nocheEscrita({ sleepState: ['en_paz'] })).toBe(true)
     expect(nocheEscrita({ gratitude: ['el café'] })).toBe(true)
     expect(nocheEscrita({ learning: 'que se puede pedir ayuda' })).toBe(true)
-  })
-
-  describe('síntesis de cierre', () => {
-    // Desde el 23 ago el recuento es solo de gratitud: las victorias y el
-    // checklist de logros se retiraron, y con ellos los tres templates que los
-    // nombraban. Lo que queda sigue siendo evidencia propia, no un balance.
-    it('cuenta los agradecimientos del día', () => {
-      const night = { gratitude: ['el café', 'la tarde'] }
-      expect(recuentoDelDia(night)).toEqual({ gracias: 2 })
-      expect(sintesisDelDia(night)).toBe('Hoy encontraste 2 cosas que agradecer.')
-    })
-
-    it('concuerda el singular', () => {
-      expect(sintesisDelDia({ gratitude: ['el café'] })).toBe(
-        'Hoy encontraste una cosa que agradecer.',
-      )
-    })
-
-    it('no cuenta nada que no sea gratitud', () => {
-      // Un día con estado de sueño y aprendizaje pero sin agradecimientos cae
-      // en la frase de presencia: no se inventa un recuento con otra cosa.
-      expect(sintesisDelDia({ sleepState: ['en_paz'], learning: 'que se puede pedir ayuda' })).toBe(
-        'Hoy solo viniste. También cuenta.',
-      )
-    })
-
-    it('con el día en blanco, el cierre funciona igual', () => {
-      expect(sintesisDelDia(null)).toBe('Hoy solo viniste. También cuenta.')
-    })
-
-    it('cierra bien un día escrito de principio a fin', async () => {
-      await guardarNoche(UID, HOY, { gratitude: ['el café'] })
-      await guardarEstadoSueno(UID, HOY, ['en_paz'], '')
-      const dia = await cargarDia(UID, HOY)
-      expect(sintesisDelDia(dia.night)).toBe('Hoy encontraste una cosa que agradecer.')
-    })
   })
 
   describe('frase del día y ánimo reciente', () => {
@@ -119,9 +93,9 @@ describe('el día de Lumia', () => {
     })
 
     it('tres noches pesadas seguidas retiran las frases de esfuerzo', async () => {
-      await guardarEstadoSueno(UID, '2026-08-09', ['cansado'], '')
-      await guardarEstadoSueno(UID, '2026-08-08', ['inquieto'], '')
-      await guardarEstadoSueno(UID, '2026-08-07', ['cansado'], '')
+      await guardarNoche(UID, '2026-08-09', { closingFeeling: 'cansado' })
+      await guardarNoche(UID, '2026-08-08', { closingFeeling: 'triste' })
+      await guardarNoche(UID, '2026-08-07', { closingFeeling: 'abrumado' })
       expect(await animoBajoReciente(UID, HOY)).toBe(true)
 
       const dia = await cargarDia(UID, HOY)
@@ -129,8 +103,8 @@ describe('el día de Lumia', () => {
     })
 
     it('una noche buena entre medias y el repertorio vuelve entero', async () => {
-      await guardarEstadoSueno(UID, '2026-08-09', ['cansado'], '')
-      await guardarEstadoSueno(UID, '2026-08-08', ['en_paz'], '')
+      await guardarNoche(UID, '2026-08-09', { closingFeeling: 'cansado' })
+      await guardarNoche(UID, '2026-08-08', { closingFeeling: 'en_paz' })
       expect(await animoBajoReciente(UID, HOY)).toBe(false)
     })
   })

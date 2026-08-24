@@ -47,26 +47,52 @@ describe('journal', () => {
 describe('registros por fecha', () => {
   it('morningEntry y nightRitual son un registro por día', async () => {
     await lumia.saveMorningEntry(UID, DATE, { action: 'Salir a caminar.' })
-    await lumia.saveNightRitual(UID, DATE, { learning: 'Descansar también cuenta.' })
+    await lumia.saveNightRitual(UID, DATE, { reflection: 'Descansar también cuenta.' })
 
     expect((await lumia.getMorningEntry(UID, DATE)).action).toBe('Salir a caminar.')
-    expect((await lumia.getNightRitual(UID, DATE)).learning).toBe('Descansar también cuenta.')
+    expect((await lumia.getNightRitual(UID, DATE)).reflection).toBe('Descansar también cuenta.')
   })
 
   it('el ritual de noche se guarda por partes sin perder lo anterior', async () => {
-    await lumia.saveNightRitual(UID, DATE, { learning: 'Que se puede pedir ayuda' })
-    await lumia.saveNightRitual(UID, DATE, { gratitude: ['El café de la mañana'] })
-    await lumia.saveNightRitual(UID, DATE, { sleepState: 'tranquilo' })
+    await lumia.saveNightRitual(UID, DATE, { reflection: 'Que se puede pedir ayuda' })
+    await lumia.saveNightRitual(UID, DATE, { recognized: ['El café de la mañana'] })
+    await lumia.saveNightRitual(UID, DATE, { closingFeeling: 'tranquilo' })
 
     const ritual = await lumia.getNightRitual(UID, DATE)
-    expect(ritual.learning).toBe('Que se puede pedir ayuda')
-    expect(ritual.gratitude).toEqual(['El café de la mañana'])
-    expect(ritual.sleepState).toBe('tranquilo')
+    expect(ritual.reflection).toBe('Que se puede pedir ayuda')
+    expect(ritual.recognized).toEqual(['El café de la mañana'])
+    expect(ritual.closingFeeling).toBe('tranquilo')
   })
 
   // El checklist de logros se retiró el 23 ago con las victorias. El campo sale
   // del modelo canónico, así que volver a escribirlo se rechaza como cualquier
   // otro campo fuera de lista (RN-DB4-08): nada se corrige en silencio.
+  it('el ritual de noche ya no admite los cuatro campos de la versión 1', async () => {
+    // "¿Qué agradezco de este día?", el aprendizaje y el estado de sueño se
+    // retiraron el 23 ago con la actualización de la noche. Las noches ya
+    // escritas los conservan y el Historial los lee; nadie los vuelve a
+    // escribir, y un intento se rechaza como cualquier campo fuera de lista.
+    for (const campo of ['gratitude', 'learning', 'sleepState', 'sleepStateOther']) {
+      await expect(lumia.saveNightRitual(UID, DATE, { [campo]: 'x' })).rejects.toMatchObject({
+        code: 'UNKNOWN_FIELD',
+      })
+    }
+  })
+
+  it('las noches guardadas se siguen leyendo enteras', async () => {
+    // Escribir es lo que se cierra; leer, no. Un registro con los campos
+    // viejos ya en el almacén se devuelve tal cual (§11).
+    await lumia.saveNightRitual(UID, DATE, { recognized: ['algo'] })
+    expect((await lumia.getNightRitual(UID, DATE)).recognized).toEqual(['algo'])
+  })
+
+  it('todas las noches se pueden listar, para no repetir una pregunta', async () => {
+    await lumia.saveNightRitual(UID, '2026-07-20', { reflectionId: 'general' })
+    await lumia.saveNightRitual(UID, '2026-07-21', { reflectionId: 'memoria' })
+    const noches = await lumia.listNightRituals(UID)
+    expect(noches.map((noche) => noche.id).sort()).toEqual(['2026-07-20', '2026-07-21'])
+  })
+
   it('el ritual de noche ya no admite newWins ni inheritedWins', async () => {
     await expect(lumia.saveNightRitual(UID, DATE, { newWins: ['x'] })).rejects.toMatchObject({
       code: ERROR_CODES.UNKNOWN_FIELD,

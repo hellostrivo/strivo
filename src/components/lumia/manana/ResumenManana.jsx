@@ -37,7 +37,7 @@
 // quieres pasar el día no es deshacer nada.
 
 import { clsx } from 'clsx'
-import { PILDORA, PILDORA_ELEGIDA } from './pildora'
+import { PILDORA, PILDORA_ELEGIDA } from '../pildora'
 import { copy } from '@copy'
 
 const textos = copy.lumia.diario.manana
