@@ -285,14 +285,15 @@ describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
     // se lee como invitación principal: peso de display y cuerpo grande.
     expect(marcado).toMatch(/bg-lumia-tarjeta/)
     expect(marcado).toMatch(/shadow-elev-2/)
-    // El rótulo va en cursiva y un escalón por encima del conmutador: 20 px
-    // frente a los 16 px de "Mañana"/"Noche". `text-lg` (25 px) se probó y era
-    // demasiado para una pieza que se ciñe a su texto.
-    const conmutador = codigoDe('src/components/lumia/SelectorMomento.jsx')
-    expect(conmutador).toMatch(/text-base font-medium/)
-    expect(marcado).toMatch(/italic/)
-    expect(marcado).toMatch(/text-md font-medium/)
-    expect(marcado).not.toMatch(/font-display|text-lg|text-xl/)
+    // El rótulo baja a 16 px, en redonda y peso normal. Estaba en cursiva a
+    // 20 px con peso de medio, y con la frase del día metida en su recuadro
+    // había dos piezas disputándose el mismo sitio en la jerarquía: lo que la
+    // tarjeta necesita es encontrarse, no ser lo más llamativo de Hoy.
+    expect(marcado).toMatch(/text-base font-normal/)
+    expect(marcado).not.toMatch(/font-display|text-md|text-lg|text-xl/)
+    // **La cursiva se retira entera de aquí.** Es ahora la marca de la frase
+    // del día, y usarla en dos sitios la dejaría sin significar nada.
+    expect(marcado).not.toMatch(/italic/)
     // Sin subtítulo: el rótulo es toda su superficie de texto.
     expect(marcado).not.toMatch(/text-on-surface-soft/)
   })
@@ -323,13 +324,55 @@ describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
     )
   })
 
-  it('la cursiva de la tarjeta es real, no la que improvisa el navegador', () => {
+  it('la cursiva de la frase es real, no la que improvisa el navegador', () => {
     // `@fontsource-variable/inter` solo trae los cortes verticales. Sin la hoja
     // itálica, `font-style: italic` se resuelve inclinando la vertical por
     // software y las curvas salen deformadas — justo lo que el manual §5.1
     // evita al fijar una familia bien servida.
     const css = readFileSync('src/styles/globals.css', 'utf8')
     expect(css).toMatch(/@import '@fontsource-variable\/inter\/wght-italic\.css';/)
+  })
+
+  it('la frase del día vive en un recuadro propio, teñido y en cursiva', () => {
+    // Era una línea suelta entre el conmutador y la primera pregunta del
+    // Diario, y como línea suelta se leía igual que todo lo demás. En un
+    // recuadro deja de ser una frase más y pasa a ser el único sitio de Hoy
+    // donde no hay nada que hacer.
+    const frase = codigoDe('src/components/lumia/FraseDelDia.jsx')
+    const marcado = frase.slice(frase.indexOf('return ('))
+    // La superficie es el secundario de la paleta, no un tercer escalón de la
+    // escala blanca: si compartiera escala con las tarjetas, competiría con la
+    // de respiración por el mismo sitio (RN-HOY-07).
+    expect(marcado).toMatch(/bg-lumia-frase/)
+    expect(marcado).not.toMatch(/bg-lumia-tarjeta|bg-lumia-campo|bg-raised/)
+    expect(marcado).toMatch(/border-lumia-frase/)
+    // Aire: relleno generoso e interlineado suelto. Lo que se lee despacio se
+    // compone despacio.
+    expect(marcado).toMatch(/py-6/)
+    expect(marcado).toMatch(/leading-relaxed/)
+    // El cuerpo es de 16 px: lo que la distingue son el recuadro, el tinte y la
+    // cursiva, no el tamaño. A 20 px, con esos tres encima, se convertía en el
+    // titular de la pantalla y el saludo dejaba de serlo.
+    expect(marcado).toMatch(/text-base/)
+    expect(marcado).not.toMatch(/text-md|text-lg|text-xl/)
+    // La cursiva es suya y de nadie más en la pantalla.
+    expect(marcado).toMatch(/italic/)
+    expect(codigoDe('src/components/lumia/TarjetaRespiracion.jsx')).not.toMatch(/italic/)
+    // Sigue sin ser un control: no se toca, no lleva acción.
+    expect(marcado).not.toMatch(/<button|onClick/)
+  })
+
+  it('el recuadro de la frase no nombra un color y tiene sus dos momentos', () => {
+    // Como el resto de Lumia, pide su superficie por el papel que cumple y las
+    // dos atmósferas se resuelven en el CSS (RN-SURF-01). De noche el
+    // secundario entra como velo: en sólido no llegaría a AAA con ninguna de
+    // las dos tintas.
+    const frase = codigoDe('src/components/lumia/FraseDelDia.jsx')
+    expect(frase).not.toMatch(/#[0-9a-f]{3,8}\b/i)
+    expect(frase).not.toMatch(/momento|manana|noche|data-lumia/)
+    const css = readFileSync('src/styles/globals.css', 'utf8')
+    expect(css).toMatch(/\[data-lumia='manana'\][\s\S]*?--lumia-frase:/)
+    expect(css).toMatch(/\[data-lumia='noche'\][\s\S]*?--lumia-frase:/)
   })
 
   it('la tarjeta no nombra ni un color ni conoce el momento (RN-SURF-01)', () => {

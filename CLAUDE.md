@@ -2024,6 +2024,80 @@ SPEC_14:**
   con el mismo nombre a un toque de distancia, y esa decisión es del propietario
   del producto.
 
+**La frase del día gana recuadro y la tarjeta de respiración cede la cursiva, 24 ago:**
+
+Dos piezas del héroe de Hoy se disputaban el mismo sitio en la jerarquía. Lo
+pidió el propietario del producto y se resolvió a la vez, porque es una sola
+decisión: la cursiva y el cuerpo grande pasan de la entrada a la respiración a
+la frase del día.
+
+- **La tarjeta de respiración baja a 16 px, en redonda y peso normal.** Estaba
+  en `italic text-md font-medium` —20 px, un escalón por encima del conmutador—
+  desde que dejó de ser un enlace. Con la frase metida en su recuadro, dos
+  piezas en el tono alto de la pantalla eran una de más. La tarjeta no necesita
+  ser lo más llamativo de Hoy: necesita encontrarse sin buscarla, y eso lo
+  siguen haciendo su superficie clara, su elevación y sus 56 px de alto. **Todo
+  lo demás se queda**: `bg-lumia-tarjeta`, `self-start`, el rótulo sin
+  subtítulo y sin duración, y la tarjeta entera como control (RN-HOY-07,
+  RN-LU-RESP-01 intactas).
+- **La cursiva se retira de ahí entera y pasa a ser la marca de la frase.**
+  Usarla en dos sitios de la misma pantalla la dejaría sin significar nada. La
+  hoja itálica de Inter que se importó para el rótulo **sigue haciendo falta**
+  —ahora la usa la frase—, así que el coste medido (51,8 kB del subconjunto
+  latino) no cambia; lo que cambia es el comentario del `@import` y el nombre de
+  la prueba que lo vigila.
+- **La frase del día pasa de línea suelta a recuadro propio.** Era un
+  `blockquote` sin superficie entre el conmutador y la primera pregunta del
+  Diario, y se leía en el mismo registro que el resto del texto: pasaba por
+  delante de los ojos sin ser una pausa. Ahora es una figura con relleno de
+  24 px, radio de 24, elevación y borde, en cursiva y con interlineado suelto.
+  **Sigue sin ser un control** (§5.3, Bloque 1): no se toca, no lleva acción, y
+  una prueba falla si aparece un `onClick`.
+- **El cuerpo se queda en 16 px y no en los 20 que tenía.** Se probaron los dos:
+  con recuadro, tinte y cursiva encima, 20 px la convertían en el titular de la
+  pantalla y el saludo dejaba de serlo. Lo que la distingue no es el tamaño. Es
+  el escalón que hay debajo en la escala —no existe uno intermedio y no se
+  inventa—, así que coincide en cuerpo con la tarjeta de respiración y se separa
+  de ella por todo lo demás.
+- **La superficie es el secundario de la paleta, y esa es la decisión de
+  fondo.** Un tercer velo blanco la habría metido en la escala de luminancia
+  donde ya juegan `lumia-tarjeta` y `lumia-campo`, es decir a competir con la
+  tarjeta de respiración por el escalón más claro — justo lo que RN-HOY-07
+  reserva para una sola superficie. Al ir teñida se separa **por color** y no
+  por luminancia, así que las dos piezas pueden convivir sin discutirse.
+- **`--lumia-frase` es `lumia-am-200` (#E5C2DC) de día y un velo del
+  `lumia-pm-400` al 20 % de noche.** No es una asimetría por gusto: en sólido,
+  el secundario de la noche deja el texto claro en 3,06:1 y el oscuro en
+  4,59:1, y ninguno de los dos llega a AAA. Como velo sobre el degradado tiñe
+  sin aclarar y el cuerpo se queda entre 9,5:1 y 11,9:1. **Los dos sólidos
+  descartados quedan medidos en `lint:contraste` como informativos**, con el
+  motivo escrito, para que nadie los reabra sin la cifra delante.
+- **De día la frase da 10,0:1 y el secundario sobre ella 7,4:1**, los dos AAA.
+  Los bordes —`lumia-pm-400` de día, un lavanda al 30 % de noche— dan 2,18:1 y
+  2,01:1, por encima del 1,5:1 con el que el script mide un separador
+  decorativo. **La separación del recuadro contra su fondo (1,44:1 de día,
+  1,32:1 de noche) va como informativa y no como fallo**: no es un indicador, lo
+  que lo separa es el tinte, y además lleva línea y elevación. Es la misma liga
+  en la que juegan las tarjetas de Hoy desde SPEC_06.
+- **El componente no nombra ni un color** (RN-SURF-01): pide `bg-lumia-frase` y
+  `border-lumia-frase`, y los dos momentos se resuelven en `globals.css`. Es el
+  mismo reparto que la tarjeta de respiración y que la barra de Strivo, y hay
+  una prueba que falla si aparece un hex o la palabra `manana`/`noche` dentro.
+  Las utilidades siguen el patrón que ya usaban las tarjetas del Journal
+  (`bg-journal-warm` / `border-journal-warm`).
+- **`sobre()` de `lint-contraste.js` acepta ahora un fondo ya mezclado.** Hacía
+  falta para apilar dos velos —un borde translúcido sobre una superficie
+  translúcida, que es el recuadro de noche— y es la misma tolerancia que
+  `ratio()` ya tenía. Ningún par existente cambia de cifra.
+- **`npm run lint`, `test`, `build`, `lint:copy`, `lint:contraste` y
+  `format:check` en verde · 1479 pruebas** (2 nuevas).
+- **Pendiente: sin validar en navegador.** Falta ver las dos piezas en un
+  teléfono real: si el rosa del recuadro se lee cálido o estridente sobre el
+  degradado de la mañana, si el velo de noche se percibe como recuadro o se
+  disuelve en el fondo —el mismo riesgo que ya tenía la tarjeta de
+  respiración—, y si con la tarjeta a 16 px la respiración sigue
+  encontrándose sin buscarla.
+
 **Deuda consciente de Fase 1 (se salda en su spec):**
 - **Los 16 íconos de emoción no se hicieron, y es una decisión, no un olvido.** SPEC_12 §10 excluye
   "ilustraciones nuevas" y §7 dice que los íconos de UI siguen pendientes en el manual v1.1 y que hay

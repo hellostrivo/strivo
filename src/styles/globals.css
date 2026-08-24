@@ -24,7 +24,7 @@
    es exactamente lo que el manual §5.1 evita al fijar una sola familia bien
    servida. Los subconjuntos van por `unicode-range`, así que un navegador de
    aquí descarga el latino (~52 kB) y ni un byte de los demás. La usa el rótulo
-   de la tarjeta de respiración. */
+   de la frase del día. */
 @import '@fontsource-variable/inter/wght-italic.css';
 
 /* Paletas de marca por espacio y momento (manual §4). Se cargan siempre; el
@@ -229,6 +229,14 @@
      su propio `data-surface` y el texto se invierte con él. */
   --lumia-conmutador: #1D1833;
   --lumia-conmutador-activo: rgba(242, 238, 247, .16);
+  /* La frase del día va en el secundario de la paleta —`lumia-am-200`, el rosa
+     de la mañana— y no en otro velo blanco: es la única superficie teñida de
+     Hoy, así que se separa del resto por color y no por un tercer escalón de
+     luminancia, que la habría puesto a competir con la tarjeta de respiración
+     (RN-HOY-07). Medido: la tinta sobre ella da 10,0:1 y el secundario 7,4:1,
+     los dos AAA. El borde es el lavanda de la misma paleta. */
+  --lumia-frase: var(--lumia-am-200);
+  --lumia-frase-borde: var(--lumia-pm-400);
 }
 
 [data-lumia='noche'] {
@@ -239,6 +247,13 @@
   /* De noche el contratono se invierte: el conmutador es la pieza clara. */
   --lumia-conmutador: #F2DDE7;
   --lumia-conmutador-activo: rgba(36, 30, 51, .12);
+  /* De noche el secundario entra como velo y no como color plano: `lumia-pm-400`
+     en sólido dejaría el texto claro en 2,9:1 y el oscuro en 5,1:1 —ni uno ni
+     otro llegan a AAA—, mientras que al 20 % sobre el degradado tiñe sin
+     aclarar y el cuerpo se queda entre 9,5:1 y 11,9:1. El borde es el lavanda
+     claro de la mañana, que es el que se ve sobre el velo. */
+  --lumia-frase: rgba(141, 130, 182, .20);
+  --lumia-frase-borde: rgba(220, 207, 241, .30);
   /* §6.3.9 — El acento de la respiración es el naranja del amanecer y de
      noche no funciona: se pinta sobre un degradado frío y oscuro, que es lo
      contrario del fondo para el que se eligió. De noche toma el lavanda de la
@@ -510,6 +525,12 @@
   .bg-lumia         { background-image: var(--lumia-fondo); }
   .bg-lumia-tarjeta { background-color: var(--lumia-tarjeta); }
   .bg-lumia-campo   { background-color: var(--lumia-campo); }
+
+  /* El recuadro de la frase del día. Va aparte de las superficies del momento
+     porque no es un escalón más de la misma escala: es el secundario de la
+     paleta, la única superficie teñida de Hoy. */
+  .bg-lumia-frase     { background-color: var(--lumia-frase); }
+  .border-lumia-frase { border-color: var(--lumia-frase-borde); }
 
   /* El conmutador Mañana/Noche y su segmento activo. Van aparte de las
      superficies del momento porque son el contratono: no acompañan al fondo,

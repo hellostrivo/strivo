@@ -35,10 +35,14 @@
 // Lo que dura se dice en la pantalla del ejercicio, antes del botón que lo
 // arranca (RN-LU-RESP-01).
 //
-// **El rótulo va en cursiva y un escalón por encima del conmutador**
-// (`text-md`, 20 px, frente a los 16 px de "Mañana"/"Noche"). La cursiva es de
-// verdad —`globals.css` carga los cortes itálicos de Inter—, no la inclinación
-// que el navegador improvisa cuando no los encuentra.
+// **El rótulo baja a 16 px, en redonda y peso normal.** Estaba en cursiva a
+// 20 px con peso de medio, un escalón por encima del conmutador, y con la
+// frase del día metida en su recuadro había dos piezas disputándose el mismo
+// sitio en la jerarquía. La tarjeta no necesita ser lo más llamativo de Hoy:
+// necesita encontrarse sin buscarla, y eso ya lo hacen su superficie clara, su
+// elevación y sus 56 px de alto. **La cursiva se retira entera de aquí**: es
+// ahora la marca de la frase del día, y usarla en dos sitios la dejaría sin
+// significar nada.
 
 export default function TarjetaRespiracion({ etiqueta, onAbrir }) {
   return (
@@ -46,7 +50,7 @@ export default function TarjetaRespiracion({ etiqueta, onAbrir }) {
       type="button"
       onClick={onAbrir}
       className="self-start min-h-touch rounded-lg border border-on-surface bg-lumia-tarjeta
-                 px-6 py-4 italic text-md font-medium text-on-surface
+                 px-6 py-4 text-base font-normal text-on-surface
                  shadow-elev-2 transicion-tema
                  transition-shadow duration-260 ease-smooth
                  hover:shadow-elev-4 active:shadow-elev-1

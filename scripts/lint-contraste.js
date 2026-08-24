@@ -27,10 +27,15 @@ function aRGB(hex) {
   return [0, 2, 4].map((i) => parseInt(limpio.slice(i, i + 2), 16) / 255)
 }
 
-/** Mezcla un color con alfa sobre un fondo opaco. */
+/**
+ * Mezcla un color con alfa sobre un fondo opaco. El fondo puede venir ya
+ * mezclado —un array de canales— para apilar dos velos: es lo que hace falta
+ * cuando un borde translúcido se pinta sobre una superficie translúcida, como
+ * el recuadro de la frase del día en la noche.
+ */
 function sobre(hex, alfa, fondo) {
-  const frente = aRGB(hex)
-  const detras = aRGB(fondo)
+  const frente = Array.isArray(hex) ? hex : aRGB(hex)
+  const detras = Array.isArray(fondo) ? fondo : aRGB(fondo)
   return frente.map((canal, i) => canal * alfa + detras[i] * (1 - alfa))
 }
 
@@ -137,6 +142,10 @@ const PARES = [
   // La tarjeta de la respiración: `--lumia-tarjeta`, blanco al 72 %, sobre la
   // parada más oscura del degradado de la mañana, que es su peor caso.
   ['Lumia·AM · cuerpo sobre tarjeta de respiración', TEXTO.onLight, sobre('#FFFFFF', 0.72, MARCA.lumiaAm100), CUERPO],
+  // El recuadro de la frase del día: el secundario de la paleta en sólido.
+  ['Lumia·AM · frase sobre su recuadro', TEXTO.onLight, MARCA.lumiaAm200, CUERPO],
+  ['Lumia·AM · secundario sobre el recuadro de la frase', TEXTO.onLightSoft, MARCA.lumiaAm200, CUERPO],
+  ['Lumia·AM · borde del recuadro de la frase', MARCA.lumiaPm400, MARCA.lumiaAm200, SEPARADOR],
 
   // ── Lumia · Noche ───────────────────────────────────────────────────────────
   ['Lumia·PM · cuerpo sobre base', TEXTO.onLight, MARCA.lumiaPm50, CUERPO],
@@ -155,6 +164,10 @@ const PARES = [
   // La misma tarjeta de noche: `--lumia-tarjeta` es ahí un velo claro al 10 %,
   // medido sobre la parada más clara del degradado, que es su peor caso.
   ['Lumia·PM · cuerpo sobre tarjeta de respiración', TEXTO.onDark, sobre('#F2EEF7', 0.10, '#2C2350'), CUERPO],
+  // El mismo recuadro de noche: ahí el secundario entra como velo al 20 % sobre
+  // el degradado, medido en su parada más clara, que es el peor caso.
+  ['Lumia·PM · frase sobre su recuadro', TEXTO.onDark, sobre(MARCA.lumiaPm400, 0.2, '#2C2350'), CUERPO],
+  ['Lumia·PM · borde del recuadro de la frase', sobre(MARCA.lumiaAm100, 0.3, sobre(MARCA.lumiaPm400, 0.2, '#2C2350')), sobre(MARCA.lumiaPm400, 0.2, '#2C2350'), SEPARADOR],
 
   // ── Formia · Mañana ─────────────────────────────────────────────────────────
   ['Formia·AM · cuerpo sobre base', TEXTO.onLight, MARCA.formiaAm50, CUERPO],
@@ -275,6 +288,18 @@ const INFORMATIVOS = [
   // oculta del todo en vez de quedar ilegible"— y a 0,25 se obtiene lo peor de
   // las dos cosas, una mancha ilegible que sigue tirando del ojo.
   ['control de sesión a α 0,25 (NO se usa)', sobre(TEXTO.onLight, 0.25, MARCA.lumiaAm50), MARCA.lumiaAm50],
+  // **El recuadro de la frase contra el fondo sobre el que se pinta.** No se le
+  // exige umbral: no es un indicador ni un borde funcional —lo que separa el
+  // recuadro es su tinte, y además lleva línea y elevación—, y es la misma
+  // liga en la que juegan las tarjetas de Hoy desde SPEC_06. Se anota para que
+  // la cifra conste el día que alguien retire el borde o la sombra.
+  ['recuadro de la frase sobre la base de la mañana', MARCA.lumiaAm200, MARCA.lumiaAm50],
+  ['recuadro de la frase sobre el degradado de la noche', sobre(MARCA.lumiaPm400, 0.2, '#2C2350'), '#2C2350'],
+  // Los dos sólidos que **no** se usan de noche, y por qué: el secundario de la
+  // paleta en plano no llega a AAA con ninguna de las dos tintas, así que ahí
+  // entra como velo.
+  ['blanco sobre lumia-pm-400 (NO se usa)', TEXTO.onDark, MARCA.lumiaPm400],
+  ['ink sobre lumia-pm-400 (NO se usa)', TEXTO.onLight, MARCA.lumiaPm400],
 ]
 
 console.log('🎨 contraste: midiendo los pares que la app pinta de verdad\n')
