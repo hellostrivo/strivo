@@ -1,15 +1,23 @@
 /* src/breathing/styles/respiracion.css
    La piel de la capa visual de Respiracion (SPEC_14).
 
-   RN-RE-VIS-00 — Aqui no entra ni un token `lumia-*` ni `formia-*`. Todo el
-   color sale de la escala Strivo madre a traves de las cuatro variables de
-   fase que `globals.css` define. Ni un hexadecimal escrito a mano (§5).
+   RN-RE-VIS-00 — Aqui no entra ni un token `lumia-*` ni `formia-*`, y sigue sin
+   entrar despues de la mudanza a Lumia (24 ago). Lo que cambio es de donde
+   salen los colores: antes eran los `--strivo-*` escritos aqui dentro, y ahora
+   son SIETE VARIABLES SEMANTICAS —cuatro de fase, tres de trazo— que
+   `globals.css` define por espacio. Esta hoja pide "el color de la fase que
+   sostiene" y quien decide cual es el espacio en el que este montada.
 
-   Las cuatro fases se separan por LUMINANCIA y no por tono: la escala de
-   Strivo es acromatica por decision de marca (manual §4.1) y §5 pedia un eje
-   calido→frio que ahi no existe. No es una perdida: RN-RE-VIS-17 ya prohibe
-   comunicar la fase solo por color, asi que el dato lo llevan la palabra de
-   `EtiquetaFase` y la geometria. El color acompana. */
+   Es la misma decision que SPEC_10 tomo con el velo de `TransicionLuz` y
+   SPEC_11 con la barra: **el tema en el CSS del sitio que lo conoce, nunca en
+   el componente**. Asi Respiracion se viste de Lumia sin nombrarla, y el dia que
+   Formia la monte tampoco habra que tocar este archivo.
+
+   Las cuatro fases se separan por LUMINANCIA y no por tono. Con la escala de
+   Strivo era forzoso —es acromatica por decision de marca (manual §4.1)—; con
+   la de Lumia se conserva a proposito, porque RN-RE-VIS-17 ya prohibe comunicar
+   la fase solo por color y el dato lo llevan la palabra de `EtiquetaFase` y la
+   geometria. El color acompana. Ni un hexadecimal escrito a mano (§5). */
 
 .respiracion-visual {
   position: relative;
@@ -58,13 +66,13 @@
    §3.1 — Cuatro capas concentricas, de fuera hacia dentro. */
 
 .respiracion-circulo__halo {
-  fill: var(--strivo-600);
+  fill: var(--respiracion-trazo-suave);
   filter: blur(6px);
 }
 
 .respiracion-circulo__anillo {
   fill: none;
-  stroke: var(--strivo-600);
+  stroke: var(--respiracion-trazo-suave);
   stroke-width: 2;
   opacity: 0.35;
 }
@@ -86,29 +94,55 @@
    §4.3 — El pasado se retira y el futuro se adelanta. La opacidad del trazo es
    la del futuro; el degradado de la mascara apaga los dos extremos. */
 
+/* Los topes del desvanecido de la mascara.
+   `white` y no un hex: una mascara de SVG es de LUMINANCIA, asi que blanco
+   significa "esto se ve" y negro "esto no". El valor inicial de `stop-color` es
+   negro, y con el la mascara valia cero en todo su ancho: el grupo entero no se
+   pintaba y quedaba una bolita flotando sin recorrido. No es un color de
+   diseno, es un interruptor, y por eso es la unica declaracion de color de esta
+   hoja que no sale de una variable. */
+.respiracion-linea__velo {
+  stop-color: white;
+}
+
+/* **El recorrido de la bolita, punteado (24 ago).**
+   Es el camino que va a hacer: diagonal arriba al inhalar, plano en las
+   retenciones, diagonal abajo al exhalar. Punteado porque lo que hay delante
+   todavia no ha pasado, y porque es lo que permite anticipar el punto alto en
+   vez de perseguir el dibujo.
+
+   La bolita se apoya EXACTAMENTE aqui: su altura y la de este trazo salen de la
+   misma amplitud del motor (RN-RE-VIS-09). Por eso el recorrido es esta curva y
+   no un zigzag de rectas — un zigzag seria una segunda linea que la bolita no
+   pisa, y dos trazos donde solo hay un camino.
+
+   `2 7` con remate redondo da puntos separados y no guiones: se lee como
+   recorrido anunciado y no como un trazo roto. Sube a opacidad 1 porque un
+   punteado tiene la mitad de tinta que un continuo del mismo grosor. */
 .respiracion-linea__onda {
   fill: none;
-  stroke: var(--strivo-700);
+  stroke: var(--respiracion-trazo);
   stroke-width: 2.5;
+  stroke-dasharray: 2 7;
   stroke-linecap: round;
   stroke-linejoin: round;
-  opacity: 0.85;
+  opacity: 1;
 }
 
 .respiracion-linea__marca {
-  stroke: var(--strivo-600);
+  stroke: var(--respiracion-trazo-suave);
   stroke-width: 1;
   opacity: 0.12;
 }
 
 .respiracion-linea__marca-texto {
-  fill: var(--strivo-600);
+  fill: var(--respiracion-trazo-suave);
   font-size: 10px;
   opacity: 0.45;
 }
 
 .respiracion-linea__marcador {
-  stroke: var(--strivo-900);
+  stroke: var(--respiracion-tinta);
   stroke-width: 2;
   opacity: 0.55;
 }
@@ -144,13 +178,13 @@
   font-weight: 300;
   letter-spacing: 0.06em;
   font-size: clamp(1.25rem, 5.5vw, 1.75rem);
-  color: var(--color-text, var(--strivo-900));
+  color: var(--color-text);
 }
 
 .respiracion-etiqueta__cuenta {
   font-size: 0.875rem;
   opacity: 0.55;
-  color: var(--color-text, var(--strivo-900));
+  color: var(--color-text);
   font-variant-numeric: tabular-nums;
 }
 
@@ -181,8 +215,8 @@
   transform: translate(-50%, -50%);
   width: 18px;
   height: 24px;
-  border-left: 5px solid var(--strivo-900);
-  border-right: 5px solid var(--strivo-900);
+  border-left: 5px solid var(--respiracion-tinta);
+  border-right: 5px solid var(--respiracion-tinta);
 }
 
 /* §9 — El acomodo respira muy despacio y de adorno: seis segundos por vuelta.
@@ -243,6 +277,12 @@
     stroke-width: 3;
     opacity: 1;
   }
+  /* Con contraste alto el recorrido deja de ser punteado: quien pide esto
+     necesita el trazo entero, y la anticipacion la sigue dando la posicion de
+     la bolita sobre el. */
+  .respiracion-linea__onda {
+    stroke-dasharray: none;
+  }
   .respiracion-circulo__arco {
     stroke-width: 3;
   }
@@ -290,33 +330,119 @@
   animation: none;
 }
 
-/* ─── SPEC_16 — El acceso del Home y las dos pantallas ─────────────────────── */
-
-/* El anillo del acceso: evoca la guia visual sin ser un simbolo de marca.
-   RN-RE-NAV-03 — Color de la escala Strivo, nunca Lumia ni Formia. */
-.acceso-respiracion__icono {
-  display: block;
-  width: 18px;
-  height: 18px;
-  border-radius: 999px;
-  border: 2px solid var(--strivo-600);
-  position: relative;
-}
-
-.acceso-respiracion__icono::after {
-  content: '';
-  position: absolute;
-  inset: 4px;
-  border-radius: 999px;
-  background: var(--strivo-600);
-  opacity: 0.35;
-}
+/* ─── SPEC_16 — Las dos pantallas ──────────────────────────────────────────
+   El anillo de `.acceso-respiracion__icono` se retiro con el acceso del Home
+   (24 ago): Respiracion ya no cuelga del vestibulo de Strivo, es una seccion de
+   Lumia y se entra por su pestana. */
 
 /* RN-RE-NAV-14 — La accion principal, pegada abajo. Lleva su propio fondo para
-   que el contenido que pasa por debajo no se lea a traves de ella. */
+   que el contenido que pasa por debajo no se lea a traves de ella.
+
+   **El `bottom` no es cero, y por eso vive aqui y no en una clase de Tailwind.**
+   Dentro de un espacio hay una barra fija al pie —56 px mas el area segura— y a
+   `bottom: 0` el boton quedaba justo debajo de ella: presente en el DOM,
+   invisible en pantalla. Es el mismo tropiezo que la cabecera de Lumia resolvio
+   con su `z-30`. */
 .respiracion-accion {
+  bottom: calc(56px + env(safe-area-inset-bottom, 0px));
   background: var(--espacio-base);
-  border-top: 1px solid var(--espacio-borde);
+  border-top: 1px solid var(--color-border);
+}
+
+.respiracion-info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+/* ─── Estado elegido (24 ago) ──────────────────────────────────────────────
+   **Los `data-elegido` estaban en los cuatro selectores desde SPEC_16 y no
+   habia una sola regla que los pintara.** El unico rastro de la eleccion era el
+   `aria-pressed` / `aria-checked`, que un lector de pantalla anuncia y un ojo no
+   ve: elegir un sonido o una duracion no cambiaba absolutamente nada en
+   pantalla. Esto es lo que faltaba, y por eso es una sola regla para los cuatro
+   —patron, visual, duracion y sonido—: la eleccion se ve igual se elija lo que
+   se elija.
+
+   Tres senales a la vez, nunca solo el color (criterio 7 de SPEC_11 y
+   RN-RE-VIS-17): **superficie** mas clara, **borde** de acento a 2 px y una
+   **palomita**. La superficie sale de `--color-raised` y el borde de
+   `--espacio-acento`, asi que dentro de Lumia son el morado de la marca y su
+   tarjeta, sin que ningun componente nombre un color (RN-SURF-01).
+
+   El borde de 2 px lo compensa un `padding` menor: sin eso, la fila da un salto
+   de un pixel al elegirla y la lista entera se mueve.
+
+   **Va con clase propia y no solo con el atributo, y hay un motivo.** Las
+   utilidades de Tailwind se generan despues de este archivo, asi que
+   `[data-elegido='si']` a secas —un selector de un solo componente— perdia
+   contra el `border-on-surface` del propio boton y el borde de acento no
+   llegaba a verse. `.respiracion-opcion[data-elegido='si']` pesa dos y gana sin
+   un solo `!important`. */
+.respiracion-opcion {
+  border-width: 1px;
+  transition:
+    background-color 260ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    border-color 260ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.respiracion-opcion[data-elegido='si'] {
+  background-color: var(--color-raised);
+  border-color: var(--espacio-acento);
+  border-width: 2px;
+  font-weight: 600;
+}
+
+/* La palomita: dos lados de un cuadrado girados. Se dibuja, no se escribe, y
+   asi no hay un caracter suelto fuera de `copy/` (criterio 42 de SPEC_16).
+   `aria-hidden` lo pone el componente: lo que la eleccion significa ya lo dice
+   `aria-pressed`, y leerlo dos veces sobra. */
+.respiracion-palomita {
+  display: block;
+  width: 14px;
+  height: 14px;
+  flex: none;
+  position: relative;
+  opacity: 0;
+  transform: scale(0.7);
+  transition:
+    opacity 200ms ease-in-out,
+    transform 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+[data-elegido='si'] .respiracion-palomita {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.respiracion-palomita::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 0;
+  width: 5px;
+  height: 11px;
+  border-right: 2px solid var(--espacio-acento);
+  border-bottom: 2px solid var(--espacio-acento);
+  transform: rotate(42deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .respiracion-opcion,
+  .respiracion-palomita {
+    transition: none;
+  }
+}
+
+/* Contraste alto: la superficie y el borde pueden quedarse cortos, asi que la
+   eleccion se refuerza con un contorno que el sistema no puede aplanar. */
+@media (prefers-contrast: more) {
+  .respiracion-opcion[data-elegido='si'] {
+    outline: 2px solid var(--color-text);
+    outline-offset: -4px;
+  }
 }
 
 /* RN-RE-NAV-21 y 25 — El progreso es periferico: se consulta si se busca, no se

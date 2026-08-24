@@ -38,6 +38,8 @@ export default function PantallaSesion({
   onSalir,
   onRepetir,
   hayTeclado = false,
+  rutaBase = '/respiracion',
+  salida = '/',
 }) {
   const navegar = useNavigate()
   const { estadoSesion, estadoRitmo, refVisual } = sesion
@@ -81,7 +83,7 @@ export default function PantallaSesion({
         onRepetir={onRepetir}
         onVolver={() => {
           onSalir()
-          navegar('/')
+          navegar(salida)
         }}
       />
     )
@@ -92,7 +94,8 @@ export default function PantallaSesion({
 
   return (
     <div
-      className="flex min-h-screen flex-col"
+      data-surface="light"
+      className="flex min-h-screen flex-col bg-espacio"
       onPointerDown={despertar}
       data-atenuado={atenuado ? 'si' : 'no'}
     >
@@ -104,7 +107,7 @@ export default function PantallaSesion({
             // y el ambiente se va con su fundido de 800 ms.
             sesion.terminar()
             onSalir()
-            navegar('/respiracion')
+            navegar(rutaBase)
           }}
           aria-label={copy.respiracion.accesibilidad.salir}
           className="respiracion-control min-h-touch min-w-touch rounded-full text-on-surface"

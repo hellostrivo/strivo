@@ -25,7 +25,7 @@ export default function SelectorVisual({ visual, onCambiar }) {
             aria-checked={visual === id}
             onClick={() => onCambiar(id)}
             data-elegido={visual === id ? 'si' : 'no'}
-            className="min-h-touch flex-1 rounded-full border border-espacio px-4 text-sm text-on-surface"
+            className="respiracion-opcion min-h-touch flex-1 rounded-full border border-on-surface px-4 text-sm text-on-surface"
           >
             {textos[CLAVE[id]]}
           </button>

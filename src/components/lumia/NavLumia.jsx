@@ -1,7 +1,7 @@
 // src/components/lumia/NavLumia.jsx
-// La navegación interna de Lumia: cabecera del espacio y sus tres secciones.
+// La navegación interna de Lumia: cabecera del espacio y sus cuatro secciones.
 //
-// **Hoy · Journal · Historial.** Es la navegación propia del espacio, distinta
+// **Hoy · Journal · Respiración · Historial.** Es la navegación propia del espacio, distinta
 // de la de Formia, y con el vocabulario de Lumia: reflexión, calma, cierre. La
 // barra de espacios no mezcla los dos registros y esta tampoco.
 //
@@ -29,9 +29,18 @@ import { copy } from '@copy'
 
 const textos = copy.shared.navegacion
 
+// **Respiración entra entre Journal e Historial (24 ago).** Deja de ser la
+// herramienta transversal que colgaba del Home de Strivo y pasa a ser una
+// sección de Lumia: el mismo componente, el mismo estado, la misma sesión, con
+// el cromo y la paleta del espacio. Lo pidió el propietario del producto.
+//
+// El orden no es alfabético ni histórico: Hoy, Journal y Respiración son lo que
+// se hace ahora —el día, lo que se escribe, el aire— y el Historial es lo que ya
+// pasó. Dejarla al final la habría metido en el pasado.
 const SECCIONES = [
   { id: 'hoy', ruta: '/lumia/hoy' },
   { id: 'journal', ruta: '/lumia/journal' },
+  { id: 'respiracion', ruta: '/lumia/respiracion' },
   { id: 'historial', ruta: '/lumia/historial' },
 ]
 

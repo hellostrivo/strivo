@@ -72,7 +72,7 @@ export default function ListaFavoritos({
                   type="button"
                   onClick={() => onGuardarReciente(reciente)}
                   aria-label={textos.guardar}
-                  className="min-h-[44px] min-w-[44px] rounded-2xl border border-on-surface text-on-surface"
+                  className="min-h-[44px] min-w-[44px] rounded-md border border-on-surface text-on-surface"
                 >
                   ☆
                 </button>

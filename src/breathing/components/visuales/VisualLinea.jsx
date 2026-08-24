@@ -6,6 +6,19 @@
 // sostener". Saber lo que sigue es lo que quita la ansiedad de no saber, y por
 // eso la bolita va al 38 % del ancho: se ve más futuro que pasado.
 //
+// **El recorrido va punteado** (24 ago). Es el camino que la bolita va a hacer:
+// sube en la inhalación, se queda plano en las retenciones y baja en la
+// exhalación. Punteado y no continuo porque lo que hay a la derecha de la
+// bolita todavía no ha pasado — se anuncia, no se afirma—, y anticipar el punto
+// alto es lo que permite dosificar el aire en vez de perseguir el dibujo.
+//
+// **Es una sola línea, y la bolita se apoya exactamente en ella.** La versión
+// anterior de esta guía era una línea vertical aparte, en el borde derecho, que
+// solo marcaba las dos alturas; se retiró. Dibujar el recorrido como diagonales
+// rectas —un zigzag— sería una segunda línea que la bolita no pisa, porque su
+// altura sale del suavizado del motor (RN-RE-VIS-09): dos trazos donde solo hay
+// un camino.
+//
 // **La onda no se redibuja: se desplaza.** Su forma es periódica y no cambia
 // entre frames, así que se muestrea una vez, se memoiza (RN-RE-VIS-31) y por
 // frame se mueve un `transform` (RN-RE-VIS-32), que es lo único que el
@@ -119,11 +132,23 @@ const VisualLinea = forwardRef(function VisualLinea(
           {/* RN-RE-VIS-11 — Los dos extremos se desvanecen. Una línea cortada en
               seco contra el borde se lee como un fallo de dibujo, no como una
               ventana de tiempo. */}
+          {/* **Los topes van en blanco, y no es cosmético: sin eso no se veía
+              nada.** Una `<mask>` de SVG es de luminancia por defecto y el valor
+              inicial de `stop-color` es **negro**. Estos cuatro topes solo
+              declaraban opacidad, así que la máscara valía cero en todo su ancho
+              y el grupo entero —el recorrido, las marcas de fase y el marcador
+              de movimiento reducido— no llegaba a pintarse: quedaba a la vista
+              una bolita flotando sin camino. En blanco, la opacidad de cada tope
+              es justo el desvanecido que RN-RE-VIS-11 pide.
+
+              El blanco lo pone el CSS, como todo color de esta visual (§5): un
+              valor de máscara no es un color de diseño, pero escribirlo aquí
+              abriría la puerta a los que sí lo son. */}
           <linearGradient id="respiracion-desvanecido" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0" stopOpacity="0" />
-            <stop offset="0.14" stopOpacity="1" />
-            <stop offset="0.86" stopOpacity="1" />
-            <stop offset="1" stopOpacity="0.25" />
+            <stop className="respiracion-linea__velo" offset="0" stopOpacity="0" />
+            <stop className="respiracion-linea__velo" offset="0.14" stopOpacity="1" />
+            <stop className="respiracion-linea__velo" offset="0.86" stopOpacity="1" />
+            <stop className="respiracion-linea__velo" offset="1" stopOpacity="0.25" />
           </linearGradient>
           <mask id="respiracion-mascara">
             <rect

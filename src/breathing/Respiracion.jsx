@@ -9,13 +9,13 @@
 // que estar por encima de la ruta.
 //
 // Aquí viven, por tanto, las cuatro reglas de continuidad:
-//   · RN-RE-NAV-09 — `/respiracion/sesion` no es enlazable: sin sesión, redirige.
+//   · RN-RE-NAV-09 — La ruta de sesión no es enlazable: sin sesión, redirige.
 //   · RN-RE-NAV-10 — Atrás pausa, no destruye.
 //   · RN-RE-NAV-16/17 — Todo llega precargado; la primera vez, `entrada-suave`.
 //   · RN-RE-NAV-33 — Al completar se persiste sesión, reciente y `ultimo*`.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
 import { ESTADOS } from '@lib/respiracion/maquinaSesion'
 
@@ -58,8 +58,20 @@ export function configuracionInicial(preferencias) {
   }
 }
 
-export default function Respiracion({ uid }) {
-  const navegar = useNavigate()
+/**
+ * @param {string} uid
+ * @param {string} base    - Dónde vive esta herramienta dentro de la app. Llega
+ *   por prop, no se escribe aquí: es lo que le permite pasar de colgar del Home
+ *   a ser una sección de un espacio sin que este archivo nombre a ninguno.
+ * @param {string} salida  - A dónde se vuelve al cerrar.
+ * @param {Function} [onHideNav] - Para que la sesión ocupe la pantalla entera.
+ */
+export default function Respiracion({
+  uid,
+  base = '/respiracion',
+  salida = '/',
+  onHideNav = null,
+}) {
   const { pathname } = useLocation()
 
   const [configuracion, setConfiguracion] = useState(null)
@@ -70,7 +82,20 @@ export default function Respiracion({ uid }) {
   const [hayTeclado, setHayTeclado] = useState(false)
 
   const borradoPendiente = useRef(null)
-  const enSesion = pathname.startsWith('/respiracion/sesion')
+  const enSesion = pathname.startsWith(`${base}/sesion`)
+
+  /**
+   * RN-RE-NAV-21 — Durante la sesión no hay cromo: ni cabecera de espacio ni
+   * barra. La visual domina y todo lo demás es periférico, y una fila de
+   * pestañas al pie es exactamente lo que tira de la atención hacia fuera.
+   *
+   * Es el mismo mecanismo con el que el Journal se oculta la navegación mientras
+   * se escribe (§4.3.2, regla 2): son estados de flujo, no de navegación.
+   */
+  useEffect(() => {
+    onHideNav?.(enSesion)
+    return () => onHideNav?.(false)
+  }, [enSesion, onHideNav])
 
   const sesion = useSesionRespiracion(configuracion ?? {}, {
     alCompletar: (resumen) => persistirFinal(resumen),
@@ -159,9 +184,18 @@ export default function Respiracion({ uid }) {
     [configuracion, uid],
   )
 
-  const cambiar = useCallback((parcial) => {
-    setConfiguracion((previa) => ({ ...previa, ...parcial }))
-  }, [])
+  const cambiar = useCallback(
+    (parcial) => {
+      setConfiguracion((previa) => ({ ...previa, ...parcial }))
+      // Mover el volumen mientras se escucha un sonido tiene que oírse, o el
+      // control no está diciendo la verdad sobre lo que va a pasar. Solo el
+      // volumen: el patrón y la duración no tocan el grafo de audio.
+      if (parcial.volumenAmbiente !== undefined) {
+        sesion.ajustarEnVivo({ volumenAmbiente: parcial.volumenAmbiente })
+      }
+    },
+    [sesion],
+  )
 
   // ── Favoritos ───────────────────────────────────────────────────────────────
 
@@ -242,11 +276,6 @@ export default function Respiracion({ uid }) {
     [],
   )
 
-  const salir = useCallback(() => {
-    sesion.salir()
-    navegar('/')
-  }, [navegar, sesion])
-
   if (configuracion === null) return null
 
   return (
@@ -258,7 +287,6 @@ export default function Respiracion({ uid }) {
             configuracion={configuracion}
             onCambiar={cambiar}
             onEmpezar={sesion.empezar}
-            onSalir={salir}
             avisoVisto={avisoVisto}
             onDescartarAviso={() => {
               setAvisoVisto(true)
@@ -272,6 +300,11 @@ export default function Respiracion({ uid }) {
             eliminada={eliminada}
             onDeshacer={deshacer}
             yaGuardada={favoritoIdentico(configuracion, favoritos)}
+            // RN-RE-SND-27 — El cable que faltaba: la pantalla declaraba esta
+            // prop desde SPEC_16 y nadie se la pasaba, así que elegir un sonido
+            // antes de empezar era mudo.
+            vistaPreviaSonido={sesion.vistaPreviaSonido}
+            rutaSesion={`${base}/sesion`}
           />
         }
       />
@@ -284,7 +317,7 @@ export default function Respiracion({ uid }) {
           // que no existe: una recarga a mitad de sesión pierde la sesión, y
           // aparentar lo contrario sería deshonesto.
           sesion.estadoSesion === ESTADOS.INACTIVO ? (
-            <Navigate to="/respiracion" replace />
+            <Navigate to={base} replace />
           ) : (
             <PantallaSesion
               sesion={sesion}
@@ -296,6 +329,8 @@ export default function Respiracion({ uid }) {
               }}
               onSalir={() => sesion.salir()}
               onRepetir={() => sesion.empezar()}
+              rutaBase={base}
+              salida={salida}
             />
           )
         }

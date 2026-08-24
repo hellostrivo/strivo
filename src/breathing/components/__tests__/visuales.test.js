@@ -214,6 +214,95 @@ describe('Respiración no conoce a Lumia ni a Formia (criterio 20b, RN-RE-VIS-00
   })
 })
 
+describe('el recorrido de la bolita va punteado (24 ago)', () => {
+  const linea = codigoDe(LINEA)
+  const css = readFileSync(CSS, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+
+  it('el trazo del recorrido es punteado, no continuo', () => {
+    // Lo que hay delante de la bolita todavía no ha pasado: se anuncia, no se
+    // afirma. Y anticipar el punto alto es lo que permite dosificar el aire en
+    // vez de perseguir el dibujo.
+    const regla = css.match(/\.respiracion-linea__onda \{[\s\S]*?\n\}/)[0]
+    expect(regla).toMatch(/stroke-dasharray: 2 7/)
+    expect(regla).toMatch(/stroke-linecap: round/)
+  })
+
+  it('es una sola línea y la bolita se apoya en ella (RN-RE-VIS-09)', () => {
+    // Dibujar el recorrido aparte, como un zigzag de rectas, sería un segundo
+    // trazo que la bolita no pisa: su altura sale del suavizado del motor, no
+    // de una recta entre dos vértices. Dos trazos donde solo hay un camino.
+    expect(linea).not.toMatch(/respiracion-linea__guia|__recorrido|zigzag/)
+    expect(css).not.toMatch(/respiracion-linea__guia/)
+    expect(linea).toMatch(/paso\.y/)
+  })
+
+  it('con contraste alto deja de estar punteado', () => {
+    // Quien pide contraste alto necesita el trazo entero; la anticipación la
+    // sigue dando la posición de la bolita sobre él.
+    const alto = css.slice(css.indexOf('@media (prefers-contrast: more)'))
+    expect(alto).toMatch(/\.respiracion-linea__onda \{\s*stroke-dasharray: none/)
+  })
+
+  it('la máscara ya no borra el dibujo entero', () => {
+    // **Era un fallo real y de los que no se ven en una prueba:** una `<mask>`
+    // de SVG es de luminancia y el valor inicial de `stop-color` es negro, así
+    // que los cuatro topes —que solo declaraban opacidad— dejaban la máscara a
+    // cero en todo su ancho. El grupo enmascarado no se pintaba: ni recorrido,
+    // ni marcas de fase, ni marcador. Solo la bolita, que va fuera.
+    expect(linea).toMatch(/className="respiracion-linea__velo"/)
+    const velo = css.match(/\.respiracion-linea__velo \{[\s\S]*?\n\}/)[0]
+    expect(velo).toMatch(/stop-color: white/)
+    // Cuatro topes, los cuatro con la clase: si uno se queda sin ella vuelve a
+    // ser negro y abre un agujero en la máscara.
+    expect(linea.match(/<stop className="respiracion-linea__velo"/g)).toHaveLength(4)
+  })
+
+  it('el círculo no lleva recorrido, y no es un olvido', () => {
+    // El círculo no tiene eje que recorrer: crece y decrece desde el centro, y
+    // un camino dibujado ahí no marcaría ningún trayecto. Su `strokeDasharray`
+    // es otra cosa —recorta el arco de la fase (§3.2)— y por eso la ausencia se
+    // comprueba sobre la palabra y no sobre la propiedad.
+    expect(codigoDe(CIRCULO)).not.toMatch(/recorrido|__onda/i)
+  })
+})
+
+describe('el color sale del espacio, no de Strivo (24 ago)', () => {
+  const css = readFileSync(CSS, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+  const globals = readFileSync('src/styles/globals.css', 'utf8')
+
+  it('la hoja de Respiración ya no escribe un solo --strivo-*', () => {
+    // RN-RE-VIS-00 se cumple igual —aquí no entra un token de espacio— pero
+    // ahora tampoco entra uno de la marca madre: los siete colores se piden por
+    // su papel y quien decide cuáles son es el espacio que la monta.
+    expect(css).not.toMatch(/--strivo-/)
+    expect(css).toMatch(/--respiracion-trazo\b/)
+    expect(css).toMatch(/--respiracion-trazo-suave/)
+    expect(css).toMatch(/--respiracion-tinta/)
+  })
+
+  it('globals define el valor por defecto y la variante de Lumia', () => {
+    expect(globals).toMatch(/--respiracion-trazo: var\(--strivo-700\)/)
+    const deLumia = globals.match(
+      /\[data-space='lumia'\] \{\s*--respiracion-fase-inhalar[\s\S]*?\n\}/,
+    )[0]
+    expect(deLumia).toMatch(/--respiracion-fase-inhalar/)
+    expect(deLumia).toMatch(/--respiracion-fase-sosten/)
+    expect(deLumia).toMatch(/--respiracion-fase-exhalar/)
+    expect(deLumia).toMatch(/--respiracion-fase-descanso/)
+    expect(deLumia).not.toMatch(/#[0-9a-fA-F]{6}/)
+  })
+
+  it('conserva el orden de luminancia de SPEC_14', () => {
+    // Inhalar la más oscura, descanso la más clara. Esa rampa es lo que hace
+    // que el cambio de fase se lea de reojo, y cambiar de paleta no la toca.
+    const deLumia = globals.match(
+      /\[data-space='lumia'\] \{\s*--respiracion-fase-inhalar[\s\S]*?\n\}/,
+    )[0]
+    expect(deLumia).toMatch(/--respiracion-fase-inhalar: var\(--color-ink\)/)
+    expect(deLumia).toMatch(/--respiracion-fase-descanso: var\(--lumia-pm-400\)/)
+  })
+})
+
 describe('el círculo de Lumia sigue intacto (criterio 20c, §1.2)', () => {
   it('conserva su naranja de amanecer y no toca los tokens de Respiración', () => {
     const css = readFileSync('src/styles/globals.css', 'utf8')

@@ -160,6 +160,22 @@ export function crearMotorAmbiente(ctx, { destino, azar = Math.random } = {}) {
       this.cambiarSonido(ID_SILENCIO, { duracion: FUNDIDOS.vistaPrevia })
     },
 
+    /**
+     * Fija el sonido de la sesión que empieza, **sin cortar lo que ya suena**.
+     *
+     * Es `cambiarSonido` más una cosa: cancelar el apagado automático de la
+     * vista previa. Si la sesión arranca justo después de haber escuchado un
+     * sonido, la fuente que está sonando es la de la vista previa y su
+     * temporizador de veinte segundos sigue vivo — sin esto, el ambiente se
+     * apagaba solo a mitad de sesión y no había forma de relacionarlo con su
+     * causa. Cuando el sonido es el mismo, `cambiarSonido` no hace nada y lo
+     * que suena continúa sin un solo salto.
+     */
+    confirmarSonido(id) {
+      cancelarPrevia()
+      return this.cambiarSonido(id)
+    },
+
     /** RN-RE-SND-22 — Al desmontar la pantalla no sobrevive nada. */
     liberar() {
       cancelarPrevia()

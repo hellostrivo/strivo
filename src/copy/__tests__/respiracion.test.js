@@ -27,7 +27,9 @@ describe('el namespace existe y está completo (§7.2)', () => {
       'accesibilidad',
       'acomodo',
       'cierre',
-      // `configuracion`, `home` y `sesion` los añadió SPEC_16 (§6).
+      // `configuracion` y `sesion` los añadió SPEC_16 (§6). El tercero que
+      // añadió, `home`, se retiró el 24 ago con el acceso del Home de Strivo:
+      // Respiración es una sección de Lumia y se entra por su pestaña.
       'configuracion',
       'controles',
       'duracion',
@@ -37,7 +39,6 @@ describe('el namespace existe y está completo (§7.2)', () => {
       'fasesAccesibles',
       // `favoritos` y `sonidos` los añadió SPEC_15 (§4.4).
       'favoritos',
-      'home',
       'patrones',
       'seguridad',
       'sesion',

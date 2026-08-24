@@ -33,7 +33,7 @@ export default function SelectorPatron({ patronBaseId, onCambiar }) {
                 })}
                 onClick={() => onCambiar(entrada.id)}
                 data-elegido={entrada.id === patronBaseId ? 'si' : 'no'}
-                className="min-h-touch whitespace-nowrap rounded-full border border-espacio px-4 text-sm text-on-surface"
+                className="respiracion-opcion min-h-touch whitespace-nowrap rounded-full border border-on-surface px-4 text-sm text-on-surface"
               >
                 {nombre}
               </button>

@@ -202,10 +202,13 @@ describe('cada espacio conserva su vocabulario (§8)', () => {
     expect(deFormia).not.toMatch(/ritual|reflexi[óo]n|diario|journal|calma/i)
   })
 
-  it('las tres secciones de cada espacio son las de la spec', () => {
+  it('las secciones de cada espacio son las de la spec', () => {
+    // Lumia son cuatro desde el 24 ago: Respiración entró entre Journal e
+    // Historial. El orden es el de la pestaña y por eso se comprueba entero.
     expect(Object.keys(copy.shared.navegacion.lumia.secciones)).toEqual([
       'hoy',
       'journal',
+      'respiracion',
       'historial',
     ])
     expect(Object.keys(copy.shared.navegacion.formia.secciones)).toEqual([

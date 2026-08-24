@@ -1,5 +1,5 @@
 // src/breathing/PantallaRespiracion.jsx
-// `/respiracion` — configurar y arrancar (SPEC_16 §3.2).
+// Configurar y arrancar (SPEC_16 §3.2), ya dentro de Lumia.
 //
 // **"Empezar" está fijo abajo y las listas van debajo de él** (RN-RE-NAV-14 y
 // 15). Es la regla que más forma le da a esta pantalla: quien abre esto puede
@@ -7,23 +7,37 @@
 // llegar al botón es poner una tienda entre alguien y lo que vino a buscar. Lo
 // que importa está siempre a la vista; lo demás está, pero más abajo.
 //
-// **Todo llega precargado** (RN-RE-NAV-16): un toque desde el Home hasta
+// **Todo llega precargado** (RN-RE-NAV-16): un toque desde la pestaña hasta
 // respirar. Salvo la primera vez de todas, que arranca en `entrada-suave`
 // —sin retenciones— porque empezar aguantando el aire sin haberlo hecho nunca es
 // innecesariamente exigente (RN-RE-NAV-17).
 //
-// No hay barra de navegación, y no hace falta quitarla: `App.jsx` la monta solo
-// dentro de un espacio, y Respiración no lo es (RN-RE-NAV-12).
+// ── Lo que cambió al entrar a Lumia (24 ago) ─────────────────────────────────
+//
+// **La cabecera propia se retiró.** Tenía un ✕ para salir y un título; arriba
+// ya está la franja del espacio con "Lumia · Reflexión" y la pestaña activa, y
+// dos cabeceras seguidas son dos sitios distintos diciendo dónde estás. Salir
+// es cambiar de pestaña, como en el Journal y en el Historial. Lo único que
+// sobrevive de aquella fila es el acceso al aviso de seguridad.
+//
+// **Los bloques son tarjetas, no secciones sueltas.** Es el idioma de Lumia:
+// superficie elevada, borde heredado y esquinas de 24 px, igual que las tarjetas
+// del Home y las del Diario. Aquí ninguna clase nombra un color (RN-SURF-01):
+// `bg-raised`, `border-on-surface` y `border-espacio-acento` los resuelve el
+// espacio en el que esté montada, así que la misma pantalla se viste sola con la
+// paleta de la mañana o con la de la noche.
 
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { copy } from '@copy'
+import Button from '@components/ui/Button'
 import { haySoporte } from '@lib/audio/contextoAudio'
 import { ESTADOS } from '@lib/respiracion/maquinaSesion'
 import { sonIguales, validarPatron } from '@lib/respiracion/motorRitmo'
 
 import GuiaVisual from './components/visuales/GuiaVisual.jsx'
+import Bloque from './components/Bloque.jsx'
 import SelectorPatron from './components/SelectorPatron.jsx'
 import SelectorVisual from './components/SelectorVisual.jsx'
 import SelectorDuracion from './components/SelectorDuracion.jsx'
@@ -50,7 +64,6 @@ export default function PantallaRespiracion({
   configuracion,
   onCambiar,
   onEmpezar,
-  onSalir,
   avisoVisto,
   onDescartarAviso,
   favoritos = [],
@@ -61,6 +74,7 @@ export default function PantallaRespiracion({
   eliminada = null,
   onDeshacer,
   vistaPreviaSonido,
+  rutaSesion = '/respiracion/sesion',
 }) {
   const navegar = useNavigate()
   const textos = copy.respiracion.configuracion
@@ -118,30 +132,26 @@ export default function PantallaRespiracion({
   const nombres = favoritos.map((favorito) => favorito.nombre)
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="flex items-center justify-between px-5 py-4">
-        <button
-          type="button"
-          onClick={onSalir}
-          aria-label={copy.respiracion.accesibilidad.salir}
-          className="min-h-touch min-w-touch rounded-full text-on-surface"
-        >
-          ✕
-        </button>
-        <h1 ref={encabezado} tabIndex={-1} className="font-display text-md text-on-surface">
-          {textos.titulo}
-        </h1>
-        <button
-          type="button"
-          onClick={() => setAvisoVisible(true)}
-          aria-label={textos.info}
-          className="min-h-touch min-w-touch rounded-full text-on-surface"
-        >
-          ⓘ
-        </button>
-      </header>
+    <div data-surface="light" className="flex min-h-screen flex-col">
+      <div className="flex flex-1 flex-col gap-5 px-5 pb-4 pt-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-col gap-1">
+            <h1 ref={encabezado} tabIndex={-1} className="font-display text-lg text-on-surface">
+              {textos.titulo}
+            </h1>
+            <p className="text-sm text-on-surface-soft">{copy.respiracion.subtitulo}</p>
+          </div>
 
-      <div className="flex flex-1 flex-col gap-6 px-5 pb-4">
+          <button
+            type="button"
+            onClick={() => setAvisoVisible(true)}
+            aria-label={textos.info}
+            className="respiracion-info min-h-touch-sm min-w-touch-sm shrink-0 rounded-full border border-on-surface text-on-surface-soft"
+          >
+            <span aria-hidden="true">ⓘ</span>
+          </button>
+        </div>
+
         {/* RN-RE-COPY-01/03 y RN-RE-NAV-35 — Una tarjeta descartable dentro de
             la pantalla, nunca un modal que bloquee lo que hay detrás. */}
         {avisoVisible ? (
@@ -164,61 +174,79 @@ export default function PantallaRespiracion({
           />
         </div>
 
-        <SelectorPatron patronBaseId={configuracion.patronBaseId} onCambiar={cambiarPatronBase} />
+        {/* **"Cómo lo quieres ver" va primero, y pegada al dibujo (24 ago).**
+            Estaba entre la duración y el sonido, a media pantalla de distancia
+            de lo que decide: había que elegir a ciegas y bajar a comprobar.
+            Aquí arriba, cambiar de opción reemplaza el dibujo que se tiene
+            justo encima, así que la diferencia entre círculo y línea se ve en
+            el momento en vez de imaginarse. Lo pidió el propietario del
+            producto. */}
+        <Bloque>
+          <SelectorVisual
+            visual={configuracion.visual}
+            onCambiar={(visual) => onCambiar({ visual })}
+          />
+        </Bloque>
 
-        <SelectorVisual
-          visual={configuracion.visual}
-          onCambiar={(visual) => onCambiar({ visual })}
-        />
+        <Bloque>
+          <SelectorPatron patronBaseId={configuracion.patronBaseId} onCambiar={cambiarPatronBase} />
 
-        <ControlesRitmo
-          patron={configuracion.patron}
-          edicion={edicion}
-          onCambiarFase={cambiarFase}
-          onCambiarLado={cambiarLado}
-          aviso={avisoPatron}
-        />
+          <ControlesRitmo
+            patron={configuracion.patron}
+            edicion={edicion}
+            onCambiarFase={cambiarFase}
+            onCambiarLado={cambiarLado}
+            aviso={avisoPatron}
+          />
+        </Bloque>
 
-        <SelectorDuracion
-          duracion={configuracion.duracion}
-          onCambiar={(duracion) => onCambiar({ duracion })}
-        />
+        <Bloque>
+          <SelectorDuracion
+            duracion={configuracion.duracion}
+            onCambiar={(duracion) => onCambiar({ duracion })}
+          />
+        </Bloque>
 
-        <PanelSonido
-          hayAudio={haySoporte()}
-          sonidoId={configuracion.sonidoAmbienteId ?? ID_SILENCIO}
-          onElegirSonido={(sonidoAmbienteId) => {
-            onCambiar({ sonidoAmbienteId })
-            vistaPreviaSonido?.(sonidoAmbienteId)
-          }}
-          volumenAmbiente={configuracion.volumenAmbiente}
-          volumenGuia={configuracion.volumenGuia}
-          guiaSonoraActiva={configuracion.guiaSonoraActiva}
-          onVolumenAmbiente={(volumenAmbiente) => onCambiar({ volumenAmbiente })}
-          onVolumenGuia={(volumenGuia) => onCambiar({ volumenGuia })}
-          onGuiaSonora={(guiaSonoraActiva) => onCambiar({ guiaSonoraActiva })}
-        />
+        <Bloque>
+          <PanelSonido
+            hayAudio={haySoporte()}
+            sonidoId={configuracion.sonidoAmbienteId ?? ID_SILENCIO}
+            onElegirSonido={(sonidoAmbienteId) => {
+              onCambiar({ sonidoAmbienteId })
+              vistaPreviaSonido?.(sonidoAmbienteId)
+            }}
+            volumenAmbiente={configuracion.volumenAmbiente}
+            volumenGuia={configuracion.volumenGuia}
+            guiaSonoraActiva={configuracion.guiaSonoraActiva}
+            onVolumenAmbiente={(volumenAmbiente) => onCambiar({ volumenAmbiente })}
+            onVolumenGuia={(volumenGuia) => onCambiar({ volumenGuia })}
+            onGuiaSonora={(guiaSonoraActiva) => onCambiar({ guiaSonoraActiva })}
+          />
+        </Bloque>
       </div>
 
-      {/* RN-RE-NAV-14 — La acción principal, pegada abajo y siempre visible.
-          Es lo único que de verdad importa de esta pantalla. */}
-      <div className="respiracion-accion sticky bottom-0 flex flex-col gap-2 px-5 py-4">
-        <button
-          type="button"
+      {/* RN-RE-NAV-14 — La acción principal, pegada abajo y siempre visible. Es
+          lo único que de verdad importa de esta pantalla.
+          El `bottom` lo pone `.respiracion-accion` en el CSS y no una clase
+          suelta: dentro de un espacio hay una barra fija al pie, y a `bottom: 0`
+          el botón quedaba debajo de ella. */}
+      <div className="respiracion-accion sticky flex flex-col gap-2 px-5 py-4">
+        <Button
+          variant="primary"
+          fullWidth
           onClick={() => {
             onEmpezar()
-            navegar('/respiracion/sesion')
+            navegar(rutaSesion)
           }}
-          className="min-h-touch rounded-full border border-espacio px-5 font-display text-md text-on-surface"
         >
           {copy.respiracion.controles.empezar}
-        </button>
+        </Button>
 
         {yaGuardada === null ? (
           <button
             type="button"
             onClick={() => setGuardando(true)}
-            className="min-h-touch rounded-full px-5 text-sm text-on-surface-soft"
+            className="min-h-touch-sm rounded-full px-5 text-sm text-on-surface-soft"
           >
             {copy.respiracion.favoritos.guardar}
           </button>
@@ -227,7 +255,7 @@ export default function PantallaRespiracion({
 
       {/* RN-RE-NAV-15 — Debajo de "Empezar", en el orden del DOM y en el visual.
           Quien llega con prisa no atraviesa listas para respirar. */}
-      <div className="flex flex-col gap-6 px-5 pb-12">
+      <div className="flex flex-col gap-6 px-5 pb-12 pt-2">
         <ListaFavoritos
           favoritos={favoritos}
           recientes={recientes}

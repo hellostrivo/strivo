@@ -179,31 +179,55 @@ const PARES = [
   ['Strivo · acento sobre cabecera', MARCA.strivo900, MARCA.strivo100, NO_TEXTO],
   ['Strivo · borde sobre cabecera', MARCA.strivo600, MARCA.strivo100, SEPARADOR],
 
-  // ── Respiracion: el acceso del Home y sus dos pantallas (SPEC_16) ───────────
-  // RN-RE-NAV-07 — El tercer acceso vive sobre el fondo del Home y usa la escala
-  // Strivo, nunca Lumia ni Formia (RN-RE-NAV-03).
-  ['Respiración · acceso del Home', TEXTO.onLight, MARCA.strivo50, CUERPO],
-  ['Respiración · anillo del acceso', MARCA.strivo600, MARCA.strivo50, NO_TEXTO],
-  ['Respiración · borde del acceso', MARCA.strivo600, MARCA.strivo50, SEPARADOR],
+  // ── Respiracion dentro de Lumia (24 ago) ────────────────────────────────────
+  // **Estos pares cambiaron de fondo y de paleta, no de umbral.** Con SPEC_16
+  // Respiracion colgaba del Home de Strivo y se media sobre `strivo-50`; ahora
+  // es una seccion de Lumia y se pinta sobre las dos superficies del espacio:
+  // `lumia-am-50` de dia y `lumia-pm-50` de noche. Los `--strivo-*` siguen
+  // siendo el valor por defecto de las siete variables en `:root`, pero hoy no
+  // los usa ninguna pantalla — se miden abajo, como informativos.
+  //
   // RN-RE-NAV-21/25 — El progreso de la sesion va a opacidad 0,40. Es
   // periferico —se consulta si se busca— y por eso se le pide el umbral de
   // texto grande y no el de cuerpo.
-  ['Respiración · progreso de sesión (α 0,40)', sobre(TEXTO.onLight, 0.4, MARCA.strivo50), MARCA.strivo50, SEPARADOR],
+  ['Respiración · progreso de sesión (α 0,40)', sobre(TEXTO.onLight, 0.4, MARCA.lumiaAm50), MARCA.lumiaAm50, SEPARADOR],
 
   // ── Respiracion: las cuatro fases (SPEC_14 §5, RN-RE-VIS-16) ────────────────
   // El disco, el arco y la bolita son elementos graficos: su umbral es el 3:1 de
   // WCAG 2.2 1.4.11. **La fase no la comunica el color** (RN-RE-VIS-17) —la dice
   // la palabra de `EtiquetaFase` y la geometria—, pero el dibujo tiene que verse
   // igual, asi que se mide como cualquier indicador.
-  // Se separan por luminancia y no por tono: la escala de Strivo es acromatica
-  // por decision de marca (manual §4.1) y §5 pedia un eje calido→frio que ahi no
-  // existe. Estas cuatro cifras son la prueba de que la luminancia alcanza.
-  ['Respiración · inhalar sobre base', MARCA.strivo900, MARCA.strivo50, NO_TEXTO],
-  ['Respiración · sostén sobre base', MARCA.strivo800, MARCA.strivo50, NO_TEXTO],
-  ['Respiración · exhalar sobre base', MARCA.strivo700, MARCA.strivo50, NO_TEXTO],
-  ['Respiración · descanso sobre base', MARCA.strivo600, MARCA.strivo50, NO_TEXTO],
+  //
+  // Conservan el orden de luminancia de SPEC_14 —inhalar la mas oscura, descanso
+  // la mas clara— porque esa rampa es lo que hace que el cambio se lea de reojo.
+  // Lo que cambio es de que escala salen: de la de Lumia. Se miden sobre los dos
+  // momentos porque el reloj decide cual esta puesto y ninguno es opcional.
+  ['Respiración · inhalar sobre Lumia mañana', TEXTO.onLight, MARCA.lumiaAm50, NO_TEXTO],
+  ['Respiración · sostén sobre Lumia mañana', MARCA.lumiaPm700, MARCA.lumiaAm50, NO_TEXTO],
+  ['Respiración · exhalar sobre Lumia mañana', MARCA.lumiaPm500, MARCA.lumiaAm50, NO_TEXTO],
+  ['Respiración · descanso sobre Lumia mañana', MARCA.lumiaPm400, MARCA.lumiaAm50, NO_TEXTO],
+  ['Respiración · inhalar sobre Lumia noche', TEXTO.onLight, MARCA.lumiaPm50, NO_TEXTO],
+  ['Respiración · sostén sobre Lumia noche', MARCA.lumiaPm700, MARCA.lumiaPm50, NO_TEXTO],
+  ['Respiración · exhalar sobre Lumia noche', MARCA.lumiaPm500, MARCA.lumiaPm50, NO_TEXTO],
+  ['Respiración · descanso sobre Lumia noche', MARCA.lumiaPm400, MARCA.lumiaPm50, NO_TEXTO],
   // La etiqueta de fase, que es el texto que de verdad lleva el dato: AAA.
-  ['Respiración · etiqueta de fase sobre base', TEXTO.onLight, MARCA.strivo50, CUERPO],
+  ['Respiración · etiqueta de fase sobre base', TEXTO.onLight, MARCA.lumiaAm50, CUERPO],
+  // El recorrido de la linea: es la figura, asi que se le pide el umbral de
+  // indicador. Va a opacidad 1 desde que es punteado —un punteado tiene la mitad
+  // de tinta que un continuo del mismo grosor—, asi que se mide en plano.
+  ['Respiración · recorrido de la línea', MARCA.lumiaPm500, MARCA.lumiaAm50, NO_TEXTO],
+
+  // ── El estado elegido (24 ago) ──────────────────────────────────────────────
+  // El borde de acento de la opcion elegida es un indicador de estado, asi que
+  // le toca el 3:1 de 1.4.11 — y **es la unica de las tres señales que se puede
+  // medir con una cifra**: la superficie y la palomita se ven, pero lo que
+  // sostiene la lectura para quien distingue mal los tonos es este borde.
+  ['Respiración · borde de la opción elegida', MARCA.lumiaPm500, MARCA.lumiaAm50, NO_TEXTO],
+  ['Respiración · palomita de la opción elegida', MARCA.lumiaPm500, MARCA.lumiaAm50, NO_TEXTO],
+  // La tarjeta de cada bloque: `bg-raised` es blanco al 72 % sobre el fondo del
+  // espacio, y el cuerpo se lee encima.
+  ['Respiración · cuerpo sobre tarjeta de bloque', TEXTO.onLight, sobre(TEXTO.blanco, 0.72, MARCA.lumiaAm50), CUERPO],
+  ['Respiración · secundario sobre tarjeta de bloque', TEXTO.onLightSoft, sobre(TEXTO.blanco, 0.72, MARCA.lumiaAm50), CUERPO],
 ]
 
 /**
@@ -226,8 +250,8 @@ const INFORMATIVOS = [
   // Las marcas de fase de la linea van a opacidad 0,12 y su texto a 0,45. Son
   // orientacion, no dato: lo que hay que leer lo dice `EtiquetaFase` a tamano
   // completo. Se anotan para que la cifra conste, no para exigirles un umbral.
-  ['marca de fase de la línea (α 0,12)', sobre(MARCA.strivo600, 0.12, MARCA.strivo50), MARCA.strivo50],
-  ['texto de marca de la línea (α 0,45)', sobre(MARCA.strivo600, 0.45, MARCA.strivo50), MARCA.strivo50],
+  ['marca de fase de la línea (α 0,12)', sobre(MARCA.lumiaPm400, 0.12, MARCA.lumiaAm50), MARCA.lumiaAm50],
+  ['texto de marca de la línea (α 0,45)', sobre(MARCA.lumiaPm400, 0.45, MARCA.lumiaAm50), MARCA.lumiaAm50],
   // **Fases contiguas, medidas entre si. Es el limite conocido de separar cuatro
   // pasos por luminancia sobre una escala acromatica: 1,4:1 entre vecinas.**
   // No se les exige umbral y no es una laguna disimulada: dos fases nunca se ven
@@ -236,16 +260,21 @@ const INFORMATIVOS = [
   // esta cifra es que el color, solo, no bastaria para nombrar la fase. Por eso
   // RN-RE-VIS-17 obliga a la palabra y a la geometria, y por eso ahi la regla no
   // es un adorno de accesibilidad sino lo que sostiene la lectura.
-  ['fase inhalar contra sostén', MARCA.strivo900, MARCA.strivo800],
-  ['fase sostén contra exhalar', MARCA.strivo800, MARCA.strivo700],
-  ['fase exhalar contra descanso', MARCA.strivo700, MARCA.strivo600],
+  ['fase inhalar contra sostén', TEXTO.onLight, MARCA.lumiaPm700],
+  ['fase sostén contra exhalar', MARCA.lumiaPm700, MARCA.lumiaPm500],
+  ['fase exhalar contra descanso', MARCA.lumiaPm500, MARCA.lumiaPm400],
+  // Los valores por defecto de `:root`, en la escala de Strivo. Hoy no los pinta
+  // ninguna pantalla —Respiracion solo se monta dentro de Lumia— y se miden para
+  // que el dia que otro espacio la monte se sepa de donde se parte.
+  ['por defecto · inhalar sobre strivo-50', MARCA.strivo900, MARCA.strivo50],
+  ['por defecto · descanso sobre strivo-50', MARCA.strivo600, MARCA.strivo50],
   // **El estado atenuado de la sesion, medido, y por eso se apaga del todo.**
   // RN-RE-NAV-23 pedia opacidad 0,25 para los controles tras seis segundos sin
   // tocar nada. Esta es la cifra que sale, y es la que hizo que se implementara
   // a 0 y no a 0,25: RN-RE-NAV-46 da esa salida expresamente —"o el texto se
   // oculta del todo en vez de quedar ilegible"— y a 0,25 se obtiene lo peor de
   // las dos cosas, una mancha ilegible que sigue tirando del ojo.
-  ['control de sesión a α 0,25 (NO se usa)', sobre(TEXTO.onLight, 0.25, MARCA.strivo50), MARCA.strivo50],
+  ['control de sesión a α 0,25 (NO se usa)', sobre(TEXTO.onLight, 0.25, MARCA.lumiaAm50), MARCA.lumiaAm50],
 ]
 
 console.log('🎨 contraste: midiendo los pares que la app pinta de verdad\n')

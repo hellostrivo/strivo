@@ -99,7 +99,7 @@ export default function DialogoGuardar({
             if (evento.key === 'Escape') onCancelar()
           }}
           placeholder={textos.nombrePlaceholder}
-          className="min-h-[44px] rounded-2xl border border-on-surface px-4 text-on-surface"
+          className="min-h-[44px] rounded-md border border-on-surface px-4 text-on-surface"
         />
       </label>
 
@@ -131,14 +131,14 @@ export default function DialogoGuardar({
         <button
           type="button"
           onClick={confirmar}
-          className="min-h-[44px] flex-1 rounded-2xl border border-on-surface text-on-surface"
+          className="min-h-[44px] flex-1 rounded-md border border-on-surface text-on-surface"
         >
           {textos.guardarAccion}
         </button>
         <button
           type="button"
           onClick={onCancelar}
-          className="min-h-[44px] flex-1 rounded-2xl text-on-surface"
+          className="min-h-[44px] flex-1 rounded-md text-on-surface"
         >
           {textos.cancelar}
         </button>

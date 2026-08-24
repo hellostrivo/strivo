@@ -141,6 +141,58 @@
   --respiracion-fase-sosten: var(--strivo-800);
   --respiracion-fase-exhalar: var(--strivo-700);
   --respiracion-fase-descanso: var(--strivo-600);
+
+  /* Los tres trazos del dibujo, que antes iban escritos dentro de
+     `respiracion.css` como `--strivo-600/700/900`. Salieron aqui para que cada
+     espacio pueda vestirlos sin que aquella hoja nombre a ninguno (24 ago).
+       · `trazo`       — la onda de la linea. Es la figura.
+       · `trazo-suave` — anillo, halo, marcas de fase y guia de recorrido. Es el
+                         andamiaje: se lee cuando se busca y desaparece cuando no.
+       · `tinta`       — el marcador de movimiento reducido y las barras de pausa.
+                         Son señales de estado, no decoracion, y van al maximo. */
+  --respiracion-trazo: var(--strivo-700);
+  --respiracion-trazo-suave: var(--strivo-600);
+  --respiracion-tinta: var(--strivo-900);
+}
+
+/* ─── Respiración dentro de Lumia (24 ago) ───────────────────────────────────
+   Respiración dejó de colgar del Home de Strivo y es una sección de Lumia, así
+   que se viste con su paleta. **`respiracion.css` no se enteró**: pide siete
+   variables semánticas y aquí se decide qué son, que es la misma división que
+   sostienen el velo de `TransicionLuz` (SPEC_10) y la barra (SPEC_11).
+
+   Las cuatro fases conservan **el orden de luminancia de SPEC_14** —inhalar la
+   más oscura, descanso la más clara— porque esa rampa es lo que hace que el
+   cambio de fase se lea de reojo. Lo que cambia es de qué escala salen.
+
+   Medido sobre las dos superficies de Lumia (`lumia-am-50` de día y
+   `lumia-pm-50` de noche), que es donde se pintan:
+
+     inhalar   color-ink       #241E33   14,36:1 / 14,02:1
+     sostén    lumia-pm-700    #5A5568    6,41:1 /  6,25:1
+     exhalar   lumia-pm-500    #6C5AA7    5,14:1 /  5,02:1
+     descanso  lumia-pm-400    #8D82B6    3,13:1 /  3,06:1
+
+   Las cuatro pasan el 3:1 de WCAG 1.4.11 (RN-RE-VIS-16), y el `lint:contraste`
+   las mide. **Entre fases contiguas hay entre 1,25:1 y 1,64:1**, igual que
+   pasaba con la escala de Strivo: no basta para nombrar una fase por su color, y
+   por eso RN-RE-VIS-17 —palabra y forma siempre— no es aquí un adorno de
+   accesibilidad sino lo que sostiene la lectura.
+
+   `--color-ink` es el token compartido del manual §6, no un hex escrito a mano
+   ni un color de otra marca: es la tinta de toda la app.
+
+   El primario de Lumia (`lumia-pm-500`) cae en `exhalar` y no es casualidad: es
+   la fase más larga de casi todos los patrones y la que la marca quiere firmar. */
+[data-space='lumia'] {
+  --respiracion-fase-inhalar: var(--color-ink);
+  --respiracion-fase-sosten: var(--lumia-pm-700);
+  --respiracion-fase-exhalar: var(--lumia-pm-500);
+  --respiracion-fase-descanso: var(--lumia-pm-400);
+
+  --respiracion-trazo: var(--lumia-pm-500);
+  --respiracion-trazo-suave: var(--lumia-pm-400);
+  --respiracion-tinta: var(--color-ink);
 }
 
 [data-surface='light'] {

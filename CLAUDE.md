@@ -1785,6 +1785,245 @@ momento"** centrado.
   secciones — sobre todo si de noche, con el velo al 10 % sobre el degradado, se percibe como
   recuadro o se disuelve en el fondo.
 
+**Respiración se muda a Lumia, 24 ago. Deroga la parte de SPEC_16 que la ponía en el Home:**
+
+Respiración deja de ser la herramienta transversal que colgaba del vestíbulo de
+Strivo y pasa a ser **la tercera sección de Lumia**, entre Journal e Historial.
+Se migró el componente entero —motor, máquina, audio, visuales, favoritos,
+sesión, ajustes en vivo—: no es una versión reducida ni una reinterpretación.
+Lo pidió el propietario del producto.
+
+```
+Antes                          Ahora
+┌ Home de Strivo ─────┐        ┌ Lumia · Reflexión ───────────────────────┐
+│  Lumia              │        │  Hoy · Journal · Respiración · Historial │
+│  Formia             │        └──────────────────────────────────────────┘
+│  ○ Respiración      │        ┌ Home de Strivo ─────┐
+└─────────────────────┘        │  Lumia · Formia     │
+   /respiracion                └─────────────────────┘
+                                  /lumia/respiracion
+```
+
+- **El acceso del Home se retira entero**, y con él `AccesoRespiracion.jsx`,
+  `copy.respiracion.home`, la regla `.acceso-respiracion__icono` y la ruta
+  `/respiracion`. **Quedan derogadas RN-RE-NAV-01 a 08c** —toda la jerarquía de
+  tres niveles del vestíbulo— y los criterios 2, 3, 4 y 5 de SPEC_16. Lo eligió
+  el propietario del producto entre tres opciones sobre la mesa; las otras dos
+  eran conservar los dos accesos o dejar la ruta vieja redirigiendo.
+- **Lo que NO cambia es el argumento de fondo de SPEC_16: Respiración no es un
+  espacio.** Antes eso se sostenía haciéndola subordinada en el Home; ahora se
+  sostiene dándole el sitio que le corresponde —una sección dentro del espacio
+  que la usa— en vez de una categoría propia junto a las dos marcas. Sigue sin
+  leer `lumia/` ni `formia/` (RN-RE-DAT-09 intacta) y sin cruzar un solo dato.
+- **Tres reglas de SPEC_16 se invierten, y es exactamente lo que se pidió.**
+  `espacioDe('/lumia/respiracion')` devuelve `lumia`, así que ahora hay barra
+  (RN-RE-NAV-12), cromo de espacio y paleta de Lumia. La cuarta —RN-RE-NAV-34,
+  sin transición de frase— **sigue en pie sin escribir nada**: el umbral lo
+  cruza `App` al entrar al espacio, una vez por sesión (`umbralSesion`), así que
+  abrir esta sección no interpone nada que no interpusiera ya el Journal.
+- **`breathing/` no nombra a Lumia en un solo import**, y esa es la restricción
+  que dio forma a toda la migración. `base` y `salida` llegan **por props** desde
+  `App.jsx` —quien enruta es el único que sabe dónde vive—, y el color entra por
+  CSS. Es la misma división que SPEC_10 tomó con el velo de `TransicionLuz` y
+  SPEC_11 con la barra: el tema en el CSS del sitio que lo conoce, nunca en el
+  componente. El lint y las pruebas de separación siguen verdes sin tocarlos.
+- **La sesión oculta el cromo** (`onHideNav`), como el Journal al escribir
+  (§4.3.2, regla 2). Con pestañas arriba y barra abajo, la pantalla que
+  RN-RE-NAV-21 quiere vacía dejaba de estarlo.
+- **La cabecera propia de la pantalla de configuración se retiró.** Tenía un ✕ y
+  un título; arriba ya está la franja del espacio con la pestaña activa, y dos
+  cabeceras seguidas son dos sitios diciendo dónde estás. Salir es cambiar de
+  pestaña. Sobrevive el acceso al aviso de seguridad.
+- **"Empezar" ya no va a `bottom: 0`.** Dentro de un espacio hay una barra fija
+  al pie y ahí el botón quedaba debajo de ella: presente en el DOM, invisible en
+  pantalla — el mismo tropiezo que la cabecera de Lumia resolvió con su `z-30`.
+  El desplazamiento vive en `.respiracion-accion` porque es el alto de esa barra,
+  no una decisión de maquetación. RN-RE-NAV-14 y 15 intactas.
+
+**Los colores salen de siete variables semánticas, no de la escala Strivo:**
+
+- `respiracion.css` **ya no escribe un solo `--strivo-*`**. Pide cuatro colores
+  de fase y tres de trazo —`--respiracion-trazo` (la onda), `-trazo-suave`
+  (anillo, halo, marcas y guía) y `-tinta` (marcador y barras de pausa)— y quien
+  decide qué son es `globals.css`, por espacio. **RN-RE-VIS-00 se cumple igual y
+  un poco más**: aquí no entra un token de espacio, y ahora tampoco uno de la
+  marca madre.
+- **Las cuatro fases conservan el orden de luminancia de SPEC_14** —inhalar la
+  más oscura, descanso la más clara— porque esa rampa es lo que hace que el
+  cambio de fase se lea de reojo. Lo que cambia es de qué escala salen:
+
+  | Fase | Token | Hex | Mañana | Noche |
+  |---|---|---|---|---|
+  | inhalar | `--color-ink` | `#241E33` | 14,36:1 | 14,02:1 |
+  | sostén | `lumia-pm-700` | `#5A5568` | 6,41:1 | 6,25:1 |
+  | exhalar | `lumia-pm-500` | `#6C5AA7` | 5,14:1 | 5,02:1 |
+  | descanso | `lumia-pm-400` | `#8D82B6` | 3,13:1 | 3,06:1 |
+
+  Las cuatro pasan el 3:1 de RN-RE-VIS-16 sobre las **dos** superficies de Lumia.
+  El primario de la marca cae en `exhalar` y no es casualidad: es la fase más
+  larga de casi todos los patrones. `--color-ink` es el token compartido del
+  manual §6, no un hex a mano.
+- **Entre fases contiguas hay entre 1,25:1 y 1,64:1**, igual que pasaba con la
+  escala de Strivo (1,4:1). No basta para nombrar una fase por su color, así que
+  RN-RE-VIS-17 —palabra y forma siempre— sigue siendo lo que sostiene la lectura
+  y no un adorno de accesibilidad. Queda anotado como informativo en el script.
+- **Los `--strivo-*` siguen siendo el valor por defecto en `:root`** y hoy no los
+  pinta ninguna pantalla. Se miden como informativos para que el día que otro
+  espacio monte la herramienta se sepa de dónde se parte.
+- **Los bloques de ajustes son tarjetas** (`components/Bloque.jsx`): `bg-raised`,
+  `border-on-surface` y radio de 24 px, el mismo idioma que el Home y el Diario.
+  Ninguna clase nombra un color (RN-SURF-01), así que la pantalla se viste sola
+  con la paleta del momento. Los `rounded-2xl` sueltos —que caían fuera de la
+  escala de radios del proyecto— pasaron a `rounded-md`.
+
+**El estado elegido no se veía, y ese era el defecto de fondo:**
+
+- **`data-elegido` estaba en los cuatro selectores desde SPEC_16 y no había una
+  sola regla de CSS que lo pintara.** El único rastro de la elección era el
+  `aria-pressed` / `aria-checked`: existía para quien escucha la pantalla y no
+  para quien la mira. Tocar un sonido o una duración no cambiaba absolutamente
+  nada. No era una regresión de esta migración; llevaba ahí desde el cierre de
+  Fase 1C, sin que ninguna prueba pudiera cazarlo porque todas leen la fuente.
+- **Tres señales a la vez, nunca solo el color** (criterio 7 de SPEC_11):
+  superficie elevada, borde de acento a 2 px y —en las filas de sonido— una
+  palomita. El borde compensa su grosor con menos relleno, o la lista entera
+  daba un salto de un píxel al elegir.
+- **Va con clase propia (`.respiracion-opcion`) y no solo con el atributo.** Las
+  utilidades de Tailwind se generan después de esta hoja, así que
+  `[data-elegido='si']` a secas perdía contra el `border-on-surface` del propio
+  botón y el borde de acento no llegaba a verse. La clase le da peso dos y gana
+  sin un solo `!important`.
+- **La palomita se dibuja, no se escribe** —dos lados de un cuadrado girados—,
+  así que no hay un carácter suelto fuera de `copy/` (criterio 42). Va
+  `aria-hidden`: `aria-pressed` ya lo dice y anunciarlo dos veces es ruido.
+- **La exclusividad no es del CSS, es del modelo.** `sonidoAmbienteId` y
+  `duracion.modo` son un valor y no una lista, así que no se puede romper desde
+  la interfaz. Las píldoras de patrón, visual y duración pasaron de
+  `border-espacio` a `border-on-surface` en reposo: el borde de marca y el acento
+  se distinguen entre sí en 1,25:1 y todas las opciones parecían elegidas.
+
+**El sonido: dos fallos distintos y una fuga:**
+
+- **La vista previa estaba construida entera y no la llamaba nadie.**
+  `PantallaRespiracion` declaraba la prop `vistaPreviaSonido` desde SPEC_16 y el
+  contenedor nunca se la pasaba, así que **elegir un sonido en la pantalla de
+  configuración era mudo** y lo único que llegaba a oírse era ya dentro de la
+  sesión. Ese era el "a veces suena y a veces no" tal como se percibía.
+- **La otra mitad: `adquirir()` no reanudaba.** Devuelve el contexto **que ya
+  existía** —lo creó la respiración diaria de Lumia, o esta misma pantalla antes
+  de que el teléfono se bloqueara— y un contexto reutilizado llega suspendido:
+  sin error, sin excepción y sin sonido. Ahora `asegurarAudio()` llama a
+  `reanudar()` siempre, esté recién creado o no.
+- **Un solo motor de ambiente para la vista previa y la sesión.** `empezar()
+  reutiliza el que montó la vista previa en vez de crear otro: dos motores sobre
+  el mismo contexto son dos grafos sonando a la vez, que es exactamente cómo se
+  superponen los sonidos. Con la sesión en marcha `vistaPreviaSonido` no hace
+  nada y el cambio va por `ajustarEnVivo`, por el mismo motivo.
+- **`confirmarSonido` es nuevo y arregla un tercer caso.** Empezar justo después
+  de escuchar un sonido dejaba vivo el temporizador de veinte segundos de la
+  vista previa: **el ambiente enmudecía solo a mitad de sesión** y no había forma
+  de relacionarlo con su causa. Cancela ese apagado sin cortar lo que ya suena.
+- **El cruce entre sonidos ya estaba bien y no se tocó** (RN-RE-SND-14): cinco
+  toques seguidos dejan exactamente una fuente viva porque `cambiarSonido` suelta
+  la saliente antes de montar la entrante. Hay una prueba que lo fija.
+- **Fuga: el préstamo del contexto solo se devolvía en `salir()`.** Irse por el
+  botón atrás del navegador o cambiando de pestaña dejaba el `AudioContext`
+  abierto para siempre. Ahora lo devuelve también el desmontaje, con un `ref` que
+  lleva la cuenta para no soltar dos veces (RN-AUD-04).
+- **"Otra vez" del cierre no hacía nada, y no lo cazó nadie.** `maquina.current`
+  sigue en pie tras `completado`, así que la guarda de idempotencia del caso 8.13
+  —`if (maquina.current !== null) return`— lo devolvía sin arrancar. Ahora una
+  máquina agotada se tira y se monta otra; el audio no se toca, que es lo que
+  deja el ambiente sonando entre una sesión y la siguiente.
+- **Mover el volumen mientras se escucha ahora se oye.** Solo el volumen: el
+  patrón y la duración no tocan el grafo de audio.
+
+**El recorrido de la bolita va punteado — y la línea llevaba invisible desde
+SPEC_14:**
+
+- **Bug encontrado al hacer esto: la máscara borraba el dibujo entero.** Una
+  `<mask>` de SVG es de **luminancia** y el valor inicial de `stop-color` es
+  **negro**. Los cuatro topes del degradado de desvanecido solo declaraban
+  `stopOpacity`, así que la máscara valía cero en todo su ancho y **el grupo
+  enmascarado no se pintaba**: ni recorrido, ni marcas de fase, ni marcador de
+  movimiento reducido. Lo único visible de la visual "línea" era la bolita
+  flotando sin camino. Estaba así desde que se escribió SPEC_14, y no lo cazó
+  nadie porque **las 8 validaciones manuales de §14 nunca se hicieron** y todas
+  las pruebas de esta capa leen la fuente. Corregido con una clase
+  (`.respiracion-linea__velo`, `stop-color: white`): el blanco va en el CSS
+  porque un valor de máscara no es un color de diseño, pero escribirlo en el JSX
+  abriría la puerta a los que sí lo son.
+- **El trazo del recorrido pasa a punteado** (`stroke-dasharray: 2 7`, remate
+  redondo): sube en diagonal al inhalar, se queda plano en las retenciones y baja
+  en diagonal al exhalar. Punteado porque lo que hay delante de la bolita todavía
+  no ha pasado —se anuncia, no se afirma— y porque anticipar el punto alto es lo
+  que permite dosificar el aire en vez de perseguir el dibujo. Sube a opacidad 1:
+  un punteado tiene la mitad de tinta que un continuo del mismo grosor.
+- **Es una sola línea y la bolita se apoya exactamente en ella** (RN-RE-VIS-09).
+  Se descartó dibujar el recorrido aparte, como un zigzag de rectas entre los
+  vértices: la altura de la bolita sale del suavizado del motor, no de una recta
+  entre dos puntos, así que un zigzag sería **un segundo trazo que la bolita no
+  pisa** —hasta 13 unidades de separación en mitad de cada fase— y dos caminos
+  donde solo hay uno. La curvatura que se ve entre subida y bajada es el propio
+  suavizado del ritmo: es el ejercicio, no un adorno.
+- **Se retiró la guía vertical del borde derecho** que se había entregado antes.
+  Marcaba las dos alturas con un punteado vertical y dos topes; el encargo era
+  otro —marcar el camino, no sus extremos— y con el recorrido punteado sobraba.
+- **Con `prefers-contrast: more` deja de estar punteado.** Quien pide eso
+  necesita el trazo entero; la anticipación la sigue dando la posición de la
+  bolita sobre él.
+- **El círculo no lleva recorrido y no es un olvido**: no tiene eje que recorrer,
+  crece y decrece desde el centro. Su `strokeDasharray` es otra cosa —recorta el
+  arco de la fase (§3.2)—, y por eso la prueba comprueba la ausencia sobre la
+  palabra y no sobre la propiedad.
+
+**"Cómo lo quieres ver" sube al principio, pegada al dibujo:**
+
+- Estaba entre la duración y el sonido, a media pantalla del dibujo que decide:
+  había que elegir a ciegas y bajar a comprobar. Ahora es el primer bloque, justo
+  debajo de la vista previa, así que cambiar de opción reemplaza el dibujo que se
+  tiene encima y **la diferencia entre círculo y línea se ve en el momento**. Lo
+  pidió el propietario del producto.
+- El orden queda: vista previa → cómo verlo → ritmo → cuánto tiempo → sonido. La
+  vista previa se queda arriba del todo y no baja con el selector: es la
+  ilustración de la pantalla, no una respuesta a una pregunta.
+
+- **`npm run lint`, `test`, `build`, `lint:copy`, `lint:contraste` y
+  `format:check` en verde · 1477 pruebas** (23 nuevas). `lint:contraste` mide
+  ahora las ocho fases sobre las dos superficies de Lumia, el recorrido, el borde
+  y la palomita del estado elegido, y las dos tarjetas.
+
+**Pendiente de la mudanza a Lumia:**
+- **Sin validar en navegador.** Lo comprobado es la lógica, el marcado y las
+  cifras de contraste. Falta ver el recorrido en un teléfono real: si el estado
+  elegido se lee de un vistazo con la pantalla al sol, si el recorrido punteado
+  acompaña sin distraer, si "Empezar" queda de verdad por encima de la barra con
+  el área segura de un iPhone, y **si los sonidos suenan de forma estable**, que
+  es lo único de este trabajo que ninguna prueba puede contestar porque las
+  pruebas no oyen.
+- **Las 23 validaciones manuales acumuladas de SPEC_14–16 siguen sin hacer**, y
+  ahora hay dónde mirarlas: la pestaña existe. La que más pesa sigue siendo el
+  recorrido 4 —quince minutos con los ojos cerrados—, que es lo que decide si el
+  audio está bien calibrado. **El bug de la máscara es la prueba de lo que cuesta
+  no hacerlas**: una visual entera invisible durante cuatro días, con 1477
+  pruebas en verde.
+- **`docs/specs/SPEC_16.md` sigue describiendo el acceso del Home.** Con esta
+  mudanza caen su §2 entera y RN-RE-NAV-01 a 08c. **La documentación está
+  pendiente de reescribir esa sección**; no bloquea el código, igual que quedó
+  pendiente con SPEC_09, con las victorias, con la mañana y con la noche.
+- **La navegación de Lumia tiene ahora cuatro pestañas.** SPEC_11 §C7.3 habla de
+  tres por espacio y RN-10 (la de la tabla) limita las **pestañas de la barra
+  principal**, no las secciones de un espacio, así que no hay conflicto. Sí queda
+  por ver en un móvil estrecho con el escalado al 200 %: los cuatro rótulos van
+  en `flex-wrap`, así que se reparten en dos filas antes que truncarse, pero la
+  cabecera crece.
+- **La entrada a Respiración desde Hoy no se tocó.** Las dos secciones del Diario
+  siguen abriendo el ejercicio de tres ciclos de SPEC_08, que es otra cosa y sigue
+  viviendo en `components/shared/Respiracion.jsx` (RN-RE-NAV-36 intacta). **Queda
+  abierto si esa tarjeta debería llevar ahora a la pestaña**: son dos herramientas
+  con el mismo nombre a un toque de distancia, y esa decisión es del propietario
+  del producto.
+
 **Deuda consciente de Fase 1 (se salda en su spec):**
 - **Los 16 íconos de emoción no se hicieron, y es una decisión, no un olvido.** SPEC_12 §10 excluye
   "ilustraciones nuevas" y §7 dice que los íconos de UI siguen pendientes en el manual v1.1 y que hay

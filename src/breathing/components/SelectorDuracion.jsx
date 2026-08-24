@@ -32,7 +32,7 @@ export default function SelectorDuracion({ duracion, onCambiar }) {
             aria-checked={duracion.modo === modo}
             onClick={() => onCambiar({ modo, valor: duracion.valor })}
             data-elegido={duracion.modo === modo ? 'si' : 'no'}
-            className="min-h-touch flex-1 rounded-full border border-espacio px-3 text-sm text-on-surface"
+            className="respiracion-opcion min-h-touch flex-1 rounded-full border border-on-surface px-3 text-sm text-on-surface"
           >
             {textos[CLAVE_MODO[modo]]}
           </button>

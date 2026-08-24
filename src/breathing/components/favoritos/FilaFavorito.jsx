@@ -53,7 +53,7 @@ export default function FilaFavorito({ favorito, onCargar, onOpciones, conOpcion
       <button
         type="button"
         onClick={() => onCargar(favorito)}
-        className="flex min-h-[44px] flex-1 flex-col items-start rounded-2xl border border-on-surface px-4 py-2 text-left"
+        className="flex min-h-[44px] flex-1 flex-col items-start rounded-md border border-on-surface px-4 py-2 text-left"
       >
         <span className="text-sm text-on-surface">{favorito.nombre}</span>
         <span className="text-xs text-on-surface-soft">{subtitulo(favorito)}</span>
@@ -64,7 +64,7 @@ export default function FilaFavorito({ favorito, onCargar, onOpciones, conOpcion
           type="button"
           onClick={() => onOpciones(favorito)}
           aria-label={copy.respiracion.favoritos.opciones}
-          className="min-h-[44px] min-w-[44px] rounded-2xl border border-on-surface text-on-surface"
+          className="min-h-[44px] min-w-[44px] rounded-md border border-on-surface text-on-surface"
         >
           ⋯
         </button>

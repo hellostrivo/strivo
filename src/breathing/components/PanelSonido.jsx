@@ -14,6 +14,13 @@
 // Sin Web Audio, el panel entero no se monta (caso 6.1). No se muestra
 // desactivado: enseñar seis controles muertos es peor que no enseñarlos, y la
 // respiración funciona completa en silencio.
+//
+// **La fila elegida se ve elegida (24 ago).** `data-elegido` estaba puesto desde
+// SPEC_16 y no había una sola regla de CSS que lo pintara: la elección solo
+// existía en el `aria-pressed`, es decir, para quien escucha la pantalla y no
+// para quien la mira. Ahora lleva superficie, borde de acento y palomita —tres
+// señales, nunca solo el color (RN-RE-VIS-17)—, y sigue siendo una sola: el
+// catálogo es de selección única y `sonidoId` es un valor, no una lista.
 
 import { copy } from '@copy'
 import { CATALOGO_SONIDOS } from '../data/catalogoSonidos.js'
@@ -58,7 +65,7 @@ export default function PanelSonido({
           <button
             type="button"
             onClick={onActivarAudio}
-            className="min-h-[44px] rounded-2xl border border-on-surface px-4 text-sm text-on-surface"
+            className="min-h-[44px] rounded-md border border-on-surface px-4 text-sm text-on-surface"
           >
             {textos.activar}
           </button>
@@ -77,11 +84,17 @@ export default function PanelSonido({
                   // RN-RE-FAV-14 — 44 px de alto mínimo. Es la medida por debajo
                   // de la cual un dedo empieza a fallar, y fallar aquí significa
                   // reproducir un sonido que no se quería.
-                  className="flex min-h-[44px] w-full flex-col items-start rounded-2xl border border-on-surface px-4 py-2 text-left"
+                  className="respiracion-opcion flex min-h-[44px] w-full items-center justify-between gap-3 rounded-md border border-on-surface px-4 py-2 text-left"
                   data-elegido={elegido ? 'si' : 'no'}
                 >
-                  <span className="text-sm text-on-surface">{nombre.nombre}</span>
-                  <span className="text-xs text-on-surface-soft">{nombre.descripcion}</span>
+                  <span className="flex flex-col">
+                    <span className="text-sm text-on-surface">{nombre.nombre}</span>
+                    <span className="text-xs text-on-surface-soft">{nombre.descripcion}</span>
+                  </span>
+                  {/* La palomita la dibuja el CSS y solo se ve en el elegido.
+                      Va `aria-hidden` porque `aria-pressed` ya dice lo mismo, y
+                      anunciarlo dos veces es ruido para quien escucha. */}
+                  <span aria-hidden="true" className="respiracion-palomita" />
                 </button>
               </li>
             )

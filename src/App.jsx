@@ -48,14 +48,23 @@ import Progreso from '@/pages/formia/Progreso'
 /** La raíz de cada espacio. Por dónde se entra a la app es el Home, `/`. */
 const INICIO = Object.freeze({ lumia: '/lumia/hoy', formia: '/formia/identidad' })
 
+/** La sección de Respiración dentro de Lumia. La conoce quien enruta, no ella. */
+const RUTA_RESPIRACION = '/lumia/respiracion'
+
 /**
  * El espacio de una ruta, o `null` si la ruta está por encima de los dos.
  *
- * **`/respiracion` devuelve `null` a propósito, y de ahí salen tres reglas de
- * SPEC_16 sin escribir una línea más:** no se monta la barra (RN-RE-NAV-12), no
- * se cruza el umbral de luz de Lumia (RN-RE-NAV-34) y el cromo se queda en los
- * neutros de Strivo. Respiración es una herramienta, no un tercer espacio, y la
- * función que decide qué es un espacio ya lo dice.
+ * **Respiración vive ahora bajo `/lumia/`, así que devuelve `lumia`** (24 ago).
+ * Con SPEC_16 colgaba de `/respiracion` y esta función devolvía `null`, y de ahí
+ * salían gratis tres reglas: sin barra (RN-RE-NAV-12), sin umbral de luz
+ * (RN-RE-NAV-34) y con el cromo en los neutros de Strivo. Al entrar al espacio
+ * las tres se invierten y **es lo que se pidió**: la herramienta tiene que
+ * sentirse nativa de Lumia, con su cabecera, su barra y su paleta.
+ *
+ * La única que se conserva a mano es la ausencia de umbral de luz: `/lumia/hoy`
+ * ya lo cruza al entrar al espacio, y `umbralSesion` lo cuenta una vez por
+ * sesión y por espacio, así que entrar directo a Respiración no encadena nada
+ * que no encadenara ya cualquier otra sección.
  */
 function espacioDe(ruta) {
   if (ruta.startsWith('/formia')) return 'formia'
@@ -172,16 +181,30 @@ function Espacios({ uid }) {
             element={<Hoy uid={uid} onHideNav={setHideNav} onMomento={setMomentoLumia} />}
           />
           <Route path="/lumia/journal" element={<Journal uid={uid} onHideNav={setHideNav} />} />
+
+          {/* La herramienta, ya dentro del espacio. Sus dos pantallas las
+              resuelve su propio contenedor, que es quien sostiene la sesión
+              entre ellas para que el botón atrás pause en vez de destruir
+              (RN-RE-NAV-10). `base` y `salida` llegan por props: `breathing/`
+              sigue sin nombrar a Lumia en ningún import, que es lo que la
+              separación exige. */}
+          <Route
+            path="/lumia/respiracion/*"
+            element={
+              <Respiracion
+                uid={uid}
+                base={RUTA_RESPIRACION}
+                salida={INICIO.lumia}
+                onHideNav={setHideNav}
+              />
+            }
+          />
+
           <Route path="/lumia/historial" element={<Historial uid={uid} />} />
 
           <Route path="/formia/identidad" element={<Identidad uid={uid} />} />
           <Route path="/formia/habitos" element={<Habitos uid={uid} />} />
           <Route path="/formia/progreso" element={<Progreso uid={uid} />} />
-
-          {/* La herramienta transversal. Sus dos pantallas las resuelve su
-              propio contenedor, que es quien sostiene la sesión entre ellas
-              para que el botón atrás pause en vez de destruir (RN-RE-NAV-10). */}
-          <Route path="/respiracion/*" element={<Respiracion uid={uid} />} />
 
           {/* Cualquier ruta desconocida vuelve al Home, no a un espacio: elegir
               es de quien abre la app. */}

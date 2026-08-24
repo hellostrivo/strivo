@@ -1,13 +1,19 @@
 // src/breathing/__tests__/navegacion.test.js
 // Los criterios de SPEC_16 que se comprueban sobre la fuente y sobre lógica
-// pura: el Home, las rutas, la jerarquía y lo que NO debe existir.
+// pura: las rutas, la pantalla y lo que NO debe existir.
+//
+// **Revisado el 24 ago, cuando Respiración se mudó al espacio Lumia.** Lo que
+// se fue con el acceso del Home —criterios 2, 3, 4, 5 y toda la familia
+// RN-RE-NAV-01..08c— está abajo, en su propio bloque, comprobado en negativo:
+// una prueba que falla si el tercer acceso reaparece sin que nadie lo decida.
+// Lo demás sigue vigente y sin tocar.
 //
 // Igual que en SPEC_08, 14 y 15: el entorno es `node`, sin DOM. Y buena parte de
 // lo que este spec pide es ausencia —ni barra de navegación, ni felicitación, ni
 // puente entre espacios, ni transición de frase—, que es justo lo que no se
 // renderiza y sí se lee.
 
-import { readFileSync, readdirSync, statSync } from 'fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'fs'
 import { join } from 'path'
 import { describe, expect, it } from 'vitest'
 
@@ -19,13 +25,14 @@ import { preferenciasDeFabrica } from '../data/esquema.js'
 
 const HOME = 'src/pages/Home.jsx'
 const APP = 'src/App.jsx'
-const ACCESO = 'src/breathing/components/AccesoRespiracion.jsx'
 const CONTENEDOR = 'src/breathing/Respiracion.jsx'
 const CONFIG = 'src/breathing/PantallaRespiracion.jsx'
 const SESION = 'src/breathing/PantallaSesion.jsx'
 const CIERRE = 'src/breathing/components/CierreSesion.jsx'
 const PANEL = 'src/breathing/components/PanelAjustesVivo.jsx'
 const CSS = 'src/breathing/styles/respiracion.css'
+const NAV_LUMIA = 'src/components/lumia/NavLumia.jsx'
+const BLOQUE = 'src/breathing/components/Bloque.jsx'
 
 /**
  * El código sin comentarios: lo que se ejecuta, no lo que se explica.
@@ -49,116 +56,72 @@ function archivosDe(dir) {
   })
 }
 
-describe('la jerarquía del Home (criterios 2, 5b, 5c, 5d)', () => {
+describe('el acceso del Home se retiró entero (24 ago)', () => {
   const home = codigoDe(HOME)
+  const app = codigoDe(APP)
 
-  it('el acceso es un componente propio, no una variante de la tarjeta', () => {
-    // RN-RE-NAV-08c — Lumia y Formia comparten un `<Link>` en un `.map()`.
-    // Meterle un tercer modo sería la vía más rápida a que Respiración termine
-    // viéndose como un tercer espacio, que es justo lo que §0 quiere evitar.
-    expect(home).toMatch(/<AccesoRespiracion \/>/)
-    expect(home).toMatch(/import AccesoRespiracion from/)
-  })
-
-  it('no entra en el map de los espacios', () => {
-    const lista = home.match(/\{espacios\.map\([\s\S]*?\)\}/)[0]
-    expect(lista).not.toMatch(/[Rr]espiracion/)
-  })
-
-  it('los dos espacios siguen siendo exactamente dos', () => {
-    // RN-RE-NAV-08b — Cualquier diferencia en ellos tras este spec es una
-    // regresión, no una mejora.
+  it('el Home vuelve a tener dos accesos y solo dos', () => {
+    // Sustituye a los criterios 2, 3, 4 y 5 de SPEC_16, que medían la jerarquía
+    // de tres niveles de este vestíbulo. Ya no hay tercer nivel: Respiración es
+    // una sección de Lumia. Si el acceso vuelve, que sea porque alguien lo
+    // decidió y actualizó esta prueba, no porque se coló.
+    expect(home).not.toMatch(/AccesoRespiracion/)
+    expect(home).not.toMatch(/respiracion/i)
     const espacios = home.match(/const espacios = \[[\s\S]*?\]/)[0]
-    expect(espacios).toMatch(/'lumia'/)
-    expect(espacios).toMatch(/'formia'/)
     expect(espacios.match(/id:/g)).toHaveLength(2)
   })
 
-  it('su copy y su orden no cambiaron', () => {
-    expect(Object.keys(copy.shared.home)).toContain('lumia')
-    expect(Object.keys(copy.shared.home)).toContain('formia')
+  it('las dos tarjetas de espacio quedaron intactas', () => {
+    // RN-RE-NAV-08b sobrevive a la mudanza: lo que se fue es el tercer acceso,
+    // no nada de los dos primeros.
+    expect(home).toMatch(/'lumia'/)
+    expect(home).toMatch(/'formia'/)
     expect(home.indexOf("'lumia'")).toBeLessThan(home.indexOf("'formia'"))
   })
 
-  it('la animación de bienvenida no se tocó (RN-RE-NAV-08)', () => {
-    // No hizo falta recortarla: medido en 360x640, los tres accesos ocupan
-    // 466 px de 640. El caso 8.5 no llegó a dispararse.
+  it('la animación de bienvenida sigue sin tocarse (RN-RE-NAV-08)', () => {
     expect(home).toMatch(/bienvenida-luz/)
     expect(home).toMatch(/bienvenida-simbolo/)
     expect(home).toMatch(/alto=\{72\}/)
     expect(home).toMatch(/h-64 w-64/)
   })
 
-  it('el acceso va debajo de los dos espacios (RN-RE-NAV-04)', () => {
-    expect(home.indexOf('espacios.map')).toBeLessThan(home.indexOf('<AccesoRespiracion'))
+  it('el componente del acceso ya no existe', () => {
+    expect(existsSync('src/breathing/components/AccesoRespiracion.jsx')).toBe(false)
+  })
+
+  it('y tampoco existe su copy ni su ruta suelta', () => {
+    expect(copy.respiracion.home).toBeUndefined()
+    expect(app).not.toContain('path="/respiracion/*"')
+  })
+
+  it('el anillo del acceso se fue del CSS con él', () => {
+    // Sin comentarios: la cabecera de esa sección **nombra** la clase para
+    // contar que se retiró, y buscarla sobre el texto crudo daría positivo
+    // siempre. Es el mismo recorte que usa el bloque de la sesión más abajo.
+    const css = readFileSync(CSS, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+    expect(css).not.toMatch(/acceso-respiracion__icono/)
   })
 })
 
-describe('el acceso es subordinado (criterios 2 y 5, RN-RE-NAV-01/02/03)', () => {
-  const acceso = codigoDe(ACCESO)
+describe('la pestaña de Lumia (24 ago)', () => {
+  const nav = codigoDe(NAV_LUMIA)
 
-  it('no lleva subtítulo (RN-RE-NAV-02)', () => {
-    // Lumia y Formia lo llevan porque son marcas. Respiración es una función y
-    // su nombre ya la describe: añadirle subtítulo la asciende de categoría.
-    expect(Object.keys(copy.respiracion.home)).toEqual(['acceso'])
-    expect(acceso).not.toMatch(/pregunta|subtitulo|descripcion/)
+  it('Respiración va entre Journal e Historial', () => {
+    const secciones = nav.match(/const SECCIONES = \[[\s\S]*?\]/)[0]
+    expect(secciones.indexOf("'journal'")).toBeLessThan(secciones.indexOf("'respiracion'"))
+    expect(secciones.indexOf("'respiracion'")).toBeLessThan(secciones.indexOf("'historial'"))
   })
 
-  it('es una píldora, no una tarjeta', () => {
-    expect(acceso).toMatch(/rounded-full/)
-    expect(acceso).not.toMatch(/rounded-lg/)
+  it('apunta a la ruta que monta App', () => {
+    expect(nav).toContain("ruta: '/lumia/respiracion'")
+    expect(codigoDe(APP)).toContain('path="/lumia/respiracion/*"')
   })
 
-  it('no lleva símbolo de marca', () => {
-    expect(acceso).not.toMatch(/Simbolo/)
-  })
-
-  it('su texto va en peso normal, no en font-display', () => {
-    expect(acceso).not.toMatch(/font-display/)
-  })
-
-  it('usa tokens Strivo, nunca Lumia ni Formia (RN-RE-NAV-03)', () => {
-    expect(acceso).not.toMatch(/lumia|formia/i)
-    const regla = readFileSync(CSS, 'utf8')
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .match(/\.acceso-respiracion__icono \{[\s\S]*?\}/)[0]
-    expect(regla).toMatch(/var\(--strivo-\d+\)/)
-    expect(regla).not.toMatch(/--lumia-|--formia-/)
-  })
-
-  it('el área táctil llega a 56 px (RN-RE-NAV-06)', () => {
-    // RN-RE-NAV-01 pedía 40 % de una tarjeta —34 px— y RN-RE-NAV-06 exige 56.
-    // Manda la accesibilidad: no se puede entregar un blanco de 34 px, y menos
-    // a alguien que lo busca porque está mal. La subordinación la cargan las
-    // otras cuatro palancas, comprobadas arriba.
-    expect(acceso).toMatch(/min-h-touch/)
-  })
-})
-
-describe('los tres accesos caben sobre el pliegue (criterios 3 y 4)', () => {
-  const alto = {
-    py12: 48 * 2,
-    simbolo: 72,
-    gap12: 48,
-    tarjeta: 20 * 1.4 + 4 + 14 * 1.5 + 16 * 2,
-    gap3: 12,
-    acceso: 56,
-  }
-  const total =
-    alto.py12 + alto.simbolo + alto.gap12 + alto.tarjeta * 2 + alto.gap3 * 2 + alto.acceso
-
-  it('en 360x640 sobra espacio (RN-RE-NAV-05)', () => {
-    expect(total).toBeLessThan(640)
-    expect(640 - total).toBeGreaterThan(100)
-  })
-
-  it('en 320x568 sigue sobre el pliegue (caso 8.7)', () => {
-    expect(total).toBeLessThan(568)
-  })
-
-  it('la tarjeta mide 85 px y el acceso 56: el acceso es menor', () => {
-    expect(Math.round(alto.tarjeta)).toBe(85)
-    expect(alto.acceso).toBeLessThan(alto.tarjeta)
+  it('las cuatro secciones tienen rótulo', () => {
+    const secciones = copy.shared.navegacion.lumia.secciones
+    expect(Object.keys(secciones)).toEqual(['hoy', 'journal', 'respiracion', 'historial'])
+    Object.values(secciones).forEach((rotulo) => expect(rotulo.length).toBeGreaterThan(0))
   })
 })
 
@@ -166,30 +129,47 @@ describe('las rutas (criterios 6, 7, 9)', () => {
   const app = codigoDe(APP)
   const contenedor = codigoDe(CONTENEDOR)
 
-  it('respiracion cuelga de su propio contenedor', () => {
-    expect(app).toContain('path="/respiracion/*"')
-    expect(app).toMatch(/<Respiracion uid=\{uid\} \/>/)
+  it('respiracion cuelga de su propio contenedor, dentro de Lumia', () => {
+    expect(app).toContain('path="/lumia/respiracion/*"')
+    expect(app).toMatch(/<Respiracion\b/)
   })
 
-  it('respiracion no es un espacio, y de ahí salen tres reglas', () => {
-    // `espacioDe` devuelve null: sin barra (RN-RE-NAV-12), sin umbral de luz
-    // (RN-RE-NAV-34) y con el cromo en los neutros de Strivo. No hizo falta
-    // escribir ninguna de las tres.
+  it('el contenedor no escribe su propia ruta: la recibe', () => {
+    // Es lo que le permitió mudarse de espacio sin nombrar a ninguno. `base` y
+    // `salida` los pone quien enruta, que es el único que sabe dónde vive.
+    expect(app).toMatch(/base=\{RUTA_RESPIRACION\}/)
+    expect(app).toMatch(/salida=\{INICIO\.lumia\}/)
+    expect(contenedor).toMatch(/\$\{base\}\/sesion/)
+  })
+
+  it('ahora sí es un espacio, y de ahí sale su cromo (24 ago)', () => {
+    // Antes `espacioDe` devolvía null para `/respiracion` y eso daba gratis
+    // tres reglas de SPEC_16: sin barra, sin umbral y con los neutros de
+    // Strivo. Al entrar a `/lumia/` las tres se invierten, **que es lo que se
+    // pidió**: la herramienta tiene que sentirse nativa de Lumia.
     const funcion = app.match(/function espacioDe\(ruta\) \{[\s\S]*?\n\}/)[0]
+    expect(funcion).toMatch(/startsWith\('\/lumia'\)/)
     expect(funcion).not.toMatch(/respiracion/)
-    expect(funcion).toMatch(/return null/)
   })
 
-  it('la barra y el umbral cuelgan de que haya espacio', () => {
+  it('la barra y el umbral siguen colgando de que haya espacio', () => {
     expect(app).toMatch(/\{espacio && !hideNav && <BarraStrivo \/>\}/)
     expect(app).toMatch(/if \(!espacio \|\| !puedeCruzarse\) return/)
+  })
+
+  it('la sesión oculta el cromo, como el Journal al escribir (RN-RE-NAV-21)', () => {
+    // Con la pestaña dentro de un espacio hay cabecera arriba y barra abajo. En
+    // la pantalla de configuración están bien; durante la sesión no, porque lo
+    // único que hay que hacer ahí es seguir un ritmo.
+    expect(contenedor).toMatch(/onHideNav\?\.\(enSesion\)/)
+    expect(app).toMatch(/onHideNav=\{setHideNav\}/)
   })
 
   it('sin sesión en memoria, la ruta de sesión redirige (criterio 7)', () => {
     // RN-RE-NAV-09 — No es enlazable. Evita arrancar una sesión desde un enlace
     // o desde el historial del navegador.
     expect(contenedor).toMatch(/ESTADOS\.INACTIVO \? \(/)
-    expect(contenedor).toMatch(/<Navigate to="\/respiracion" replace \/>/)
+    expect(contenedor).toMatch(/<Navigate to=\{base\} replace \/>/)
   })
 
   it('salir de la ruta de sesión pausa, no destruye (criterio 8)', () => {
@@ -206,11 +186,15 @@ describe('las rutas (criterios 6, 7, 9)', () => {
     }
   })
 
-  it('no hereda la transición de frase de Lumia (criterio 6, RN-RE-NAV-34)', () => {
-    // Quien entra a Lumia va a reflexionar y una frase lo prepara. Quien entra a
+  it('no monta la transición de frase de Lumia (criterio 6, RN-RE-NAV-34)', () => {
+    // Quien entra a Lumia va a reflexionar y una frase lo prepara. Quien abre
     // Respiración puede estar mal en ese momento: interponer una pantalla
     // contemplativa ahí es fricción en el peor momento posible.
-    for (const ruta of [CONFIG, SESION, CONTENEDOR, ACCESO]) {
+    //
+    // Sigue en pie con la pestaña dentro del espacio. El umbral lo cruza `App`
+    // al **entrar al espacio**, una vez por sesión (`umbralSesion`), así que
+    // abrir esta sección no encadena nada que no encadenara ya el Journal.
+    for (const ruta of [CONFIG, SESION, CONTENEDOR]) {
       expect(codigoDe(ruta)).not.toMatch(/TransicionLuz|frases-apertura|umbralSesion/)
     }
   })
@@ -284,8 +268,17 @@ describe('la configuración (criterios 12, 13, 14, 15, 16, 17)', () => {
   const config = codigoDe(CONFIG)
 
   it('Empezar está fijo abajo (criterio 14, RN-RE-NAV-14)', () => {
-    expect(config).toMatch(/sticky bottom-0/)
+    expect(config).toMatch(/respiracion-accion sticky/)
     expect(config).toMatch(/controles\.empezar/)
+  })
+
+  it('y no a bottom-0, que lo dejaba debajo de la barra del espacio', () => {
+    // Dentro de Lumia hay una barra fija al pie. El desplazamiento vive en el
+    // CSS y no en una clase suelta porque es exactamente el alto de esa barra.
+    const css = readFileSync(CSS, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+    const regla = css.match(/\.respiracion-accion \{[\s\S]*?\n\}/)[0]
+    expect(regla).toMatch(/bottom: calc\(56px \+ env\(safe-area-inset-bottom/)
+    expect(config).not.toMatch(/sticky bottom-0/)
   })
 
   it('los favoritos van debajo de Empezar en el DOM (criterio 15)', () => {
@@ -490,18 +483,174 @@ describe('no hay puente con Lumia ni con Formia (criterios 35, 36, 37)', () => {
     expect(hoy).not.toMatch(/breathing|\/respiracion/)
   })
 
-  it('el Home es el único sitio que nombra a los tres', () => {
+  it('el Home sigue siendo el único sitio que ve los dos espacios', () => {
     // Los cruces se hacen por el vestíbulo y solo por el vestíbulo
-    // (RN-RE-NAV-37, extendiendo §C7.7.3).
+    // (RN-RE-NAV-37, extendiendo §C7.7.3). Respiración ya no está aquí: la
+    // nombra la navegación de Lumia, que es el espacio al que pertenece.
     const home = codigoDe(HOME)
     expect(home).toMatch(/lumia/)
     expect(home).toMatch(/formia/)
-    expect(home).toMatch(/AccesoRespiracion/)
+
+    const nav = codigoDe(NAV_LUMIA)
+    expect(nav).toMatch(/respiracion/)
+    expect(nav).not.toMatch(/formia/i)
+  })
+})
+
+describe('la elección se ve (24 ago)', () => {
+  const css = readFileSync(CSS, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+  const SELECTORES = {
+    patron: 'src/breathing/components/SelectorPatron.jsx',
+    visual: 'src/breathing/components/SelectorVisual.jsx',
+    duracion: 'src/breathing/components/SelectorDuracion.jsx',
+    sonido: 'src/breathing/components/PanelSonido.jsx',
+  }
+
+  it('los cuatro selectores llevan la clase que el CSS pinta', () => {
+    // **`data-elegido` estaba puesto desde SPEC_16 y no había una sola regla que
+    // lo pintara.** La elección existía en el `aria-pressed`, es decir para
+    // quien escucha la pantalla y no para quien la mira: tocar un sonido o una
+    // duración no cambiaba absolutamente nada. Esto es lo que faltaba.
+    Object.entries(SELECTORES).forEach(([, ruta]) => {
+      const codigo = codigoDe(ruta)
+      expect(`${ruta}`).toBe(ruta)
+      expect(codigo).toMatch(/respiracion-opcion/)
+      expect(codigo).toMatch(/data-elegido=\{/)
+    })
+  })
+
+  it('la regla existe y lleva tres señales, nunca solo el color', () => {
+    // Criterio 7 de SPEC_11 y RN-RE-VIS-17: superficie, borde de acento y peso.
+    const regla = css.match(/\.respiracion-opcion\[data-elegido='si'\] \{[\s\S]*?\n\}/)[0]
+    expect(regla).toMatch(/background-color:/)
+    expect(regla).toMatch(/border-color: var\(--espacio-acento\)/)
+    expect(regla).toMatch(/font-weight:/)
+  })
+
+  it('pesa más que la utilidad de Tailwind que le pone el borde', () => {
+    // Las utilidades se generan después de esta hoja, así que `[data-elegido]`
+    // a secas perdía contra el `border-on-surface` del propio botón y el borde
+    // de acento no llegaba a verse. Con clase propia pesa dos y gana.
+    expect(css).toMatch(/\.respiracion-opcion\[data-elegido='si'\]/)
+    expect(css).not.toMatch(/^\[data-elegido='si'\] \{/m)
+  })
+
+  it('el sonido elegido además lleva palomita', () => {
+    const panel = codigoDe(SELECTORES.sonido)
+    expect(panel).toMatch(/respiracion-palomita/)
+    // Va `aria-hidden`: `aria-pressed` ya lo dice, y anunciarlo dos veces es
+    // ruido para quien escucha.
+    expect(panel).toMatch(/aria-hidden="true" className="respiracion-palomita"/)
+    // Se dibuja, no se escribe: así no hay un carácter suelto fuera de copy/.
+    const palomita = css.match(/\.respiracion-palomita::after \{[\s\S]*?\n\}/)[0]
+    expect(palomita).toMatch(/content: ''/)
+    expect(palomita).toMatch(/border-right|border-bottom/)
+  })
+
+  it('solo puede haber un sonido y una duración elegidos a la vez', () => {
+    // No es una regla del CSS sino del modelo: `sonidoAmbienteId` y
+    // `duracion.modo` son un valor, no una lista, así que la exclusividad no se
+    // puede romper desde la interfaz.
+    const panel = codigoDe(SELECTORES.sonido)
+    expect(panel).toMatch(/const elegido = entrada\.id === sonidoId/)
+    expect(codigoDe(SELECTORES.duracion)).toMatch(/duracion\.modo === modo/)
+  })
+
+  it('con movimiento reducido no hay transición, y con contraste alto hay contorno', () => {
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{\s*\.respiracion-opcion,/)
+    expect(css).toMatch(
+      /@media \(prefers-contrast: more\) \{\s*\.respiracion-opcion\[data-elegido='si'\]/,
+    )
+  })
+})
+
+describe('el sonido suena de verdad (24 ago)', () => {
+  const hook = codigoDe('src/breathing/hooks/useSesionRespiracion.js')
+  const motor = codigoDe('src/breathing/audio/motorAmbiente.js')
+  const contenedor = codigoDe(CONTENEDOR)
+  const config = codigoDe(CONFIG)
+
+  it('la vista previa está cableada de punta a punta (RN-RE-SND-27)', () => {
+    // **Estaba construida entera y no la llamaba nadie.** La pantalla declaraba
+    // `vistaPreviaSonido` desde SPEC_16 y el contenedor nunca se la pasaba, así
+    // que elegir un sonido antes de empezar era mudo: lo único que se oía era
+    // ya dentro de la sesión.
+    expect(hook).toMatch(/const vistaPreviaSonido = useCallback/)
+    expect(hook).toMatch(/vistaPreviaSonido,/)
+    expect(contenedor).toMatch(/vistaPreviaSonido=\{sesion\.vistaPreviaSonido\}/)
+    expect(config).toMatch(/vistaPreviaSonido\?\.\(sonidoAmbienteId\)/)
+  })
+
+  it('el contexto se reanuda al pedirlo, no solo se adquiere', () => {
+    // `adquirir()` puede devolver un contexto **que ya existía** —lo creó la
+    // respiración diaria de Lumia, o esta pantalla antes de que el teléfono se
+    // bloqueara— y uno reutilizado llega suspendido: sin error y sin sonido.
+    // Era la mitad del "a veces suena y a veces no".
+    const asegurar = hook.slice(
+      hook.indexOf('const asegurarAudio'),
+      hook.indexOf('const soltarTodo'),
+    )
+    expect(asegurar).toMatch(/adquirir\(\)/)
+    expect(asegurar).toMatch(/reanudar\(\)/)
+  })
+
+  it('un solo motor de ambiente para la vista previa y la sesión', () => {
+    // Dos motores sobre el mismo contexto son dos grafos sonando a la vez, que
+    // es exactamente cómo se superponen los sonidos. `empezar()` reutiliza el
+    // que montó la vista previa en vez de crear otro.
+    expect(hook).toMatch(/const motor = asegurarAudio\(\)/)
+    const empezar = hook.slice(
+      hook.indexOf('const empezar = useCallback'),
+      hook.indexOf('const pausar'),
+    )
+    expect(empezar).not.toMatch(/crearMotorAmbiente/)
+  })
+
+  it('empezar tras escuchar un sonido no lo deja enmudecer a los 20 s', () => {
+    // La fuente que suena es la de la vista previa y su temporizador sigue
+    // vivo. `confirmarSonido` lo cancela sin cortar lo que ya suena.
+    expect(motor).toMatch(/confirmarSonido\(id\) \{\s*cancelarPrevia\(\)/)
+    expect(hook).toMatch(/motor\.confirmarSonido\(sonido\)/)
+  })
+
+  it('cambiar de sonido suelta el anterior antes de montar el nuevo (caso 6.3)', () => {
+    // Cinco toques seguidos dejan exactamente una fuente viva. El cruce anterior
+    // no se deja a medias.
+    const cambiar = motor.slice(motor.indexOf('cambiarSonido(id'), motor.indexOf('entrar() {'))
+    expect(cambiar).toMatch(/soltar\(saliente\)/)
+    expect(cambiar).toMatch(/saliente = null/)
+  })
+
+  it('con la sesión en marcha no hay vista previa: se ajusta en vivo', () => {
+    // Dos caminos de audio a la vez es la otra forma de superponer sonidos.
+    expect(hook).toMatch(
+      /if \(maquina\.current !== null\) return\s*\n\s*const motor = asegurarAudio/,
+    )
+  })
+
+  it('"Otra vez" vuelve a arrancar de verdad', () => {
+    // `maquina.current` sigue en pie tras `completado`, así que la guarda de
+    // idempotencia a secas dejaba el botón del cierre sin hacer nada. Se tira la
+    // máquina agotada y se monta otra; el audio no se toca, que es lo que deja
+    // el ambiente sonando entre una sesión y la siguiente.
+    expect(hook).toMatch(/instantanea\(\)\?\.estado !== ESTADOS\.COMPLETADO/)
+  })
+
+  it('el préstamo del contexto se devuelve al desmontar, no solo al salir', () => {
+    // Antes solo lo devolvía `salir()`, así que irse por el botón atrás del
+    // navegador dejaba el contexto abierto para siempre (RN-AUD-04).
+    expect(hook).toMatch(/const prestado = useRef\(false\)/)
+    expect(hook).toMatch(/soltarTodo\(\)\s*\n\s*if \(prestado\.current\)/)
+  })
+
+  it('mover el volumen mientras se escucha se oye', () => {
+    expect(contenedor).toMatch(/if \(parcial\.volumenAmbiente !== undefined\)/)
+    expect(contenedor).toMatch(/sesion\.ajustarEnVivo\(\{ volumenAmbiente/)
   })
 })
 
 describe('ni un string visible fuera del copy (criterio 42)', () => {
-  const NUEVOS = [ACCESO, CONFIG, SESION, CIERRE, PANEL, CONTENEDOR]
+  const NUEVOS = [CONFIG, SESION, CIERRE, PANEL, CONTENEDOR, BLOQUE]
 
   it.each(NUEVOS)('%s no escribe texto a mano', (ruta) => {
     // Las flechas de los manejadores llevan un `>` dentro, así que trocear el

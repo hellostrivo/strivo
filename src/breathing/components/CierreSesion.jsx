@@ -22,7 +22,10 @@ export default function CierreSesion({ resumen, onRepetir, onVolver }) {
   const minutos = Math.round((resumen?.segundosActivos ?? 0) / 60)
 
   return (
-    <section className="respiracion-cierre flex flex-col items-center gap-6 px-6 py-12">
+    <section
+      data-surface="light"
+      className="respiracion-cierre flex min-h-screen flex-col items-center justify-center gap-6 bg-espacio px-6 py-12"
+    >
       <h1 className="font-display text-lg text-on-surface">{textos.titulo}</h1>
 
       {resumen?.registrable ? (
@@ -37,7 +40,7 @@ export default function CierreSesion({ resumen, onRepetir, onVolver }) {
         <button
           type="button"
           onClick={onRepetir}
-          className="min-h-touch rounded-full border border-espacio px-5 text-sm text-on-surface"
+          className="min-h-touch rounded-full border border-on-surface bg-raised px-5 text-sm text-on-surface"
         >
           {textos.repetir}
         </button>

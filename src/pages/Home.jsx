@@ -20,21 +20,21 @@
 // El cromo es el neutro conector de Strivo (manual §4.2): sin `data-space`, el
 // tema deja los `--strivo-*`, que no cambian con el momento del día (§4.1).
 //
-// **SPEC_16 solo añade el tercer acceso, debajo de los dos espacios.** Ni una
-// línea más de este archivo se tocó (§1.1): la animación de bienvenida, las
-// tarjetas de Lumia y Formia, su copy y su orden quedan idénticos
-// (RN-RE-NAV-08 y 08b). No hizo falta recortar nada — medido en 360×640, los
-// tres accesos ocupan 466 px de 640 y quedan 174 libres (RN-RE-NAV-05).
+// **El Home vuelve a tener dos accesos y solo dos (24 ago).** SPEC_16 le añadió
+// un tercero, subordinado, para Respiración; ahora esa herramienta es una
+// sección de Lumia y se entra por su pestaña. Con ello se retiran
+// `AccesoRespiracion.jsx` y `copy.respiracion.home`, y quedan derogadas
+// RN-RE-NAV-01 a 08c —toda la jerarquía de tres niveles de este vestíbulo—.
+// Lo decidió el propietario del producto.
 //
-// **Respiración no es un tercer espacio y no debe verse como uno.** Lumia y
-// Formia se habitan; Respiración se toma. Por eso va en un componente propio
-// (RN-RE-NAV-08c) y fuera del `<nav>` de los espacios: meterla en la misma
-// lista la ascendería de categoría por el mero hecho de compartir contenedor.
+// Lo que no cambia es el argumento de fondo de SPEC_16: **Respiración no es un
+// espacio.** Antes se sostenía haciéndola subordinada aquí; ahora se sostiene
+// dándole el sitio que le corresponde —una sección dentro del espacio que la
+// usa— en vez de una categoría propia junto a las dos marcas.
 
 import { Link } from 'react-router-dom'
 import { clsx } from 'clsx'
 import Simbolo from '@components/shared/Simbolo'
-import AccesoRespiracion from '@/breathing/components/AccesoRespiracion'
 import { copy } from '@copy'
 
 const textos = copy.shared.home
@@ -81,10 +81,6 @@ export default function Home({ rutaDe }) {
             </li>
           ))}
         </ul>
-
-        {/* RN-RE-NAV-04 — Siempre debajo de los dos espacios. Nunca entre ellos
-            y nunca arriba: la posición es parte de la jerarquía. */}
-        <AccesoRespiracion />
       </nav>
     </div>
   )

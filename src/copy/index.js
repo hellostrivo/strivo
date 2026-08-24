@@ -1058,9 +1058,14 @@ export const copy = {
       lumia: {
         pestana: 'Lumia',
         cabecera: 'Lumia · Reflexión',
+        // Respiración va entre Journal e Historial, y ese sitio es la decisión:
+        // las tres primeras son lo que se hace hoy —el día, lo que se escribe,
+        // el aire— y el Historial es lo que ya pasó. Dejarla al final la habría
+        // metido en el pasado.
         secciones: {
           hoy: 'Hoy',
           journal: 'Journal',
+          respiracion: 'Respiración',
           historial: 'Historial',
         },
       },
@@ -1482,13 +1487,6 @@ export const copy = {
       // Es puntuación, pero se ve, y elegirla es una decisión editorial: podría
       // ser «·», «•» o un guion largo. Vive aquí como todo lo que se lee.
       separador: ' · ',
-    },
-
-    // SPEC_16 §6 — El acceso del Home. Sin subtítulo a propósito (RN-RE-NAV-02):
-    // Lumia y Formia llevan uno porque son marcas; Respiración es una función y
-    // su nombre ya la describe. Añadirle subtítulo la asciende de categoría.
-    home: {
-      acceso: 'Respiración',
     },
 
     configuracion: {
