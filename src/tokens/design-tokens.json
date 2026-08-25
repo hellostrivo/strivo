@@ -15,11 +15,10 @@
       "900": "#2B2730"
     },
     "simbolos": {
-      "comment": "Manual §3.2 — El tono de firma de cada símbolo NO coincide con el primario de su paleta, y no se fuerza a que coincida. Se usa solo para el símbolo: logo, ícono de app, favicon.",
-      "strivo": "#2B2730",
-      "viewBox": "0 0 122 130",
-      "strokeLinecap": "round",
-      "strokeLinejoin": "round"
+      "comment": "Manual §3.1 y §3.2 — Del logo oficial (`Strivo_Logo_Oficial.svg`, 25 ago 2026), que es un lockup vertical: símbolo y palabra en el mismo trazado. El tono de firma sigue SIN coincidir con el primario de su paleta, y sigue sin forzarse. Se usa solo para el logo: cabecera, ícono de app, favicon. `strokeLinecap` y `strokeLinejoin` se RETIRAN: describían el símbolo de trazo anterior y el archivo oficial es de relleno, sin un solo `stroke`.",
+      "strivo": "#2B282F",
+      "puntos": "#776F79",
+      "viewBox": "0 0 1016 920"
     },
     "respiracion": {
       "comment": "SPEC_14 §5 — Las cuatro fases de la herramienta de Respiración. Salen íntegramente de la escala Strivo madre (RN-RE-VIS-00: cero tokens de sección). §5 describía un eje cálido→frío; en una escala acromática ese eje no existe, así que las fases se separan por LUMINANCIA. No es una pérdida: RN-RE-VIS-17 ya prohíbe comunicar la fase solo por color, y el texto de `EtiquetaFase` más la geometría del disco llevan el dato.",

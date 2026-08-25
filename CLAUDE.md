@@ -66,10 +66,29 @@ Las cuatro secciones viven en **la cabecera**, bajo el símbolo. No hay barra in
 | **RN-NAV-06** | Ruta desconocida devuelve a `/hoy`, sin mensaje de error. |
 | **RN-NAV-07** | PWA estática con `HashRouter`. **Si alguien lo cambia a `BrowserRouter`, hay que añadir el `_redirects` de Netlify antes** o las rutas profundas darán 404. |
 
-**El umbral de entrada** (§4.3): velo de luz con una frase de apertura, **una vez por sesión**
-(`src/lib/umbralSesion.js`). No es una secuencia: sin botón de avanzar, toda su superficie lo salta.
-Con `prefers-reduced-motion` **no se muestra**. El contenido va montado detrás antes de que la luz se
-vaya — un velo sobre una pantalla en blanco no es un umbral, es una espera con luz.
+**El umbral de entrada** (§4.3): velo de luz, **una vez por sesión** (`src/lib/umbralSesion.js`). No
+es una secuencia: sin botón de avanzar, toda su superficie lo salta. Con `prefers-reduced-motion`
+**no se muestra**. El contenido va montado detrás antes de que la luz se vaya — un velo sobre una
+pantalla en blanco no es un umbral, es una espera con luz.
+
+**Dentro del velo va una cosa u otra según dónde se monte, y siguen siendo la misma pieza**
+(`TransicionLuz`, RN-LU-MAN-01):
+
+| Dónde | Qué lleva dentro | Quién decide que se acabó |
+|---|---|---|
+| Al abrir la app (`App.jsx`, `conVideo`) | El video de apertura de la marca, 4 s, sin sonido y sin bucle | El propio video (`onEnded`); el temporizador de 5 s es la red de seguridad si el autoplay no arranca |
+| Al aparecer la Mañana (`Hoy.jsx`, por defecto) | Una frase del repertorio de apertura | El temporizador de 5 s |
+
+El `<video>` va con **`muted`, `playsInline` y `autoPlay`** —los tres, o iOS no reproduce— y `muted`
+se repite sobre el nodo en un efecto, porque React no siempre lo escribe como atributo. **Nunca
+`loop`.** Con movimiento reducido el componente pondría el logo quieto en su lugar, pero esa rama no
+llega a montarse: `App` entra directo a Hoy (RN-VIS-05).
+
+**Y se encaja entero: `object-contain`, nunca `object-cover`** (RN-VIS-06). El archivo es vertical
+(1080×1920) y la pantalla no siempre lo es. Con `cover` —que amplía hasta cubrir— una ventana de
+portátil de 1440×900 lo pintaba a 1440×2560, recortando 1660 px y dejando todo lo de dentro enorme.
+**Ninguna medida del umbral va en píxeles fijos**, tampoco la del logo quieto: se miden contra la
+pantalla (`min(40vh, 36vw)`), porque no se sabe en qué se abre la app.
 
 ---
 
@@ -153,6 +172,7 @@ negro puro**) · amber, plum, sage, clay, mist.
 | **RN-VIS-03** | El negro puro no se usa. |
 | **RN-VIS-04** | Cambiar de momento recolorea fondo, cabecera y tarjetas **a la vez**, en 320 ms. Nada salta a destiempo. |
 | **RN-VIS-05** | Toda animación respeta `prefers-reduced-motion`. Con ella, las transiciones son inmediatas y el umbral no se muestra. |
+| **RN-VIS-06** | **Lo que ocupa la pantalla se encaja entero, nunca se recorta ni se mide en píxeles fijos.** El visual de apertura va con `object-contain` y el logo del umbral con una longitud relativa. Un teléfono, un iPad y un portátil no tienen la misma forma, y el producto se abre en los tres. |
 
 > **No uses `text-surface`.** Tailwind ya genera esa clase desde el color `surface` y la que gane
 > depende del orden del CSS, con texto casi blanco sobre fondo claro como premio.
@@ -481,7 +501,28 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**48 archivos de prueba · 1.373 casos · los seis comandos en verde.**
+**48 archivos de prueba · 1.393 casos · los seis comandos en verde.**
+
+### Marca: el logo oficial y el video de apertura (25 ago 2026)
+
+Llegan dos materiales del diseñador y los dos sustituyen algo que ya existía:
+
+- **`Strivo_Logo_Oficial.svg` sustituye a `strivo_simbolo.svg`, que sale del repo.** No es otra
+  versión del mismo dibujo: es un **lockup vertical** —símbolo y palabra en el mismo trazado—, de
+  relleno y no de trazo, sobre el lienzo `0 0 1016 920` y no `0 0 122 130`. Por eso **la cabecera ya
+  no lleva el rótulo «Strivo» al lado**: el archivo ya lo dice, y ponerlo dos veces sería nombrar la
+  marca dos veces. Va a **56 px de alto**, que es el mínimo al que la palabra se lee: ocupa la quinta
+  parte inferior del lienzo, así que a los 18 px del símbolo anterior medía 3,5 px. El tono de firma
+  pasa de `#2B2730` a **`#2B282F`**, y aparece un segundo color, **`#776F79`**, en los dos puntos
+  terminales. Manual §3.1, §3.2 y §3.3 reeditados; `lint:contraste` mide los dos colores nuevos.
+- **`strivo_apertura.mp4` sustituye a la frase, y solo al abrir la app.** La frase sigue viva en el
+  umbral de la Mañana, así que el repertorio de §C7.5 conserva su consumidor. **El archivo se
+  renombró al integrarlo** —llegó como `Strivo_Apertura_Respiración.mp4`—: la ruta del `import`
+  habría metido «Respiración» dentro de `TransicionLuz.jsx`, que tiene prohibido nombrarla
+  (RN-LU-MAN-03), y la tilde viaja percent-encoded desde el hospedaje.
+
+**Pendiente de esto:** el **ícono de app y el favicon piden el símbolo suelto**, sin wordmark —a
+64 px la palabra no se lee— y ese recorte no existe como archivo. Anotado en el manual §3.5 y §9.
 
 ### Pendiente para cerrar F-0
 
@@ -515,9 +556,15 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
 - **Los 16 iconos emocionales no se hicieron, y es una decisión, no un olvido** (backlog B-1). Son
   **material de marca, no de código: se piden, no se improvisan.** La especificación está en el
   manual §6.2 y en el blueprint §15.3. Los catálogos usan hoy emojis del sistema.
-- **La versión monocromática del símbolo está en uso y sin aprobar** (manual §3.3). Está derivada con
-  un filtro CSS y **no** como archivo nuevo, para que aprobarla —o sustituirla por la del diseñador—
-  sea borrar tres líneas.
+- **La versión monocromática del logo está en uso y sin aprobar** (manual §3.3). Está derivada con un
+  filtro CSS y **no** como archivo nuevo, para que aprobarla —o sustituirla por la del diseñador— sea
+  borrar dos reglas. **Ahora son dos sitios y no uno:** la cabecera de la Mañana (1,17:1 sin filtro)
+  y el logo quieto del umbral sobre el velo nocturno (2,09:1 sin filtro).
+- **El video de apertura no está en el precaché del service worker**, así que un primer arranque sin
+  red no lo reproduce: `onError` cierra el umbral y se entra a Hoy sin más, que es lo que RN-EST-05
+  pide. **No es una regresión de este cambio**: el `.svg` del logo y las once fuentes de Inter
+  tampoco lo están —workbox solo precachea `js`, `css` y `html`—, así que meter el `.mp4` es una
+  decisión sobre los assets en general y no sobre este archivo.
 - **Las frases están sin revisar editorialmente:** ~100 de apertura y ~60 del día. Pasan §3.3 con
   prueba automática; **qué se le dice a alguien al abrir la app es del propietario del producto**, no
   de quien programa. El objetivo del blueprint son 120+ frases del día (B-2).

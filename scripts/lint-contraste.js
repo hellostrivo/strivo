@@ -90,12 +90,20 @@ const MARCA = {
   // §6.3.9 — El círculo de la respiración, en sus dos versiones.
   breathAm: '#E8A54A',
   breathPm: '#DCCFF1',
-  // El símbolo de Strivo lleva su color dentro del `.svg` (manual §3.2: el tono
-  // de firma no es el primario de la paleta y no se toca). Sobre el contratono
-  // de la mañana no se ve, así que ahí se pinta la versión monocromática que el
+  // El logo de Strivo lleva su color dentro del `.svg` (manual §3.2: el tono de
+  // firma no es el primario de la paleta y no se toca). Sobre el contratono de
+  // la mañana no se ve, así que ahí se pinta la versión monocromática que el
   // manual §9 tiene pendiente. Se miden los dos.
-  simbolo: '#2B2730',
+  //
+  // **Del logo oficial (25 ago 2026).** El tono de firma pasa de `#2B2730` a
+  // `#2B282F` con el archivo nuevo, y aparece un segundo color —`#776F79`, los
+  // dos puntos terminales— que antes no existía y que también hay que medir: un
+  // punto que no se ve deja de ser parte de la identidad.
+  simbolo: '#2B282F',
+  simboloPuntos: '#776F79',
   simboloMono: '#FFFFFF',
+  // Los dos velos del umbral de entrada (`--transicion-velo`).
+  veloClaro: '#FBF8F4',
 }
 
 const CUERPO = 7
@@ -126,7 +134,7 @@ const PARES = [
   ['Mañana · borde activo sobre cabecera', MARCA.strivoAm100, MARCA.conmutadorAm, NO_TEXTO],
   // El símbolo de la app. En su tono de firma daría 1,17:1 sobre el contratono
   // —invisible—, así que ahí va en la versión monocromática del manual §9.
-  ['Mañana · símbolo mono sobre cabecera', MARCA.simboloMono, MARCA.conmutadorAm, NO_TEXTO],
+  ['Mañana · logo mono sobre cabecera', MARCA.simboloMono, MARCA.conmutadorAm, NO_TEXTO],
   // La tarjeta de la respiración: `--strivo-tarjeta`, blanco al 72 %, sobre la
   // parada más oscura del degradado de la mañana, que es su peor caso.
   ['Mañana · cuerpo sobre tarjeta de respiración', TEXTO.onLight, sobre('#FFFFFF', 0.72, MARCA.strivoAm100), CUERPO],
@@ -144,7 +152,8 @@ const PARES = [
   ['Noche · borde sobre cabecera', MARCA.strivoPm400, MARCA.strivoAm100, SEPARADOR],
   // De noche la cabecera es la pieza clara y el símbolo va tal cual sale del
   // `.svg`: sin filtro y sin monocromo.
-  ['Noche · símbolo sobre cabecera', MARCA.simbolo, MARCA.strivoAm100, NO_TEXTO],
+  ['Noche · logo sobre cabecera', MARCA.simbolo, MARCA.strivoAm100, NO_TEXTO],
+  ['Noche · puntos del logo sobre cabecera', MARCA.simboloPuntos, MARCA.strivoAm100, NO_TEXTO],
   // El degradado nocturno de Hoy, en sus tres paradas.
   ['Hoy·noche · cuerpo sobre degradado', TEXTO.onDark, MARCA.night, CUERPO],
   ['Hoy·noche · secundario sobre degradado', TEXTO.onDarkSoft, MARCA.night, GRANDE],
@@ -157,6 +166,16 @@ const PARES = [
   // el degradado, medido en su parada más clara, que es el peor caso.
   ['Noche · frase sobre su recuadro', TEXTO.onDark, sobre(MARCA.strivoPm400, 0.2, '#2C2350'), CUERPO],
   ['Noche · borde del recuadro de la frase', sobre(MARCA.strivoAm100, 0.3, sobre(MARCA.strivoPm400, 0.2, '#2C2350')), sobre(MARCA.strivoPm400, 0.2, '#2C2350'), SEPARADOR],
+
+  // ── El umbral de entrada (25 ago) ───────────────────────────────────────────
+  // Con "reducir movimiento" el umbral pone el logo quieto donde iría el video.
+  // Cae sobre `--transicion-velo`, que tiene dos valores según el reloj, y son
+  // dos superficies distintas: crema de día, índigo de noche. Sobre la segunda
+  // el tono de firma da 2,09:1, así que ahí va en monocromo, igual que en la
+  // cabecera de la Mañana (manual §3.3).
+  ['Umbral · logo sobre el velo claro', MARCA.simbolo, MARCA.veloClaro, NO_TEXTO],
+  ['Umbral · puntos del logo sobre el velo claro', MARCA.simboloPuntos, MARCA.veloClaro, NO_TEXTO],
+  ['Umbral · logo mono sobre el velo nocturno', MARCA.simboloMono, MARCA.night, NO_TEXTO],
 
   // ── Strivo, el cromo de fuera de los espacios ───────────────────────────────
   ['Strivo · cuerpo sobre base', TEXTO.onLight, MARCA.strivo50, CUERPO],

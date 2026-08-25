@@ -353,6 +353,18 @@
   --transicion-luz: radial-gradient(circle, rgba(232, 165, 74, .18) 0%, rgba(232, 165, 74, 0) 70%);
 }
 
+/* El logo quieto que el umbral pone en lugar del video cuando la preferencia de
+   movimiento reducido está activada (25 ago). Sobre el velo crema va tal cual
+   —13,70:1—; sobre el velo nocturno su tono de firma daría 2,09:1 y se pasa a
+   monocromo blanco (17,92:1), con el mismo filtro y por el mismo motivo que en
+   la cabecera de la Mañana (manual §3.3).
+
+   El color lo sigue trayendo el `.svg` y el componente sigue sin tocarlo: quien
+   sabe sobre qué velo cae es el tema, y es quien lo corrige (RN-VIS-02). */
+[data-moment='noche'] .velo-transicion img {
+  filter: brightness(0) invert(1);
+}
+
 /* ─── Acento de la respiración (§6.3.9) ──────────────────────────────────────
    Naranja/dorado deliberadamente más saturado que `amber` (#E5A25C): tiene que
    destacar sobre el degradado de amanecer, que ya es cálido. Usar el ámbar del
@@ -385,6 +397,18 @@
   18%  { opacity: 1; }
   78%  { opacity: 1; }
   100% { opacity: 0; }
+}
+
+/* El mismo velo cuando lo que lleva dentro es el video de apertura (25 ago).
+   **Entra y se queda**: no tiene la salida de arriba porque no es el reloj
+   quien decide cuándo se va, es el video —`onEnded` desmonta la pieza entera—.
+   Con la curva de siempre habría empezado a desvanecerse al 78 % de cinco
+   segundos, o sea a mitad de fotograma, y el video se vería apagarse antes de
+   acabar. La entrada es más corta que la de la frase por el mismo motivo: no
+   hay nada que leer, hay algo que empieza. */
+@keyframes transicion-entrada-video {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
 }
 
 /* Bienvenida del Home de Strivo. **Sin texto**: el símbolo aparece y respira una
@@ -514,6 +538,10 @@
 
   .transicion-entrada {
     animation: transicion-entrada 5000ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .transicion-entrada-video {
+    animation: transicion-entrada-video 480ms cubic-bezier(0.4, 0, 0.2, 1) both;
   }
 
   .bienvenida-simbolo {

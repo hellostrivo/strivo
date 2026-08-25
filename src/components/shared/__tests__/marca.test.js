@@ -123,62 +123,140 @@ describe('los valores llegaron intactos del manual (criterios 3 y 4)', () => {
 })
 
 // **Deroga "los dos símbolos"** (paso 9, §8: "el símbolo de la app →
-// `strivo_simbolo.svg`", en singular). Eran tres, quedaron dos y queda uno. La
-// vela era lo único que se veía —en la cabecera, con el rótulo al lado ya
-// diciendo Strivo— y la sustituye la "S" del producto.
+// `strivo_simbolo.svg`", en singular). Eran tres, quedaron dos y queda uno.
 //
-// Lo que sobrevive del criterio 5, y es lo que vigila ahora: el que queda es de
-// trazo, sobre el lienzo del manual, y lleva su tono de firma dentro del `.svg`.
-describe('el símbolo de la app (criterio 5, revisado 25 ago)', () => {
+// **Y el que queda cambia de archivo el 25 de agosto de 2026.** Llega
+// `Strivo_Logo_Oficial.svg`, el logo del diseñador, y con él se retira la «S»
+// suelta. **No es una versión nueva del mismo dibujo: es otra pieza.** Es un
+// lockup vertical —símbolo y palabra en el mismo trazado— y eso invalida tres
+// cosas que este bloque vigilaba como si fueran del sistema y eran de aquel
+// archivo:
+//
+// - **"Comparten el mismo lienzo" se reescribe.** El lienzo pasa de
+//   `0 0 122 130` a `0 0 1016 920`. Lo que la prueba protegía —que el
+//   componente calcule el ancho con la proporción del archivo y no con una
+//   heredada— sigue vivo, y ahora se comprueba contra el `.svg` en vez de
+//   contra una constante escrita a mano en la prueba.
+// - **"Son de trazo, con extremos y uniones redondeadas" se RETIRA.** El logo
+//   oficial es de relleno: dos `path` con `fill` y sin un solo `stroke`, así que
+//   `stroke-linecap`, `stroke-linejoin` y `fill="none"` no describen nada. En su
+//   sitio se comprueba lo que sí es cierto del archivo nuevo, que es lo
+//   contrario. La regla que la sostenía —§2, "formas circulares y orgánicas"—
+//   no la puede leer una prueba ni la podía leer antes.
+// - **El tono de firma cambia de valor, no de regla.** `#2B2730` → `#2B282F`, y
+//   aparece un segundo color en los puntos terminales. Lo que se vigila sigue
+//   siendo que ninguno de los dos sea el primario de la paleta (§3.2).
+describe('el logo de la app (criterio 5, revisado 25 ago)', () => {
   const nombres = readdirSync(SIMBOLOS)
     .filter((n) => n.endsWith('.svg'))
     .sort()
 
+  const logo = readFileSync(join(SIMBOLOS, 'Strivo_Logo_Oficial.svg'), 'utf8')
+
   it('está el suyo, y no hay un segundo', () => {
-    expect(nombres).toEqual(['strivo_simbolo.svg'])
+    expect(nombres).toEqual(['Strivo_Logo_Oficial.svg'])
   })
 
   it('el mapa de marcas del componente tiene exactamente ese', () => {
-    const mapa = codigoDe('src/components/shared/Simbolo.jsx').match(
-      /const ARCHIVOS = Object\.freeze\(\{([\s\S]*?)\}\)/,
-    )[1]
+    const codigo = codigoDe('src/components/shared/Simbolo.jsx')
+    const mapa = codigo.match(/const ARCHIVOS = Object\.freeze\(\{([\s\S]*?)\}\)/)[1]
     const marcas = (mapa.match(/^\s*(\w+):/gm) ?? []).map((l) => l.trim().replace(':', ''))
     expect(marcas).toEqual(['strivo'])
+    // Y apunta al archivo que está en disco, no a uno que ya no existe.
+    expect(codigo).toMatch(/from '@\/assets\/marca\/Strivo_Logo_Oficial\.svg'/)
   })
 
-  it('comparten el mismo lienzo, que es lo que los hace comparables', () => {
-    nombres.forEach((nombre) => {
-      const svg = readFileSync(join(SIMBOLOS, nombre), 'utf8')
-      expect(`${nombre}: ${svg}`).toContain('viewBox="0 0 122 130"')
-    })
+  it('el lienzo del componente es el del archivo, no uno heredado', () => {
+    // De ahí sale el ancho que `Simbolo` calcula. Copiarlo mal deformaría el
+    // logo sin que nada fallara, así que las tres copias —el `.svg`, el
+    // componente y el token— se comprueban una contra otra.
+    const declarado = codigoDe('src/components/shared/Simbolo.jsx').match(/VIEW_BOX = '([^']+)'/)[1]
+    expect(logo).toContain(`viewBox="${declarado}"`)
+    expect(declarado).toBe(tokens.brand.simbolos.viewBox)
   })
 
-  it('son de trazo, con extremos y uniones redondeadas', () => {
-    nombres.forEach((nombre) => {
-      const svg = readFileSync(join(SIMBOLOS, nombre), 'utf8')
-      expect(`${nombre}`).toBe(nombre)
-      expect(svg).toContain('stroke-linecap="round"')
-      expect(svg).toContain('stroke-linejoin="round"')
-      expect(svg).toContain('fill="none"')
-    })
+  it('la proporción con la que se dibuja sale de ese lienzo', () => {
+    // Con los números del símbolo anterior —122:130, más alto que ancho— el
+    // logo saldría estrecho y aplastado, y ninguna otra prueba lo vería.
+    const codigo = codigoDe('src/components/shared/Simbolo.jsx')
+    const [, ancho, alto] = tokens.brand.simbolos.viewBox.match(/0 0 (\d+) (\d+)/)
+    expect(codigo).toMatch(new RegExp(`ANCHO = ${ancho}`))
+    expect(codigo).toMatch(new RegExp(`ALTO = ${alto}`))
+    expect(codigo).toMatch(/width=\{ANCHO\}/)
+    expect(codigo).toMatch(/height=\{ALTO\}/)
   })
 
-  it('lleva su tono de firma, distinto del primario de la paleta', () => {
-    // Manual §3.2 — No se fuerzan a coincidir: el símbolo tiene su propio tono.
-    expect(readFileSync(join(SIMBOLOS, 'strivo_simbolo.svg'), 'utf8')).toContain('#2B2730')
-    // El tono de firma no es el primario de la paleta, y siguen sin forzarse.
+  // **Reescrita el 25 de agosto, después de verlo en el navegador.** Decía que
+  // el ancho lo calculaba el componente —`(alto * ANCHO) / ALTO`— y con eso
+  // `alto` no podía ser más que un número de píxeles. Un número de píxeles no
+  // se ajusta a la pantalla, que es justo lo que hacía falta para el umbral, así
+  // que el cálculo se retira y lo hace el navegador a partir de la proporción.
+  //
+  // Lo que la prueba protegía sigue en pie y es esto: **nunca se fijan el alto y
+  // el ancho a la vez**. Fijar los dos es lo que deforma el logo, y es lo único
+  // que el manual §3.6 prohíbe explícitamente ("estirar, cambiar proporción").
+  it('nunca se le fijan el alto y el ancho a la vez: el logo no se deforma', () => {
+    const codigo = codigoDe('src/components/shared/Simbolo.jsx')
+    const estilo = codigo.match(/style=\{\{([^}]*)\}\}/)[1]
+    expect(estilo).toMatch(/height: alto/)
+    expect(estilo).toMatch(/width: 'auto'/)
+    // Y si el tope de ancho llega a actuar, encoge en vez de aplastar.
+    expect(estilo).toMatch(/maxWidth: '100%'/)
+    expect(estilo).toMatch(/objectFit: 'contain'/)
+  })
+
+  it('el alto puede medirse contra la pantalla, no solo en píxeles', () => {
+    // La cabecera pide un número —ahí manda el mínimo legible de §3.1— y el
+    // umbral pide una longitud relativa, porque ocupa la pantalla entera y la
+    // pantalla no siempre es la misma.
+    expect(codigoDe('src/components/diario/NavStrivo.jsx')).toMatch(/ALTO_LOGO = 56/)
+    expect(codigoDe('src/components/shared/TransicionLuz.jsx')).toMatch(
+      /ALTO_LOGO = 'min\([^']*v[hw][^']*\)'/,
+    )
+  })
+
+  it('es de relleno, sin un solo trazo que redondear', () => {
+    expect(logo).toMatch(/fill="#[0-9A-F]{6}"/i)
+    expect(logo).not.toContain('stroke')
+    expect(logo).not.toContain('fill="none"')
+    // Y los tokens no describen un trazo que no existe.
+    expect(tokens.brand.simbolos.strokeLinecap).toBeUndefined()
+    expect(tokens.brand.simbolos.strokeLinejoin).toBeUndefined()
+  })
+
+  it('trae el símbolo y la palabra en la misma pieza', () => {
+    // Es lo que hace que la cabecera no lleve rótulo al lado: el archivo ya lo
+    // dice. Si algún día llega el símbolo suelto, esta prueba es la que avisa
+    // de que hay una decisión que volver a tomar (manual §3.5).
+    expect(logo).toContain('id="symbol-and-wordmark"')
+    expect(logo).toContain('id="terminal-dots"')
+  })
+
+  it('lleva sus tonos de firma, distintos del primario de la paleta', () => {
+    // Manual §3.2 — No se fuerzan a coincidir: el logo tiene su propio tono.
+    expect(logo).toContain(tokens.brand.simbolos.strivo)
+    expect(logo).toContain(tokens.brand.simbolos.puntos)
+    // Ninguno de los dos es el primario de la paleta, y siguen sin forzarse.
     expect(tokens.brand.simbolos.strivo).not.toBe('#6C5AA7')
+    expect(tokens.brand.simbolos.puntos).not.toBe('#6C5AA7')
     expect(tokens.brand.simbolos.lumia).toBeUndefined()
   })
 
-  it('sobre el contratono de la mañana se pinta en monocromo, o no se vería', () => {
-    // Su tono de firma sobre `#1D1833` da 1,17:1: invisible. El filtro lo lleva
-    // a blanco (17,06:1) y es la versión monocromática que el manual §9 tiene
-    // pendiente de aprobación del diseñador. De noche la cabecera es clara y el
-    // símbolo va tal cual (9,92:1), así que la regla es solo de la mañana.
+  it('sobre los dos fondos oscuros se pinta en monocromo, o no se vería', () => {
+    // **Eran uno y son dos**, y el segundo llega con el video de apertura: el
+    // umbral pone el logo quieto cuando el movimiento está reducido, y de noche
+    // ese velo es índigo. Su tono de firma da 1,17:1 sobre el contratono de la
+    // mañana y 2,09:1 sobre el velo nocturno; el filtro lo lleva a blanco
+    // (17,06:1 y 17,92:1). Es la versión monocromática que el manual §9 tiene
+    // pendiente de aprobación del diseñador.
+    //
+    // Donde el fondo es claro va tal cual y no hay regla: la cabecera de la
+    // noche (9,84:1) y el velo crema del umbral (13,70:1).
     const css = cssDe('src/styles/globals.css')
     expect(css).toMatch(/\[data-momento='manana'\] \.cabecera-espacio img/)
     expect(css).not.toMatch(/\[data-momento='noche'\] \.cabecera-espacio img/)
+    expect(css).toMatch(/\[data-moment='noche'\] \.velo-transicion img/)
+    expect(css).not.toMatch(/\[data-moment='manana'\] \.velo-transicion img/)
   })
 })
 
@@ -264,9 +342,18 @@ describe('los neutros de la marca madre siguen siendo el suelo (§4.1)', () => {
   // aparecía se retiró. Al quedar un solo producto, preside la única que hay: la
   // cabecera, en las cuatro secciones. Lo que la prueba vigila es que siga
   // habiendo exactamente un sitio — dos serían dos marcas otra vez.
-  it('su símbolo preside la cabecera, y solo ahí', () => {
-    const conStrivo = COMPONENTES.filter((ruta) => /marca="strivo"/.test(codigoDe(ruta)))
-    expect(conStrivo).toEqual(['src/components/diario/NavStrivo.jsx'])
+  // **"Y solo ahí" pasa a ser "y en estos dos" (25 ago).** El segundo sitio llega
+  // con el video de apertura: el umbral pone el logo quieto cuando el movimiento
+  // está reducido, porque un umbral sin nada dentro no es un umbral. Lo que la
+  // prueba protegía sigue intacto —que no aparezca una segunda marca, y que el
+  // logo no se cuele en pantallas donde no pinta nada— y por eso la lista se
+  // amplía en vez de abrirse: crece de uno en uno y con un motivo escrito.
+  it('su logo preside la cabecera y el umbral, y no un tercer sitio', () => {
+    const conStrivo = COMPONENTES.filter((ruta) => /marca="strivo"/.test(codigoDe(ruta))).sort()
+    expect(conStrivo).toEqual([
+      'src/components/diario/NavStrivo.jsx',
+      'src/components/shared/TransicionLuz.jsx',
+    ])
     const conLumia = COMPONENTES.filter((ruta) => /marca="lumia"/.test(codigoDe(ruta)))
     expect(conLumia).toEqual([])
   })

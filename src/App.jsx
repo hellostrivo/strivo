@@ -142,8 +142,19 @@ function Secciones({ uid }) {
       </main>
 
       {/* El umbral va sobre la app ya montada: cuando la luz se va, lo de
-          detrás ya está ahí (RN-LU-MAN-02). */}
-      {entrando && <TransicionLuz conFrase onTerminar={() => setEntrando(false)} />}
+          detrás ya está ahí (RN-LU-MAN-02).
+
+          **`conVideo` y no `conFrase` desde el 25 de agosto de 2026.** Abrir la
+          app es el único sitio donde se ve el video de apertura de la marca; la
+          frase no desaparece del producto, sigue siendo el umbral de la mañana
+          (`pages/diario/Hoy.jsx`), que es el otro montaje de esta misma pieza.
+          Que la apertura de la app y la de la mañana lleven contenido distinto
+          no las convierte en dos variantes: el umbral es el mismo componente,
+          con el mismo temporizador y la misma superficie que lo salta.
+
+          Con "reducir movimiento" no se monta ninguno de los dos, aquí ni en
+          Hoy: entrar es inmediato y sin velo (RN-VIS-05). */}
+      {entrando && <TransicionLuz conVideo onTerminar={() => setEntrando(false)} />}
     </div>
   )
 }

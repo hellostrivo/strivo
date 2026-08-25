@@ -82,40 +82,64 @@ al sistema.
 
 ## 3. Logotipo e iconografía
 
-### 3.1 El símbolo — archivo vectorial confirmado ✅
+### 3.1 El logo oficial — archivo vectorial confirmado ✅
 
-| Marca | Símbolo | Archivo | Color de trazo | Grosor |
+**Revisión del 25 de agosto de 2026.** El diseñador entrega `Strivo_Logo_Oficial.svg` y con él se
+retira `strivo_simbolo.svg`, que era la «S» sola. **Lo que llega no es una versión nueva del mismo
+dibujo: es otra pieza.** Es un **lockup vertical** —símbolo arriba, palabra debajo— y trae los dos en
+el mismo trazado, así que no se pueden usar por separado. Este bloque se reescribe entero porque tres
+cosas que estaban aquí escritas como si fueran del sistema eran en realidad de aquel archivo: el
+lienzo, el trazo y el tono.
+
+| Marca | Logo | Archivo | Concepto | Color |
 |---|---|---|---|---|
-| **Strivo** | «S» caligráfica en espiral | `strivo_simbolo.svg` | `#2B2730` | 4.2px |
+| **Strivo** | Lockup vertical: «S» orgánica + wordmark | `Strivo_Logo_Oficial.svg` | Umbral interior | `#2B282F` |
 
 **Especificaciones técnicas:**
-- `viewBox="0 0 122 130"` — el lienzo del sistema. Se conserva aunque hoy el símbolo sea uno solo:
-  es lo que garantiza que cualquier pieza futura salga proporcionalmente comparable.
-- `stroke-linecap="round"` y `stroke-linejoin="round"` — extremos y uniones redondeadas, coherente
-  con el principio «formas circulares y orgánicas» (§2).
-- `fill="none"` — es un símbolo de trazo (*line art*), no una forma rellena.
-- Tamaño base de exportación: 180×180 px.
+- `viewBox="0 0 1016 920"` — el lienzo del logo oficial. **Deroga el `0 0 122 130`** del símbolo
+  anterior: la proporción es ancha, no alta, y el ancho de reproducción sale del alto por 1016:920.
+- **Es de relleno, no de trazo.** Dos `path` con `fill` y sin un solo `stroke`, así que
+  `stroke-linecap`, `stroke-linejoin` y `fill="none"` **ya no describen nada** y se retiran también
+  de `design-tokens.json`. Lo que decía §2 —«formas circulares y orgánicas»— lo sostiene ahora la
+  forma del contorno, no los extremos del trazo.
+- Dos colores: `#2B282F` (carbón) para el símbolo y la palabra, `#776F79` (gris malva) para los dos
+  puntos terminales.
+- Fondo transparente. Tamaño nativo del archivo: 1016×920 px.
 
-**Construcción:** trazo continuo en forma de «S», con dos puntos de anclaje sólidos (círculos
-rellenos, r=4.4) en los extremos superior derecho e inferior izquierdo — **son parte de la identidad,
-no decoración incidental**.
+**Construcción:** «S» orgánica en espiral (`y` 47–640 del lienzo) con dos puntos terminales sólidos
+—**son parte de la identidad, no decoración incidental**— y el wordmark ocupando la quinta parte
+inferior (`y` 680–860).
+
+**Tamaño mínimo de reproducción: 56 px de alto.** No es una preferencia: a ese alto la palabra mide
+11 px, que es lo que necesita para leerse. Por debajo, el lockup deja de decir «Strivo» y pasa a ser
+una mancha. Es el alto al que va en la cabecera de la app, **sin rótulo de texto al lado**: el logo
+ya trae la palabra, y ponerla dos veces sería nombrar la marca dos veces.
 
 ### 3.2 Color de símbolo vs. color de marca
 
-El color de trazo del símbolo (`#2B2730`) **no coincide** con el primario de la paleta
-(`#6C5AA7`, `strivo-pm-500`). Es intencional: el símbolo tiene su propio tono «de firma».
+El color del logo (`#2B282F`) **no coincide** con el primario de la paleta (`#6C5AA7`,
+`strivo-pm-500`). Es intencional y sobrevive al cambio de archivo: el logo tiene su propio tono «de
+firma». El tono anterior era `#2B2730`; el oficial es `#2B282F`, y la regla es la misma.
 
-**Regla de uso:** `#2B2730` se usa únicamente para el símbolo mismo (logo, ícono de app, favicon);
-los tokens de §4 se usan para todo lo demás (botones, superficies, fondos). No forzar a que coincidan.
+**Regla de uso:** `#2B282F` y `#776F79` se usan únicamente para el logo mismo (cabecera, ícono de
+app, favicon); los tokens de §4 se usan para todo lo demás (botones, superficies, fondos). No forzar
+a que coincidan.
 
 ### 3.3 Versión monocromática — en uso, pendiente de aprobación
 
-El símbolo se pinta **en blanco monocromo** cuando va sobre el contratono oscuro de la mañana
-(`#1D1833`), donde su tono de firma daría 1,17:1 —invisible— frente a 17,06:1 en blanco. Sobre la
-cabecera clara de la noche va tal cual (9,92:1) y no hace falta.
+El logo se pinta **en blanco monocromo** en dos sitios, y en los dos por el mismo motivo: su tono de
+firma sobre un fondo oscuro desaparece.
+
+| Dónde | Fondo | Tal cual | En blanco |
+|---|---|---|---|
+| Cabecera, sección Mañana | `#1D1833` | 1,17:1 — invisible | 17,06:1 |
+| Umbral de entrada, de noche | `#191428` | 2,09:1 — insuficiente | 17,92:1 |
+
+Sobre la cabecera clara de la noche va tal cual (9,84:1) y sobre el velo crema del umbral también
+(13,70:1): ahí no hace falta.
 
 Hoy está **derivada con un filtro en el CSS y no como archivo nuevo**, para que aprobarla —o
-sustituirla por la del diseñador— sea borrar tres líneas. **Pendiente de aprobación** (§9).
+sustituirla por la del diseñador— sea borrar dos reglas. **Pendiente de aprobación** (§9).
 
 ### 3.4 Wordmark
 
@@ -125,7 +149,11 @@ sustituirla por la del diseñador— sea borrar tres líneas. **Pendiente de apr
 
 | Fondo | Símbolo |
 |---|---|
-| `#2B2730` (casi negro) | «S» en blanco, centrada |
+| `#2B282F` (casi negro) | «S» en blanco, centrada |
+
+**Solo la «S», sin el wordmark.** El lockup de §3.1 es vertical y trae la palabra; en un ícono de
+64 px la palabra no se leería, así que el ícono pide un recorte del símbolo. **Pendiente** de que el
+diseñador entregue ese recorte (§9): hoy no existe como archivo.
 
 Esquinas redondeadas siguiendo el estándar del sistema operativo (iOS: *squircle*; Android: círculo o
 *squircle* según versión).
@@ -245,8 +273,9 @@ código; los neutros y el símbolo viven en `design-tokens.json`. Los valores so
       "900": "#2B2730"
     },
     "simbolos": {
-      "strivo": "#2B2730",
-      "viewBox": "0 0 122 130"
+      "strivo": "#2B282F",
+      "puntos": "#776F79",
+      "viewBox": "0 0 1016 920"
     }
   },
   "momento": {
@@ -430,14 +459,18 @@ solo por borde**.
 
 ## 9. Lo que falta para producción — checklist
 
-- [x] ~~Archivo vectorial original del símbolo~~ — ✅ `strivo_simbolo.svg`
+- [x] ~~Archivo vectorial original del logo~~ — ✅ `Strivo_Logo_Oficial.svg` (25 ago 2026, sustituye
+      a `strivo_simbolo.svg`)
 - [x] ~~Nombre de la tipografía~~ — ✅ Inter, confirmada
 - [x] ~~Verificar el secundario de la mañana~~ — ✅ confirmado: `#E5C2DC`
 - [x] ~~Verificación de contraste de cada combinación~~ — ✅ automatizada en `npm run lint:contraste`
 - [x] ~~Naming definitivo de la navegación~~ — ✅ Hoy · Journal · Respiración · Historial
-- [ ] **Espacio de seguridad y tamaños mínimos** del logo — no definido aún
-- [ ] **Aprobación de la versión monocromática** del símbolo — hoy derivada con un filtro CSS y **en
-      uso**; conviene que el diseñador la apruebe o la sustituya por un archivo propio (§3.3)
+- [ ] **Espacio de seguridad** del logo — no definido aún. El tamaño mínimo sí: 56 px de alto (§3.1)
+- [ ] **Recorte del símbolo solo**, sin wordmark, para el ícono de app y el favicon (§3.5) — el
+      lockup oficial no sirve a 64 px
+- [ ] **Aprobación de la versión monocromática** del logo — hoy derivada con un filtro CSS y **en
+      uso** en dos sitios; conviene que el diseñador la apruebe o la sustituya por un archivo propio
+      (§3.3)
 - [ ] **Set de iconos emocionales propios** (16) — encargado, especificado en §6.2
 - [ ] **Set de iconos internos de UI** (check, flecha, más, etc.)
 
@@ -447,8 +480,37 @@ solo por borde**.
 
 | Archivo | Contenido | Ubicación en el repo |
 |---|---|---|
-| `strivo_simbolo.svg` | Símbolo vectorial | `src/assets/marca/` |
+| `Strivo_Logo_Oficial.svg` | Logo vectorial: lockup vertical | `src/assets/marca/` |
+| `strivo_apertura.mp4` | Video de apertura, 1080×1920, 4,0 s, sin sonido | `src/assets/marca/` |
 | `BRAND_MANUAL_STRIVO.md` | Este documento | `docs/blueprint/` |
+
+**Sobre el nombre del video.** Llegó como `Strivo_Apertura_Respiración.mp4` y se renombró al
+integrarlo, por dos motivos que no son de estilo. Uno: la tilde en el nombre de un asset que Vite
+emite y Netlify sirve viaja percent-encoded y es una fuente conocida de 404. Dos, y es el que manda:
+`TransicionLuz.jsx` tiene prohibido nombrar la respiración (RN-LU-MAN-03, con una prueba que lo
+comprueba sobre el código), y la ruta del `import` habría metido la palabra dentro del archivo.
+
+### 10.1 El video de apertura
+
+Se reproduce **una sola vez, al abrir la app** —una por sesión, el mismo contador de umbral que ya
+existía— y nunca en bucle. Se salta tocando cualquier punto de la pantalla, como se saltaba la frase.
+Va **sin sonido**, que es lo que la app es por defecto (RN-RE-11). Con `prefers-reduced-motion` no se
+reproduce: la app entra directa a Hoy, sin umbral (RN-VIS-05).
+
+**Se encaja entero, nunca se recorta.** El archivo es vertical (1080×1920) y la pantalla no siempre
+lo es, así que se pinta con `object-contain`: el fotograma completo, centrado, dentro de la pantalla,
+y el velo rellenando lo que sobra a los lados. Lo contrario —`object-cover`, que amplía hasta
+cubrir— estuvo puesto un rato y era visible a simple vista:
+
+| Pantalla | Con `cover` | Con `contain` |
+|---|---|---|
+| iPhone 15 (390×844) | 475×844 — sin recorte | 390×693 |
+| iPad vertical (820×1180) | 820×1458 — **278 px recortados** | 664×1180 |
+| Portátil (1440×900) | 1440×2560 — **1660 px recortados** | 506×900 |
+
+**Ninguna medida del umbral va en píxeles fijos**, ni la del video ni la del logo quieto que lo
+sustituye con movimiento reducido: no se sabe en qué se abre la app, y lo que se escriba en píxeles
+será el tamaño equivocado en algún sitio.
 
 ---
 

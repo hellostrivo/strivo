@@ -13,6 +13,18 @@
 // —opción A de §C7.3— existía para distinguir un espacio del otro, y ya no hay
 // otro.
 //
+// **Y lo dice el logo, no un rótulo al lado (25 ago 2026).** El archivo oficial
+// del diseñador es un lockup vertical: trae el símbolo y la palabra en el mismo
+// trazado. Repetir "Strivo" en texto junto a un logo que ya la dice serían dos
+// veces el nombre, así que el rótulo se retira y la cadena `diario.cabecera`
+// pasa de verse a **nombrar**: es el texto alternativo del logo, que es donde
+// hace falta ahora.
+//
+// **56 px de alto no es una cifra decorativa.** En ese lockup la palabra ocupa
+// la quinta parte inferior del lienzo (y 680–860 de 920), así que a los 18 px
+// del símbolo anterior la palabra medía 3,5 px y no se leía. A 56 px mide 11,
+// que es la altura del rótulo que sustituye.
+//
 // **No nombra ni un color.** Pide superficies por su papel —`espacio-cabecera`,
 // `on-surface`, `espacio-acento`— y quien decide qué son es el tema (RN-SURF-01).
 // Por eso vestirla de contratono en la mañana no toca este archivo más que para
@@ -25,6 +37,9 @@ import Simbolo from '@components/shared/Simbolo'
 import { copy } from '@copy'
 
 const textos = copy.shared.navegacion
+
+/** El alto del logo en la cabecera. La palabra pide 56 px para leerse. */
+const ALTO_LOGO = 56
 
 // **Respiración entra entre Journal e Historial (24 ago).** Deja de ser la
 // herramienta transversal que colgaba del Home de Strivo y pasa a ser una
@@ -52,9 +67,11 @@ export default function NavStrivo() {
     // abajo. En la mañana las dos van en el contratono del conmutador; en el
     // Journal y en el Historial, donde no hay momento, manda lo de siempre.
     <header className="cabecera-espacio relative z-30 flex flex-col gap-3 border-b border-espacio bg-espacio-cabecera px-5 pb-3 pt-safe transicion-tema">
-      <p className="flex items-center gap-2 text-sm text-on-surface-soft">
-        <Simbolo marca="strivo" alto={18} />
-        {textos.diario.cabecera}
+      {/* El logo **es** el nombre: no lleva rótulo al lado. `titulo` le da el
+          nombre accesible, así que quien no lo ve sigue oyendo "Strivo" una
+          vez, ni ninguna ni dos. */}
+      <p className="flex items-center">
+        <Simbolo marca="strivo" alto={ALTO_LOGO} titulo={textos.diario.cabecera} />
       </p>
 
       <nav aria-label={textos.seccionesLabel}>

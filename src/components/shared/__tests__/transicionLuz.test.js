@@ -11,8 +11,20 @@
 // —la misma— al aparecer la sección Mañana. Con eso se deroga el bloque que
 // custodiaba la entrada al segundo producto, y el "uno por espacio" pasa a ser
 // "uno por sesión", que es lo que la regla decía de verdad (RN-LU-MAN-02).
+//
+// **El video de apertura (25 ago 2026, mismo día, decisión posterior).** Al
+// abrir la app, dentro del velo va el video de marca en lugar de la frase. Es un
+// cambio de contenido, no de estructura, y por eso este archivo se amplía en vez
+// de partirse: **el umbral sigue siendo uno solo**, con su temporizador, su
+// superficie que lo salta entera y su nada que decidir.
+//
+// Lo que NO cambia, y conviene decirlo porque es lo que más fácil se pierde de
+// vista al añadir un fotograma: la frase sigue viva. Es el umbral de la mañana
+// (`Hoy.jsx`), que es el otro montaje de esta misma pieza, así que el repertorio
+// de §C7.5 conserva su consumidor y las pruebas de repertorio y de voz siguen
+// midiendo algo que se ve.
 
-import { readFileSync } from 'fs'
+import { readFileSync, readdirSync } from 'fs'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { copy } from '@copy'
@@ -272,6 +284,177 @@ describe('con reducir movimiento es inmediata (criterio 5)', () => {
 
   it('el componente expone la consulta en un solo sitio', () => {
     expect(codigoDe(COMPONENTE)).toMatch(/prefers-reduced-motion: reduce/)
+  })
+
+  // **Sigue en pie con el video, y esa fue la decisión (25 ago).** Se valoró que
+  // con la preferencia puesta el umbral se montara igual, con el logo quieto en
+  // lugar del video. Se descartó: RN-VIS-05 dice que con movimiento reducido el
+  // umbral **no se muestra**, y cambiarlo habría metido cinco segundos de velo a
+  // quien pidió justo lo contrario. Entrar sigue siendo inmediato.
+  it('con la preferencia puesta no se monta ningún umbral, tampoco el del video', () => {
+    const app = codigoDe(APP)
+    expect(app).toMatch(/if \(prefiereMenosMovimiento\(\)[\s\S]*?\) return/)
+    // La guarda va antes de encender el umbral, no después.
+    expect(app.indexOf('prefiereMenosMovimiento()')).toBeLessThan(app.indexOf('setEntrando(true)'))
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// El video de apertura (25 de agosto de 2026).
+//
+// **Lo que sustituye:** la frase, y solo al abrir la app. No sustituye el
+// umbral, ni el temporizador, ni la superficie que lo salta — esos tres siguen
+// siendo los mismos y sus pruebas siguen arriba, sin tocar.
+//
+// La mitad de este bloque comprueba autoplay en iOS, que es donde esto se rompe
+// de verdad: un `<video>` sin `muted` no arranca en Safari y el umbral se queda
+// quieto delante de alguien. La otra mitad comprueba que sigue sin poder
+// bloquear a nadie.
+describe('el video de apertura: se reproduce una vez y se va', () => {
+  const componente = codigoDe(COMPONENTE)
+  const video = componente.match(/<video[\s\S]*?\/>/)[0]
+
+  it('hay uno, y uno solo', () => {
+    expect(componente.match(/<video/g)).toHaveLength(1)
+  })
+
+  it('el archivo está en disco y el componente lo importa', () => {
+    expect(componente).toMatch(/from '@\/assets\/marca\/strivo_apertura\.mp4'/)
+    expect(() => readFileSync('src/assets/marca/strivo_apertura.mp4')).not.toThrow()
+  })
+
+  // **Por qué el archivo se renombró al integrarlo.** Llegó como
+  // `Strivo_Apertura_Respiración.mp4`, y la ruta del `import` habría metido la
+  // palabra "Respiración" dentro de este componente, que tiene prohibido
+  // nombrarla (RN-LU-MAN-03, la prueba de más arriba). Lo habría roto por el
+  // nombre de un archivo, que es el motivo equivocado. La tilde, además, viaja
+  // percent-encoded desde el hospedaje y es una fuente conocida de 404.
+  it('su nombre no nombra lo que este componente no puede nombrar', () => {
+    expect(readdirSync('src/assets/marca')).not.toContain('Strivo_Apertura_Respiración.mp4')
+    expect(readdirSync('src/assets/marca').join(' ')).not.toMatch(/[^\x00-\x7F]/)
+  })
+
+  it('se reproduce una sola vez: no lleva `loop`', () => {
+    expect(video).not.toMatch(/\bloop\b/)
+  })
+
+  it('lleva los tres atributos que el autoplay de iOS exige', () => {
+    // Sin cualquiera de los tres, Safari en iPhone —y la PWA instalada— rechaza
+    // la reproducción y espera un toque que aquí no va a llegar.
+    expect(video).toMatch(/\bautoPlay\b/)
+    expect(video).toMatch(/\bmuted\b/)
+    expect(video).toMatch(/\bplaysInline\b/)
+  })
+
+  it('el silencio se repite sobre el nodo, porque React no siempre lo escribe', () => {
+    // Es el defecto clásico: el atributo `muted` de React no llega al DOM y el
+    // navegador bloquea el autoplay de un video que en el JSX parece mudo.
+    expect(componente).toMatch(/\.muted = true/)
+    expect(componente).toMatch(/\.play\(\)/)
+  })
+
+  it('no pide sonido ni ofrece controles: la app es muda por defecto (RN-RE-11)', () => {
+    expect(video).not.toMatch(/\bcontrols\b/)
+    expect(componente).not.toMatch(/volume|unmute|audio/i)
+  })
+
+  it('al terminar el video termina el umbral', () => {
+    expect(video).toMatch(/onEnded=\{terminar\}/)
+  })
+
+  it('si el video falla, el umbral se va igual y sin decir nada (RN-EST-05)', () => {
+    // Un error de reproducción no es un error visible: no hay mensaje, no hay
+    // código, no hay reintento. Se sale, que es lo que se iba a hacer.
+    expect(video).toMatch(/onError=\{terminar\}/)
+    expect(componente).not.toMatch(/setError|role="alert"/)
+  })
+
+  it('el temporizador sigue armado como red de seguridad', () => {
+    // Si el autoplay se bloquea, `onPlaying` no llega, el temporizador no se
+    // desarma y el umbral se cierra a los cinco segundos de siempre. Nadie se
+    // queda delante de un velo esperando un fotograma que no va a venir.
+    expect(componente).toMatch(/setTimeout\(terminar, DURACION\)/)
+    expect(video).toMatch(/onPlaying=\{sostener\}/)
+    expect(componente).toMatch(/const sostener = \(\) => \{\s*clearTimeout/)
+  })
+
+  it('y por eso el temporizador no tiene que saber cuánto dura el video', () => {
+    // La duración del `.mp4` no está escrita en ningún sitio del código: si el
+    // diseñador entrega otro más largo, el umbral se sigue portando bien.
+    expect(componente).not.toMatch(/4000|DURACION_VIDEO/)
+  })
+
+  // **Escrito después de verlo en el navegador (25 ago).** El video se integró
+  // con `object-cover` dando por hecho un teléfono, y `cover` amplía hasta tapar
+  // el hueco: en una ventana de 1440×900 el fotograma de 1080×1920 se pintaba a
+  // 1440×2560 —casi el triple de alto que la pantalla— con 1660 px recortados y
+  // todo lo de dentro enorme. En un iPad se perdían 278 px.
+  //
+  // No lo cazó ninguna prueba porque ninguna miraba el encaje, solo el
+  // comportamiento. Esta mira el encaje.
+  it('el fotograma entero cabe en la pantalla, sea cual sea', () => {
+    expect(video).toMatch(/object-contain/)
+    expect(video).not.toMatch(/object-cover/)
+  })
+
+  it('y va centrado, sin salirse por ninguna orilla', () => {
+    // `inset-0` con `contain` deja el fotograma centrado por defecto y el velo
+    // rellena lo que sobra a los lados. No hay nada que recolocar a mano.
+    expect(video).toMatch(/absolute inset-0 h-full w-full/)
+    expect(componente).toMatch(/overflow-hidden/)
+  })
+
+  it('ni el video ni el logo se miden en píxeles de un dispositivo concreto', () => {
+    // La lección del `object-cover`: aquí no se sabe en qué se abre esto. Lo que
+    // se escriba en píxeles fijos será el tamaño equivocado en algún sitio.
+    expect(componente).toMatch(/ALTO_LOGO = 'min\([^']*v[hw][^']*\)'/)
+    expect(video).not.toMatch(/\d{3,}px|w-\[|h-\[/)
+  })
+
+  it('se salta con un toque, igual que la frase', () => {
+    // El video no se come el toque: la superficie que lo salta es la de siempre.
+    expect(video).toMatch(/pointer-events-none/)
+    expect(componente).toMatch(/onClick=\{terminar\}/)
+  })
+
+  it('el velo del video entra y se queda: no se desvanece a mitad de fotograma', () => {
+    // Con la curva de la frase —que baja a opacidad 0 al 78 % de cinco
+    // segundos— el video se vería apagarse antes de acabar. Quien decide cuándo
+    // se va es `onEnded`, no el reloj del CSS.
+    const css = readFileSync('src/styles/globals.css', 'utf8')
+    const marco = css.match(/@keyframes transicion-entrada-video \{[^}]*\}[^}]*\}/)[0]
+    expect(marco).toMatch(/100%\s*\{\s*opacity: 1/)
+    expect(componente).toMatch(/transicion-entrada-video/)
+  })
+})
+
+describe('el video es la apertura de la app, y la frase sigue siendo la mañana', () => {
+  it('abrir la app monta el umbral con video', () => {
+    expect(codigoDe(APP)).toMatch(/<TransicionLuz conVideo/)
+    expect(codigoDe(APP)).not.toMatch(/conFrase/)
+  })
+
+  it('la mañana lo monta con frase, que es el valor por defecto', () => {
+    // `Hoy` no pasa ninguno de los dos, y `conFrase` vale `true` por defecto.
+    // Es lo que mantiene vivo el repertorio de §C7.5.
+    const hoy = codigoDe(HOY)
+    expect(hoy).toMatch(/<TransicionLuz onTerminar/)
+    expect(hoy).not.toMatch(/conVideo/)
+    expect(codigoDe(COMPONENTE)).toMatch(/conFrase = true/)
+  })
+
+  it('no se sacan las dos cosas a la vez: con video no se gasta una frase', () => {
+    // Gastar una frase sin enseñarla dejaría un hueco en el repertorio, que es
+    // la misma razón por la que ya no se elegía cuando `conFrase` era falso.
+    expect(codigoDe(COMPONENTE)).toMatch(/if \(conFrase && !conVideo\) return fraseDeApertura\(\)/)
+  })
+
+  it('con reducir movimiento, donde iba el video va el logo quieto', () => {
+    // La rama existe aunque `App` no la monte (RN-VIS-05): la pieza no depende
+    // de que quien la use se acuerde de preguntar.
+    const componente = codigoDe(COMPONENTE)
+    expect(componente).toMatch(/const videoEnMarcha = conVideo && !quieto/)
+    expect(componente).toMatch(/<Simbolo marca="strivo"/)
   })
 })
 
