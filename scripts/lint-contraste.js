@@ -12,7 +12,7 @@
 //   · Elementos no textuales —bordes, indicadores— → 3:1 (WCAG 2.2, 1.4.11).
 //
 // **Los primarios de marca no llevan texto de cuerpo encima**, y no es un
-// descuido: blanco sobre `lumia-pm-500` da 5,3:1. Pasa AA y no llega a AAA. El
+// descuido: blanco sobre `strivo-pm-500` da 5,3:1. Pasa AA y no llega a AAA. El
 // manual §4.8 ya lo resuelve: la paleta de marca dice qué superficie usar y el
 // sistema de contraste decide qué texto va encima. Por eso los primarios se usan como acento y como borde —donde el
 // umbral es 3:1— y nunca como fondo de un párrafo.
@@ -96,8 +96,6 @@ const MARCA = {
   // manual §9 tiene pendiente. Se miden los dos.
   simbolo: '#2B2730',
   simboloMono: '#FFFFFF',
-  // La vela de Lumia, también horneada en su `.svg`.
-  velaLumia: '#7563A7',
 }
 
 const CUERPO = 7
@@ -119,17 +117,16 @@ const PARES = [
   ['Lumia·AM · borde sobre cabecera', MARCA.lumiaPm400, MARCA.lumiaAm300, SEPARADOR],
   ['Lumia·AM · cuerpo sobre conmutador', TEXTO.onDark, MARCA.conmutadorAm, CUERPO],
   ['Lumia·AM · conmutador sobre base', MARCA.conmutadorAm, MARCA.lumiaAm50, NO_TEXTO],
-  // La barra inferior toma ese mismo contratono, así que su texto es el par de
-  // arriba. Lo propio suyo es el símbolo, que sobre el oscuro va en monocromo.
-  ['Lumia·AM · símbolo mono sobre barra', MARCA.simboloMono, MARCA.conmutadorAm, NO_TEXTO],
-  // La cabecera del espacio comparte ese contratono en la sección Mañana.
+  // La cabecera comparte ese contratono en la sección Mañana.
   ['Lumia·AM · cabecera sobre base', MARCA.conmutadorAm, MARCA.lumiaAm50, NO_TEXTO],
   ['Lumia·AM · rótulo sobre cabecera', TEXTO.onDarkSoft, MARCA.conmutadorAm, CUERPO],
   ['Lumia·AM · sección sobre cabecera', TEXTO.onDark, MARCA.conmutadorAm, CUERPO],
-  // El borde de la sección activa. `lumia-pm-500` daría 2,97:1 y por eso ahí se
+  // El borde de la sección activa. `strivo-pm-500` daría 2,97:1 y por eso ahí se
   // usa el lavanda claro de la misma paleta.
   ['Lumia·AM · borde activo sobre cabecera', MARCA.lumiaAm100, MARCA.conmutadorAm, NO_TEXTO],
-  ['Lumia·AM · vela mono sobre cabecera', MARCA.simboloMono, MARCA.conmutadorAm, NO_TEXTO],
+  // El símbolo de la app. En su tono de firma daría 1,17:1 sobre el contratono
+  // —invisible—, así que ahí va en la versión monocromática del manual §9.
+  ['Lumia·AM · símbolo mono sobre cabecera', MARCA.simboloMono, MARCA.conmutadorAm, NO_TEXTO],
   // La tarjeta de la respiración: `--lumia-tarjeta`, blanco al 72 %, sobre la
   // parada más oscura del degradado de la mañana, que es su peor caso.
   ['Lumia·AM · cuerpo sobre tarjeta de respiración', TEXTO.onLight, sobre('#FFFFFF', 0.72, MARCA.lumiaAm100), CUERPO],
@@ -145,13 +142,14 @@ const PARES = [
   ['Lumia·PM · secundario sobre cabecera', TEXTO.onLightSoft, MARCA.lumiaAm100, CUERPO],
   ['Lumia·PM · acento sobre cabecera', MARCA.lumiaPm500, MARCA.lumiaAm100, NO_TEXTO],
   ['Lumia·PM · borde sobre cabecera', MARCA.lumiaPm400, MARCA.lumiaAm100, SEPARADOR],
+  // De noche la cabecera es la pieza clara y el símbolo va tal cual sale del
+  // `.svg`: sin filtro y sin monocromo.
+  ['Lumia·PM · símbolo sobre cabecera', MARCA.simbolo, MARCA.lumiaAm100, NO_TEXTO],
   // El degradado nocturno de Hoy, en sus tres paradas.
   ['Hoy·noche · cuerpo sobre degradado', TEXTO.onDark, MARCA.night, CUERPO],
   ['Hoy·noche · secundario sobre degradado', TEXTO.onDarkSoft, MARCA.night, GRANDE],
   ['Lumia·PM · cuerpo sobre conmutador', TEXTO.onLight, MARCA.conmutadorPm, CUERPO],
   ['Lumia·PM · conmutador sobre degradado', MARCA.conmutadorPm, MARCA.night, NO_TEXTO],
-  // De noche la barra es la pieza clara y el símbolo va tal cual sale del .svg.
-  ['Lumia·PM · símbolo sobre barra', MARCA.simbolo, MARCA.conmutadorPm, NO_TEXTO],
   // La misma tarjeta de noche: `--lumia-tarjeta` es ahí un velo claro al 10 %,
   // medido sobre la parada más clara del degradado, que es su peor caso.
   ['Lumia·PM · cuerpo sobre tarjeta de respiración', TEXTO.onDark, sobre('#F2EEF7', 0.10, '#2C2350'), CUERPO],
@@ -171,7 +169,7 @@ const PARES = [
   // **Estos pares cambiaron de fondo y de paleta, no de umbral.** Con SPEC_16
   // Respiracion colgaba del Home de Strivo y se media sobre `strivo-50`; ahora
   // es una seccion de Lumia y se pinta sobre las dos superficies del espacio:
-  // `lumia-am-50` de dia y `lumia-pm-50` de noche. Los `--strivo-*` siguen
+  // `strivo-am-50` de dia y `strivo-pm-50` de noche. Los `--strivo-*` siguen
   // siendo el valor por defecto de las siete variables en `:root`, pero hoy no
   // los usa ninguna pantalla — se miden abajo, como informativos.
   //
@@ -230,8 +228,8 @@ const INFORMATIVOS = [
   // desde SPEC_08 —cifra que sale a la luz al medirlo, no ahora—.
   ['círculo de respiración sobre el amanecer', MARCA.breathAm, MARCA.lumiaAm300],
   ['círculo de respiración sobre la noche', MARCA.breathPm, MARCA.night],
-  ['blanco sobre lumia-pm-500', TEXTO.blanco, MARCA.lumiaPm500],
-  ['ink sobre lumia-am-100', TEXTO.onLight, MARCA.lumiaAm100],
+  ['blanco sobre strivo-pm-500', TEXTO.blanco, MARCA.lumiaPm500],
+  ['ink sobre strivo-am-100', TEXTO.onLight, MARCA.lumiaAm100],
   // Las marcas de fase de la linea van a opacidad 0,12 y su texto a 0,45. Son
   // orientacion, no dato: lo que hay que leer lo dice `EtiquetaFase` a tamano
   // completo. Se anotan para que la cifra conste, no para exigirles un umbral.
@@ -270,8 +268,8 @@ const INFORMATIVOS = [
   // Los dos sólidos que **no** se usan de noche, y por qué: el secundario de la
   // paleta en plano no llega a AAA con ninguna de las dos tintas, así que ahí
   // entra como velo.
-  ['blanco sobre lumia-pm-400 (NO se usa)', TEXTO.onDark, MARCA.lumiaPm400],
-  ['ink sobre lumia-pm-400 (NO se usa)', TEXTO.onLight, MARCA.lumiaPm400],
+  ['blanco sobre strivo-pm-400 (NO se usa)', TEXTO.onDark, MARCA.lumiaPm400],
+  ['ink sobre strivo-pm-400 (NO se usa)', TEXTO.onLight, MARCA.lumiaPm400],
 ]
 
 console.log('🎨 contraste: midiendo los pares que la app pinta de verdad\n')

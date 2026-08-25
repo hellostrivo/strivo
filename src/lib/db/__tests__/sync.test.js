@@ -14,7 +14,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import * as shared from '../shared.js'
-import * as diario from '../lumia.js'
+import * as diario from '../diario.js'
 import { listQueue } from '../local.js'
 import { cancelRetries, flush } from '../sync.js'
 import { UID, resetLocalDB } from './helpers.js'

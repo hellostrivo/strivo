@@ -3,7 +3,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import * as diario from '@lib/db/lumia'
+import * as diario from '@lib/db/diario'
 import * as local from '@lib/db/local'
 import { UID, resetLocalDB } from '@lib/db/__tests__/helpers.js'
 

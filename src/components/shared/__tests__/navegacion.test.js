@@ -19,8 +19,8 @@ import { describe, expect, it } from 'vitest'
 import { copy } from '@copy'
 
 const APP = 'src/App.jsx'
-const NAV = 'src/components/lumia/NavStrivo.jsx'
-const HOY = 'src/pages/lumia/Hoy.jsx'
+const NAV = 'src/components/diario/NavStrivo.jsx'
+const HOY = 'src/pages/diario/Hoy.jsx'
 const CSS = 'src/styles/globals.css'
 
 /**
@@ -90,7 +90,7 @@ describe('lo que sostenía el vestíbulo se retiró entero', () => {
     // espacio enlazaba al otro— se dice ahora con esta: no hay otro.
     const navegaciones = archivosDe('src/components').filter((ruta) => /\/Nav\w+\.jsx$/.test(ruta))
     expect(navegaciones).toEqual([NAV])
-    expect(readdirSync('src/pages')).toEqual(['lumia'])
+    expect(readdirSync('src/pages')).toEqual(['diario'])
   })
 })
 
@@ -201,7 +201,7 @@ describe('los andamios provisionales de la navegación se retiraron', () => {
 //
 // Sobrevive entera. Lo que cambia es que ya no tiene una barra abajo con la que
 // formar bloque: ahora el contratono es solo suyo, y sigue haciendo falta por el
-// mismo motivo —sobre `lumia-am-300` la franja se comía con la mañana clara—.
+// mismo motivo —sobre `strivo-am-300` la franja se comía con la mañana clara—.
 
 describe('la cabecera se viste del momento de Hoy (21 ago)', () => {
   const nav = codigoDe(NAV)
@@ -217,7 +217,7 @@ describe('la cabecera se viste del momento de Hoy (21 ago)', () => {
     expect(css).toMatch(
       /\[data-momento='manana'\] \.cabecera-espacio \{[^}]*var\(--lumia-conmutador\)/,
     )
-    expect(codigoDe('src/components/lumia/SelectorMomento.jsx')).toMatch(/bg-lumia-conmutador/)
+    expect(codigoDe('src/components/diario/SelectorMomento.jsx')).toMatch(/bg-lumia-conmutador/)
     // Un color copiado a mano sería otro color el día que el conmutador cambie.
     const regla = css.slice(css.indexOf("[data-momento='manana'] .cabecera-espacio"))
     expect(regla.slice(0, regla.indexOf('}'))).not.toMatch(/#[0-9a-fA-F]{3,8}/)
@@ -236,10 +236,10 @@ describe('la cabecera se viste del momento de Hoy (21 ago)', () => {
   })
 
   it('el borde de la sección activa sube a un tono que sí se ve', () => {
-    // `lumia-pm-500` sobre el contratono da 2,97:1 — por debajo del 3:1 de
+    // `strivo-pm-500` sobre el contratono da 2,97:1 — por debajo del 3:1 de
     // WCAG 1.4.11 para un indicador. El lavanda de la misma paleta, 11,57:1.
     const regla = css.slice(css.indexOf("[data-momento='manana'] .cabecera-espacio"))
-    expect(regla.slice(0, regla.indexOf('}'))).toMatch(/--espacio-acento:\s*var\(--lumia-am-100\)/)
+    expect(regla.slice(0, regla.indexOf('}'))).toMatch(/--espacio-acento:\s*var\(--strivo-am-100\)/)
   })
 
   it('la vela va en monocromo, y solo sobre el contratono', () => {

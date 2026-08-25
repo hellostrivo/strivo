@@ -18,7 +18,7 @@ import { COLLECTIONS, FIELDS } from '@/lib/db/schema.js'
 const COMPONENTE = 'src/components/shared/Respiracion.jsx'
 const RITMO = 'src/lib/ritmoRespiracion.js'
 const AUDIO = 'src/lib/audioRespiracion.js'
-const HOY = 'src/pages/lumia/Hoy.jsx'
+const HOY = 'src/pages/diario/Hoy.jsx'
 
 /** El código sin comentarios: lo que se ejecuta, no lo que se explica. */
 function codigoDe(ruta) {

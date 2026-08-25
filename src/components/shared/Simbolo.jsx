@@ -1,27 +1,29 @@
 // src/components/shared/Simbolo.jsx
-// Los tres símbolos de marca (manual §3.1).
+// El símbolo de la app (manual §3.1).
 //
-// Los `.svg` fuente viven en `src/assets/marca/` y **no se editan desde aquí**:
-// son material de marca. Este componente solo los coloca, les da tamaño y les
-// pone un nombre accesible.
+// **Queda uno** (paso 9, §8: "el símbolo de la app → `strivo_simbolo.svg`", en
+// singular). Eran tres. El del alcance pausado se fue con sus archivos, y la
+// vela —que era lo único que se veía en la cabecera, con el rótulo al lado ya
+// diciendo Strivo— la sustituye la "S" del producto. Con ella sale del repo
+// `lumia_simbolo.svg`.
 //
-// Los tres comparten `viewBox="0 0 122 130"`, que es lo que garantiza que se
-// vean proporcionalmente consistentes uno junto a otro en la composición "Eje
-// Dual". Trazo con extremos y uniones redondeadas, `fill="none"`.
+// El `.svg` fuente vive en `src/assets/marca/` y **no se edita desde aquí**: es
+// material de marca. Este componente solo lo coloca, le da tamaño y le pone un
+// nombre accesible.
 //
-// **El tono de firma no es el primario de la paleta** (manual §3.2): Lumia usa
-// `#7563A7` en el símbolo y `#6C5AA7` en la interfaz. Son tonos hermanos, no
-// idénticos, y no se fuerzan a coincidir. Por eso el color viene dentro del
-// propio `.svg` y este componente no lo toca.
+// `viewBox="0 0 122 130"` es el lienzo común que el manual da a los símbolos.
+// Se conserva aunque hoy no haya con quién compararse: es la geometría que el
+// diseñador entregó. Trazo con extremos y uniones redondeadas, `fill="none"`.
 //
-// **Strivo no es un espacio navegable** (§C0.2): su símbolo aparece donde el
-// manual lo indica —splash, ajustes— y nunca como destino de la barra.
+// **El tono de firma no es el primario de la paleta** (manual §3.2): el símbolo
+// usa `#2B2730`. Por eso el color viene dentro del propio `.svg` y este
+// componente no lo toca. Sobre el contratono de la mañana ese tono da 1,17:1 y
+// desaparece, así que ahí `globals.css` lo pasa a monocromo blanco (17,06:1);
+// de noche la cabecera es clara y se pinta tal cual (9,92:1).
 
-import lumiaSimbolo from '@/assets/marca/lumia_simbolo.svg'
 import strivoSimbolo from '@/assets/marca/strivo_simbolo.svg'
 
 const ARCHIVOS = Object.freeze({
-  lumia: lumiaSimbolo,
   strivo: strivoSimbolo,
 })
 
@@ -29,7 +31,7 @@ const ARCHIVOS = Object.freeze({
 export const VIEW_BOX = '0 0 122 130'
 
 /**
- * @param {'lumia'|'formia'|'strivo'} marca
+ * @param {'strivo'} marca
  * @param {number} [alto] - En píxeles. El ancho sale de la proporción 122:130.
  * @param {string} [titulo] - Nombre accesible. Sin él, el símbolo es decorativo.
  */

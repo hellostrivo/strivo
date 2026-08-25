@@ -198,7 +198,7 @@ describe('Respiración no conoce al diario (criterio 20b, RN-RE-VIS-00)', () => 
         .replace(/\/\*[\s\S]*?\*\//g, '')
         .replace(/^\s*\/\/.*$/gm, '')
       expect(`${ruta}`).toBe(ruta)
-      expect(contenido).not.toMatch(/--lumia-|lumia-am-|lumia-pm-/)
+      expect(contenido).not.toMatch(/--lumia-|strivo-am-|strivo-pm-/)
     }
   })
 
@@ -306,7 +306,7 @@ describe('el color sale del espacio, no de Strivo (24 ago)', () => {
       /\[data-moment\] \{\s*--respiracion-fase-inhalar[\s\S]*?\n\}/,
     )[0]
     expect(delMomento).toMatch(/--respiracion-fase-inhalar: var\(--color-ink\)/)
-    expect(delMomento).toMatch(/--respiracion-fase-descanso: var\(--lumia-pm-400\)/)
+    expect(delMomento).toMatch(/--respiracion-fase-descanso: var\(--strivo-pm-400\)/)
   })
 })
 

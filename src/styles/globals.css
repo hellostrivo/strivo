@@ -29,7 +29,7 @@
 
 /* La paleta de marca y sus dos momentos (manual §4). Ya no hay entre qué
    elegir: los hexes van en la raíz y `data-moment` decide el momento. */
-@import './tokens-lumia.css';
+@import './tokens-strivo.css';
 
 /* La capa visual de Respiración (SPEC_14). Se carga siempre, como las paletas:
    sus clases solo existen dentro de `src/breathing/`, así que no alcanzan a
@@ -158,13 +158,13 @@
    más oscura, descanso la más clara— porque esa rampa es lo que hace que el
    cambio de fase se lea de reojo. Lo que cambia es de qué escala salen.
 
-   Medido sobre las dos superficies de Lumia (`lumia-am-50` de día y
-   `lumia-pm-50` de noche), que es donde se pintan:
+   Medido sobre las dos superficies de Lumia (`strivo-am-50` de día y
+   `strivo-pm-50` de noche), que es donde se pintan:
 
      inhalar   color-ink       #241E33   14,36:1 / 14,02:1
-     sostén    lumia-pm-700    #5A5568    6,41:1 /  6,25:1
-     exhalar   lumia-pm-500    #6C5AA7    5,14:1 /  5,02:1
-     descanso  lumia-pm-400    #8D82B6    3,13:1 /  3,06:1
+     sostén    strivo-pm-700    #5A5568    6,41:1 /  6,25:1
+     exhalar   strivo-pm-500    #6C5AA7    5,14:1 /  5,02:1
+     descanso  strivo-pm-400    #8D82B6    3,13:1 /  3,06:1
 
    Las cuatro pasan el 3:1 de WCAG 1.4.11 (RN-RE-VIS-16), y el `lint:contraste`
    las mide. **Entre fases contiguas hay entre 1,25:1 y 1,64:1**, igual que
@@ -175,16 +175,16 @@
    `--color-ink` es el token compartido del manual §6, no un hex escrito a mano
    ni un color de otra marca: es la tinta de toda la app.
 
-   El primario de Lumia (`lumia-pm-500`) cae en `exhalar` y no es casualidad: es
+   El primario de Lumia (`strivo-pm-500`) cae en `exhalar` y no es casualidad: es
    la fase más larga de casi todos los patrones y la que la marca quiere firmar. */
 [data-moment] {
   --respiracion-fase-inhalar: var(--color-ink);
-  --respiracion-fase-sosten: var(--lumia-pm-700);
-  --respiracion-fase-exhalar: var(--lumia-pm-500);
-  --respiracion-fase-descanso: var(--lumia-pm-400);
+  --respiracion-fase-sosten: var(--strivo-pm-700);
+  --respiracion-fase-exhalar: var(--strivo-pm-500);
+  --respiracion-fase-descanso: var(--strivo-pm-400);
 
-  --respiracion-trazo: var(--lumia-pm-500);
-  --respiracion-trazo-suave: var(--lumia-pm-400);
+  --respiracion-trazo: var(--strivo-pm-500);
+  --respiracion-trazo-suave: var(--strivo-pm-400);
   --respiracion-tinta: var(--color-ink);
 }
 
@@ -213,8 +213,8 @@
    sustituye por los de la paleta de marca sin tocar ningún componente.
 */
 [data-momento='manana'] {
-  --lumia-base: var(--lumia-am-50);
-  --lumia-fondo: linear-gradient(168deg, var(--lumia-am-50) 0%, var(--lumia-am-300) 62%, var(--lumia-am-100) 100%);
+  --lumia-base: var(--strivo-am-50);
+  --lumia-fondo: linear-gradient(168deg, var(--strivo-am-50) 0%, var(--strivo-am-300) 62%, var(--strivo-am-100) 100%);
   --lumia-tarjeta: rgba(255, 255, 255, .72);
   --lumia-campo: rgba(255, 255, 255, .58);
   /* El conmutador va en contratono: de día, oscuro. Es el primer elemento
@@ -222,14 +222,14 @@
      su propio `data-surface` y el texto se invierte con él. */
   --lumia-conmutador: #1D1833;
   --lumia-conmutador-activo: rgba(242, 238, 247, .16);
-  /* La frase del día va en el secundario de la paleta —`lumia-am-200`, el rosa
+  /* La frase del día va en el secundario de la paleta —`strivo-am-200`, el rosa
      de la mañana— y no en otro velo blanco: es la única superficie teñida de
      Hoy, así que se separa del resto por color y no por un tercer escalón de
      luminancia, que la habría puesto a competir con la tarjeta de respiración
      (RN-HOY-07). Medido: la tinta sobre ella da 10,0:1 y el secundario 7,4:1,
      los dos AAA. El borde es el lavanda de la misma paleta. */
-  --lumia-frase: var(--lumia-am-200);
-  --lumia-frase-borde: var(--lumia-pm-400);
+  --lumia-frase: var(--strivo-am-200);
+  --lumia-frase-borde: var(--strivo-pm-400);
 }
 
 [data-momento='noche'] {
@@ -240,7 +240,7 @@
   /* De noche el contratono se invierte: el conmutador es la pieza clara. */
   --lumia-conmutador: #F2DDE7;
   --lumia-conmutador-activo: rgba(36, 30, 51, .12);
-  /* De noche el secundario entra como velo y no como color plano: `lumia-pm-400`
+  /* De noche el secundario entra como velo y no como color plano: `strivo-pm-400`
      en sólido dejaría el texto claro en 2,9:1 y el oscuro en 5,1:1 —ni uno ni
      otro llegan a AAA—, mientras que al 20 % sobre el degradado tiñe sin
      aclarar y el cuerpo se queda entre 9,5:1 y 11,9:1. El borde es el lavanda
@@ -250,9 +250,9 @@
   /* §6.3.9 — El acento de la respiración es el naranja del amanecer y de
      noche no funciona: se pinta sobre un degradado frío y oscuro, que es lo
      contrario del fondo para el que se eligió. De noche toma el lavanda de la
-     paleta (`lumia-am-100`), que sobre el degradado nocturno se lee a 12,2:1
+     paleta (`strivo-am-100`), que sobre el degradado nocturno se lee a 12,2:1
      en su extremo más oscuro y a 9,7:1 en el más claro. */
-  --color-breath: var(--lumia-am-100);
+  --color-breath: var(--strivo-am-100);
   --color-breath-halo: rgba(220, 207, 241, .28);
   /* Un velo crema a las once de la noche sería un fogonazo. */
   --transicion-velo: #191428;
@@ -260,7 +260,7 @@
 }
 
 /* ─── La cabecera de la sección en la Mañana ─────────────────────────────────
-   Sobre `lumia-am-300` —un rosa pálido— la franja se comía con la mañana clara,
+   Sobre `strivo-am-300` —un rosa pálido— la franja se comía con la mañana clara,
    así que toma el mismo contratono que el conmutador Mañana/Noche, que es la
    otra pieza de cromo de esa pantalla. Las dos leen `--lumia-conmutador`, así
    que no pueden separarse.
@@ -270,7 +270,7 @@
    la misma decisión que SPEC_10 tomó con el velo de `TransicionLuz`.
 
    **Solo en Mañana.** De noche la cabecera se queda en su rango claro
-   (`lumia-am-100`), que es lo que decidió SPEC_12 para que el texto siga saliendo
+   (`strivo-am-100`), que es lo que decidió SPEC_12 para que el texto siga saliendo
    de los tokens AAA sobre claro. Este contratono resuelve la mañana, que era el
    caso roto.
 
@@ -292,22 +292,25 @@
   --color-text-soft:  var(--color-text-on-dark-soft);
   --color-text-faint: var(--color-text-on-dark-faint);
   --color-border:     var(--color-border-on-dark);
-  /* El acento marca el borde de la sección activa. `lumia-pm-500` sobre el
+  /* El acento marca el borde de la sección activa. `strivo-pm-500` sobre el
      contratono cae a 2,97:1 y se queda por debajo del 3:1 que WCAG 1.4.11 pide
      a un indicador; el lavanda claro de la misma paleta da 11,57:1. Sigue siendo
      color de Lumia, y el estado activo además lleva peso y relleno, así que
      nunca se comunica solo por color (criterio 7 de SPEC_11). */
-  --espacio-acento: var(--lumia-am-100);
+  --espacio-acento: var(--strivo-am-100);
 }
 
-/* La vela sale del `.svg` en #7563A7 y sobre el contratono se queda en 3,33:1:
-   pasa el umbral de no-texto, pero se apaga. En monocromo blanco da 17,06:1. Es
-   la **versión monocromática** que el manual §9 tiene pendiente: "se puede
-   derivar de los SVG actuales cambiando el stroke a un solo valor, pero conviene
-   que el diseñador la apruebe". Está derivada aquí con un filtro y no como
-   archivo nuevo para que aprobarla —o sustituirla por la del diseñador— sea
-   borrar tres líneas. **Pendiente de esa aprobación.** De noche la cabecera es
-   clara y no hace falta. */
+/* El símbolo sale del `.svg` en su tono de firma, #2B2730 (manual §3.2), y sobre
+   el contratono de la mañana se queda en **1,17:1**: invisible. En monocromo
+   blanco da 17,06:1. Es la **versión monocromática** que el manual §9 tiene
+   pendiente: "se puede derivar de los SVG actuales cambiando el stroke a un solo
+   valor, pero conviene que el diseñador la apruebe". Está derivada aquí con un
+   filtro y no como archivo nuevo para que aprobarla —o sustituirla por la del
+   diseñador— sea borrar tres líneas. **Pendiente de esa aprobación.**
+
+   La regla es la misma que llevaba la vela, y el problema también: aquella se
+   quedaba en 3,33:1 —pasaba el umbral de no-texto, pero se apagaba— y esta ni
+   eso. De noche la cabecera es clara y el símbolo se pinta tal cual: 9,92:1. */
 [data-momento='manana'] .cabecera-espacio img {
   filter: brightness(0) invert(1);
 }

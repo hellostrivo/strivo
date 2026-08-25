@@ -21,7 +21,7 @@ import { FRASES, TEMAS, fraseDeApertura, olvidarUltima } from '@/content/frases-
 const COMPONENTE = 'src/components/shared/TransicionLuz.jsx'
 const REPERTORIO = 'src/content/frases-apertura.js'
 const APP = 'src/App.jsx'
-const HOY = 'src/pages/lumia/Hoy.jsx'
+const HOY = 'src/pages/diario/Hoy.jsx'
 
 function codigoDe(ruta) {
   return readFileSync(ruta, 'utf8')
@@ -179,8 +179,8 @@ describe('la misma pieza en los dos sitios (RN-LU-MAN-01, criterio 1)', () => {
     // Si aparece una copia específica de Mañana, el wizard ha empezado a volver.
     const sospechosos = ['Transicion', 'Umbral', 'Splash'].flatMap((nombre) =>
       [
-        `src/components/lumia/${nombre}Manana.jsx`,
-        `src/components/lumia/${nombre}.jsx`,
+        `src/components/diario/${nombre}Manana.jsx`,
+        `src/components/diario/${nombre}.jsx`,
         `src/components/shared/${nombre}Manana.jsx`,
       ].filter((ruta) => {
         try {

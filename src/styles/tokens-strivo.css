@@ -1,0 +1,60 @@
+/* src/styles/tokens-strivo.css */
+/* La paleta de marca del producto — manual §4.3 (Mañana) y §4.4 (Noche).
+ *
+ * **Renombrada de `lumia-*` a `strivo-*` el 25 de agosto de 2026** (tanda C del
+ * paso 9). Los ocho hexes son los mismos: el repliegue quita un producto, no
+ * recalibra el color del que se queda. **El manual sigue nombrando estos tokens
+ * a la vieja usanza** y se reedita en el paso 10 (§4.4 del plan); hasta
+ * entonces, la prueba del criterio 4 busca en el manual con el nombre de allí y
+ * en esta hoja con el de aquí, y lo deja anotado.
+ *
+ * Los hexes vienen del manual y no se corrigen: es la fuente única de color
+ * (§C0.6). Ningún componente escribe uno a mano; todos usan estas variables a
+ * través de las utilidades de `globals.css`.
+ *
+ * **La paleta dice qué superficie usar; no qué color de texto poner encima.**
+ * Eso lo sigue decidiendo `data-surface` con los tokens de contraste de §6.3.7
+ * (manual §4.8, nota técnica). Por eso aquí no hay ni un token de texto.
+ *
+ * El momento lo pone `data-moment`, que en Hoy lo manda su conmutador
+ * (RN-HOY-05) y en el resto de la app, el reloj — que es la firma visual del
+ * producto: abrir a las 7:00 y a las 23:00 no se ve igual (§6.1, principio 2).
+ */
+
+/* **El atributo `data-space` se retiró al quedar un solo espacio** (25 ago).
+ * La paleta colgaba de él y, sin nadie que lo pusiera, estas ocho variables
+ * dejaban de existir: el degradado de Hoy, la tarjeta, el recuadro de la frase
+ * y las cuatro fases de Respiración quedaban sin color. Ahora los hexes van en
+ * la raíz —no hay entre qué elegir— y lo que sigue colgando de un atributo es
+ * el momento, que es lo único que cambia. */
+:root {
+  --strivo-am-50: #F6F2E9;
+  --strivo-am-100: #DCCFF1;
+  --strivo-am-200: #E5C2DC;
+  --strivo-am-300: #F6DDE8;
+
+  --strivo-pm-50: #F3EFEA;
+  --strivo-pm-400: #8D82B6;
+  --strivo-pm-500: #6C5AA7;
+  --strivo-pm-700: #5A5568;
+}
+
+/* Claridad suave. El acento se repite en los dos momentos —no cambia con la
+ * hora, es la firma de la marca— porque los neutros de `globals.css` fijan el
+ * suyo en la raíz y solo una regla sobre el nodo del momento lo tapa. */
+[data-moment='manana'] {
+  --espacio-acento: var(--strivo-pm-500);
+  --espacio-base: var(--strivo-am-50);
+  --espacio-cabecera: var(--strivo-am-300);
+  --espacio-borde: var(--strivo-pm-400);
+}
+
+/* Introspección profunda. La cabecera se mantiene en el rango claro para que
+ * el texto siga saliendo de los tokens AAA sobre claro: el tono nocturno de la
+ * marca entra por el acento y por el degradado de Hoy, no por el cromo. */
+[data-moment='noche'] {
+  --espacio-acento: var(--strivo-pm-500);
+  --espacio-base: var(--strivo-pm-50);
+  --espacio-cabecera: var(--strivo-am-100);
+  --espacio-borde: var(--strivo-pm-400);
+}

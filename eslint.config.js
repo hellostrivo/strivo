@@ -8,7 +8,7 @@
 // El mapa que custodia tiene dos partes y un territorio neutral:
 //
 //   compartido   `components/shared/`   lo usan todas las secciones
-//   diario       `lumia/`               Hoy, Journal, Historial
+//   diario       `diario/`              Hoy, Journal, Respiración, Historial
 //   Respiración  `breathing/`           la herramienta
 //   neutral      `lib/respiracion/`     el motor de ritmo, que no conoce a nadie
 //
@@ -19,19 +19,16 @@
 // diario, que el diario no lee Respiración, y que lo compartido no conoce ni a
 // uno ni a otra.
 //
-// Nota para el renombrado pendiente: la carpeta `lumia/` pasa a llamarse
-// `diario/`. Este archivo es uno de los sitios donde ese cambio se nota, porque
-// las rutas se escriben literales.
-//
-// **El export del punto de entrada ya se renombró** (tanda B del paso 9): lo que
-// `importNames` prohíbe es `diario`, no `lumia`. Si esta lista se queda con el
-// nombre viejo la regla deja de morder sin que nada falle, que es la forma más
-// silenciosa de perder una barrera de arquitectura.
+// **El renombrado del paso 9 está cerrado.** Este archivo era uno de los sitios
+// donde más se notaba, porque las rutas y los nombres de import se escriben
+// literales y no los resuelve nadie: si una lista se queda con el nombre viejo,
+// la regla deja de morder sin que nada falle, que es la forma más silenciosa de
+// perder una barrera de arquitectura. Se comprueba a mano cuando se toca.
 
 // Los patrones se comparan contra la cadena del import tal cual se escribe
-// (`'./lumia.js'`, `'../../lib/db/lumia.js'`, `'@/lib/db'`), no contra la ruta
+// (`'./diario.js'`, `'../../lib/db/diario.js'`, `'@/lib/db'`), no contra la ruta
 // resuelta. Por eso cada forma se lista de manera explícita.
-const DIARIO_MODULES = ['./lumia', './lumia.js', '**/lumia', '**/lumia.js', '**/lumia/**']
+const DIARIO_MODULES = ['./diario', './diario.js', '**/diario', '**/diario.js', '**/diario/**']
 
 const BREATHING_MODULES = [
   './breathing',
@@ -54,16 +51,16 @@ const RN_RESPIRACION =
 
 const COMPARTIDO =
   'Un componente de components/shared/ lo usan todas las secciones y el ' +
-  'onboarding: no puede depender de lumia/ ni de breathing/. Lo que necesite, ' +
+  'onboarding: no puede depender de diario/ ni de breathing/. Lo que necesite, ' +
   'que llegue por props (RN-LU-RESP-02).'
 
 const DB_ENTRYPOINT = ['@/lib/db', '**/lib/db', '**/lib/db/index.js', './index.js', '../index.js']
 
 const DIARIO_FILES = [
-  'src/lib/db/lumia.js',
-  'src/lumia/**/*.{js,jsx}',
-  'src/pages/lumia/**/*.{js,jsx}',
-  'src/components/lumia/**/*.{js,jsx}',
+  'src/lib/db/diario.js',
+  'src/diario/**/*.{js,jsx}',
+  'src/pages/diario/**/*.{js,jsx}',
+  'src/components/diario/**/*.{js,jsx}',
 ]
 
 const BREATHING_FILES = [
@@ -162,7 +159,7 @@ export default [
 
   // ─── Lo compartido no conoce ninguna sección ────────────────────────────────
   // `components/shared/` es lo que usan todas las secciones y el onboarding a la
-  // vez. Un import a `lumia/` o a `breathing/` desde aquí lo convertiría en un
+  // vez. Un import a `diario/` o a `breathing/` desde aquí lo convertiría en un
   // componente de esa sección disfrazado de compartido, que es la forma en que
   // se pierden los componentes únicos (RN-LU-RESP-02).
   {

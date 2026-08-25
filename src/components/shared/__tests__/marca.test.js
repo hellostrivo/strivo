@@ -79,9 +79,15 @@ describe('los valores llegaron intactos del manual (criterios 3 y 4)', () => {
     )
   })
 
-  it('`lumia-am-200` es #E5C2DC (criterio 4)', () => {
+  // **El token cambió de nombre en el CSS y el manual todavía no** (tanda C del
+  // paso 9). El hex es lo que el criterio 4 protege y ese no se ha movido: la
+  // aserción sobre el manual se hace con el nombre que el manual usa hoy, y hay
+  // que volver aquí cuando se reedite (§4.4 del plan). El nombre nuevo se
+  // comprueba donde ya es cierto: en la hoja de paleta.
+  it('el secundario de la mañana es #E5C2DC (criterio 4)', () => {
     expect(tokens.brand.lumia.am[200]).toBe('#E5C2DC')
     expect(manual).toMatch(/`lumia-am-200`\s*\|\s*`#E5C2DC`/)
+    expect(cssDe('src/styles/tokens-strivo.css')).toMatch(/--strivo-am-200:\s*#E5C2DC/)
   })
 
   // El criterio 3 vigilaba `#5D4766`, el punto de convergencia cromática entre
@@ -96,23 +102,28 @@ describe('los valores llegaron intactos del manual (criterios 3 y 4)', () => {
   })
 })
 
-describe('los dos símbolos (criterio 5)', () => {
+// **Deroga "los dos símbolos"** (paso 9, §8: "el símbolo de la app →
+// `strivo_simbolo.svg`", en singular). Eran tres, quedaron dos y queda uno. La
+// vela era lo único que se veía —en la cabecera, con el rótulo al lado ya
+// diciendo Strivo— y la sustituye la "S" del producto.
+//
+// Lo que sobrevive del criterio 5, y es lo que vigila ahora: el que queda es de
+// trazo, sobre el lienzo del manual, y lleva su tono de firma dentro del `.svg`.
+describe('el símbolo de la app (criterio 5, revisado 25 ago)', () => {
   const nombres = readdirSync(SIMBOLOS)
     .filter((n) => n.endsWith('.svg'))
     .sort()
 
-  it('están los dos', () => {
-    // Eran tres. El del producto pausado se fue con sus archivos; el de la marca
-    // madre se queda porque es el símbolo de la app.
-    expect(nombres).toEqual(['lumia_simbolo.svg', 'strivo_simbolo.svg'])
+  it('está el suyo, y no hay un segundo', () => {
+    expect(nombres).toEqual(['strivo_simbolo.svg'])
   })
 
-  it('el mapa de marcas del componente tiene exactamente esos dos', () => {
+  it('el mapa de marcas del componente tiene exactamente ese', () => {
     const mapa = codigoDe('src/components/shared/Simbolo.jsx').match(
       /const ARCHIVOS = Object\.freeze\(\{([\s\S]*?)\}\)/,
     )[1]
     const marcas = (mapa.match(/^\s*(\w+):/gm) ?? []).map((l) => l.trim().replace(':', ''))
-    expect(marcas).toEqual(['lumia', 'strivo'])
+    expect(marcas).toEqual(['strivo'])
   })
 
   it('comparten el mismo lienzo, que es lo que los hace comparables', () => {
@@ -132,11 +143,20 @@ describe('los dos símbolos (criterio 5)', () => {
     })
   })
 
-  it('cada uno lleva su tono de firma, distinto del primario de su paleta', () => {
+  it('lleva su tono de firma, distinto del primario de la paleta', () => {
     // Manual §3.2 — No se fuerzan a coincidir: el símbolo tiene su propio tono.
-    expect(readFileSync(join(SIMBOLOS, 'lumia_simbolo.svg'), 'utf8')).toContain('#7563A7')
     expect(readFileSync(join(SIMBOLOS, 'strivo_simbolo.svg'), 'utf8')).toContain('#2B2730')
-    expect(tokens.brand.simbolos.lumia).not.toBe(tokens.brand.lumia.pm[500])
+    expect(tokens.brand.simbolos.strivo).not.toBe(tokens.brand.lumia.pm[500])
+  })
+
+  it('sobre el contratono de la mañana se pinta en monocromo, o no se vería', () => {
+    // Su tono de firma sobre `#1D1833` da 1,17:1: invisible. El filtro lo lleva
+    // a blanco (17,06:1) y es la versión monocromática que el manual §9 tiene
+    // pendiente de aprobación del diseñador. De noche la cabecera es clara y el
+    // símbolo va tal cual (9,92:1), así que la regla es solo de la mañana.
+    const css = cssDe('src/styles/globals.css')
+    expect(css).toMatch(/\[data-momento='manana'\] \.cabecera-espacio img/)
+    expect(css).not.toMatch(/\[data-momento='noche'\] \.cabecera-espacio img/)
   })
 })
 
@@ -217,9 +237,16 @@ describe('los neutros de la marca madre siguen siendo el suelo (§4.1)', () => {
     expect(raiz.slice(0, raiz.indexOf('}'))).not.toMatch(/data-moment/)
   })
 
-  it('su símbolo no preside ninguna pantalla: ya no hay vestíbulo', () => {
+  // **Se invierte, y esa es la decisión del 25 de agosto.** Decía que el símbolo
+  // de la marca madre no presidía ninguna pantalla, porque el vestíbulo donde
+  // aparecía se retiró. Al quedar un solo producto, preside la única que hay: la
+  // cabecera, en las cuatro secciones. Lo que la prueba vigila es que siga
+  // habiendo exactamente un sitio — dos serían dos marcas otra vez.
+  it('su símbolo preside la cabecera, y solo ahí', () => {
     const conStrivo = COMPONENTES.filter((ruta) => /marca="strivo"/.test(codigoDe(ruta)))
-    expect(conStrivo).toEqual([])
+    expect(conStrivo).toEqual(['src/components/diario/NavStrivo.jsx'])
+    const conLumia = COMPONENTES.filter((ruta) => /marca="lumia"/.test(codigoDe(ruta)))
+    expect(conLumia).toEqual([])
   })
 })
 
@@ -235,7 +262,7 @@ describe('los neutros de la marca madre siguen siendo el suelo (§4.1)', () => {
 // Respiración se quedaron sin color con las 1250 pruebas en verde—.
 describe('la paleta llega a la pantalla (revisión del criterio 7)', () => {
   const app = codigoDe('src/App.jsx')
-  const paleta = cssDe('src/styles/tokens-lumia.css')
+  const paleta = cssDe('src/styles/tokens-strivo.css')
 
   it('el momento se elige con un atributo, no recargando', () => {
     expect(app).toMatch(/data-moment=\{momentoDe\(\)\}/)
@@ -265,7 +292,7 @@ describe('la paleta llega a la pantalla (revisión del criterio 7)', () => {
     // Era "ninguna nombra a la otra", con dos hojas. Con una sola, lo que queda
     // por vigilar es que no reaparezca la que se fue.
     expect(readdirSync('src/styles').filter((n) => n.startsWith('tokens-'))).toEqual([
-      'tokens-lumia.css',
+      'tokens-strivo.css',
     ])
   })
 })

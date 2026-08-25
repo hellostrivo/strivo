@@ -8,7 +8,7 @@
 // escribe `diario.x` y se ve de qué rama del árbol está tirando.
 
 import * as shared from './shared.js'
-import * as diario from './lumia.js'
+import * as diario from './diario.js'
 
 export { shared, diario }
 

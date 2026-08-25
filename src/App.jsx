@@ -26,13 +26,13 @@ import { getTimeSlot } from '@lib/timeSlot'
 
 import ArranqueProvisional from '@/components/ArranqueProvisional'
 import TransicionLuz, { prefiereMenosMovimiento } from '@components/shared/TransicionLuz'
-import NavStrivo from '@components/lumia/NavStrivo'
+import NavStrivo from '@components/diario/NavStrivo'
 import { cruzarUmbral, umbralPendiente } from '@lib/umbralSesion'
 
 import Respiracion from '@/breathing/Respiracion'
-import Hoy from '@/pages/lumia/Hoy'
-import Journal from '@/pages/lumia/Journal'
-import Historial from '@/pages/lumia/Historial'
+import Hoy from '@/pages/diario/Hoy'
+import Journal from '@/pages/diario/Journal'
+import Historial from '@/pages/diario/Historial'
 
 /** La raíz: por dónde se entra a la app. */
 const INICIO = '/hoy'

@@ -37,7 +37,7 @@ const SESION = 'src/breathing/PantallaSesion.jsx'
 const CIERRE = 'src/breathing/components/CierreSesion.jsx'
 const PANEL = 'src/breathing/components/PanelAjustesVivo.jsx'
 const CSS = 'src/breathing/styles/respiracion.css'
-const NAV_SECCIONES = 'src/components/lumia/NavStrivo.jsx'
+const NAV_SECCIONES = 'src/components/diario/NavStrivo.jsx'
 const BLOQUE = 'src/breathing/components/Bloque.jsx'
 
 /**
@@ -480,9 +480,10 @@ describe('no hay puente con el diario (criterios 35, 36, 37)', () => {
   it('ninguna pantalla del diario lee datos de respiración (criterio 35)', () => {
     // RN-RE-NAV-38 y 39 — Ni favoritos en el Journal, ni sesiones en el
     // Historial. `breathing/` no cruza.
-    const ajenos = [...archivosDe('src/pages/lumia'), ...archivosDe('src/components/lumia')].filter(
-      (r) => !r.includes('__tests__'),
-    )
+    const ajenos = [
+      ...archivosDe('src/pages/diario'),
+      ...archivosDe('src/components/diario'),
+    ].filter((r) => !r.includes('__tests__'))
 
     for (const ruta of ajenos) {
       expect(`${ruta}`).toBe(ruta)
@@ -493,7 +494,7 @@ describe('no hay puente con el diario (criterios 35, 36, 37)', () => {
   it('la respiración diaria de Lumia sigue en su sitio (criterio 36)', () => {
     // RN-RE-NAV-36 — No se sustituye, no se enlaza a Respiración, no cambia de
     // sitio. Sus tests de SPEC_08 siguen verdes sin modificar.
-    const hoy = codigoDe('src/pages/lumia/Hoy.jsx')
+    const hoy = codigoDe('src/pages/diario/Hoy.jsx')
     expect(hoy).toMatch(/Respiracion/)
     expect(hoy).not.toMatch(/breathing|\/respiracion/)
   })
