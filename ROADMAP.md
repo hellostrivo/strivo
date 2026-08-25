@@ -1,289 +1,100 @@
 # ROADMAP — Strivo
 
-**Última actualización:** 4 ago 2026 (Blueprint v3, §8.12)
+**Última actualización:** 25 ago 2026 · **Fuente:** Blueprint de Producto v5.0, §16
 
-**Visión:** cada fila es un hito cerrado cuando se cumplen todos sus criterios.  
-**Cambios:** editables cuando la realidad lo exige; no es un plan estático.
-
----
-
-## Fase 0: Fundación (24 jul – 21 ago 2026)
-
-| Campo | Detalle |
-|---|---|
-| **Estado** | 🔵 En progreso |
-| **Duración** | 4 semanas |
-| **Entrega** | Sistema de diseño implementado + prototipo navegable de 3 flujos |
-| **Salida esperada** | Design tokens en JSON · Componentes base en código · Prototipo con Onboarding → Ritual de Mañana → Ritual de Noche |
-| **Criterios de cierre** | 5 personas externas recorren el prototipo sin preguntas y lo describen con palabras: "calma", "cuidado", "orden". |
-| **Costos estimados (MXN)** | Herramientas: 0–2.000/mes · Tipografías: 0–6.000 (una vez) · Dominio: ~400/año · **Total: 5–15k** |
-| **Tecnología** | Figma + React/Next.js prototipo + diseño en código (Tailwind con tokens.json). |
-| **Dependencias** | Ninguna externa. Completar CLAUDE.md, design-tokens.json, copy-library.md, skills. |
-
-### Checklist Fase 0
-
-- [ ] Sistema de diseño en tokens, JSON y CSS variables.
-- [ ] 6 componentes base: Button, Card, Input, Chip, HabitRow, EmotionCard.
-- [ ] Prototipo navegable: P1–P11 (Onboarding) → Ritual de Mañana → Ritual de Noche.
-- [ ] Copy validado contra copy-library.md.
-- [ ] Contrastes AA auditados.
-- [ ] Test con 5 personas; feedback compilado.
+Este documento **no es una fuente independiente**: reproduce el capítulo 16 del Blueprint v5.0
+(`docs/blueprint/Strivo_Blueprint_de_Producto_v5_0_24-08-2026.md`). Si los dos discrepan, manda el
+blueprint y este archivo se corrige.
 
 ---
 
-## Trabajo por specs: Fase 1 y Fase 1C — ✅ cerradas (20 ago 2026)
+## 1. Fases
 
-> **Nota de numeración.** Este documento numera las fases de **producto** (Fase 0 → V3). El trabajo
-> dirigido por specs que se ha ejecutado usa otra numeración, la de `CLAUDE.md`: "Fase 1" allí es la
-> división Lumia/Formia, no el MVP privado de más abajo. Son dos ejes distintos y no se renumera
-> ninguno: este bloque registra el cierre del segundo, que alimenta al primero.
+### F-0 — Repliegue a una sola app · *en curso*
 
-**Fase 1 — División Lumia/Formia (SPEC_02 a SPEC_12).** Doce specs, cerrada el 11 ago 2026.
-Dos espacios navegables bajo la marca madre, con separación de datos garantizada por lint y por
-pruebas (RN-DB4-01), y la marca aplicada por producto.
+**Objetivo:** que la rama activa contenga únicamente Strivo.
 
-**Fase 1C — Respiración (SPEC_13 a SPEC_16).** Cuatro specs, cerrada el 20 ago 2026. Añade la
-herramienta transversal: un tercer acceso desde el Home que no es un tercer espacio.
+- Rama de resguardo creada y protegida.
+- Rama activa depurada: código, rutas, componentes, dependencias, estilos, textos, pruebas y
+  documentación.
+- Renombrado completo de identificadores, rutas y tokens.
+- Documentación del repositorio actualizada a esta versión del Blueprint.
+- **Cierre:** los seis comandos en verde y CA-11 cumplido.
 
-| Spec | Entrega | Estado |
+*Los pasos operativos están en el documento hermano de separación técnica
+(`docs/Strivo_Plan_de_Separacion_Tecnica_v1_24-08-2026.md`).*
+
+### F-1 — Entrada real · *siguiente*
+
+Onboarding O1–O5, autenticación real en sustitución del arranque provisional, y perfil y ajustes
+editables.
+
+**Cierre:** una persona nueva instala, se registra, escribe su primera mañana y vuelve al día
+siguiente en su propio dispositivo.
+
+### F-2 — Prueba con personas · *tras F-1*
+
+Cinco personas externas, observación sin guiar, recogida de vocabulario espontáneo.
+
+**Cierre:** cuatro de cinco describen la experiencia con palabras del campo semántico de calma,
+cuidado u orden, sin que se les sugieran.
+
+### F-3 — Pulido y publicación
+
+Incorporación del feedback, iconografía emocional propia, repertorio de frases ampliado, exportación.
+
+**Cierre:** aplicación instalable publicada, con exportación funcionando.
+
+### F-4 — Recordatorios y presencia
+
+Recordatorios adaptativos, discretos y desactivables.
+
+**RN-ROAD-01 —** Ningún recordatorio menciona ausencia, retraso ni cantidad de días.
+
+---
+
+## 2. Backlog priorizado
+
+| # | Elemento | Por qué |
 |---|---|---|
-| **SPEC_13** | Motor de ritmo, catálogo de patrones y capa de datos. Cero UI. | ✅ |
-| **SPEC_14** | Las dos guías visuales: círculo y bolita sobre línea. | ✅ |
-| **SPEC_15** | Sonido ambiente sintetizado, guía sonora y favoritos. | ✅ |
-| **SPEC_16** | Home, rutas, ensamblado e integración de extremo a extremo. | ✅ |
-
-**Métricas al cierre de Fase 1C:**
-
-| Métrica | Valor |
-|---|---|
-| Pruebas | **1.274 verdes** (438 al cerrar Fase 1) |
-| Archivos de prueba | 51 |
-| Bundle de la app | 476,6 kB · **141,0 kB comprimido** |
-| Delta de Fase 1C | +78,1 kB, **solo código** |
-| Archivos de audio en el repo | **0** — los cinco sonidos se sintetizan en tiempo real |
-| Dependencias nuevas | **0** |
-| Comandos de verificación | `lint` · `lint:copy` · `lint:contraste` · `format:check` · `build` · `test`, los seis en verde |
-
-**Lo que queda abierto y no lo cierra el código:** **23 validaciones manuales** acumuladas —8 visuales
-de SPEC_14, 7 de audio de SPEC_15 y 8 recorridos de extremo a extremo de SPEC_16—. Las pruebas no
-oyen y no juzgan si algo *se siente* bien; hacen falta audífonos, un teléfono y quince minutos con
-los ojos cerrados. El detalle está en `CLAUDE.md`.
+| **B-1** | Iconografía emocional propia (16 iconos) | Los emojis del sistema son la única pieza visual que no es de la marca |
+| **B-2** | Ampliar el repertorio de frases del día a 120+ | Con sesenta, la repetición se nota en dos meses |
+| **B-3** | Exportar todo lo escrito | Promesa implícita del posicionamiento |
+| **B-4** | Navegación por fecha dentro del Journal | Pedido en revisión previa, aplazado |
+| **B-5** | Cifrado real del contenido del Journal | Hoy el PIN bloquea el acceso, no cifra |
+| **B-6** | Bloqueo de suspensión de pantalla en Respiración | Mitiga la limitación de §8.10 del blueprint |
+| **B-7** | Mirada semanal, sin cifras | Solo si puede hacerse sin evaluar. Ante la duda, no se hace |
+| **B-8** | Sincronización multidispositivo verificada | Depende de F-1 |
 
 ---
 
-## Fase 1: MVP privado (22 ago – 9 oct 2026) ⭐ Primer producto con usuarios
+## 3. Decisiones abiertas
 
-| Campo | Detalle |
-|---|---|
-| **Estado** | ⚪ No comenzado |
-| **Duración** | 7 semanas |
-| **Usuarios** | 15–25 (private beta, invitados) |
-| **Entrega** | App funcional: Onboarding completo + Diario (mañana/noche) + Rituales + Hábitos (5 máx) + Journal + Historial + Constancia |
-| **Excluye deliberadamente** | IA, Insights complejos, suscripción, contenido premium, importar/compartir |
-| **Criterio de salida** | ✅ **≥ 40% con 4+ días en la semana 2.** Si < 25%, pausar y rediseñar el Ritual de Noche. |
-| **Costos estimados (MXN)** | Infraestructura gratuita (15–25 usuarios) | Cuentas dev Apple/Google: ~1.300 · Herramientas: 0–2k/mes · **Total: 3–8k** |
-| **Tecnología** | React Native (o React PWA) + IndexedDB (almacén local) + Firebase (autenticación + base de datos simple) · Notificaciones locales (device, no push). |
-| **Dependencias bloqueantes** | Stack confirmado (React? Native? PWA? Expo?) antes de empezar. |
-
-### Componentes MVP
-
-| Módulo | Estado | Criterios |
+| # | Decisión | Opciones |
 |---|---|---|
-| Onboarding (P1–P11) | 🔴 Pendiente | 3 capas: P1–P5, P6–P10, día 2–7. P3 crea identidad central, P3B áreas, P3C identidad de área. |
-| Hoy (Pantalla raíz) | 🔴 Pendiente | Degradados horarios (5 franjas). Tarjeta de acción principal liga a Diario (mañana o noche según hora). |
-| Ritual de Mañana | 🔴 Pendiente | 5 pantallas (respiración, identidad, compromiso, hábitos, intención). Pop-up horario 4:00–11:30. |
-| Vista de Mañana (Diario) | 🔴 Pendiente | 6 bloques: frase, agradecimientos, emociones, gran visión, victorias, checklist ritual. |
-| Ritual de Noche | 🔴 Pendiente | 6 pantallas (herencia de victorias, nuevos logros, agradecimientos, aprendizaje, ánimo de cierre, checklist). |
-| Vista de Noche (Diario) | 🔴 Pendiente | 8 bloques: victorias heredadas con decisión, logros nuevos, agradecimientos, aprendizaje, ánimo, cierre. |
-| Hábitos (módulo) | 🔴 Pendiente | H1: lista + agrupación. H2: detalle 90 días. H3: crear. Proyección a rituales automática. |
-| Journal (libre) | 🔴 Pendiente | Editor sin fricción. Búsqueda simple (palabra, etiqueta, rango). Exportación JSON. |
-| Historial | 🔴 Pendiente | Calendario (puntos de ánimo, sin rojo) + línea de tiempo + vista de día + búsqueda. 60 días mínimo. |
-| Constancia | 🔴 Pendiente | `count(distinct fecha)`. Visualización: anillo por tramos 10 días. Nunca se reinicia. |
-| Perfil básico | 🔴 Pendiente | Identidad central (historial). Áreas (pausar/reanudar). Nombre. |
-| Notificaciones | 🔴 Pendiente | Nivel 1: Rituales a horas fijas (local device, no push). Nivel 2: adaptativo. |
-
-### Checklist de aceptación MVP
-
-- [ ] Usuarios nuevos completan P1–P11 sin abandonar (P5 crea primer registro, captura identidad y áreas).
-- [ ] Ritual de Mañana visible diariamente en ventana horaria; marca persiste.
-- [ ] Ritual de Noche hereda victorias automáticamente; marca persiste.
-- [ ] Hábitos creados se proyectan a ambos rituales al instante; marcar en ritual → refleja en lista.
-- [ ] Journal guarda sin fricción; búsqueda funciona.
-- [ ] Historial muestra 60 días sin degradación de rendimiento.
-- [ ] Constancia suma correctamente desde cualquier dato (ritual, histórico).
-- [ ] Offline: todo funciona localmente; sync sin conflictos cuando hay red.
-- [ ] Exportación JSON completa y correcta.
-- [ ] QA emocional (Anexo A) pasa para cada pantalla.
-- [ ] Contraste AAA verificado; 200% escalable.
-- [ ] 0 crashes en 2 semanas de uso.
+| **DA-1** | ¿Las cuatro secciones se quedan en la cabecera o bajan a una barra inferior? | Cabecera (actual, cambio nulo) · barra inferior (mejor alcance del pulgar, más trabajo) |
+| **DA-2** | ¿El símbolo de Strivo es la marca única, o se rediseña a partir del símbolo del producto? | Confirmar D-3 visualmente |
+| **DA-3** | ¿Cuánto dura la frase del día: la jornada natural o hasta la hora de dormir declarada? | Hoy, la jornada natural |
+| **DA-4** | ¿La pausa de la mañana aparece con qué frecuencia? | Hoy, según regla interna. Falta decidir la cadencia deseada |
+| **DA-5** | ¿Modelo de negocio en esta versión? | Todo gratuito hasta después de F-2 es lo recomendable |
 
 ---
 
-## Fase 2: Beta pública (10 oct – 11 dic 2026) ⭐ Entregable socializable de fin de 2026
+## 4. Criterios de aceptación de la versión
 
-| Campo | Detalle |
+Strivo 1.0 está listo para prueba con personas externas cuando (blueprint §14.5):
+
+| # | Criterio |
 |---|---|
-| **Estado** | ⚪ No comenzado |
-| **Duración** | 9 semanas (hito de socialización: primera semana de diciembre) |
-| **Usuarios objetivo** | 300–500 (público, pero aún beta) |
-| **Entrega** | Todo MVP + Insights (v1, reglas) + Suscripción + Recordatorios adaptativos + Accesibilidad AA + PWA instalable + Landing |
-| **Criterios de salida** | **D30 ≥ 25 %** · **Conversión a prueba ≥ 8 %** · Cero incidentes de pérdida de datos · Landing con 100+ click-through a app. |
-| **Costos estimados (MXN)** | Infraestructura (300–500 usuarios): 500–1.500/mes · Push service: ~400/mes (o gratis en FCM) · Pasarela de pagos (tipo RevenueCat): gratis hasta cierto ingreso · Landing + hosting: ~200/mes · Auditoría ligera a11y/privacidad: 8–20k una vez · **Total: 15–35k** |
-| **Tecnología** | Firebase Functions (pagos/suscripción) · Servicio de notificaciones push · Motor Insights (reglas en cliente o función serverless) · PWA instalable. |
-| **Dependencias bloqueantes** | MVP cierra con ≥ 40%. Pasarela de pagos integrada (Stripe, RevenueCat, etc.). |
-
-### Componentes Beta
-
-| Módulo | Cambios desde MVP |
-|---|---|
-| Insights | Nuevos tipos: Constancia, resumen semanal, palabras frecuentes, patrón (reglas), distribución por áreas, evidencia de identidad. Cada uno con evidencia citable. |
-| Suscripción | Paywall + prueba 7 días + 99 MXN/mes · 749 MXN/año. Control de acceso a Insights avanzados, Descubre, Libro de Vida (futura). |
-| Recordatorios v2 | Adaptativo: supresión si ya registró, aprendizaje de horario, reducción tras 3 ignorados. |
-| Onboarding progresivo v2 | Capa 3: preguntas días 2–7 al final del ritual (áreas, tipo de app previo, voz, hábitos propios, compromiso). |
-| Estado de regreso | Detección de ausencia 7+ días. Mensaje sin culpa. Recuperación de Constancia. |
-| Descubre (preview) | 5 artículos de prueba (3–5 min cada uno). Sin audios ni programas aún. |
-| Exportación mejorada | PDF además de JSON. Incluyendo visualizaciones (gráfico de Constancia). |
-| Auditoría a11y | AA completo: contraste, escalado, navegación teclado, lectores de pantalla. |
-| Landing + SEO | Página de presentación: 4 secciones (problema, solución, testimonios [de beta], CTA a App Store/Play). |
-
-### Checklist Beta
-
-- [ ] Suscripción funciona end-to-end: prueba, pago, acceso.
-- [ ] Insights se generan automáticamente sin IA (solo reglas).
-- [ ] Cada insight tiene botón "no me sirve" que mejora filtrado.
-- [ ] Push: adaptativo (aprende ignoradas, suprime si registró).
-- [ ] PWA instalable desde home screen.
-- [ ] Landing convierte mínimo 8% de clicks a install.
-- [ ] D30 medible (tracking de usuarios día 1, día 30 activos).
-- [ ] Exportación PDF renderiza correctamente.
-- [ ] QA a11y: AA auditado por herramienta (axe, WAVE, etc).
-- [ ] 0 pérdida de datos en 100 usuarios × 2 meses.
-
----
-
-## Fase 3: V1 Pública (ene – abr 2027) ⭐ Primer producto completo, con IA
-
-| Campo | Detalle |
-|---|---|
-| **Estado** | ⚪ No comenzado |
-| **Duración** | 18 semanas (4 meses) |
-| **Usuarios objetivo** | 5.000 |
-| **Entrega** | Todo Beta + **Insights con IA** + Biblioteca Ciencia del Bienestar + Audioteca + Programas guiados + **Apps nativas (iOS/Android)** + Importación legacy |
-| **Criterios de salida** | 5.000 usuarios · **D90 ≥ 15 %** · MRR que cubra infraestructura + contenido · Conversión sostenida. |
-| **Costos estimados (MXN)** | Infraestructura (5k usuarios): 3–8k/mes · **IA** (≤3 MXN/usuario premium/mes; ~1k premium): 2–6k/mes · Contenido (25 artículos + 20 audios, producción/voz/edición): 40–90k una vez · **Total: 90–180k** |
-| **Tecnología** | LLM API (Anthropic, OpenAI) con procesamiento por lotes · Síntesis de voz (TTS) para audios · Caché de Insights · React Native apps (iOS/Android via App Store/Google Play) · Importador de Day One / Five Minute Journal. |
-| **Dependencias bloqueantes** | Beta cierra con D30 ≥ 25%. Presupuesto de IA aprobado. Proveedor de LLM elegido. |
-
-### Nuevos módulos V1
-
-| Módulo | Qué incluye |
-|---|---|
-| **Insights con IA** | Patrones conductuales (correlación ánimo + hábito). Temas emergentes del Journal. Resúmenes narrados. Todo con control de usuario: toggle "Reflexiones con IA" en Ajustes. |
-| **Biblioteca** | 25 artículos de 3–5 min sobre el bienestar. Tags: por área, por momento, por ánimo reciente. Acción integrable: "Añadir esto a mi Diario de hoy". |
-| **Audioteca** | 20 audios de 60s–8 min (meditación guiada, respiración, reflexión). Organizada por momento + ánimo. |
-| **Programas guiados** | 4 programas 14–30 días: "Autoestima" (21d), "Claridad" (30d), "Disciplina" (14d), "Gratitud" (21d). Notificación diaria con lección. |
-| **Carta a yo futuro** | Escribir hoy, recibir en 30/60/90/365 días. Opción de completar con IA (resumen cálido de quién eres hoy). |
-| **Apps nativas** | iOS (App Store) + Android (Google Play) wrapping React Native o build nativo. Mantiene almacén local IndexedDB/SQLite intacto. |
-| **Importador** | Traer entradas de Day One o Five Minute Journal con mapeo de emociones. |
-
-### Checklist V1
-
-- [ ] Insights con IA generados sin error; control de usuario funciona.
-- [ ] Coste de IA ≤ 3 MXN por usuario premium/mes, verificable.
-- [ ] Biblioteca: 25 artículos + búsqueda funciona. Acción "añadir a Diario" integrada.
-- [ ] Audioteca: 20 audios reproducen sin lag. Organización por momento + ánimo.
-- [ ] Programas: 4 programas con notificaciones diarias funcionan.
-- [ ] Carta a yo futuro: entrega correcta en fechas especificadas.
-- [ ] Apps en App Store (iOS) y Google Play (Android) listadas, descargables.
-- [ ] Importador: 80%+ de entradas traídas sin error.
-- [ ] Conversión a suscripción sostenida (trending up de MRR).
-- [ ] D90 ≥ 15% (5k usuarios × 750+ activos).
-
----
-
-## Fase 4: V2 (may – dic 2027)
-
-| Campo | Detalle |
-|---|---|
-| **Estado** | ⚪ No comenzado |
-| **Duración** | 8 meses |
-| **Entrega** | **Libro de Vida** (impreso) + E2EE opcional para Journal + Audio de cierre personalizado + Segundo idioma (inglés) + Nuevos temas visuales |
-| **Criterios de salida** | Rentabilidad operativa con 2 personas · Retención estable · Libro de Vida: tasa de compra medible. |
-| **Costos estimados (MXN)** | Infraestructura: 8–20k/mes · IA (incluye síntesis de voz): 6–15k/mes · Impresión bajo demanda: variable (repercutido a cliente con margen) · Reescritura copy a inglés: 30–60k una vez · **Total: 150–320k** |
-
-### Nuevos módulos V2
-
-| Módulo | Qué es |
-|---|---|
-| **Libro de Vida** | Compilación narrada del periodo del usuario. Exportable a PDF. Impresión bajo demanda (nueva línea de ingresos, margen alto). "Mi año en Strivo" o similar. |
-| **E2EE (opcional)** | Cifrado de extremo a extremo para Journal. Implicación: pérdida de búsqueda en servidor e IA sobre esas entradas. User control total. |
-| **Audio de cierre** | Síntesis de voz lee tus agradecimientos del día en cierre nocturno. Genera archivo de audio personalizado. |
-| **Inglés** | Interfaz + copy completamente reescritos para inglés (no traducción literal). Nueva cohort de usuarios. |
-| **Temas visuales** | Adicionalmente al claro/oscuro: "Bosque", "Océano", "Desierto" (sin cambiar tokens, solo paletas alternativas). |
-
----
-
-## Fase 5: V3 (2028) — Ecosistema
-
-| Campo | Detalle |
-|---|---|
-| **Estado** | ⚪ No comenzado |
-| **Entrega** | Integraciones salud (Apple Health/Google Fit) · Apple Watch · Spotify/Audible · Exploración B2B |
-| **Criterio de salida** | Decisión estratégica según tracción, financiación, equipo. |
-
-**Riesgo:** Estas integraciones pueden dilatar el foco. Solo si tracción V1–V2 lo justifica.
-
----
-
-## Métricas de referencia por fase
-
-| Métrica | MVP | Beta | V1 | V2 |
-|---|---|---|---|---|
-| D7 | N/A | 40%+ | 35%+ | 30%+ (plateau aceptable) |
-| D30 | N/A | 25%+ | 20%+ | 18%+ |
-| D90 | N/A | N/A | 15%+ | 12%+ |
-| Conversión a prueba | N/A | 8%+ | 10%+ | 12%+ |
-| Conversión a pago | N/A | 1–2% | 3–5% | 5–8% |
-| MRR | $0 | $300–500 | $1.5–3k | $5k+ (rentabilidad) |
-| Costo de infraestructura | <$200 | $500–1.5k | $3–8k | $8–20k |
-
----
-
-## Riesgos y contingencias
-
-| Riesgo | Probabilidad | Contingencia |
-|---|---|---|
-| MVP < 40% en semana 2 | Media | Pausar → rediseñar Ritual de Noche, no añadir funciones. Relanzar 2 semanas después. |
-| Beta D30 < 15% | Media | Revisar propuesta de valor (no es funcionalidad). Posible pivot de problema target. |
-| Coste IA > presupuesto | Baja | Reducir frecuencia de Insights, no calidad. O cambiar proveedor LLM. |
-| Retención por encima de V1 (mejor que V2) | Media | Normal. Significa que el foco de la app (Diario + Rituales) es más fuerte que el contenido. Aceptar. |
-| Competencia entra en beta | Baja | Diferencial es la identidad + ausencia de gamificación. Difícil de copiar rápido. |
-
----
-
-## Checklist antes de cada fase
-
-### Antes de MVP
-- [ ] CLAUDE.md, design-tokens.json, copy-library.md, skills están listos y centralizados.
-- [ ] Stack confirmado (React Native? PWA?).
-- [ ] Servidor/BD elegido (Firebase? AWS? Vercel?).
-- [ ] Repositorio creado (GitHub), con CI básico.
-- [ ] Prototipo Fase 0 probado con 5 personas.
-
-### Antes de Beta
-- [ ] MVP cumple ≥ 40% D2W con 15–25 usuarios.
-- [ ] Suscripción integrada (Stripe, RevenueCat, etc.).
-- [ ] Pasarela de pagos testeda end-to-end.
-- [ ] Landing redactada y deployada.
-- [ ] Feedback MVP compilado y accionado.
-
-### Antes de V1
-- [ ] Beta cumple D30 ≥ 25%, conversión ≥ 8%.
-- [ ] Proveedores de LLM / TTS elegidos, costo verificado.
-- [ ] Contenido (25 artículos, 20 audios) preproducido.
-- [ ] Apps nativas wrapping/build completo.
-
----
-
-**Última actualización:** 20 ago 2026 (cierre de Fase 1C — Respiración)  
-**Próxima revisión:** al cerrar cada fase (no cada semana; el roadmap no es un tracker diario).
+| **CA-1** | La app abre en Hoy tras el umbral, sin pantallas intermedias |
+| **CA-2** | La navegación muestra exactamente cuatro secciones, en el orden especificado |
+| **CA-3** | Mañana y Noche se recorren completas, se cierran y quedan en consulta |
+| **CA-4** | Un recorrido cerrado en blanco cierra sin advertencia y sin marcador de ausencia |
+| **CA-5** | Cambiar el género del perfil reescribe las etiquetas de días ya guardados |
+| **CA-6** | El Journal funciona con y sin PIN; el PIN se recupera reautenticando |
+| **CA-7** | El Historial pinta el punto de ánimo y abre el día completo, incluidos campos de la versión anterior |
+| **CA-8** | Respiración se abre desde la sección y desde la tarjeta de Hoy, con los siete patrones y los seis sonidos |
+| **CA-9** | La app funciona completa en modo avión y sincroniza al recuperar red, sin duplicar |
+| **CA-10** | Los seis comandos de verificación pasan en verde |
+| **CA-11** | No queda ninguna referencia visible ni en el paquete de la aplicación al alcance retirado |
+| **CA-12** | La revisión emocional de §13.4 no arroja ningún «sí» |

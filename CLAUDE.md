@@ -1,2153 +1,565 @@
-# CLAUDE.md — Consola ejecutiva de Strivo
+# CLAUDE.md — Strivo
 
-**Última actualización:** 11 ago 2026 (v4.1 del blueprint — **Fase 1 cerrada**, doce specs)  
-**Ubicación del blueprint completo:** `/docs/blueprint/Strivo_Blueprint_de_Producto_v4_1.md`  
-**Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO_LUMIA_FORMIA.md`  
-**Referencia rápida:** este archivo es para sesiones de desarrollo. Si una decisión no está aquí, busca en los archivos de `docs/blueprint/`.
+**Última actualización:** 25 ago 2026 · **Estado:** una sola aplicación, cuatro secciones
+**Blueprint (documento rector):** `/docs/blueprint/Strivo_Blueprint_de_Producto_v5_0_24-08-2026.md`
+**Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO.md`
+**Plan operativo del repliegue:** `/docs/Strivo_Plan_de_Separacion_Tecnica_v1_24-08-2026.md`
+
+Este archivo es la referencia rápida para sesiones de desarrollo. **Si una decisión no está aquí,
+está en el blueprint.** Si las dos discrepan, manda el blueprint y este archivo se corrige.
 
 ---
 
 ## 1. La esencia (lee esto primero)
 
-**Strivo es un refugio digital donde el usuario termina cada día sintiéndose orgulloso, agradecido, en paz, regulado y esperanzado.**
+**Strivo es un refugio digital: un lugar íntimo y breve donde volver a ti al empezar y al terminar el
+día.** La promesa es que quien lo usa termine el día sintiéndose en paz, agradecido, presente y con
+algo reconocido de sí mismo. No más productivo. No más optimizado. **En paz.**
 
-**Fase 1:** Strivo se divide en dos espacios conceptualmente distintos bajo una marca paraguas:
+La pregunta central del producto —la que ordena todas las demás— es **«¿Cómo estoy?»**.
 
-- **Lumia** (Reflexión · hacia dentro): journal, rituales de introspección, diario del día. Pregunta central: ¿Cómo estoy?
-- **Formia** (Acción · hacia delante): identidad, hábitos, construcción. Pregunta central: ¿Quién quiero ser?
-- **Strivo** (marca madre): el puente inteligente que integra ambos.
+**Strivo es una aplicación, y solo una.** No contiene otras aplicaciones, no es un ecosistema y no es
+un contenedor de nada. No hay vestíbulo, no hay navegación de nivel superior y no hay marca por
+encima de la app: la app **es** la marca.
 
-**Una sola app con dos espacios navegables** — no dos apps en tiendas.
+**Lo que no es** (§1.2 — normativo, no retórico):
 
-No es:
-- Un rastreador de hábitos (no gamifica ni penaliza).
-- Un coach productivo (no da órdenes).
-- Una red social (no hay audiencia ni juicio externo).
-- Un reemplazo terapéutico (es complementario, no diagnóstico).
+- **No es productividad.** No hay pendientes, no hay metas medibles, no hay nada que optimizar.
+- **No es un rastreador.** No cuenta días seguidos, no puntúa, no premia ni penaliza.
+- **No es meditación.** Respiración es una herramienta de calma, no un catálogo de sesiones guiadas.
+- **No es una agenda.** Lo que se escribe se escribe para vivirlo, no para consultarlo con eficiencia.
+- **No es una red social.** No hay audiencia, no hay comparación, nada es compartible por defecto.
+- **No es un sustituto terapéutico.** No diagnostica, no interpreta, no evalúa.
+- **No es un coach.** No da órdenes, no corrige, no propone que la persona sea distinta de como es.
 
-**El diferenciador:** la app devuelve la evidencia propia del usuario en su lenguaje de identidad, sin juzgar. Todo hábito, victoria y logro *confirma* quién está intentando ser, nunca lo contradice.
+**El diferenciador:** la app devuelve **lo que la persona escribió, con la pregunta delante**. Sin
+resumen, sin etiqueta, sin interpretación. La app no sabe cómo estás; guarda lo que dijiste y te lo
+devuelve tal como lo dijiste.
+
+**Sobre el nombre.** Tiene raíz en una palabra de empuje y **la narrativa no se apoya en el
+esfuerzo**. Ninguna pieza de copy explica su origen ni lo usa como llamada a la acción.
 
 ---
 
-## 2. Navegación de la app (estructura de 2 espacios + transversales)
+## 2. Navegación (cuatro secciones, y solo cuatro)
 
 ```
-┌──────────────────────────────────────┐
-│  LUMIA o FORMIA (contenido dinámico) │
-└──────────────────────────────────────┘
-┌─ Lumia · Reflexión ─┬─ Formia · Acción ─┐
-│  • Hoy (ritual)     │ • Identidad       │
-│  • Journal          │ • Hábitos (H1)    │
-│  • Historial        │ • Progreso        │
-└─────────────────────┴───────────────────┘
+Strivo
+├── Umbral de entrada  (luz + frase, una vez por sesión)
+├── /hoy               pantalla raíz
+│   ├── Mañana         → 3 momentos → cierre → consulta
+│   └── Noche          → 3 momentos → cierre → consulta
+├── /journal           escritura libre, protegible con PIN
+├── /respiracion       configuración → sesión → cierre
+└── /historial         calendario → día completo
 ```
 
-**Lumia** (pestaña izquierda):
-- **Hoy:** pantalla raíz. Contiene Ritual de Mañana + Ritual de Noche (modales) + Vista del Diario.
-- **Journal:** escritura libre, sin estructura. Privable con PIN.
-- **Historial:** calendario con puntos de ánimo, vista de día completo.
+Las cuatro secciones viven en **la cabecera**, bajo el símbolo. No hay barra inferior.
 
-**Formia** (pestaña derecha):
-- **Identidad:** gestión de identidad central y áreas (0..3 elegidas).
-- **Hábitos (H1):** lista de hábitos activos por identidad.
-- **Progreso:** constancia acumulativa, vista por identidad.
+| Regla | Enunciado |
+|---|---|
+| **RN-NAV-01** | Cuatro secciones y solo cuatro. Una quinta exige revisar el capítulo 4, no basta con añadirla. |
+| **RN-NAV-02** | Orden fijo: **Hoy · Journal · Respiración · Historial**. Las tres primeras son lo que se hace ahora; el Historial es lo que ya pasó. Poner Respiración al final la metería en el pasado. |
+| **RN-NAV-03** | Profundidad máxima de tres toques desde cualquier punto. |
+| **RN-NAV-04** | La navegación se oculta durante la escritura activa y las secuencias de cierre. Son estados de flujo, no de navegación. |
+| **RN-NAV-05** | Volver a una sección devuelve donde estabas, no a su raíz. Se olvida entre sesiones a propósito. |
+| **RN-NAV-06** | Ruta desconocida devuelve a `/hoy`, sin mensaje de error. |
+| **RN-NAV-07** | PWA estática con `HashRouter`. **Si alguien lo cambia a `BrowserRouter`, hay que añadir el `_redirects` de Netlify antes** o las rutas profundas darán 404. |
 
-**Restricción arquitectónica (RN-DB4-01):** Lumia no lee `formia/`; Formia no lee `lumia/`. Solo Strivo Intelligence puede cruzarlos (Fase 2).
-
----
-
-## 3. El modelo de identidad (§5.1.1 del blueprint v4.1)
-
-**Regla de oro:** todo registrado pertenece a un **área** (o la central) y confirma la **identidad**, nunca la contradice.
-
-```
-┌─ Identidad central (1, siempre existe) ────────┐
-│  "Alguien que crece"                           │
-│  · Amplia, estable, emocional                  │
-│  · No es una tarea ni un objetivo              │
-│  · Se edita, con historial de versiones        │
-└─ Áreas (0..3 elegidas en P3B) ───────────────┘
-│  Salud · Trabajo · Relaciones · Espiritualidad
-│  Crecimiento Personal · Finanzas · Creatividad
-│  Cada área tiene:
-│  - Ícono + color propio (§6.3)
-│  - Identidad de área OPCIONAL ("En Salud, alguien que cuida su cuerpo")
-│  - Puede pausarse/reanudarse sin perder historial
-└─ Hábitos (RN-FO-H3) ─────────────────────────┘
-   Cada hábito SIEMPRE tiene `identityRef` (obligatorio, nunca null)
-   - "central" (identidad central)
-   - areaId (una de las 3 áreas elegidas)
-```
-
-**Implicación arquitectónica:** ningún insight, reporte o feedback puede presentar "bajo registro en Salud" como fracaso (RN-ID-05).
+**El umbral de entrada** (§4.3): velo de luz con una frase de apertura, **una vez por sesión**
+(`src/lib/umbralSesion.js`). No es una secuencia: sin botón de avanzar, toda su superficie lo salta.
+Con `prefers-reduced-motion` **no se muestra**. El contenido va montado detrás antes de que la luz se
+vaya — un velo sobre una pantalla en blanco no es un umbral, es una espera con luz.
 
 ---
 
-## 4. Reglas de UX Writing
+## 3. Reglas de voz (§3.2 y §3.3)
 
-**§3.6 — Léxico prohibido (NUNCA aparece):**
-- "Fallaste", "incumpliste", "abandonaste", "deberías", "debilidades".
-- "Racha", "streak" (usamos "Constancia").
-- "Tarea" (usamos "Hábito", "Victoria", "Logro" según contexto).
-- Emojis del sistema (solo los 24 de §3.9 en tabla de emociones).
-- Signos de exclamación, salvo en confirmaciones muy especiales.
+**Tono:** cálido, cercano, breve. Tuteo. Sin condescendencia y sin entusiasmo impostado. Strivo habla
+como alguien que te conoce lo justo y te tiene aprecio: no te anima a gritos, no te da lecciones y no
+finge que todo está bien.
 
-**§3.6.4 — Tono:** cálido, cercano, sin condescendencia. Tuteo. Brevedad sin frialdad.
+**Léxico prohibido — no aparece nunca, ni en copy visible ni en texto accesible:**
 
-**Ejemplos que SÍ:**
-- "Pausado. Aquí estará cuando lo quieras de vuelta."
-- "Tu ritual de reflexión está libre. ¿Quieres escribir algo?"
-- "Eres alguien que crece. En Salud lo demostraste 11 de los últimos 14 días."
+- **Fracaso:** «fallaste», «incumpliste», «abandonaste», «te faltó», «incompleto», «pendiente»
+  (referido a la persona).
+- **Deber:** «deberías», «tienes que», «necesitas hacer».
+- **Medición:** «racha», «streak», «puntuación», «nivel», «progreso» (como número), «porcentaje».
+- **Productividad:** «tarea», «pendiente», «objetivo», «meta», «optimizar», «rendimiento»,
+  «productividad».
+- **Diagnóstico:** «ansiedad», «depresión», «trastorno», «síntoma», y cualquier término clínico
+  aplicado a la persona.
+- **Signos de exclamación.** Hoy no hay ninguno autorizado.
 
-**Ejemplos que NO:**
-- "¡Felicidades por tu racha! ¡Vas muy bien!" ❌
-- "Faltaste 3 hábitos. ¡Mañana será mejor!" ❌
-- "Tu debilidad es la constancia." ❌
+**Cómo suena bien:** «Puede ser algo pequeño.» · «No necesitas resolverlo ahora.» · «Este día no
+tiene nada escrito. También estuviste.» · «Nada con esas palabras. Todo lo demás sigue aquí.»
 
-**Validar con:** `strivo-voice` skill antes de comitear cualquier string.
+**Cómo suena mal:** «¡Felicidades! ¡Llevas 7 días seguidos!» · «Te faltó completar tu ritual de hoy.»
+· «Tu ánimo ha mejorado un 20 % esta semana.»
 
----
+| Regla | Enunciado |
+|---|---|
+| **RN-VOZ-01** | **Ningún string se escribe en un componente.** Todo el texto visible vive en `src/copy/index.js`. Un texto en el componente es un defecto, aunque sea correcto. |
+| **RN-VOZ-02** | `npm run lint:copy` antes de integrar. Un término prohibido detiene la integración. |
+| **RN-VOZ-03** | **Las preguntas principales de la mañana y de la noche no cambian de redacción.** La estabilidad es lo que las vuelve familiares. Solo se personalizan las ideas de apoyo. |
 
-## 5. Tokens de diseño (completos en `design-tokens.json`)
+**Género gramatical** (§3.4): tres valores —masculino, femenino, neutro— y **se persiste el
+identificador, nunca la etiqueta** (RN-GEN-01), de modo que cambiar el género reescribe también lo ya
+guardado. El neutro se redacta sin marca («Con cansancio», «Con inquietud») o con «mismo/a»;
+**no se usa la terminación en -e** (RN-GEN-02). La palabra propia no pasa por el resolutor: se
+muestra tal cual, entre comillas (RN-GEN-03).
 
-**Tipografía — `Inter` y solo Inter** (manual §5.1, aplicada en SPEC_12). Las tres marcas comparten
-familia y se diferencian **por peso**: Lumia 400/500, Strivo 500/600, Formia 600/700. Fraunces y
-Satoshi se retiraron: el manual manda sobre §6.4.1 del blueprint en todo lo tipográfico.
-La escala va en `rem` para que escale con la preferencia del sistema.
-
-**Colores de marca — el manual es la fuente única. Ningún hex se escribe a mano.**
-Las cuatro paletas viven en `design-tokens.json` y se aplican con `data-space` + `data-moment`:
-- Lumia · Mañana: claridad suave (`#F6F2E9`, `#DCCFF1`, `#E5C2DC`, `#F6DDE8`)
-- Lumia · Noche: introspección profunda (`#6C5AA7` primario, `#8D82B6`, `#5A5568`, `#F3EFEA`)
-- Formia · Mañana: energía cálida (`#F7F2E9`, `#E8D9C4`, `#FFC29C`, `#E9A387`)
-- Formia · Noche: avance con propósito (`#B45A2B` primario, `#8F4A2F`, `#5D4766`, `#1F1D22`)
-
-`#5D4766` en Formia·Noche **es intencional** (manual §4.7): el punto donde Lumia y Formia convergen
-al final del día. No se corrige para alejarlo del morado.
-
-**Paleta compartida (ver §6 del BRAND_MANUAL):**
-- Ink (texto principal): `#241E33`
-- Paper (fondo claro): `#FBF8F4`
-- Night (fondo oscuro): `#191428` (índigo violáceo, NO puro negro)
-- Acentos: Amber, Plum, Sage, Clay, Mist (ver tabla en token).
-
-**Espaciado:** base 4px. Escala 1,25× (4, 5, 6, 8, 10, 12, 16, 20, 24, 32, 40, 48, 56, 64, 80, 100).
-
-**Motion:** duraciones **más lentas que lo normal**. Min 120ms, máx 900ms para cierre nocturno. Preferir easing smooth (ease-in-out). Respiración diaria: 5-5-3 ×3 ciclos (~39s), completamente saltable.
-
-**Componentes:** radios 10–32px (ver tokens). Sin sombras de drop; usar elevación (2–8 dp). Haptics livianas, sin vibración en errores.
+> **Ojo con `lint-copy.js`.** Algunas palabras prohibidas son vocabulario legítimo en un catálogo
+> emocional («Con ansiedad» en el Journal) o maquinaria interna. El script comprueba el léxico
+> clínico sobre el *namespace* que corresponde, no sobre todo `src/`, y **no revisa `__tests__`**:
+> una prueba que comprueba que el léxico prohibido no aparece tiene que poder nombrarlo.
 
 ---
 
-## 6. Reglas de negocio transversales (§4.12)
+## 4. Tokens de diseño
+
+**El manual de marca es la fuente única para color, tipografía y símbolos. Ningún valor cromático se
+escribe a mano en un componente** (§10.1). Los valores viven en `src/tokens/design-tokens.json` y en
+`src/styles/tokens-strivo.css`, y se aplican por variables.
+
+### Los dos momentos
+
+| Token | Hex | | Token | Hex |
+|---|---|---|---|---|
+| `strivo-am-50` | `#F6F2E9` | | `strivo-pm-50` | `#F3EFEA` |
+| `strivo-am-100` | `#DCCFF1` | | `strivo-pm-400` | `#8D82B6` |
+| `strivo-am-200` | `#E5C2DC` | | `strivo-pm-500` | `#6C5AA7` (primario) |
+| `strivo-am-300` | `#F6DDE8` | | `strivo-pm-700` | `#5A5568` |
+
+**Escala neutra** (no cambia con la hora): `strivo-50` `#F6F4F1` · `100` `#E9E7E3` · `300` `#D4D1CD`
+· `600` `#6E6A73` · `700` `#58545D` · `800` `#423E47` · `900` `#2B2730`.
+
+**Paleta compartida:** ink `#241E33` · paper `#FBF8F4` · **night `#191428`** (índigo violáceo, **no
+negro puro**) · amber, plum, sage, clay, mist.
+
+### Cómo se aplica
+
+- **`data-moment`** (`manana` | `noche`) sobre la raíz elige la paleta. Lo decide **el reloj**: es la
+  firma visual del producto.
+- **`data-momento`** lo decide **quien mira**, con el conmutador de Hoy. Se parecen y no son lo
+  mismo: a las diez de la mañana con el conmutador en Noche valen cosas distintas, y ese es justo el
+  caso que hay que resolver bien. Fuera de Hoy no hay atributo.
+- **`data-surface`** elige el color del texto. Son capas distintas y no se pisan.
+
+| Regla | Enunciado |
+|---|---|
+| **RN-VIS-01** | El fondo de Hoy es **siempre un degradado**, nunca un color plano. |
+| **RN-VIS-02** | **El color del texto lo decide la superficie, no el componente.** Ningún componente fija un color de texto literal: pide superficies por su papel (`text-on-surface`, `text-on-surface-soft`, `border-on-surface`). |
+| **RN-VIS-03** | El negro puro no se usa. |
+| **RN-VIS-04** | Cambiar de momento recolorea fondo, cabecera y tarjetas **a la vez**, en 320 ms. Nada salta a destiempo. |
+| **RN-VIS-05** | Toda animación respeta `prefers-reduced-motion`. Con ella, las transiciones son inmediatas y el umbral no se muestra. |
+
+> **No uses `text-surface`.** Tailwind ya genera esa clase desde el color `surface` y la que gane
+> depende del orden del CSS, con texto casi blanco sobre fondo claro como premio.
+
+**Tipografía:** **Inter y solo Inter**, variable, por npm y no por CDN. La jerarquía es peso y
+tamaño, nunca familia. `.font-display` **elige peso, no familia**. La escala va en `rem` para que
+escale con la preferencia del sistema; los objetivos táctiles siguen en px (son el tamaño de un
+dedo). **La hoja itálica (`wght-italic.css`) es obligatoria** y la usa la frase del día: sin ella el
+navegador falsifica la cursiva inclinando la vertical.
+
+**Espaciado y forma:** base 4 px, escala 1,25×. Radios 10–32 px. **Sin sombras proyectadas**: la
+profundidad se expresa con elevación. Área táctil mínima 44 × 44 px.
+
+**Movimiento:** más lento de lo habitual. Mínimo 120 ms, máximo 900 ms para el cierre nocturno. Curva
+suave, sin rebotes. Háptica ligera en confirmaciones, **nunca en errores**.
+
+**Accesibilidad:** contraste **AAA** en todo texto, en ambos momentos y en ambas superficies,
+verificado por `npm run lint:contraste`. El estado activo **nunca se comunica solo por color**
+(peso + borde). Escalado al 200 %. Todo alcanzable por teclado, con foco visible. Los emojis del
+catálogo son decorativos y van ocultos al lector de pantalla.
+
+---
+
+## 5. Reglas de negocio transversales (§12.5)
 
 | Regla | Implicación |
 |---|---|
-| **RN-01** | Marcar un hábito desde cualquier pantalla se sincroniza en todas (Ritual, Vista, Lista). |
-| **RN-02** | Sincronización local-first: se guarda en local al instante; la red es async. Si cae, la marca no se pierde. |
-| **RN-03** | Cerrar un ritual sin marcar hábitos lo completa igual. Los hábitos nunca bloquean. |
-| **RN-04** | Pausar o quitar un área nunca borra sus hábitos/victorias/logros. Se preservan íntegros. |
-| **RN-05** | La app NUNCA sugiere "te falta un hábito en Salud" ni presenta un área con poco registro como problema. |
-| **RN-06** | Constancia = `count(distinct fecha)`. Solo sube. Nunca se reinicia. Nunca se genera un "fallo". |
-| **RN-07** | Suscripción: paywall máx. 2×/semana. Lo escrito siempre exportable. Nada se bloquea al cancelar. |
-| **RN-08** | IA: ≤ 3 MXN por usuario premium/mes. Sin retención de datos, sin entrenar modelos con el contenido. |
-| **RN-09** | Privacidad: ningún dato identificable de usuario en analítica. Protocolo de contenido sensible (§5.3.16). |
-| **RN-10** | Acceso: 2 pestañas máximo en nav principal. Profundidad máxima 3 toques desde cualquier punto. |
-| **RN-DB4-01** | Separación Lumia/Formia: Lumia no lee `formia/`; Formia no lee `lumia/`. |
-| **RN-DB4-05** | Regla de datos: `identityRef` NUNCA es null en hábitos nuevos. Solo permitido en heredados de Fase 0. |
+| **RN-01** | **Local primero.** Se guarda al instante en el dispositivo; la red es posterior. Si cae, no se pierde nada. |
+| **RN-02** | Ningún campo es obligatorio en ningún recorrido. |
+| **RN-03** | Cerrar un recorrido vacío lo completa igual. |
+| **RN-04** | No existe el estado «fallado» en ninguna entidad del modelo. |
+| **RN-05** | La app nunca presenta la ausencia de registro como un problema. |
+| **RN-06** | **Ningún texto de la persona se analiza para decidir cómo tratarla.** Toda ramificación por contenido emocional usa **listas cerradas y explícitas**. |
+| **RN-07** | Ningún dato identificable ni contenido escrito sale en analítica. |
+| **RN-08** | Lo escrito debe ser exportable. |
+| **RN-09** | Toda pantalla es abandonable sin coste y sin confirmación. |
+| **RN-10** | Cuatro secciones máximo; tres toques de profundidad máxima. |
 
-**Verifica estas antes de cada feature:** si viola una regla, no entra al MVP.
+**Verifica estas antes de cada feature: si viola una regla, no entra.**
 
 ---
 
-## 7. Criterios de aceptación recurrentes
+## 6. Estructura de datos
 
-Toda pantalla debe cumplir:
-
-1. ✅ Ningún string contiene léxico prohibido (strivo-voice skill).
-2. ✅ Contraste AAA + escalado 200% + modo reducir movimiento (strivo-a11y).
-3. ✅ Marcar/editar/crear genera un log local que sincroniza después sin duplicarse (RN-02).
-4. ✅ Estado vacío muestra invitación suave, no acusación (e.g. "Tu ritual está libre" no "Sin hábitos").
-5. ✅ Error muestra copy amable + botón reintento, nunca código de error.
-6. ✅ Offline: se guarda localmente, funciona sin red.
-7. ✅ QA emocional (Anexo A del blueprint): 15 checks específicos según el módulo.
-
----
-
-## 8. Estructura de datos (§C5 del blueprint v4.1)
-
-**Árbol canónico `users/{uid}/`:**
+**Árbol canónico `users/{uid}/` — tres ramas:**
 
 ```javascript
 shared/ {
-  profile: { name, gender, diaTerminaA, wakeTime, sleepTime, createdAt },
-  auth: { uid, email, phone },
-  onboarding: { completedSteps, currentStep }
+  profile:     { name, gender, diaTerminaA, wakeTime, sleepTime, createdAt },
+  auth:        { uid, email, phone },
+  preferences: { soundEnabled, reducedMotion },
+  onboarding:  { completedSteps, currentStep }
 }
 
-lumia/ {
-  journal/{entryId}: { date, text, emotions[], otherText, createdAt, updatedAt },
-  // La mañana de tres momentos (23 ago). `emotions` y `granVision` son de la
-  // versión anterior: se leen, no se escriben.
-  morningEntry/{date}: { version, updatedAt, completedAt, skipped[],
-                         feeling, feelingOther, intention, intentionOther,
-                         gratitude[], action, reflectionId, reflection },
-  // La noche de tres momentos (23 ago). `gratitude`, `learning`, `sleepState` y
+diario/ {
+  // La mañana de tres momentos. `emotions` y `granVision` son de la versión
+  // anterior: se leen, no se escriben.
+  morningEntry/{fecha}: { version, updatedAt, completedAt, skipped,
+                          feeling, feelingOther, intention, intentionOther,
+                          gratitude[], action, reflectionId, reflection },
+
+  // La noche de tres momentos. `gratitude`, `learning`, `sleepState` y
   // `sleepStateOther` son de la versión anterior: se leen, no se escriben.
-  nightRitual/{date}: { version, updatedAt, completedAt, skipped,
-                        recognized[], reflectionId, reflectionSource, reflection,
-                        closingFeeling, closingFeelingOther, release },
-  pinConfig: { salt, hash, iterations, algorithm, enabled }
+  nightRitual/{fecha}:  { version, updatedAt, completedAt, skipped,
+                          recognized[], reflectionId, reflectionSource, reflection,
+                          closingFeeling, closingFeelingOther, release },
+
+  journal/{entryId}:    { date, text, emotions[], otherText, createdAt, updatedAt },
+  pinConfig:            { salt, hash, iterations, algorithm, enabled }
 }
 
-formia/ {
-  identity/central: string,
-  identity/areas: { [areaId]: { selected, identityText, color, icon, order, state } },
-  habits/{habitId}: { name, identityRef, context, emoji, createdAt },
-  habitLogs/{logId}: { habitId, date, completedAt }
+breathing/ {
+  configuracion, favoritos/{id}, recientes, sesiones
 }
 ```
 
-**Regla clave:** `habits.identityRef` es OBLIGATORIO: "central" | areaId. Nunca null (RN-DB4-05).
+| Regla | Enunciado |
+|---|---|
+| **RN-DB-01** | Local primero. La nube es una copia posterior, no la fuente de verdad al escribir. |
+| **RN-DB-02** | **Nada se corrige en silencio.** Un registro incompleto se rechaza al escribir o se devuelve tal cual al leer. |
+| **RN-DB-03** | **Campo fuera del modelo es un error de programación:** escribirlo lanza `UNKNOWN_FIELD`. Ampliar el modelo es una decisión, no un descuido. |
+| **RN-DB-04** | **Nada de lo escrito se sobrescribe ni desaparece** al cambiar el modelo. Los campos retirados se siguen leyendo; simplemente ya nadie los escribe. |
+| **RN-DB-05** | **El ánimo de cinco estados no es un campo.** Es una vista derivada de la emoción de cierre, calculada al pintar. **Nunca se persiste.** |
+| **RN-DB-06** | Se persisten identificadores, no etiquetas. |
+| **RN-DB-07** | Los límites de longitud son sugerencias, no validaciones. |
+| **RN-DB-08** | Fechas como `YYYY-MM-DD` en zona local. **Un día es el día de quien lo vivió.** |
+| **RN-DB-09** | La marca de cierre (`completedAt`) es lo único que determina si un recorrido está cerrado. No se infiere de cuántos campos hay escritos. |
+| **RN-DB-10** | **Respiración no lee ni escribe en `diario/`, y `diario/` no lee `breathing/`.** Lo único que comparten es el motor de ritmo, que es lógica pura sin datos. Lo imponen `eslint.config.js` y una prueba, no una convención. |
+
+**Dos filosofías de validación, y la frontera es una carpeta.** En `src/lib/db/` los registros los
+escribe el código, así que un campo fuera de lista **se rechaza** (RN-DB-03). En
+`src/breathing/data/` los escribe una persona moviendo un control, así que se **corrige al valor
+válido más cercano y se explica**: frenarla con un error sería castigarla por explorar.
+
+**Guardado** (§5.6): los toques se escriben al momento; lo tecleado, **a los 800 ms** de inactividad.
+Salir a media frase no pierde nada. `skipped` anota lo omitido **solo de las preguntas que llegaron a
+hacerse** —una pausa que no se mostró no es una pausa omitida— y **no se muestra en ninguna
+pantalla**.
 
 ---
 
-## 9. Fases del desarrollo
+## 7. Los recorridos (§5.4 y §5.5)
 
-| Fase | Duración | Salida | Estado |
-|---|---|---|---|
-| **Fase 0** | 4 sem | Sistema de diseño + prototipo (8 bloques implementados) | ✅ Completada (5 testers validados) |
-| **Fase 1** | 4–5 sem | División Lumia/Formia limpia, código nuevo, 12 specs | 🔄 EN CURSO (specs en generación) |
-| **Fase 2** | 8 sem | Strivo Intelligence, Insights cruzados, Suscripción | Planificada |
+### Mañana
+
+```
+1 de 3  ·  ¿Cómo me siento esta mañana?           (única, 11 + Algo más)
+2 de 3  ·  ¿Qué agradezco hoy?                    (1 a 3, uno al abrir)
+3 de 3  ·  ¿Cómo me gustaría sentirme…?           (única, 9 + Algo más)
+           ¿Qué puedo hacer hoy…?                 (texto libre + ideas)
+   +    ·  Si quieres, una última pausa           (opcional, algunos días)
+   →       Tu intención · Tu paso · «Comenzar mi día»
+   →       La consulta: lo respondido, con las preguntas delante
+```
+
+- **La intención va con la acción, no con el punto de partida** (RN-MAN-01): «acercarme a *esa
+  sensación*» es un pronombre sin antecedente si la sensación se eligió dos pantallas atrás.
+- **El indicador cuenta momentos, no campos** (RN-MAN-02). La pausa opcional **no entra en la
+  cuenta**: un total que cambia de un día para otro deja de orientar.
+- **El catálogo de intención excluye las emociones difíciles** (RN-MAN-12), y es el único sitio del
+  producto donde se restringe: una intención de estar triste no es una intención.
+- **La diferencia entre punto de partida e intención no se mide** (RN-MAN-13). Empezar cansado y
+  querer estar en calma **no es un problema a resolver**: es lo que la pregunta esperaba.
+- **La gratitud abre con un solo campo** (RN-MAN-07): varios campos vacíos se leen como huecos por
+  rellenar, y esto no es un formulario.
+- **Las ideas de apoyo abren una pregunta y nunca rellenan el campo** (RN-MAN-08), a los 5 s sin
+  escribir **en el renglón enfocado**. Dos «Ahora no» y se callan por la sesión.
+- **Tocar una idea de acción NO la guarda todavía:** es una propuesta de la app hasta que se
+  continúa. **Es la única excepción al autoguardado** y está anotada en el código.
+
+### Noche
+
+```
+1 de 3  ·  ¿Qué quiero reconocer de hoy?          (lista de 1 a 3, uno al abrir)
+2 de 3  ·  Una reflexión breve                    (rotativa, o ligada a la mañana)
+3 de 3  ·  ¿Cómo me siento al cerrar el día?      (única, 12 + Algo más)
+   +    ·  ¿Hay algo que quieras dejar aquí?      (por la emoción, o a mano)
+   →       Tu día puede terminar aquí · «Cerrar mi día» · Buenas noches
+   →       La consulta: lo respondido, con las preguntas delante
+```
+
+- **«Reconocer» y no «agradecer», y la diferencia es el punto** (RN-NOC-03). Reconocer admite lo que
+  costó; agradecer obliga a que algo haya salido bien. Es lo que permite que una noche difícil tenga
+  respuesta.
+- **La noche no evalúa el día** (RN-NOC-01): no compara la mañana con la noche y **no cuenta nada de
+  lo escrito**. «Hoy encontraste 2 cosas que agradecer» es un balance, y los balances están
+  prohibidos.
+- **La intención entra como pregunta, jamás como examen** (RN-NOC-05): se pregunta qué se notó, nunca
+  si se cumplió.
+- **La descarga se ofrece sola tras cuatro emociones concretas** —inquietud, frustración, tristeza,
+  demasiado encima— y es **lista cerrada y explícita, no un análisis** (RN-NOC-09). **La palabra
+  propia nunca la dispara** (RN-NOC-10).
+- **El enlace para abrirla a mano va debajo de todas las emociones** (RN-NOC-11), no solo de las
+  cuatro: si apareciera solo tras una emoción difícil, el catálogo se convertiría en un diagnóstico.
+- **Del reconocimiento se muestra uno, no todos** (RN-NOC-13). Se elige el primero **porque se
+  escribió primero, no porque sea el mejor**.
+
+### Ambos
+
+- **Selección única en las tres preguntas emocionales.** Se suelta tocando el chip otra vez, y esa es
+  la forma de omitir. Por eso son botones con `aria-pressed` y **no radios**: un radio no se
+  deselecciona, y anunciarlo así sería mentir al lector de pantalla. **«Algo más» es la excepción**:
+  tocarlo cuando ya está elegido **reabre el campo**, y quitarlo tiene su propio control — editar y
+  borrar no pueden ser el mismo gesto cuando hay texto de por medio.
+- **La palabra propia no recibe emoji**, ni siquiera al releerse: elegirle uno sería la app
+  interpretando lo que alguien acaba de nombrar. Sale entre comillas, en la misma píldora.
+- **La consulta repite las preguntas, no las resume** (RN-MAN-21). «Cómo empezaste · Cansada» sería un
+  inventario con otro vocabulario.
+- **Lo que quedó en blanco no aparece** (RN-MAN-23): sin marcador de ausencia, sin hueco gris, sin
+  «sin responder». Una mañana a medias se lee entera, no incompleta.
+- **Sin etiqueta de «hecho»** (RN-HOY-04): con el contenido delante, decirlo es contarle a alguien lo
+  que está leyendo.
+- **Nada bloquea, y está probado en negativo:** ningún control lleva `disabled`, `required` ni
+  `aria-invalid`, y el copy no contiene «incompleto», «te faltó», «obligatorio» ni «sin responder».
 
 ---
 
-## 10. Fase 1 — Especificaciones de implementación
+## 8. Journal, Historial y Respiración
 
-**Estrategia:** Borrón y cuenta nueva (limpio, no incremental). Se descarta el código de Fase 0; se reutiliza stack, estructura, skills, CLAUDE.md.
+**Journal** (§6). Escritura libre: **el único lugar donde el sistema está completamente mudo**
+(RN-JR-01) — sin sugerencias, sin recuento de palabras, sin marcador que insinúe qué escribir. Varias
+entradas por día. Catálogo emocional **propio y distinto** (15 + propia), máximo tres. Una entrada
+solo con emociones es válida. El **PIN** (4–6 dígitos) se almacena derivado con sal e iteraciones,
+**nunca en claro**; bloquea el **acceso, no cifra** (limitación consciente, backlog B-5). Con el PIN
+puesto **el Historial no lee el journal siquiera**, y lo dice con una frase fija que no depende de si
+hay entradas: si apareciera solo cuando las hay, la frase estaría contando lo que el PIN tapa.
 
-**12 specs documentadas en `/docs/specs/`:**
+**Historial** (§7). **Muestra, no analiza** (RN-HIS-01): sin tendencias, sin medias, sin gráficas,
+sin comparación entre semanas. Punto de ánimo de cinco estados —agotado, inquieto, normal, tranquilo,
+en paz— **derivado al vuelo y nunca persistido** (RN-HIS-02). La escala de cinco es más gruesa que el
+catálogo de doce **y se asume**: la respuesta exacta se lee en la vista del día. **La palabra propia
+devuelve «Estuviste»** (RN-HIS-04): colocarla en una escala sería el diagnóstico que este producto
+prohíbe. **Los campos de versiones anteriores se siguen leyendo** con sus rótulos propios
+(RN-HIS-07): nada de lo ya escrito se sobrescribe ni desaparece.
 
-1. **SPEC_00** — Guía de lectura (meta-spec)
-2. **SPEC_02** — Capa de datos: `shared/lumia/formia` + RN-DB4
-3. **SPEC_03** — Formia: espacio de identidad
-4. **SPEC_04** — Formia: H1/H2/H3 + sugerencia por texto
-5. **SPEC_05** — Formia: progreso y constancia
-6. **SPEC_06** — Lumia: eliminar bloques Diario
-7. **SPEC_07** — Lumia: disolver Ritual de Mañana
-8. **SPEC_08** — Lumia: respiración diaria (5-5-3 ×3)
-9. **SPEC_09** — Lumia: intención en Hoy → Mañana
-10. **SPEC_10** — Lumia: entrada a Mañana (transición)
-11. **SPEC_11** — Navegación: "Lumia · Reflexión" / "Formia · Acción"
-12. **SPEC_12** — Aplicación de marca por producto
+**Respiración** (§8). **Es una herramienta, no una sección de contenido** (RN-RE-01): se abre, se
+usa, se sale. No acumula historial visible, no puntúa, no lleva la cuenta de sesiones. Siete
+patrones, dos visuales, tres modos de duración, seis sonidos **sintetizados en tiempo real** —cero
+archivos de audio, cero dependencias nuevas—, hasta veinte combinaciones guardadas. **Silencio por
+defecto en toda la app** (RN-RE-11). Todos los nodos de audio se liberan al salir.
 
-**Tiempo estimado:** 18 horas de código limpio, ~4 semanas a 10 h/semana.
+Dos entradas: la sección, y la **tarjeta de Hoy** («Respira un momento»), que **no muestra la
+duración** (RN-RE-02) —cuánto dura se dice donde hay un botón que arranca, que es donde alguien
+decide de verdad—. Desde la tarjeta el ejercicio es **el ritmo de la casa** (5-5-3, tres ciclos,
+~39 s) y es **otro componente** que el de la sección: `components/shared/Respiracion.jsx`.
 
 ---
 
-## 11. Los no-negociables
+## 9. Estados de interfaz (§11)
 
-1. **Identidad nunca se contradice:** un logro de trabajo confirma "alguien que crece", no lo viola.
-2. **Marcar es un toque:** no puede ser un modal con preguntas. Una casilla, más nada.
-3. **Cerrar el día es una ceremonia:** la secuencia de cierre (Ritual de Noche, N1–N6) nunca falla, ni siquiera si hay error.
-4. **Local-first siempre:** la app funciona completamente sin red. Sync es async.
-5. **Sin rachas, sin castigo:** Constancia solo sube. La no realización no genera notificación, alerta ni registro.
-6. **Separación Lumia/Formia:** Los dos espacios viven en la misma app. No hay puente directo entre ellos (solo la barra). RN-DB4-01 se respeta siempre.
+- **Un estado vacío es una invitación, nunca una acusación** (RN-EST-01): nunca dice qué falta, dice
+  qué cabe.
+- **Sin ruedas giratorias** (RN-EST-02): esqueleto de la forma final, o nada.
+- **El error nunca muestra un código** (RN-EST-04): qué pasó, tranquiliza sobre lo escrito, y
+  reintentar. **Nada vibra en un error.**
+- **Un error de red no es un error visible** mientras el guardado local funcione (RN-EST-05).
+- **Solo se confirma lo que destruye contenido**, y solo si hay contenido que perder (RN-EST-07).
+  **Salir nunca pide confirmación** (RN-EST-08). Eliminar una combinación de respiración ofrece
+  **deshacer** en lugar de confirmar antes.
+- **La app funciona completa sin red** (RN-EST-10). Si la sincronización falla, la marca no se pierde
+  y no se duplica.
+- **El producto no crece hacia los lados** (RN-EST-12): en pantalla grande hay más margen, no más
+  contenido, y nunca dos columnas. Se diseña primero para teléfono en vertical.
+
+---
+
+## 10. Criterios de aceptación recurrentes (§13.3)
+
+Toda pantalla, antes de darse por terminada:
+
+1. ✅ Ningún texto contiene léxico prohibido (`npm run lint:copy`).
+2. ✅ Contraste AAA en ambos momentos, escalado 200 %, movimiento reducido respetado.
+3. ✅ Escribir o editar genera un registro local que sincroniza después sin duplicarse.
+4. ✅ El estado vacío invita, no acusa.
+5. ✅ El error es amable, sin código, con reintento.
+6. ✅ Funciona sin conexión.
+7. ✅ **Ningún texto vive en el componente:** todo viene de `src/copy/`.
+8. ✅ **Ninguna tonalidad literal en el componente:** todo viene de tokens.
+
+**Y la revisión emocional** (§13.4), que ninguna prueba automática puede hacer. **Un «sí» en
+cualquiera de estas es un defecto**, aunque todo esté en verde:
+
+- ¿Alguna pantalla me hace sentir atrasado?
+- ¿Alguna cifra o etiqueta me está evaluando?
+- ¿Hay algún sitio donde no pueda salir sin dar explicaciones?
+- ¿Alguna respuesta difícil se ve peor que una fácil?
+- ¿Hay entusiasmo impostado en algún texto?
+- ¿Algo va más rápido de lo que este producto debería ir?
+
+---
+
+## 11. Arquitectura del código
+
+```
+src/
+├── copy/            biblioteca central de texto  ← todo string visible sale de aquí
+├── content/         repertorios de frases (apertura y del día)
+├── tokens/          design-tokens.json
+├── styles/          globals.css + tokens-strivo.css
+├── lib/
+│   ├── db/          schema · shared · diario · local · sync
+│   ├── respiracion/ motor de ritmo (lógica pura)
+│   └── audio/       síntesis
+├── diario/          lógica de mañana, noche, journal, historial, PIN
+├── breathing/       la herramienta completa
+├── components/
+│   ├── shared/      Simbolo · TransicionLuz · Respiracion (la breve de Hoy)
+│   ├── ui/          primitivas
+│   └── diario/      NavStrivo · manana/ · noche/ · journal · historial
+└── pages/diario/    Hoy · Journal · Historial
+```
+
+**Reglas de arquitectura, impuestas por `eslint.config.js` y por pruebas, no por convención:**
+
+| Regla | Enunciado |
+|---|---|
+| **RN-TEC-02** | Todo el texto visible sale de `src/copy/`. |
+| **RN-TEC-03** | Todo color sale de tokens. |
+| **RN-TEC-04** | **`breathing/` no importa nada de `diario/` y viceversa.** |
+| **RN-TEC-05** | **`components/shared/` no importa nada específico de una sección.** Lo que necesiten llega **por props**. |
+
+Esa última regla es la que da forma a media base de código: `TransicionLuz` recibe su tema desde
+`globals.css` y no por props de sección; `Respiracion` (la de la sección) recibe `base` y `salida`
+desde `App.jsx`, que es quien enruta y el único que sabe dónde vive; `BarraStrivo` declaraba su clase
+y dejaba que el CSS del sitio la vistiera. **El tema va en el CSS del sitio que lo conoce, nunca en
+el componente.**
+
+**Dónde vive cada regla — un sitio y solo uno.** Dos copias de la misma regla envejecen distinto:
+
+- `src/diario/noche.js` → `animoDeNoche` es el **único** sitio que decide el ánimo de una noche.
+- `src/lib/respiracion/` → el motor de ritmo. `ritmoRespiracion.js` es un envoltorio de compatibilidad.
+- `src/lib/umbralSesion.js` → el «ya se cruzó» del umbral, compartido por sus dos consumidores.
+- `src/diario/manana.js` → `resumenDeManana`: qué bloques hay, en qué orden y con qué título. El
+  componente solo pinta.
+- `src/components/diario/pildora.js` → la forma de la píldora, compartida por los chips y la consulta.
+
+**Pila:** React + Vite (PWA) · IndexedDB local + Firestore para sync · Firebase Auth · Netlify con
+publicación automática · Vitest.
+
+---
+
+## 12. Comandos de verificación
+
+**Los seis deben pasar antes de cualquier integración:**
+
+```bash
+npm run lint            # análisis estático, cero advertencias
+npm run lint:copy       # léxico prohibido y textos en componentes
+npm run lint:contraste  # contraste de todas las combinaciones reales
+npm run format:check    # formato
+npm run test            # suite completa
+npm run build           # construcción de producción
+```
+
+`npm run format` ya se puede correr: `.prettierrc` reproduce el estilo del repo (sin punto y coma,
+comillas simples, ancho 100). **El CSS y `design-tokens.json` quedan fuera a propósito**
+(`.prettierignore`): prettier colapsa la alineación por columnas de los bloques de tokens y **pasa
+los hexes a minúsculas**, que es justo lo que rompe la comprobación de que cada hex de marca aparece
+literal en el manual.
+
+---
+
+## 13. Estado actual
+
+**Fase F-0 — repliegue a una sola app.** Los diez pasos del plan de separación están ejecutados: la
+rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
+componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
+
+**48 archivos de prueba · 1.373 casos · los seis comandos en verde.**
+
+### Pendiente para cerrar F-0
+
+- **Repuntar Netlify a `strivo`** y verificar la publicación en el dispositivo (paso 10, segunda
+  mitad). Valorar después promover `strivo` a rama por defecto y retirar `main`, que está obsoleta.
+- **131 menciones del alcance retirado siguen en comentarios de `src/`** (y en etiquetas de
+  `describe`). No hay ni un identificador, ruta, token ni cadena visible: la comprobación final de
+  §6 del plan pide que tampoco queden en prosa, así que es una pasada de comentarios pendiente.
+- **`docs/copy-library.md` sigue fechado en v3 del blueprint** y no se reeditó: no estaba en el
+  inventario de §4.4 del plan. Conviene decidir si se actualiza o se retira, porque hoy es una
+  segunda fuente de copy junto a `src/copy/`.
+
+### Divergencias conocidas entre el blueprint y el código
+
+Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos manda**:
+
+- **`nightRitual` vs `nightEntry`.** El blueprint §12.2 llama `nightEntry` a la colección de la
+  noche; el código la llama **`nightRitual`** y así está en `schema.js`, en `COLLECTIONS` y en los
+  datos ya escritos. Renombrarla es una migración, no un renombrado de documentación.
+- **`dayState` existe en la capa de datos y nadie la escribe.** `saveDayState` y sus rutas siguen ahí,
+  pero el ánimo es una vista derivada (RN-DB-05) y ninguna pantalla lo persiste. Es código muerto a
+  la espera de decisión.
+- **Copy sin consumidores:** `shared.home`, `navegacion.volver`, `navegacion.barraLabel` (murieron con
+  el vestíbulo y la barra inferior) e `insights`, `profile`, `paywall`, `notifications`,
+  `difficultDay`, `return`, `days` (restos anteriores). Retirarlos es limpieza, no riesgo.
+- **`mananaEscrita` y `nocheEscrita`** (`src/diario/diario.js`) siguen exportadas y probadas sin un
+  solo consumidor: eran para el estado «hecho» que RN-HOY-04 retiró.
+
+### Deuda consciente (se salda en su fase)
+
+- **Los 16 iconos emocionales no se hicieron, y es una decisión, no un olvido** (backlog B-1). Son
+  **material de marca, no de código: se piden, no se improvisan.** La especificación está en el
+  manual §6.2 y en el blueprint §15.3. Los catálogos usan hoy emojis del sistema.
+- **La versión monocromática del símbolo está en uso y sin aprobar** (manual §3.3). Está derivada con
+  un filtro CSS y **no** como archivo nuevo, para que aprobarla —o sustituirla por la del diseñador—
+  sea borrar tres líneas.
+- **Las frases están sin revisar editorialmente:** ~100 de apertura y ~60 del día. Pasan §3.3 con
+  prueba automática; **qué se le dice a alguien al abrir la app es del propietario del producto**, no
+  de quien programa. El objetivo del blueprint son 120+ frases del día (B-2).
+- **Los catálogos emocionales nuevos y las ideas de acción están sin revisar editorialmente.** Las
+  formas neutras se redactaron en implementación: «Pensando», «Con demasiado encima», «Con
+  cansancio», «Con ligereza», «Con inquietud».
+- **No hay onboarding ni autenticación real.** `ArranqueProvisional` crea la sesión local y el árbol
+  de datos sin pedir nada. Es el primer bloque de F-1.
+- **Los recorridos de validación manual siguen sin hacerse**, sobre todo los de Respiración: **las
+  pruebas no oyen**. Hace falta escuchar cada sonido con audífonos y con la bocina del teléfono, y
+  recorrer quince minutos con los ojos cerrados. **Un bug pasado es la prueba de lo que cuesta no
+  hacerlas:** una máscara SVG dejó una visual entera invisible durante cuatro días con toda la suite
+  en verde, porque todas las pruebas de esa capa leen la fuente.
+- **La mañana, la noche y la mudanza de Respiración no se han validado en teléfono real.** La
+  pregunta que ninguna prueba contesta es **si cada recorrido cabe de verdad en uno o dos minutos**.
+- **El `_redirects` de Netlify no existe.** Mientras el router sea `HashRouter` no hace falta.
+- **Con dos pestañas abiertas sobre el mismo día, la última escritura gana.** Sin bloqueo optimista.
+  Es el comportamiento de todo el producto y está asumido.
+
+---
+
+## 14. Los no-negociables
+
+1. **Nada bloquea.** Toda pregunta se puede dejar en blanco, todo recorrido se puede cerrar vacío. No
+   hay campos obligatorios, no hay validaciones en rojo, no hay pantalla que impida avanzar.
+2. **Nada se mide.** Sin porcentajes, sin puntuaciones, sin recuentos de lo escrito, sin comparar un
+   día con otro.
+3. **Nada se juzga.** Las emociones difíciles comparten jerarquía visual con las agradables. Ninguna
+   respuesta está mejor contestada que otra.
+4. **Nada se pierde.** Se guarda solo, funciona sin red, sigue ahí al volver.
+5. **La app no interpreta.** Ningún texto de la persona se analiza para decidir cómo tratarla. Toda
+   ramificación emocional usa listas cerradas y explícitas.
+6. **La calma es una funcionalidad.** El ritmo, el espacio en blanco y la lentitud no son adorno: son
+   la función. Entre densidad y respiración visual, gana la respiración.
+7. **Cerrar el día es una ceremonia.** La secuencia de cierre nunca falla, ni con la noche en blanco
+   ni con la red caída.
 
 **Si una feature los violaría, no entra.**
 
 ---
 
-## 12. Stack (sin cambios respecto a Fase 0)
-
-- **Frontend:** React + Vite (PWA como prioridad).
-- **Almacén local:** IndexedDB + Firebase Firestore para sync.
-- **Auth:** Firebase Authentication.
-- **Hospedaje:** Netlify + CI/CD automático desde GitHub.
-- **Design tokens:** `/src/design-tokens.json` (consumir desde ahí, nunca hardcodear).
-- **Copy:** `/src/copy/index.js` (biblioteca centralizada, no hardcodear).
-
----
-
-## 13. Comandos rápidos para validación
-
-Antes de hacer commit:
-
-```bash
-# Verifica que no haya léxico prohibido en strings
-npm run lint:copy
-
-# Verifica que todo Hábito tenga identityRef
-# (depende de tu schema, pero la idea es que nada quede huérfano)
-
-# Corre pruebas locales
-npm run dev
-
-# Verifica que no haya conflictos de merge
-git status
-```
-
----
-
-## 14. Progreso de Fase 1
-
-| Spec | Estado | Fecha |
-|---|---|---|
-| **SPEC_02** | ✅ Completa y comiteada | 10 ago |
-| **SPEC_03** | ✅ Completa y comiteada | 10 ago |
-| **SPEC_04** | ✅ Completa y comiteada | 10 ago |
-| **SPEC_05** | ✅ Completa y comiteada | 10 ago |
-| **SPEC_06** | ✅ Completa | 10 ago |
-| **SPEC_07** | ✅ Completa | 10 ago |
-| **SPEC_08** | ✅ Completa | 11 ago |
-| **SPEC_09** | ⛔ Derogada (19 ago) | 11 ago |
-| **SPEC_10** | ✅ Completa | 11 ago |
-| **SPEC_11** | ✅ Completa | 11 ago |
-| **SPEC_12** | ✅ Completa | 11 ago |
-| **SPEC_13** | ✅ Completa (Fase 1C) | 20 ago |
-| **SPEC_14** | ✅ Completa (Fase 1C) | 20 ago |
-| **SPEC_15** | ✅ Completa (Fase 1C) | 20 ago |
-| **SPEC_16** | ✅ Completa (Fase 1C) | 20 ago |
-
-**Fase 1 cerrada.** Las doce specs están implementadas y comiteadas.
-
-**Fase 1C — Respiración** (SPEC_13–16) es trabajo posterior al cierre: añade la herramienta
-transversal de Respiración. SPEC_13 entrega motor, catálogo y datos, sin una sola pantalla.
-
-**Notas:**
-- SPEC_02 pasó 7 criterios de aceptación
-- SPEC_03 pasó sus 7 criterios (5 con prueba automática, 2 verificados en navegador)
-- SPEC_04 pasó sus 10 criterios (9 con prueba automática, el de "marcar es un toque" verificado en navegador)
-- SPEC_05 pasó sus 7 criterios, todos con prueba automática
-- SPEC_06 pasó sus 10 criterios: 7 con prueba automática y 3 verificados en navegador
-  (tema por botón con las dos secciones a cualquier hora, contraste del tema Noche,
-  y los 5 s de las sugerencias de gratitud)
-- SPEC_07 pasó sus 10 criterios: 7 con prueba automática y 3 verificados en navegador
-  (género femenino en N5, ritual de 5 pantallas sin escribir nada, y N6 cerrando con la red caída)
-- SPEC_08 pasó 8 de sus 9 criterios: 5 con prueba automática y 3 verificados en navegador
-  (duración real de 39 s, círculo naranja sobre el amanecer, y ningún `AudioContext` vivo al salir).
-  El criterio 8 —P1 usa el mismo componente— no se puede ejercitar: no hay onboarding en Fase 1
-- SPEC_09 pasó sus 8 criterios: 6 con prueba automática y 2 verificados en navegador
-  (la intención sigue en el héroe al cambiar de sección, y el chip guarda en 272 ms)
-- SPEC_10 pasó sus 7 criterios: 5 con prueba automática y 2 verificados en navegador
-  (el umbral en los dos sitios con el contenido ya montado detrás, y ausente con "reducir movimiento")
-- SPEC_11 pasó 7 de sus 8 criterios y el octavo a medias: los rótulos no se truncan a ningún ancho,
-  pero el escalado al 200 % no funciona en toda la app por los tokens en px (deuda, la salda SPEC_12)
-- SPEC_12 pasó sus 9 criterios: 7 con prueba automática, el contraste con `npm run lint:contraste`
-  (que mide los 30 pares reales) y el cambio de paleta verificado en navegador
-- npm run lint, test, build, lint:copy, lint:contraste y format:check verdes · 438 pruebas
-- npm run lint:copy limpio: los 7 avisos de Fase 0 desaparecieron con SPEC_06
-- **Deuda consciente:**
-- RN-RN-01 (pop-up automático a las 19:00–23:59 + desactivación tras 3 rechazos) → FASE_2
-  Requiere campos en nightRitual que SPEC_02 no recoge. Ritual accesible desde Hoy.
-
-**Decisiones tomadas al implementar (no estaban escritas en ningún sitio):**
-- **H1 agrupa por identidad** (SPEC_04 §4) y el momento del día sobrevive como etiqueta de fila y barra de progreso. §C3.5 hablaba de cabeceras por momento en H1; se leyó como lo heredado, no como lo vigente.
-- **Sin `diasSemana` ni recordatorio.** §5.7 los describe, el modelo canónico de v4.1 no los recoge y el validador de SPEC_02 rechaza campos fuera de lista. En Fase 1 todo hábito activo cuenta para hoy.
-- **Copy huérfano de §C7.7.6 redactado:** "Todo lo de esta mañana, hecho." / "Todo lo de esta noche, hecho."
-- El motor de sugerencia (`src/lib/sugerirIdentidad.js`) es el mecanismo de §5.3 y lo reutilizarán las victorias de Lumia. No duplicarlo.
-- `src/lib/habitAreaLabel.js` es el **único** sitio donde vive la regla de §5.7.4 (RN-HAB-AREA-01).
-- `src/lib/constancia.js` es el **único** sitio donde vive el cálculo de RN-06. `formia/habitos.js` lo reexporta, no lo reimplementa.
-- **La Constancia que muestra Formia cuenta días con algún hábito marcado**, no días de presencia. §5.9 la define sobre "cualquier registro", pero desde Formia no se ve el resto (RN-DB4-01). La cifra global cruza espacios y es de Fase 2. Por eso el copy dice "días construyendo" y no "días contigo".
-- **Umbral del insight de evidencia:** `MINIMO_DIAS_CON_EVIDENCIA = 10` (de §5.9, criterio 1) sobre `DIAS_VENTANA_EVIDENCIA = 28` (del ejemplo de §C4.3). Por debajo no se muestra nada — ni una versión reducida, ni cuánto falta.
-- **Las páginas de Formia usan `<div>`, no `<main>`:** el `<main>` lo pone el contenedor de la app. Dos anidados son HTML inválido y rompen el punto de referencia del lector de pantalla.
-
-**Decisiones de SPEC_06 (Lumia: Hoy y Diario), 10 ago:**
-- **Emociones de la mañana: 15 chips tipo píldora con emoji** (SPEC_06 §4.2). §5.3, §5.3.2 y §5.8.1 describen 16 tarjetas con ícono propio y "nunca emojis", y §5.8.1 dice expresamente que las ilustraciones "siguen siendo obligatorias en el Diario". Se decidió a favor de SPEC_06 con ese dato encima de la mesa. **Consecuencia para SPEC_07:** la mañana y el Journal comparten representación, así que el párrafo de §5.8.1 y la fila "Representación" de §5.3.2 quedan derogados. El catálogo baja a 15 retirando **"Abundante"**, el más cercano a "Próspero".
-- **Sugerencias de gratitud a los 5 s**, no a los 6 de §5.3 (SPEC_06, criterio 7). Se descartan por sesión: dos descartes y no vuelven. Guardarlo por día necesitaría un campo que el modelo canónico no tiene.
-- **Dos campos del blueprint no se construyen** porque no existen en el modelo canónico y SPEC_06 tampoco los nombra: la "acción pequeña" tras elegir emoción (§5.3, B3) y "¿Qué podría intentar diferente mañana?" (§5.4, B5). Si se recuperan en Fase 2, hay que ampliar `FIELDS` de SPEC_02 primero.
-- **`nightRitual.inheritedWins` no se escribe.** Las victorias ya son registros con su propio estado; copiar aquí sus ids daría dos respuestas a la misma pregunta. El campo sigue en el modelo, sin uso.
-- **`dayState.mood` tampoco se escribe.** `animoDerivado` es una vista de solo lectura (§5.4.1) y vive en `src/lumia/estadoSueno.js`. Lo consumirá el Historial de SPEC_07.
-- **El id de una victoria es `fecha-posición-azar`.** §5.4 (criterio 1) exige presentarlas en el orden en que se escribieron y el modelo no les da ni campo de orden ni marca de tiempo: ordenar por id lo resuelve sin inventar un campo, y el sufijo evita colisiones entre dispositivos sin red.
-- **El vínculo de una victoria con una identidad se deduce del texto y no se pinta.** §5.3 pedía un chip con las áreas de P3B, pero viven en `formia/` (RN-DB4-01). Se guarda para Strivo Intelligence (§C7.7.5) y en Lumia no se ve.
-- **`mergePath` es atómico desde SPEC_06.** Leía y escribía en transacciones distintas, así que dos escrituras del mismo día se pisaban: marcar una emoción borraba el agradecimiento que iba en camino. Ahora lee y escribe dentro de una transacción, y `useDiario` además encola las escrituras para que la pantalla refleje siempre la última.
-- **Tokens de superficie (§6.3.7):** las utilidades se llaman `text-on-surface`, `text-on-surface-soft` y `border-on-surface`. **No** `text-surface`: Tailwind ya genera esa clase desde el color `surface` y la que ganara dependía del orden del CSS, con texto casi blanco sobre fondo claro como premio. El token secundario sobre claro vale `#4F4A5A` y no el `#5B5470` de §6.3.7, que sobre `paper` se queda en 6,7:1 y no llega a AAA.
-- **`Button variant="surface"`** para las pantallas que cambian de tema: `primary` sobre el fondo nocturno es tinta sobre tinta y `secondary` es un rectángulo blanco a las once de la noche.
-- **60 frases del día**, con el mecanismo entero montado; se amplía en SPEC_12. RN-HOY-02 (365 sin repetir) se cumple hasta donde llega el repertorio, y `diasSinRepetir()` lo dice en voz alta.
-- **`lint-copy` ya no revisa `__tests__`:** una prueba que comprueba que el léxico prohibido no aparece tiene que poder nombrarlo.
-
-**Decisiones de SPEC_07 (Journal, Historial y Ritual de Noche), 10 ago:**
-- **Dos citas de SPEC_07 §3 están desplazadas y no son contradicciones.** Dice "§5.4 Journal"
-  y "§5.8 Historial"; en v4.1, §5.4 es la Vista de Noche, §5.8 el Journal y §5.10 el Historial.
-  Y **§5.6.1 no está derogada**: es "N5 — Estado de sueño rediseñado" y está vigente. Lo derogado
-  es su sub-apartado final, "Hábitos en el Ritual de Noche".
-- **El Journal no tiene título, etiquetas `#`, ánimo por entrada, adjuntos ni plantillas.**
-  `FIELDS.journal` de SPEC_02 es exhaustivo y los rechaza al escribir. La búsqueda va sobre el
-  texto y sobre las etiquetas de emoción resueltas al género, no sobre los ids.
-- **El interruptor del PIN vive dentro del Journal.** §5.8.2 lo sitúa en Perfil → Privacidad
-  (§5.12.1), pero **§5.12.1 no llegó a escribirse en v4.1** —solo se la cita— y no hay spec de
-  Perfil en Fase 1. Se mueve allí cuando exista.
-- **La regla de copy del PIN se comprueba en una prueba, no en `lint-copy.js`.** "Seguro" y
-  "Segura" son dos emociones legítimas del catálogo de la mañana: prohibir la palabra en todo
-  `src/` rompería el build por un motivo equivocado. `pin.test.js` recorre `copy.lumia.journal.pin`
-  entero, como SPEC_05 hizo con el vocabulario de rendimiento en `progreso`.
-- **El punto de ánimo del calendario se deriva al vuelo, no se lee de `dayState.mood`.** Coherente
-  con SPEC_06: `animoDerivado` es una vista y §5.4.1 prohíbe persistirla. Día con estado de sueño →
-  su color de §6.3.5; día con algo escrito pero sin estado → `normal`; día sin nada → sin punto.
-  La etiqueta de `normal` es **"Estuviste"** y no "Sin registrar": el día existió.
-- **Sin pop-up automático del Ritual de Noche.** RN-RN-01 pide ventana 19:00–23:59, extensión de
-  madrugada y desactivación tras tres rechazos; eso necesita "completado hoy" y "veces rechazado",
-  dos campos que §C5 no recoge. Se entra desde la tarjeta de Hoy, como enlace discreto bajo la
-  acción principal, porque §5.2 solo admite una acción principal por pantalla.
-- **N6 no tiene ceremonia propia: reutiliza `CierreDelDia`.** El ritual y la Vista de Noche son dos
-  caminos al mismo sitio (D-4.5); dos implementaciones del cierre serían dos que envejecen distinto.
-- **Reautenticación del PIN por proveedor, no por enlace de correo ni SMS.** §5.8.2 describe correo
-  o SMS, pero `src/lib/firebase.js` solo configura Google y Apple. El método de `shared/auth` decide
-  **si** puede haber PIN (RN-JR-PIN-02); el proveedor decide **cómo** se verifica. Sin sesión de
-  Firebase —que es el estado de toda la Fase 1— devuelve `sin-sesion` y se dice en pantalla.
-- **Con el PIN puesto, el Historial no lee el journal.** La vista de día completo incluye journal
-  (§C7.7.2) y lo estaba imprimiendo con la puerta cerrada. Ahora `cargarDia` no lo carga siquiera,
-  y el Historial lo dice con una frase fija que no depende de si hay entradas: si apareciera solo
-  cuando las hay, la frase estaría contando lo que el PIN tapa (RN-JR-PIN-01).
-- **"Algo más" y "+ Otra" aplican el límite en el campo, no solo al guardar.** Aceptar dos palabras
-  y guardar una es corregir en silencio. Corrige de paso el mismo comportamiento en `EstadoSueno`.
-- **`ChipsEmociones` recibe catálogo y regla de selección.** Los dos catálogos siguen siendo
-  distintos (15 positivas en la mañana, 15 con las difíciles en el Journal); lo que se comparte es
-  la píldora, no el vocabulario.
-- **El namespace `empty` de Fase 0 se retira.** Sus cuatro cadenas tenían dueño en otro sitio y
-  ninguna se usaba ya.
-
-**Decisiones de SPEC_08 (respiración diaria), 11 ago:**
-- **El ritmo vive aparte del componente:** `src/lib/ritmoRespiracion.js`. SPEC_08 §6 solo nombra dos
-  archivos, pero el criterio 1 —un ciclo de 13 s exactos— se mide sin React y sin Web Audio. Mismo
-  patrón que `src/lib/constancia.js` en SPEC_05: la regla en un módulo puro y probable.
-- **`Respiracion.jsx` recibe el copy por props.** Vive en `components/shared/` porque lo usan Lumia y
-  P1 (RN-LU-RESP-02), y un componente compartido que alcanza un namespace de Lumia deja de serlo.
-  Hay una **regla de ESLint nueva** que impide a `components/shared/**` importar `lumia/` o `formia/`.
-- **La entrada está en Hoy, sección Mañana, como enlace discreto** bajo la acción principal, igual que
-  el modo guiado de la noche. Al acabar los tres ciclos se cierra sola: el "avance automático" de R1
-  sobrevive como **cierre** automático (§C2.3), porque ya no hay pantalla siguiente a la que ir.
-- **Hay un botón "Empezar" antes del ejercicio.** RN-AUD-01 exige crear el `AudioContext` dentro del
-  manejador del gesto; si arrancara al montarse, el gesto habría ocurrido en la pantalla anterior y
-  el navegador entregaría un contexto suspendido. De paso es el control iniciar/pausar de §5.1.2.
-- **`initShared` sembraba `soundEnabled: true` y contradecía §6.12.** "Silencio por defecto, todos los
-  sonidos desactivados en la instalación" y A-03 dicen lo contrario de lo que hacía SPEC_02. Corregido
-  a `false`. Es la primera spec con sonido de verdad, así que es la primera que lo nota.
-- **La preferencia se lee de `soundEnabled`, no de `sonidoRespiracion`.** RN-AUD-03 nombra ese segundo
-  campo, pero el modelo canónico solo tiene el primero y SPEC_08 §5 dice expresamente que se use.
-  Consecuencia: silenciar la respiración silencia toda la app, que es lo que §6.12 describe de todos
-  modos con su paleta de cuatro sonidos.
-- **Un solo reloj gobierna el círculo y el tono** (§6.12.1). La escala se escribe sobre el nodo del DOM
-  y no en el estado de React: sesenta renders por segundo para mover un círculo sería caro, y lo único
-  que cambia de verdad —nueve veces en 39 s— es la fase.
-- **Reducir movimiento cambia el cómo, nunca el cuánto.** Sin escala, opacidad fija por fase, y las
-  duraciones intactas: la duración no es una animación, es el ejercicio (§6.10.1). El ritmo no expone
-  ni un parámetro que permita acortarlo.
-- **§5.5.1 no se implementa.** Está derogada: defendía el 4-4 con el argumento de que R1 era el umbral
-  de un ritual, y ese ritual ya no existe.
-
-**Decisiones de SPEC_09 (intención del día), 11 ago:**
-- **SPEC_09 §7 y §C2.4.1 numeran distinto las mismas cuatro reglas** `RN-LU-INT-01..04`. No hay
-  contradicción de fondo: las ocho afirmaciones son compatibles y se cumplen todas. Manda el
-  blueprint, como la propia spec indica, y esa es la numeración que citan los comentarios.
-- **`HeroeHoy` contiene la captura, no la duplica.** En la sección Mañana monta los chips; en la de
-  Noche muestra la intención como texto, sin controles. Pintarla en el héroe *y* en un bloque aparte
-  sería la misma cosa dos veces. "Se fusiona dentro del display de Hoy → Mañana" (§C2.4), literal.
-- **La intención sigue visible al cambiar a la sección Noche.** §C2.4 conserva íntegro el criterio 6
-  del ritual disuelto: permanece en Hoy toda la jornada. Mostrarla no es preguntar por ella; lo que
-  la noche recupera —y lo hace en el Diario— es la gran visión.
-- **`useDiario` gana un tercer espacio pendiente** junto a mañana y noche. La mañana y la noche
-  acumulan campos; la intención es una línea y la última gana. Tocar un chip descarta lo que hubiera
-  a medio escribir: si no, la escritura anterior volvería 800 ms después a pisar el chip.
-- **El campo no lleva `maxLength`.** §C2.4.1 pide que no invite a escribir de más, y eso lo resuelve
-  una línea con un marcador de posición corto. Un límite inventado cortaría a mitad de palabra.
-- **Los chips van en `content/` y el resto del texto en `copy.lumia.intencion`.** Son material
-  editorial, como las frases del día. Como `lint:copy` y la prueba de separación solo miran
-  `copy.lumia`, hay una prueba que les pasa el mismo listón de voz.
-- **No se usa `Chip.jsx` de `components/ui/`:** fija `text-ink` y `bg-surface`, y sobre el héroe
-  nocturno sería tinta sobre tinta. Se sigue el patrón de `ChipsEmociones`, que hereda la superficie.
-- **La gran visión no entra en el Ritual de Noche.** El criterio 3 se cumple por sus dos mitades: la
-  Vista de Noche ya recupera la gran visión desde SPEC_06, y una prueba comprueba que **ninguna**
-  superficie nocturna lee `dailyIntention`. La tabla de §5.6 no pone el contraste en ninguna de las
-  cinco pantallas del ritual, así que SPEC_07 no lo construyó y aquí no se añade.
-- **El riesgo de §C2.4.1 es hoy de dos campos, no de tres.** La "acción pequeña" de §5.3-Bloque 3 no
-  existe: SPEC_06 decidió no construirla porque no está en el modelo canónico.
-
-**Decisiones de SPEC_10 (transición de entrada), 11 ago:**
-- **La pieza "ya implementada en Fase 0" no existía y hubo que escribirla.** RN-LU-MAN-01 y §8 dan
-  por hecho que el componente y las ~100 frases se reutilizan de Fase 0, pero Fase 1 es borrón y
-  cuenta nueva (SPEC_00 §2). No cambia el alcance, cambia el trabajo: **las 100 frases de
-  `frases-apertura.js` son nuevas y están pendientes de revisión editorial.**
-- **Se construyeron los dos usos, no solo el de Mañana.** El criterio 1 exige que la entrada a la app
-  y la entrada a la mañana sean el mismo componente; con un solo uso, ese criterio no se puede
-  ejercitar. La entrada a la app son diez líneas en `App.jsx`.
-- **En Mañana se dispara al abrir la vista, no al mover el conmutador.** El conmutador solo cambia lo
-  que muestra el héroe; cinco segundos ahí serían un peaje cada vez que alguien compara mañana y
-  noche. El umbral va donde estaba el pop-up disuelto: justo antes del contenido.
-- **Una vez por sesión, con una variable de módulo en `Hoy.jsx`.** Con el estado dentro del
-  componente, ir al Journal y volver haría cruzar el umbral otra vez, porque `Hoy` se desmonta al
-  cambiar de pestaña. No se persiste: SPEC_10 §5 no tiene modelo de datos.
-- **Con `prefers-reduced-motion` no se muestra.** "Inmediata" leído literal: entrar es inmediato. Una
-  pantalla quieta cinco segundos no es menos movimiento, es solo esperar.
-- **El velo se monta sobre el contenido ya renderizado**, no en su lugar. Cuando la luz se va no hay
-  nada que cargar ni ningún paso que dar: es un umbral, no una pantalla de carga.
-- **El tema del velo va en `globals.css`, no en props.** `TransicionLuz` está en `components/shared/`
-  y el lint de SPEC_08 le impide conocer Lumia. **La variante nocturna existe y resuelve
-  correctamente (`#191428`), pero hoy ningún camino la monta bajo el tema de noche**: se abre solo
-  desde la mañana. Está por el día que SPEC_11 mueva la entrada bajo la barra de dos espacios.
-- **R2 no se reconstruye.** La bienvenida dinámica está eliminada de raíz (Anexo E, E.0) y una prueba
-  falla si aparecen saludo, fecha o nombre dentro de la transición. Lo que sobrevive es el
-  encabezado del héroe, que ya estaba desde SPEC_06.
-- **Las pruebas de esta spec comprueban sobre todo lo que NO hay:** ni botón de continuar, ni
-  pregunta, ni segundo fotograma, ni una segunda variante del componente. El riesgo de SPEC_10 es de
-  diseño, y así queda vigilado por el `npm test` y no por la memoria de quien lo lea.
-
-**Decisiones de SPEC_11 (navegación de dos espacios), 11 ago:**
-- **Rótulos: opción A.** Era la última decisión abierta del proyecto (§C7.3) y queda cerrada.
-  Pestaña `Lumia` / `Formia`; cabecera del espacio `Lumia · Reflexión` / `Formia · Acción`.
-  **Por qué:** "Lumia · Reflexión" entero no es legible en una pestaña de móvil con escalado al
-  200 %, y la opción B —pestaña `Reflexión` / `Acción`— deja las marcas fuera del uso diario y solo
-  vivas en las tiendas. Con la A la marca se aprende abajo y el descriptor la explica arriba, que es
-  exactamente el naming mixto que §C7.3 resolvió.
-- **`RN-10` significa dos cosas distintas.** SPEC_11 §3 lo cita como "máximo de pestañas y
-  profundidad", que es la regla de la tabla de este archivo. En el blueprint, **RN-10 es no pedir
-  valoración en la tienda los primeros 21 días**. La regla implementada es **§4.3.2, punto 1**:
-  profundidad máxima de tres toques. Conviene no citar RN-10 sin decir de cuál se habla.
-- **`NavLumia` y `NavFormia` no existían.** No los construyeron SPEC_03 ni SPEC_04: los dos espacios
-  se montaron entrando por los andamios provisionales. SPEC_11 §6 es la spec que los crea.
-- **Son dos archivos casi idénticos y siguen separados a propósito.** SPEC_12 le da a cada espacio su
-  paleta y sus símbolos: están a punto de dejar de parecerse, y factorizarlos ahora solo adelanta el
-  trabajo de deshacerlo.
-- **`SesionProvisional` no se retiró: se renombró a `ArranqueProvisional` y se movió a la raíz.** No
-  es navegación —resuelve el uid y crea el árbol del usuario— y **ninguna spec de Fase 1 construye el
-  onboarding**, así que retirarlo deja la app sin arrancar. Lo que sí desapareció entero son los dos
-  conmutadores y el componente `Conmutador` que los sostenía.
-- **`HashRouter`, no `BrowserRouter`.** La app se sirve como PWA estática; sin una regla de
-  reescritura en Netlify, recargar en `/formia/habitos` daría un 404. Si algún día se quiere URL
-  limpia, hay que añadir el `_redirects` **antes** de cambiar el router.
-- **Cambiar de pestaña vuelve a la sección donde estabas**, no a la raíz del espacio (criterio 4). Se
-  recuerda en una referencia, dentro de la sesión: entre sesiones se olvida a propósito (§10).
-- **La cabecera del espacio va en una franja superior sobre `paper`.** Consecuencia: el degradado de
-  Hoy deja de llegar al borde de la pantalla y queda por debajo de la franja. Es el precio de que la
-  marca se lea, y **SPEC_12 puede revisarlo** cuando dé a cada espacio su superficie.
-- **Las tres navegaciones usan los tokens de superficie**, no `text-ink`. La primera versión los fijó
-  literales y la prueba de RN-SURF-01 lo cazó: sobre el tema que SPEC_12 va a dar a cada espacio,
-  habría sido tinta sobre tinta.
-- **La cabecera de Lumia lleva `z-30` y no es decorativo.** La pantalla Hoy pinta su degradado en una
-  capa `fixed` que cubre la ventana entera; sin ese `z-30` la cabecera estaba en el DOM y era
-  invisible. Queda por debajo de la barra (z-40) y de las secuencias de cierre (z-50), que sí mandan.
-- **La ruta transitoria `/` no se recuerda como sección.** Al abrir la app la ruta pasa un instante
-  por `/` antes de que el comodín redirija; guardarla dejaba la pestaña de Lumia apuntando a `#/` y
-  sin marcarse activa. Solo se recuerdan rutas que empiezan por `/lumia/` o `/formia/`.
-
-**Decisiones de SPEC_12 (aplicación de marca), 11 ago:**
-- **Fraunces y Satoshi desaparecen. Inter para las tres marcas.** El manual §5.1 la fija como familia
-  única y el criterio 6 pide "una sola familia"; el capítulo 12 lo concede en su preámbulo — la
-  tipografía la manda el manual. `.font-display` **conserva su nombre y cambia de significado**: ya
-  no elige familia sino **peso** (Lumia 500, Formia 700, §5.2), así que los veinte componentes que la
-  usan no se tocaron. Esta spec aplica marca; no rediseña componentes.
-- **La fuente va por npm, no por CDN** (manual §5.1): sin dependencia de red y sin mandar la IP de
-  nadie a Google o Fontshare al abrir la app.
-- **`data-space` + `data-moment` eligen la paleta; `data-surface` sigue eligiendo el texto.** Son dos
-  capas y no se pisan, que es exactamente lo que dice la nota técnica del manual §4.8.
-- **El momento del espacio lo decide el reloj.** Es la firma visual del producto (§6.1, principio 2).
-  No choca con RN-HOY-05, que habla del tema de la pantalla Hoy: ese lo sigue mandando su conmutador.
-- **La cabecera adopta el color de su espacio** y lleva su símbolo. Es lo que hace que cambiar de
-  pestaña se note sin recargar (criterio 7).
-- **Las cabeceras se quedan en el rango claro de cada paleta**, también en el momento noche. El tono
-  nocturno entra por el acento y por el degradado de Hoy. Poner cromo oscuro sobre páginas claras
-  —Journal, Historial— habría dejado una costura, y arreglarla era rediseñarlas.
-- **El token de texto secundario se recalibró de `#4F4A5A` a `#3A3546`.** Estaba calibrado contra
-  `paper` (8,1:1) y sobre las cabeceras teñidas caía a 5,5:1 — fuera de AAA sin que se viera a
-  simple vista. Lo cazó `npm run lint:contraste`, que ahora mide los 30 pares reales de la app.
-- **Los primarios de marca no llevan texto de cuerpo encima**, y no es un descuido: blanco sobre
-  `lumia-pm-500` da 5,74:1 y sobre `formia-pm-600`, 4,73:1. Pasan AA y no AAA. Se usan como acento y
-  como borde, donde el umbral es 3:1. El script los mide igual y los deja anotados como informativos.
-- **`Constancia90.jsx` tenía un hex escrito a mano** (`#7E9E86`). Ahora sale de `--color-sage`. Era el
-  único de toda la app y lo encontró la prueba del criterio 1.
-- **El símbolo de Strivo aparece en un solo sitio**: el arranque de sesión, que es la superficie por
-  encima de los dos espacios (§C0.4). Nunca como destino navegable (§C0.2).
-- **Prettier no toca el CSS ni `design-tokens.json`.** Colapsa la alineación por columnas de los
-  bloques de tokens y **pasa los hexes a minúsculas**, que es justo lo que rompe la comprobación de
-  que cada hex de marca aparece literal en el manual. Está en `.prettierignore` con ese motivo.
-- **Ya se puede correr `npm run format`.** El aviso de "no correrlo" era de cuando prettier no tenía
-  configuración; ahora `.prettierrc` reproduce el estilo del repo y `format:check` está en verde.
-
-**Ajustes posteriores al cierre de Fase 1:**
-- **El conmutador Mañana/Noche es el primer elemento interactivo de Hoy, 19 ago.** Sube dentro de
-  `HeroeHoy` justo debajo de la fecha, por delante de la frase del día y de la captura de intención.
-  **Invierte el orden del Bloque 03** (frase → conmutador). La frase **no se retira**: baja un puesto
-  y sigue siendo el aire previo a la primera pregunta. Motivo: elegir el momento decide de qué habla
-  el resto de la pantalla, así que no puede llegar después de lo que gobierna.
-- **El conmutador baja un escalón de luminancia** para no competir con la tarjeta del ritual: el
-  contenedor pierde el relleno y el segmento activo pasa de `bg-lumia-tarjeta` a `bg-lumia-campo`.
-  RN-HOY-07 exige que la tarjeta destaque **por luminancia y no solo por borde**, y con el conmutador
-  arriba había dos superficies del mismo tono; ahora la tarjeta vuelve a ser la única del más claro.
-- **`HeroeHoy` recibe el conmutador como hueco (`conmutador`), no lo construye.** El héroe no sabe
-  qué momentos hay ni cómo se cambian: el estado sigue viviendo en `Hoy.jsx` (RN-HOY-05 intacta).
-  Cuatro pruebas nuevas en `separacion.test.js` fijan el orden, el contratono y sus dos colores.
-- **El bloque del conmutador va en contratono, 19 ago.** Mañana `#1D1833` (oscuro sobre la mañana
-  clara) y Noche `#F2DDE7` (claro sobre el degradado nocturno). **Los dos hexes los fijó el
-  propietario del producto y no salen del manual de marca**, que es la única excepción viva a "ningún
-  hex se escribe a mano": viven en `globals.css` como `--lumia-conmutador`, nunca en un componente
-  (RN-SURF-01), y `npm run lint:contraste` los mide como cualquier otra superficie con texto —14,9:1
-  de día y 12,4:1 de noche, AAA los dos—. Si algún día entran al manual, se moverán a los tokens de
-  marca. Son vecinos de dos colores que sí están en él (`night #191428`, `lumia-am-300 #F6DDE8`) sin
-  ser iguales, así que **no** se sustituyen por ellos por su cuenta.
-- **El bloque declara su propio `data-surface`** en vez de heredar el de la pantalla: es la única
-  superficie de Lumia que contradice a su fondo, y así el texto se invierte solo. Sustituye al
-  escalón de luminancia que se le había dado un rato antes (contenedor sin relleno, activo en
-  `lumia-campo`): con un bloque en contratono, la tarjeta del ritual ya no compite con él porque no
-  juegan en la misma escala.
-
-- **El Diario se escribe dentro de Hoy, 19 ago.** Desaparece la tarjeta que anunciaba el día y su
-  botón: `DiarioManana` y `DiarioNoche` se montan empotrados bajo el héroe, y la sección elegida en
-  el conmutador es la que se escribe. **No había ruta que retirar**: el Diario siempre fue una vista
-  interna de `Hoy.jsx`, nunca una URL. El Diario de **días pasados** no se toca — vive en
-  `VistaDiaCompleto` (Historial), que es otro componente y de solo lectura.
-- **Lo que colgaba de ese botón, y dónde está ahora.** No había analítica ni ningún registro de
-  "abrió su día" (nada se pierde en silencio). El **umbral de luz** (SPEC_10) pasa del clic al
-  primer momento en que la mañana está en pantalla, una vez por sesión, y espera a `carga === 'lista'`
-  para que el velo no caiga sobre una pantalla en blanco. `onHideNav` deja de usarse para el Diario:
-  la barra de dos espacios se queda visible mientras se escribe. Los dos enlaces secundarios
-  —respiración y modo guiado— salen de la tarjeta y van bajo el conmutador; siguen siendo las dos
-  únicas superficies a pantalla completa.
-- **El estado "hecho" de RN-HOY-03 se retira.** "Ya definiste tu día. Míralo cuando quieras." vivía en
-  esa tarjeta; con el contenido a la vista, decirlo es contarle a alguien lo que está leyendo. La
-  regla dice **cómo** se comunica lo hecho, no que tenga que haber una línea.
-- **El CTA final de la mañana ("Comenzar mi día" / "Salir") se retira.** No hay a dónde volver y el
-  guardado ya ocurre al escribir y al salir del campo; un botón ahí sugiere que sin tocarlo no se
-  guardó. **"Cerrar mi día" no es ese botón y se queda**: es la ceremonia del Bloque 7 de §5.4. Al
-  terminar ya no sale de ninguna pantalla, solo cierra el velo y deja el día debajo.
-- **`mananaEscrita` y `nocheEscrita` (`src/lumia/diario.js`) se quedan sin ningún consumidor.** Eran
-  para el estado "hecho". Siguen exportadas y probadas; si nadie las reclama, se retiran.
-
-- **La respiración es la entrada de las dos secciones, 19 ago.** El enlace de la noche —"Cerrar mi
-  día paso a paso · Tres minutos, guiado"— se retira y en su sitio va el mismo enlace de la mañana.
-  Un solo enlace, sin ramas: lo que cambia entre secciones es la paleta, no el destino.
-- **El acento de la respiración tiene versión nocturna.** `--color-breath` era el naranja del
-  amanecer (`#E8A54A`) para toda la app; de noche se pinta sobre un degradado frío y oscuro, que es
-  justo el fondo contrario al que lo eligió §6.3.9. Bajo `[data-lumia='noche']` toma `lumia-am-100`
-  (`#DCCFF1`), de la paleta de la noche: 12,2:1 sobre el extremo oscuro del degradado.
-- **El círculo de la respiración no se mide contra el 3:1 de WCAG 1.4.11**, y consta en el script: la
-  fase la dice el texto con `aria-live` —"Inhala", "Exhala", "Descansa"—, el círculo es el ritmo y no
-  el dato. Al medirlo salió que **el círculo de la mañana está en 1,66:1 sobre el amanecer** desde
-  SPEC_08. Queda anotado como informativo, no como fallo.
-- **El Ritual de Noche guiado se retira entero, 19 ago.** **Cerrar el día es escribir la sección
-  Noche del Diario, y no hay nada adicional.** Se borraron `RitualNoche.jsx`, las cinco pantallas de
-  `components/lumia/ritual/`, el módulo de pasos `src/lumia/ritualNoche.js`, su prueba, el namespace
-  `copy.lumia.ritualNoche` y la animación `.respiracion-lenta`, que solo usaba N1. **Deroga la parte
-  de SPEC_07 que construía el recorrido de cinco pantallas** (N1, N3, N4, N5, N6) y deja sin objeto a
-  RN-RN-01, que ya estaba aplazada a Fase 2 por otro motivo.
-- **Lo que NO se fue con él:** la ceremonia de cierre (`CierreDelDia`, §5.4 Bloque 7) sigue al final
-  de la sección Noche —era la mitad compartida (D-4.5)—, y `EstadoSueno` y `CampoGratitud` siguen
-  donde estaban. En datos no cambia nada: la colección canónica se sigue llamando `nightRitual` y es
-  donde escribe la noche. `isRitualNocheWindow()` de `lib/timeSlot.js` se queda: es la ventana
-  horaria, no el recorrido, y nadie la llama todavía.
-
-- **La intención del día se retira entera, 19 ago. SPEC_09 queda derogada.** Se fueron
-  `IntencionDelDia.jsx`, `content/chips-intencion.js`, `copy.lumia.intencion`, el tercer espacio de
-  `useDiario`, `guardarIntencion` en `lumia/diario.js` y **la colección `lumia/dailyIntention` con su
-  campo `intentionText`** de `schema.js` y `lib/db/lumia.js`. La mañana conserva sus dos preguntas:
-  emociones y gran visión. El archivo de la spec **se conserva marcado como derogado** —igual que el
-  Anexo E—, con el detalle de qué se borró y por qué.
-- **Reabre §C2.4 y §C2.4.1 del blueprint, y es una decisión consciente.** Esa sección decidió que
-  intención y gran visión son conceptos distintos y no fusionables; sigue siendo cierto en su
-  literal —no se fusionaron— pero una de las dos deja de existir. **La documentación está pendiente
-  de reescribir esa sección**; con ella caen `RN-LU-INT-01..04`. No bloquea el código.
-- **Los datos ya escritos se quedan inertes.** Ningún camino lee `lumia/dailyIntention` y nada lo
-  borra: `COLLECTIONS` es solo una etiqueta al escribir y la cola de sincronización trabaja por ruta,
-  así que un registro viejo no rompe ninguna lectura histórica. No se migró nada a `granVision`: eso
-  mezclaría los dos conceptos que §C2.4.1 separó.
-- **Ninguna otra superficie lo leía**, comprobado antes de retirarlo: ni Historial, ni
-  `VistaDiaCompleto`, ni la sección Noche —SPEC_09 dejó una prueba de que ninguna superficie nocturna
-  lo tocaba—, ni Formia. Hoy una prueba recorre `src/lumia`, `src/pages/lumia`, `src/components/lumia`
-  y `src/lib/db` entero y falla si `dailyIntention` o `intentionText` reaparecen.
-
-- **Las emociones abren la sección Mañana, 19 ago.** "¿Cómo me quiero sentir hoy?" pasa a ser la
-  primera pregunta, justo debajo de la frase del día; agradecimientos, gran visión y victorias
-  conservan su orden relativo. **Invierte el orden de §5.3**, que ponía los agradecimientos primero:
-  la pregunta que se responde con un toque abre la pantalla y las que piden escribir vienen después.
-- **Los dos temporizadores no dependen del orden**, comprobado antes de mover nada: las sugerencias
-  de gratitud (5 s) cuentan dentro de `CampoGratitud` desde que se monta y desde cada tecla, y la
-  pista de la gran visión (8 s) arranca al escribir y borrar. Ninguno mira si su bloque está a la
-  vista, así que bajarlos en la pantalla no los altera.
-
-- **Las ideas de gratitud son de un renglón, no del bloque, 19 ago.** La regla sale del componente y
-  vive en `src/lumia/sugerenciasGratitud.js`: se ofrecen cuando el foco está en **ese** renglón, ese
-  renglón está vacío y lleva 5 s sin recibir una tecla. Antes había un solo `visibles` y un solo
-  temporizador para los tres, con la condición `filas.every(vacía)`, así que aparecían solas a los
-  5 s de montarse la pantalla —sin que nadie estuviera en el bloque— y no volvían nunca en cuanto
-  había una línea escrita. Ahora los tres nacen en blanco y el segundo y el tercero conservan su
-  oferta aunque el primero esté escrito.
-- **El panel se pinta bajo el renglón enfocado**, no al pie del bloque. `FilasDinamicas` gana tres
-  props opcionales —`onEnfocar`, `onDesenfocar` y `debajoDeFila`— y quien no las pasa (victorias,
-  logros) no nota nada. Es el mismo componente, así que la sección Noche hereda el arreglo.
-- **Los botones de idea no roban el foco** (`onMouseDown` con `preventDefault`) y salir del campo no
-  las apaga si el foco se fue a ellas —se comprueba con `relatedTarget`—. Sin las dos cosas, tocar
-  una idea desenfocaría el renglón y el panel se iría antes de recibir el toque.
-- **El silencio por descartes sigue siendo del bloque y de la sesión.** Dos "Ahora no" en cualquier
-  renglón y las ideas se callan en los tres. Lo decidió el propietario del producto: la instrucción
-  era sobre el disparador, no sobre cuánto insiste la app. **El repertorio no se tocó** —tu familia,
-  tu cuerpo, este momento, el silencio, lo que tienes— y una prueba lo fija por si acaso.
-- **La gratitud de la mañana se dice en dos alturas, 19 ago.** Bajo la pregunta, un `lead` que no
-  pide nada —"Siempre hay algo que agradecer."—; dentro de los campos, en el gris del marcador de
-  posición, la pista de qué cabe: "Puede ser desde algo pequeño" —corta a propósito, porque en un
-  campo de una línea en móvil todo lo que no quepa se corta con puntos suspensivos—.
-  Mismo patrón de título + pista que el bloque de emociones justo encima. Los dos textos los fijó el
-  propietario del producto, literales.
-- **Se retiran las tres `ayudas`** ("algo pequeño", "alguien", "algo que ya tienes") y con ellas el
-  antiguo `placeholder` "algo más". El marcador es **el mismo en los tres renglones**: repartir una
-  idea por fila era decirle a cada renglón de qué tenía que hablar, y ahora se ofrece el abanico
-  entero en cualquiera. Con eso la prop `ayudas` se queda sin un solo consumidor y se retira de
-  `CampoGratitud` y de `FilasDinamicas`. **La noche no se toca**: conserva "algo de hoy".
-
-- **El editor del Journal cierra con "Listo", 20 ago.** Un botón de ancho completo al final del
-  contenido —tras la tarjeta de texto y por encima de "Borrar esta entrada"—, en `primary`: es la
-  única acción principal de la pantalla y el resto de sus botones son `surface`. **No es un botón de
-  guardar y por eso no dice "Guardar"**: el journal se guarda solo desde SPEC_07 (tecla a los
-  800 ms, blur, cierre y desmontaje), y una etiqueta de guardado sugeriría que sin tocarlo no se
-  guardó. Es la misma palabra con la que Respiración cierra su sesión.
-- **"Listo" y "Volver" son el mismo camino, literalmente el mismo handler.** Los dos llaman a
-  `cerrarEditor`, que es `acciones.cerrar()` de `useJournal` y nada más. Dos salidas con dos
-  guardados distintos serían dos comportamientos que envejecen por separado — el mismo motivo por el
-  que N6 reutilizaba `CierreDelDia` en vez de tener ceremonia propia. "Volver" se queda arriba sin
-  cambios: sigue siendo la salida disponible en cualquier momento.
-- **No se deshabilita nunca.** No hay contenido mínimo que validar ("nada bloquea, todo es
-  saltable"), y salir de una entrada vacía no deja rastro porque `journal.guardar` no la escribe.
-
-- **El chip "+ Otra" del Journal acusa recibo, y Enter lo confirma, 20 ago.** Se reportó como
-  regresión de Bloque 06 y **no lo era**: el campo nació con SPEC_07 (`e615cb6`) —Bloque 06 creó
-  `ChipsEmociones` sin la prop `otra`— y en ninguna versión tuvo `onKeyDown`. Enter **nunca** hizo
-  nada. SPEC_12 no tocó ese bloque.
-- **El diagnóstico de fondo era otro: no había acuse por ninguna vía.** Ese `CampoLinea` solo tenía
-  `onChange` —sin botón y sin `onBlur`—, así que la palabra se escribía al borrador en cada tecla y
-  la guardaba el autoguardado de los 800 ms. **Se guardaba de verdad**, pero nada en pantalla lo
-  decía: el chip seguía diciendo "Otra" y el campo seguía abierto. Arreglar solo Enter habría dejado
-  el mismo bug reportable desde el blur, así que se arreglan las dos mitades.
-- **El chip muestra la palabra mientras está elegido**, con el mismo formato `«palabra»` que ya usaba
-  la lista de entradas. El formato salió a `etiquetaPropia()` en `src/lumia/emocionesJournal.js`, que
-  es ahora el **único** sitio donde vive —`etiquetasDe` lo reusa—. Al soltar el chip vuelve el
-  rótulo: `paraGuardar` descarta la palabra sin selección, y seguir enseñándola diría que hay algo
-  guardado que no lo está.
-- **Enter vuelca y suelta el foco; no valida por su cuenta.** `onConfirmar: acciones.volcar` adelanta
-  lo que el autoguardado iba a escribir de todos modos — no es una segunda vía de guardado, que es el
-  mismo criterio con el que "Listo" y "Volver" comparten handler. La regla de una sola palabra vive
-  **solo** en `onCambiarValor`, que ya corrió en cada tecla: una prueba comprueba que
-  `ChipsEmociones` no nombra `primeraPalabra`, porque dos sitios con la misma regla envejecen
-  distinto. El `blur` es lo que cierra el teclado en móvil.
-- **`ChipsEmociones` sigue sin conocer el catálogo que lo monta.** `etiquetaValor` llega ya formateada
-  desde `Journal.jsx`, igual que el catálogo y la regla de selección: una prueba falla si aparece un
-  `«` dentro del componente. **La mañana no se ve afectada** —`DiarioManana` no pasa `otra` y su
-  catálogo no tiene `ID_OTRA`—, y hay una prueba que lo fija por si algún día lo pasara.
-
-- **La barra de Strivo toma el contratono del conmutador dentro de Lumia, 21 ago.** Iba en
-  `espacio-cabecera` —`strivo-100`, un gris cálido fijo a cualquier hora— y se perdía contra las dos
-  secciones de Hoy. Ahora lee **el mismo `--lumia-conmutador`** que el conmutador Mañana/Noche:
-  `#1D1833` de día, `#F2DDE7` de noche. No es un color parecido elegido a ojo, es el mismo token, y
-  una prueba comprueba que en su regla no haya ni un hex escrito a mano. Lo pidió el propietario del
-  producto. Fuera de Hoy —Journal, Historial, todo Formia— no hay atributo, no hay regla, y la barra
-  conserva su gris.
-- **El tema va en `globals.css`, no en props.** `BarraStrivo` está en `components/shared/` y no puede
-  conocer Lumia: solo declara la clase `barra-strivo` y el espacio en el que esté decide cómo se ve.
-  Es la misma decisión que SPEC_10 tomó con el velo de `TransicionLuz`, y una prueba falla si la
-  barra llega a nombrar un color o la palabra "lumia". El texto se invierte redefiniendo las
-  variables de superficie en esa regla, que es lo que hace el conmutador con su `data-surface`.
-- **El momento sube a la raíz de la app, y RN-HOY-05 queda intacta.** Los tokens del tema viajan por
-  el árbol del DOM y la barra es **hermana** de `<main>`, no descendiente de Hoy: sin subirlo, no hay
-  forma de que herede nada. `Hoy` lo cuenta con `onMomento`, igual que ya contaba `onHideNav`, y
-  `App` lo refleja en `data-lumia`. **El estado no se ha movido**: el conmutador sigue siendo el
-  único que lo decide, y una prueba comprueba que `App` nunca llama a `setMomentoLumia` por su
-  cuenta. Al desmontarse Hoy el atributo se retira, o el Journal heredaría la sección de una
-  pantalla que ya no está.
-- **`data-lumia` y `data-moment` conviven porque no son lo mismo.** El segundo lo decide el reloj y
-  elige la paleta de marca (SPEC_12); el primero lo decide quien mira. A las diez de la mañana con el
-  conmutador en Noche son distintos, y ese es justo el caso que hacía falta resolver bien.
-- **El símbolo de Strivo va en monocromo blanco sobre el contratono de la mañana.** Su color vive
-  dentro del `.svg` (`#2B2730`, manual §3.2) y sobre `#1D1833` se queda en **1,17:1** — invisible. El
-  blanco da 17,06:1. Es la **versión monocromática que el manual §9 tiene pendiente**: "se puede
-  derivar de los SVG actuales cambiando el stroke a un solo valor, pero conviene que el diseñador la
-  apruebe". Está derivada con un filtro en el CSS y **no** como archivo nuevo, para que aprobarla —o
-  sustituirla por la del diseñador— sea borrar tres líneas. **Pendiente de esa aprobación.** De noche
-  no hace falta: el símbolo tal cual da 11,33:1 sobre `#F2DDE7`.
-- **`lint:contraste` mide los dos símbolos**, no solo los textos. Fue lo que puso número al 1,17:1
-  antes de escribir el arreglo.
-
-- **La cabecera de Lumia acompaña a la barra en la sección Mañana, 21 ago.** Sobre `lumia-am-300`
-  —un rosa pálido— la franja se comía con la mañana clara. Ahora toma el mismo `--lumia-conmutador`:
-  arriba y abajo son el mismo bloque de color, con el contenido de la pantalla entre los dos. Lo
-  pidió el propietario del producto. Mismo mecanismo que la barra: `NavLumia` solo declara la clase
-  `cabecera-espacio` y el tema lo pone `globals.css`.
-- **Solo en Mañana, y es deliberado.** De noche la cabecera se queda en `lumia-am-100`, que es lo que
-  **SPEC_12 decidió** para que su texto siga saliendo de los tokens AAA sobre claro —"poner cromo
-  oscuro sobre páginas claras habría dejado una costura"—. Ahí no se pierde: la barra de abajo
-  también es la pieza clara. El contratono resuelve la mañana, que era el caso roto. Una prueba falla
-  si alguien añade la regla para la noche sin volver a mirar esa decisión.
-- **Las tres secciones conservan forma, peso y borde; lo que cambia es la superficie que tienen
-  debajo.** "Quedan iguales" es sobre su diseño: literalmente iguales serían tinta oscura sobre
-  `#1D1833`, es decir invisibles. La inversión llega sola porque `NavLumia` **no nombra ni un color**
-  —pide superficies por su papel (RN-SURF-01)—, así que vestirla de contratono no tocó ese archivo
-  más que para darle su clase.
-- **El borde de la sección activa sí hubo que cambiarlo, y lo cazó la medición.** `lumia-pm-500` sobre
-  el contratono da **2,97:1**, por debajo del 3:1 que WCAG 1.4.11 pide a un indicador. Dentro de la
-  cabecera en contratono `--espacio-acento` pasa a `lumia-am-100`: 11,57:1, sigue siendo color de
-  Lumia, y el estado activo además lleva peso y relleno, así que nunca se comunica solo por color
-  (criterio 7 de SPEC_11).
-- **La vela va en monocromo blanco sobre el contratono.** En su `#7563A7` da 3,33:1: pasa el umbral
-  de no-texto, pero se apaga —que es lo que se reportó—. En blanco, 17,06:1. Es la **misma versión
-  monocromática pendiente del manual §9** que usa el símbolo de Strivo en la barra, derivada del
-  mismo modo y con la misma nota: **pendiente de aprobación del diseñador**, y hoy son las dos únicas
-  dos reglas de filtro del repo.
-- **Las dos franjas pierden su línea de borde en contratono.** Lo que las separa es el bloque de
-  color entero; contra la mañana clara un borde no tiene nada que hacer.
-
-- **Las victorias y el checklist de logros se retiraron enteros, 23 ago.** Se fue el bloque "Tres
-  victorias que quisiera conseguir hoy" de la Vista de Mañana y, como consecuencia directa, el
-  checklist de la Vista de Noche: las victorias heredadas con sus decisiones (lograda / pasarla a
-  mañana / dejarla ir / deshacer) y el bloque de logros no planeados. Sin victorias de origen no hay
-  nada que heredar, y un inventario de logros aparte convertía el cierre en un balance.
-- **El concepto no desaparece de la experiencia: queda implícito en el Journal**, que **ya existía y
-  no hubo que diseñarlo** (`src/pages/lumia/Journal.jsx`, §5.8). Es escritura libre, sin estructura y
-  con el sistema completamente mudo (RN-JR-03), así que lo que se logró sin haberlo previsto se anota
-  ahí si surge. **No se le añadió ni un campo, ni una pista, ni una pregunta**: hacerlo lo convertiría
-  en el campo estructurado que se acaba de retirar. Una prueba comprueba que el Journal no nombra
-  victorias ni logros.
-- **Se eliminó el modelo entero, no solo la escritura.** Lo decidió el propietario del producto con
-  el coste sobre la mesa. Se fueron `src/lumia/victorias.js`, `ListaVictorias.jsx`,
-  `VictoriasHeredadas.jsx`, **la colección `lumia/victories`** (`FIELDS.victory`,
-  `COLLECTIONS.victories`, `validateVictory`, `VICTORY_STATES` y las seis funciones de
-  `lib/db/lumia.js`), **los campos `nightRitual.newWins` e `inheritedWins`**, las cinco acciones de
-  `useDiario` y los dos límites de `filas.js`.
-- **Coste asumido y consciente: el Historial pierde esos bloques en días ya guardados.** Es la
-  diferencia con la intención, que nunca se pintó en ninguna vista histórica. `VistaDiaCompleto` ya
-  no lee victorias ni `newWins`, así que un día del que solo se hubiera registrado eso **aparece
-  ahora en blanco**, con "Este día no tiene nada escrito. También estuviste." Los datos **no se
-  borran**: siguen inertes en el almacén, como los de `dailyIntention`, porque `COLLECTIONS` es solo
-  una etiqueta al escribir y la cola de sincronización trabaja por ruta.
-- **`nightRitual` los rechaza al escribir, y eso es lo correcto.** Salieron de `FIELDS.nightRitual`,
-  así que un intento de volver a escribir `newWins` lanza `UNKNOWN_FIELD` (RN-DB4-08): en `lib/db/`
-  los registros los escribe el código y un campo fuera de lista es un error de programación, no una
-  persona explorando. Dejarlo en la lista los habría reabierto a la escritura sin que nadie los pinte.
-- **La ceremonia de cierre cuenta solo gratitud.** `recuentoDelDia` devuelve `{ gracias }` y
-  `sintesisDelDia` recibe un argumento en vez de dos. Se retiran del copy `unLogro`, `logrosTemplate`,
-  `ambosTemplate` y `soloLogrosTemplate`; sobreviven `unaGracia`, `graciasTemplate`,
-  `soloGraciasTemplate` y —sin tocar— **"Hoy solo viniste. También cuenta."**, que es a donde cae
-  ahora un día con estado de sueño y aprendizaje pero sin agradecimientos. El cierre sigue nombrando
-  evidencia propia y no un balance; lo que ya no puede es contar dos cosas.
-- **`historial.js` deja de contar victorias para el punto de ánimo.** Un día del que solo hubiera una
-  victoria escrita ya no tiene punto en el calendario ni cuenta como día con contenido. Es coherente
-  con que la vista de ese día tampoco las muestre: el punto anunciaba algo que al abrirlo no está.
-- **`desdeRegistros` y `conIdsDe` se retiraron de `filas.js`**, no se dejaron huérfanas. Existían
-  solo para las filas con registro propio, que eran las victorias; los agradecimientos son texto
-  suelto. Sus tres pruebas se fueron con ellas. **`FilasDinamicas` se queda genérico** —recibe
-  límites, copy y etiqueta— aunque hoy su único uso sea la gratitud: nada de él es de la gratitud.
-- **Se comprobó que no quedaba nada más colgando antes de borrar**, con el mismo chequeo que la
-  intención: el Ritual de Noche guiado ya no existe (se retiró el 19 ago), Formia, `constancia.js`,
-  `lib/db/formia.js` y `breathing/` solo lo **nombraban en comentarios** para decir que no lo leen, y
-  no había analítica ni ningún registro colgado del bloque. Una prueba recorre `src/lumia`,
-  `src/pages/lumia`, `src/components/lumia` y `src/lib/db` entero y falla si reaparece `victor`,
-  `newWins`, `inheritedWins`, `lograda` o `soltada`.
-- **`sugerirIdentidad.js` se queda donde está.** Las victorias lo reutilizaban para deducir su
-  vínculo con un área (§C7.7.5) y eran su segundo consumidor; hoy solo lo usan los hábitos de Formia.
-  Sigue en `lib/` porque la regla que implementa es de §C3.6.1, no del espacio que la llame.
-- **Deroga el bloque de victorias de §5.3 y los Bloques 1 y 2 de §5.4**, y con ellos RN-VM-02,
-  RN-VN-03 y la parte de §C7.7.5 que da a las victorias su `identityRef` opcional. **La documentación
-  del blueprint está pendiente de reescribir esas secciones**; no bloquea el código. La Vista de
-  Mañana queda en tres bloques (emociones, agradecimientos, gran visión) y la de Noche en cinco
-  (agradecimientos, aprendizaje, estado de sueño, síntesis, cierre).
-- **`npm run lint`, `test`, `build`, `lint:copy`, `lint:contraste` y `format:check` en verde ·
-  1287 pruebas.**
-
-**La mañana pasa a tres momentos, 23 ago. Deroga §5.3 entera:**
-
-La Vista de Mañana deja de ser tres bloques a la vista y pasa a ser un recorrido
-de tres momentos con un cierre propio. Lo pidió el propietario del producto con
-la especificación completa —redacción exacta, tipos de respuesta, reglas de
-interacción, personalización, almacenamiento y estados visuales—, y esta sección
-es la única fuente de verdad de lo que se implementó.
-
-```
-1 de 3  ·  ¿Cómo me siento esta mañana?        (selección única, 11 + Algo más)
-2 de 3  ·  ¿Qué agradezco hoy?                 (1 a 3 elementos, uno al abrir)
-3 de 3  ·  ¿Cómo me gustaría sentirme…?        (selección única, 9 + Algo más)
-           ¿Qué puedo hacer hoy…?              (texto libre + ideas)
-   +    ·  Si quieres, una última pausa        (opcional, algunos días)
-   →       Tu intención · Tu paso · «Comenzar mi día»
-   →       La consulta: lo respondido, con las preguntas delante
-```
-
-- **La intención va con la acción, no con el punto de partida.** Es una
-  corrección de flujo del propietario del producto del mismo 23 ago, y arregla
-  algo que estaba mal: "¿Qué puedo hacer hoy para acercarme a **esa sensación**?"
-  es un pronombre sin antecedente si la sensación se eligió dos pantallas atrás.
-  Juntas se explican solas, y además **las ideas de abajo cambian en el momento**
-  en que se toca un chip de arriba — elegir "En calma" hace aparecer las ideas de
-  la calma sin cambiar de pantalla. La pantalla 1 queda con una sola pregunta,
-  que es la más fácil de responder y la puerta del recorrido.
-- **Siguen siendo tres momentos**, así que el indicador no se movió y
-  `PREGUNTAS` tampoco: los ids de las cinco preguntas son los mismos y ningún
-  dato guardado cambia de forma. Lo que cambió es en qué pantalla se hacen.
-
-- **Se retiran de la mañana la gran visión y las emociones a cultivar.** La
-  spec define el recorrido entero y no las recoge; conservarlas habría dejado el
-  indicador en "1 de 4" y roto el objetivo de uno o dos minutos. **Lo decidió el
-  propietario del producto** entre tres opciones sobre la mesa. `granVision` y
-  `emotions` **salen de `FIELDS.morningEntry`**, así que un intento de volver a
-  escribirlos lanza `UNKNOWN_FIELD` — el mismo trato que recibieron las
-  victorias. Deroga el bloque de emociones y el de gran visión de §5.3, y con
-  ellos RN-VM-03 tal como estaba escrita.
-- **Y a diferencia de las victorias, aquí el Historial no pierde nada.**
-  `VistaDiaCompleto` lee las **dos** versiones y cada bloque aparece solo si
-  tiene contenido: un día de agosto muestra ánimo, intención, gratitud, paso y
-  pausa; uno de julio muestra sus emociones y su gran visión. §9 de la spec lo
-  exige literalmente —"no sobrescribas ni elimines información histórica"— y era
-  barato cumplirlo porque los campos viejos nunca compartieron nombre con los
-  nuevos. `src/lumia/emociones.js` **se queda entero como catálogo heredado**,
-  con su copy movido a `manana.emocionesHeredadas`, y su único consumidor es esa
-  vista.
-- **`ChipsEmociones` no se reutilizó, y no es duplicación por descuido.** Aquel
-  admite tres selecciones y una palabra de 24 caracteres sin espacios (§5.8.1);
-  este admite una y hasta 30 caracteres tal como se escriban. Meter las dos
-  reglas en un componente serían dos ramas que envejecen por separado — el mismo
-  criterio con el que `NavLumia` y `NavFormia` siguen separados. Lo que sí se
-  comparte es la píldora, que es idéntica.
-- **La selección única se suelta tocándola otra vez, y esa es la forma de
-  omitir.** No hay botón de "ninguna": tocar el chip elegido lo deja en blanco.
-  Por eso los chips son botones con `aria-pressed` y no radios — un radio no se
-  puede deseleccionar, y anunciar como radio algo que sí se suelta sería mentir
-  al lector de pantalla.
-- **"Algo más" no se suelta tocando el chip: se edita.** Tocarlo cuando ya está
-  elegido reabre el campo, y quitarlo tiene su propio control al lado. Editar y
-  borrar no pueden ser el mismo gesto cuando hay texto de por medio.
-- **La gratitud abre con UN campo, no con tres.** `LIMITES.gratitudManana` es
-  `{min: 1, max: 3, crecerSola: false}` y `crecerSola` es el campo nuevo que
-  separa las dos gratitudes: la de la noche sigue abriendo con sus tres
-  renglones y creciendo sola, la de la mañana espera a "Añadir otro". Sin él,
-  tres campos vacíos a la vez se leen como tres huecos por rellenar.
-- **Las ideas de gratitud de los 5 s se conservan tal cual.** La spec no las
-  nombra, pero tampoco las contradice: se ofrecen bajo el renglón enfocado,
-  nunca rellenan el campo y se callan tras dos "Ahora no". Retirarlas habría
-  sido resolver por omisión algo que el propietario diseñó el 19 ago. Es el
-  mismo `CampoGratitud` que usa la noche, con otros límites.
-- **Tocar una idea de acción NO la guarda todavía** (§5 de la spec). Mientras
-  solo se ha tocado, lo que hay en el campo es una propuesta de la app y no algo
-  que alguien haya dicho de sí mismo; se escribe al continuar o al terminar.
-  Es la única excepción al autoguardado de Lumia y está anotada en el código.
-  **Coste asumido:** abandonar justo ahí pierde esa línea, que es exactamente lo
-  que la regla pide.
-- **"Ideas que elegiste antes" solo mira `morningEntry`, y solo la misma
-  intención.** Máximo dos, ventana de 30 días, sin repetir, sin el día en curso.
-  Una intención escrita a mano **no se compara con nada** y recibe las generales:
-  deducir de una palabra qué le pasa a alguien es diagnosticar. Nunca se dice
-  que le funcionaran —la app no tiene forma de saberlo— y una prueba recorre
-  `mananaAcciones.js` para comprobar que no nombra journal ni noche.
-- **Las ideas ofrecidas descuentan las que ya están delante como propias.** Por
-  eso una lista de intención puede ofrecer dos en vez de tres: "hasta tres" no
-  es "siempre tres", y rellenar el hueco con una idea de otra intención sería
-  ofrecer algo que no viene de la que se eligió. La lista general tiene cuatro
-  precisamente para que ese descuento no la deje corta.
-- **La pausa opcional se decide leyendo lo guardado, sin contador aparte.**
-  Máximo tres en siete días, nunca en días consecutivos, y rotación que no
-  repite hasta haber pasado por las demás. **Aparecer cuenta aunque no se
-  conteste**: `reflectionId` se escribe en cuanto la tarjeta se muestra, o quien
-  nunca responde la vería todas las mañanas. Dentro del mismo día la decisión no
-  cambia, porque se lee del propio registro de hoy.
-- **"Comenzar mi día" vuelve, y no es el botón que se retiró el 19 ago.** Aquel
-  estaba al final de una pantalla que ya guardaba sola y sugería que sin tocarlo
-  no se había guardado. Este es el único control del cierre —la ceremonia de §8,
-  hermana de "Cerrar mi día"— y no aparece en ninguna pantalla de escritura. Una
-  prueba lo fija por si alguien lo mueve. **`AperturaDelDia` es hermano de
-  `CierreDelDia`, no una copia**: aquel oscurece y despide, este aclara y suelta.
-- **La pantalla de consulta repite las preguntas, no las resume.** Se ve igual
-  que las del recorrido —misma tipografía, mismo aire, misma superficie— y lo
-  único que cambia es que no hay nada que tocar. Un resumen con etiquetas cortas
-  —"Cómo empezaste · Cansada"— sería un inventario con otro vocabulario, y §6
-  pide que las preguntas se digan siempre igual. Por eso `copy…manana.resumen`
-  se quedó con **una sola cadena**, "Cambiar algo": las demás las pone la propia
-  pregunta. La pausa trae la pregunta que salió ese día, que sin `reflectionId`
-  no se podría titular. Todo cabe en una pantalla: no se pagina ni se pliega.
-- **Sin etiqueta de "hecho".** Con el contenido delante, decir "ya definiste tu
-  día" es contarle a alguien lo que está leyendo — el mismo criterio con el que
-  se retiró RN-HOY-03 el 19 ago. Los bloques en blanco no aparecen: no hay
-  marcador de ausencia. Volver a entrar es "Cambiar algo" y no pide confirmación.
-- **`resumenDeManana` vive en `manana.js`, no en el componente.** Qué bloques
-  hay, en qué orden y con qué título es una regla, y las reglas de Lumia van en
-  un módulo puro que se prueba sin montar React. `ResumenManana` solo pinta.
-- **Las dos respuestas emocionales vuelven en su píldora, con su emoji.** Se
-  eligieron tocando una y se releen en una: la respuesta se reconoce porque tiene
-  el aspecto que tenía al elegirla, y la consulta deja de ser una columna de
-  texto. Cada bloque del resumen trae `forma: 'chip' | 'texto'` y su `emoji`; la
-  gratitud, la acción y la pausa siguen siendo texto suelto, porque nunca fueron
-  una píldora.
-- **La forma de la píldora salió a `components/lumia/manana/pildora.js`.** La
-  comparten `ChipsUnicos` y `ResumenManana`, y ninguno de los dos escribe ya
-  `border-current` ni `bg-lumia-tarjeta` por su cuenta — dos copias de la misma
-  píldora acabarían separándose, que es el motivo por el que `habitAreaLabel.js`
-  y `constancia.js` también viven solos. Lo que se queda en `ChipsUnicos` es lo
-  propio de un control que se toca: la transición, el anillo de foco y el borde
-  punteado del chip de palabra propia.
-- **La píldora de la consulta es un `<span>`, no un botón.** Parecerse a un
-  control sin serlo es aceptable cuando toda la pantalla es de lectura; darle
-  apariencia de tocable y que no responda, no lo sería. El emoji va
-  `aria-hidden`: la etiqueta ya dice la emoción, y leerlo dos veces sobra.
-- **A la respuesta escrita a mano no se le pone emoji**, ni siquiera aquí. §3 lo
-  prohíbe expresamente y elegirle uno sería la app interpretando lo que alguien
-  acaba de nombrar. Sale su palabra entre comillas, en la misma píldora.
-- **El indicador cuenta momentos, no campos, y la pausa no entra en la cuenta.**
-  Un contador de campos convertiría una mañana escrita a medias en una barra a
-  medio llenar. Y un total que cambia de un día para otro deja de orientar. La
-  palabra "progreso" no aparece en el copy: la prueba de vocabulario de Lumia la
-  prohíbe desde SPEC_06 y con razón.
-- **Nada bloquea, y está probado en negativo.** Ningún control del recorrido
-  lleva `disabled`, `required` ni `aria-invalid`, y el copy no contiene
-  "incompleto", "te faltó", "obligatorio" ni "sin responder". `skipped` anota lo
-  que quedó en blanco **solo de las preguntas que llegaron a hacerse**: una
-  pausa que no se mostró no es una pausa omitida.
-- **`updatedAt` es hora local con desfase, no `toISOString()`.** §9 pide "fecha
-  y hora local" y normalizar a UTC perdería justo el dato que se pide: a qué
-  hora era esto para quien lo escribió.
-- **`version: 2` se guarda con cada mañana.** Las de la versión 1 no traen el
-  campo y se reconocen por su ausencia, que es todo lo que hace falta para
-  leerlas bien.
-- **`cargarDia` trae ahora `recientes`**, las mañanas ya escritas, con una sola
-  lectura de colección. Solo alimentan las ideas anteriores y la rotación de la
-  pausa; las dos están hechas de lo que la propia persona escribió y ninguna
-  sale de `lumia/` (RN-DB4-01 intacta).
-- **Criterio 10 comprobado en positivo:** `FIELDS.nightRitual` no cambia,
-  `LIMITES.gratitud` conserva sus tres renglones y su lista de diez, "Cerrar mi
-  día" sigue donde estaba, y una prueba falla si un archivo de la mañana nombra
-  la noche, el journal o Formia.
-- **Archivos nuevos:** `src/lumia/seleccionUnica.js`, `mananaEmociones.js`,
-  `mananaAcciones.js`, `mananaPausa.js`, `manana.js` y
-  `src/components/lumia/manana/` (ChipsUnicos, MomentoAnimo, MomentoGratitud,
-  MomentoIntencionAccion, MomentoPausa, Pasos, AperturaDelDia, ResumenManana).
-  Una pantalla, un archivo — una prueba falla si reaparecen `MomentoInicio` o
-  `MomentoAccion`, que fueron el reparto anterior.
-  `DiarioManana.jsx` se queda como contenedor: sigue siendo la sección Mañana
-  del Diario y sigue entrando por el mismo sitio en Hoy.
-- **`npm run lint`, `test`, `build`, `lint:copy`, `lint:contraste` y
-  `format:check` en verde · 1373 pruebas** (83 nuevas en `manana.test.js`, una
-  por criterio de aceptación, por regla de §3 a §10, por pantalla del flujo y
-  por pieza de la consulta).
-
-**Pendiente de la actualización de la mañana:**
-- **Sin validar en navegador.** Lo comprobado es la lógica y el marcado; falta
-  ver el recorrido entero en un teléfono real: el teclado sobre los campos de
-  los momentos 2 y 3, el chip "Algo más" con el teclado abierto, y si el cierre
-  se siente ceremonia o interrupción. **La pregunta que ninguna prueba contesta
-  es si el recorrido cabe de verdad en uno o dos minutos.**
-- **Los dos catálogos nuevos están sin revisar editorialmente**, como las frases
-  del día y las de apertura. Pasan §3.6 con prueba automática; qué emociones se
-  ofrecen y cómo se nombran es del propietario del producto. En particular, las
-  formas neutras se redactaron aquí: "Pensando", "Con demasiado encima",
-  "Con cansancio", "Con ligereza".
-- **Las 27 ideas de acción y las 4 generales tampoco están revisadas.** Salen
-  literales de la spec, salvo "Dividir una tarea en un primer paso", que decía
-  "tarea" —léxico prohibido de §3.6— y se redactó como "Dividir algo grande en
-  un primer paso".
-- **El blueprint sigue describiendo §5.3 como estaba.** Con esta actualización
-  caen su bloque de emociones, el de gran visión y el orden de los bloques.
-  **La documentación está pendiente de reescribir esa sección**; no bloquea el
-  código, igual que quedó pendiente con SPEC_09 y con las victorias.
-- **Caso conocido:** con dos pestañas abiertas sobre el mismo día, la última
-  escritura gana. Es el mismo comportamiento que el resto de Lumia.
-
-**La noche pasa a tres momentos, 23 ago. Deroga §5.4 entera:**
-
-La Vista de Noche deja de ser cinco bloques a la vista y pasa a ser un recorrido
-de tres momentos con un cierre propio. Lo pidió el propietario del producto con
-la especificación completa —redacción exacta, tipos de respuesta, reglas de
-rotación, personalización, almacenamiento y cierre emocional—, y esta sección es
-la única fuente de verdad de lo que se implementó.
-
-```
-1 de 3  ·  ¿Qué quiero reconocer de hoy?        (lista de 1 a 3, uno al abrir)
-2 de 3  ·  Una reflexión breve                  (rotativa, o ligada a la mañana)
-3 de 3  ·  ¿Cómo me siento al cerrar el día?    (selección única, 12 + Algo más)
-   +    ·  ¿Hay algo que quieras dejar aquí?    (por la emoción, o a mano)
-   →       Tu día puede terminar aquí · «Cerrar mi día» · Buenas noches
-   →       La consulta: lo respondido, con las preguntas delante
-```
-
-- **"Reconocer" sustituye a "agradecer", y ese es el cambio de fondo.** "¿Qué
-  agradezco de este día?" dejaba fuera el día que costó: quien lo atravesó a
-  duras penas no tenía dónde ponerlo. La pregunta nueva admite lo que se
-  disfrutó, lo que se intentó, lo que se enfrentó y lo que simplemente se
-  resolvió, y el texto de apoyo lo dice entero. **Ninguna prueba puede comprobar
-  que esto se sienta distinto; es la apuesta de la actualización.**
-- **La estructura es hermana de la mañana, no una copia.** Mismo indicador
-  ("1 de 3"), mismo momento opcional fuera de la cuenta, misma ceremonia de
-  cierre a pantalla completa y misma pantalla de consulta con las preguntas
-  delante. Lo que cambia es todo lo demás.
-
-- **Se retiran de la noche el bloque de gratitud, el aprendizaje y el estado de
-  sueño.** Los tres los sustituyen las tres preguntas nuevas. `gratitude`,
-  `learning`, `sleepState` y `sleepStateOther` **salen de `FIELDS.nightRitual`**,
-  así que un intento de volver a escribirlos lanza `UNKNOWN_FIELD` — el mismo
-  trato que recibieron las victorias y los campos de la mañana.
-- **El Historial no pierde nada.** `VistaDiaCompleto` lee las **dos** versiones y
-  cada bloque aparece solo si tiene contenido: una noche de agosto muestra
-  reconocimiento, reflexión, emoción de cierre y descarga; una de julio muestra
-  su gratitud, su aprendizaje y su estado de sueño. §11 lo exige literalmente y
-  era barato cumplirlo porque los campos viejos nunca compartieron nombre con los
-  nuevos. `src/lumia/estadoSueno.js` **se queda como catálogo heredado de solo
-  lectura**, con su copy en `noche.sueno`, y su único consumidor es esa vista más
-  `animoDeNoche`.
-- **Coste conocido y asumido:** una noche de la versión 1 **no se relee dentro
-  del recorrido**, solo en el Historial. Sin `completedAt` el recorrido se abre
-  en blanco. Es la misma decisión que tomó la mañana con sus días viejos.
-
-- **La escala de cinco ánimos no crece, y el coste está medido.** El punto del
-  calendario y las frases del día necesitan una escala corta; `triste`,
-  `frustrado` y `abrumado` caen todos en `inquieto`, que el Historial rotula "Con
-  inquietud". Es una etiqueta gruesa para tres estados distintos. Ampliarla
-  exigiría un color de marca nuevo en §6.3.5 y ningún hex se escribe a mano, así
-  que la respuesta exacta se lee donde está: en la vista del día. La tabla vive
-  en `nocheEmociones.js` y `animoDeNoche` (`noche.js`) es el **único** sitio que
-  decide el ánimo de una noche, leyendo las dos versiones.
-- **La palabra propia devuelve `normal`.** Colocar en una escala lo que alguien
-  acaba de escribir sería el diagnóstico que §9 prohíbe.
-
-- **La reflexión rota, y rota de forma predecible.** Cinco preguntas, se
-  descartan las cuatro últimas usadas, así que queda exactamente una candidata:
-  la rotación es completa y determinista, nunca aleatoria. La primera noche de
-  todas sale "¿Qué me dejó el día de hoy?", que es la más ancha.
-- **`reflectionId` se congela al mostrarse la pregunta, no al contestarla.**
-  Aparecer cuenta aunque nadie escriba: si solo contáramos las respondidas, quien
-  nunca responde vería siempre la primera del banco. Y es lo que sostiene "no
-  cambia si sales y vuelves la misma noche" (§5) cuando la mañana se termina más
-  tarde que la noche se empieza. Mismo mecanismo que `mananaPausa.js`.
-- **Las noches que se llevó la pregunta de la mañana no consumen turno de la
-  rotación.** Esa pregunta *sustituye* a la rotativa; no avanza por ella.
-
-- **La conexión con la mañana lee la intención y nada más** (§6). Exige mañana
-  cerrada (`completedAt`) e intención elegida; como mucho dos en siete días y
-  nunca en noches seguidas. `nocheReflexion.js` importa **una** cosa de la
-  mañana —cómo se lee la intención— y una prueba falla si aparece `gratitude`,
-  `action`, `granVision` o `feeling`.
-- **La intención escrita a mano entra literal y sin comillas.** §6 pide
-  "exactamente el texto escrito por la persona": la frase ya lo enmarca
-  —"Esta mañana elegiste con menos prisa como intención"— y entrecomillarlo sería
-  la app opinando sobre una palabra que no es suya. Es la única cadena de Lumia
-  donde una palabra propia se presenta sin `«»`, y es a propósito.
-
-- **`reflectionSource` se guarda; "estándar o personalizada" no.** §11 pide los
-  dos. El primero se guarda porque hace el registro legible por sí solo dentro de
-  un año, sin depender del banco vigente. El segundo **no se añade como campo**:
-  `closingFeeling === 'otra'` con su `closingFeelingOther` ya es esa indicación,
-  y un segundo campo derivable es exactamente lo que se retiró en
-  `nightRitual.inheritedWins` —dos respuestas a la misma pregunta acaban
-  separándose—. **Queda anotado por si el propietario prefiere el campo
-  explícito.**
-
-- **La descarga aparece por dos vías y se ve igual en las dos.** La eligió una de
-  las cuatro emociones difíciles, o la abrió quien quiso desde el enlace. Si la
-  versión automática se presentara distinta, sería la app diciendo "te veo mal".
-- **El enlace va debajo de todas las emociones, no solo de las cuatro.** Si
-  apareciera solo tras una emoción difícil, el catálogo se convertiría en un
-  diagnóstico: la app estaría señalando cuáles son las respuestas preocupantes.
-  `MomentoEmocion` no conoce siquiera la lista de las cuatro — una prueba lo fija.
-- **La lista de las cuatro es cerrada y explícita.** La palabra propia **no**
-  dispara nada: deducir de un texto que alguien está mal es diagnosticar (§9).
-- **La descarga es el cuarto paso y no entra en la cuenta**, como la pausa de la
-  mañana. Trae sus dos controles de §8 —"Dejarlo aquí y cerrar mi día" y "Ahora
-  no"— más un "Atrás", que §2 pide y §8 no nombra: son tres cosas distintas y
-  "Ahora no" cierra el día mientras "Atrás" no cierra nada.
-- **Criterio 9 se resuelve en el lado de la descarga.** §5 dice que "¿Qué
-  necesito soltar por hoy?" no debe usarse como rotativa si luego se activa la
-  descarga, y eso no se puede saber por adelantado; §8 da la regla operativa. Con
-  la rotativa en `soltar`, **se cierran las dos vías a la vez**: ni tarjeta
-  automática ni enlace. Dejar el enlace habría dejado la pregunta dos veces.
-
-- **El cierre deja de contar.** Se fue `sintesisDelDia` —"Hoy encontraste 2 cosas
-  que agradecer"—, y con ella `recuentoDelDia` y sus cuatro plantillas: un número
-  al final del día es una nota, y §10 prohíbe los recuentos. Las dos líneas son
-  fijas, y la segunda solo cambia si se dejó algo en la descarga.
-- **Se fueron también el punto de luz cálida y el cierre compasivo.** El primero
-  era una celebración condicionada al estado con el que se cerraba, es decir una
-  calificación emocional del día; el segundo —"Hoy pesó. Cerrarlo ya es
-  bastante."— interpretaba lo que alguien acababa de nombrar. Con ellos se retiró
-  `disparaCompasion` de `estadoSueno.js`: dejar un escritor en un catálogo
-  retirado invita a reabrirlo sin darse cuenta.
-- **Sobrevive la despedida**, que no celebra nada: "Buenas noches." y "Puedes
-  volver y cambiar lo que quieras." `CierreDelDia.jsx` pasó a
-  `noche/CierreDeLaNoche.jsx` — mismo sitio, mismo trabajo, otro contenido.
-  No-negociable 3 intacto: la ceremonia nunca falla y con la noche en blanco se
-  cierra igual.
-- **De lo reconocido se muestra uno, no todos** (§10). Se elige el primero porque
-  se escribió primero, no porque sea el mejor: la app no ordena por importancia
-  lo que alguien nombró.
-
-- **La pantalla de consulta es nueva y no la pedía la spec.** §2 pide poder
-  volver y cambiar respuestas y §10 pide un cierre; sin ella, reabrir Hoy de
-  noche tras cerrar el día devolvería el recorrido al paso 1 sobre respuestas ya
-  escritas. Es la misma pieza que la mañana estrenó el 23 ago, con su "Cambiar
-  algo" y sin etiqueta de "hecho".
-- **La reflexión se titula con la pregunta que salió esa noche**, en la consulta
-  y en el Historial: rota, así que una etiqueta genérica dejaría la respuesta sin
-  contexto. La ligada a la mañana se reconstruye con la intención de ese día.
-
-- **Tres piezas subieron un nivel: `ChipsUnicos.jsx`, `Pasos.jsx` y
-  `pildora.js`.** Estaban en `components/lumia/manana/` y las monta también la
-  noche; un componente que sirve a los dos recorridos no es de ninguno de los
-  dos. `Pasos` **recibe su copy por props** en vez de alcanzar
-  `copy.lumia.diario.manana.pasos` — es el único cambio que la mañana notó, y es
-  de una línea. Una prueba falla si cualquiera de los tres vuelve a nombrar el
-  namespace de un recorrido.
-- **`ChipsUnicos` se reutiliza tal cual y `ChipsEmociones` no.** Aquel admite
-  tres selecciones y una palabra sin espacios (§5.8.1); la noche necesita una y
-  hasta 30 caracteres, que es exactamente el contrato de `ChipsUnicos`. Reutilizar
-  el de la mañana es lo correcto; reutilizar el del Journal habría sido meter dos
-  reglas de selección en un componente.
-- **`LIMITES.gratitud` (3–10, `crecerSola: true`) se retiró**: era la gratitud de
-  la noche y ninguna lista del producto crece sola ya. La mecánica sigue en
-  `filas.js` y `FilasDinamicas`, y `filas.test.js` la ejercita con un límite de
-  prueba en vez de con un preset que ya no existe. `LIMITES.reconocimiento` es
-  `{min: 1, max: 3, crecerSola: false}`, igual que la gratitud de la mañana.
-- **El reconocimiento no ofrece ideas de apoyo, y no es un olvido.** La gratitud
-  de la mañana las tiene porque nombrar algo que agradecer puede costar; aquí la
-  pregunta ya trae su abanico en el texto de apoyo, y una lista de sugerencias
-  encima sería decirle a alguien de qué tiene que hablar su día.
-- **La línea de apertura ("Vamos a cerrar el jueves.") va solo en el primer
-  momento.** Repetirla en las tres pantallas la convertiría en una cabecera.
-
-- **`updatedAt` es hora local con desfase**, como en la mañana: §11 pide "fecha y
-  hora local" y `toISOString()` perdería justo ese dato. `marcaLocal` se movió de
-  `manana.js` a `fechas.js` —es formato de fecha, no algo de la mañana— y las dos
-  la reexportan, así que ningún importador se enteró.
-- **`version: 2` se guarda con cada noche.** Las de la versión 1 no traen el campo
-  y se reconocen por su ausencia.
-- **`cargarDia` trae ahora `noches`**, con una sola lectura de colección
-  (`lumia.listNightRituals`). Alimentan **solo** la rotación: se leen fechas e
-  ids de pregunta, nunca una palabra de lo escrito, y nada sale de `lumia/`
-  (RN-DB4-01 intacta).
-- **`useDiario` pierde `guardarEstadoSueno`** y `diario.js` pierde esa función,
-  `sintesisDelDia` y `recuentoDelDia`. Tres pruebas comprueban que ya no existen.
-- **Nada bloquea, y está probado en negativo.** Ningún control del recorrido
-  lleva `disabled`, `required` ni `aria-invalid`, y el copy no contiene
-  "incompleto", "te faltó", "obligatorio" ni "sin responder". `skipped` anota lo
-  que quedó en blanco **solo de las preguntas que llegaron a hacerse**: una
-  descarga que no se mostró no es una descarga omitida.
-- **Archivos nuevos:** `src/lumia/noche.js`, `nocheEmociones.js`,
-  `nocheReflexion.js` y `src/components/lumia/noche/` (MomentoReconocimiento,
-  MomentoReflexion, MomentoEmocion, MomentoDescarga, CierreDeLaNoche,
-  ResumenNoche). Una pantalla, un archivo. `DiarioNoche.jsx` se queda como
-  contenedor: sigue siendo la sección Noche del Diario y sigue entrando por el
-  mismo sitio en Hoy. Se borraron `CierreDelDia.jsx` y `EstadoSueno.jsx`.
-- **`npm run lint`, `test`, `build`, `lint:copy`, `lint:contraste` y
-  `format:check` en verde · 1450 pruebas** (79 nuevas en `noche.test.js`, una por
-  criterio de aceptación, por regla de §2 a §12, por pantalla del flujo y por
-  pieza de la consulta).
-
-**Pendiente de la actualización de la noche:**
-- **Sin validar en navegador.** Lo comprobado es la lógica y el marcado; falta
-  ver el recorrido entero en un teléfono real: el teclado sobre los campos de los
-  momentos 1, 2 y 4, el chip "Algo más" con el teclado abierto, y si el cierre se
-  siente ceremonia o interrupción ahora que ya no cuenta nada. **La pregunta que
-  ninguna prueba contesta es si el recorrido cabe de verdad en uno o dos
-  minutos**, y la otra es si "reconocer" se siente más ancho que "agradecer".
-- **El catálogo de doce emociones y las cinco preguntas del banco están sin
-  revisar editorialmente.** Salen literales de la spec; pasan §3.6 con prueba
-  automática. Las formas neutras se redactaron aquí: "En calma", "Con gratitud",
-  "Con orgullo", "Con alivio", "Pensando", "Con cansancio", "Con inquietud",
-  "Con frustración", "Con demasiado encima".
-- **"Indicación de si la emoción fue estándar o personalizada" no es un campo
-  propio.** Se deduce de `closingFeeling === 'otra'`. Si el propietario lo quiere
-  explícito, es una línea en `FIELDS.nightRitual` y otra en el guardado.
-- **El blueprint sigue describiendo §5.4 como estaba.** Con esta actualización
-  caen su bloque de gratitud, el de aprendizaje, §5.4.1 entera y la síntesis de
-  cierre. **La documentación está pendiente de reescribir esa sección**; no
-  bloquea el código, igual que quedó pendiente con SPEC_09, con las victorias y
-  con la mañana.
-- **Caso conocido:** con dos pestañas abiertas sobre la misma noche, la última
-  escritura gana. Es el mismo comportamiento que el resto de Lumia.
-
-**Home de Strivo — revisión de SPEC_11 y de §C0.2/§C7.1, 19 ago:**
-- **Cada apertura aterriza en un Home de marca** (`src/pages/Home.jsx`, ruta `/`): símbolo de
-  Strivo, una animación de bienvenida sin texto y dos accesos —"Lumia · Reflexión / ¿Cómo estoy?"
-  y "Formia · Acción / ¿Quién quiero ser?"—. Las dos preguntas son las centrales del blueprint
-  (§1 de este archivo), no una frase del repertorio: son fijas.
-- **Strivo pasa a ser un destino navegable, y eso deroga el criterio 9 de SPEC_12** ("Strivo no es
-  un espacio navegable", §C0.2). Lo decidió el propietario del producto. Lo que sigue en pie es que
-  **no es un espacio**: no tiene secciones, no lee datos de ninguno de los dos (RN-DB4-01) y su
-  paleta son los neutros conectores, que no cambian con la hora (manual §4.1).
-- **La barra inferior ya no salta entre espacios.** `BarraEspacios` se renombró a `BarraStrivo` y
-  lleva un solo acceso, a `/`. Se renombró en vez de adaptarse porque hace otra cosa, igual que
-  `SesionProvisional` pasó a `ArranqueProvisional`. Para cambiar de espacio se vuelve al vestíbulo.
-  **El cruce sigue sin existir en el contenido** (§C7.7.3) y ahora tampoco está en el cromo.
-- **La profundidad se cuenta desde la raíz de cada espacio**, no desde la app abierta (§4.3.2,
-  regla 1). El Home es el vestíbulo y no cuenta: metiéndolo en la cuenta, el detalle de un hábito y
-  el hábito nuevo serían cuatro toques y la regla tendría dos excepciones en vez de un alcance
-  claro. Dentro de su espacio ningún destino pasa de tres.
-- **Volver a un espacio sigue devolviendo a la sección donde estabas** (criterio 4 de SPEC_11).
-  Sobrevive a la revisión: lo que cambia es por dónde se pasa, no dónde se aterriza.
-- **Un solo umbral por sesión y por espacio** (`src/lib/umbralSesion.js`). El "ya se cruzó" salió de
-  `Hoy.jsx` porque ahora hay dos sitios que lo consultan: la entrada al espacio desde el Home y la
-  aparición de la sección Mañana. Sin compartirlo, entrar de mañana encadenaba dos umbrales
-  seguidos —diez segundos de luz antes de escribir nada—, que es justo lo que RN-LU-MAN-02 evita.
-  Consecuencia buscada: volver al Home y entrar otra vez en la misma sesión no repite la luz.
-- **La entrada a Formia es la misma pieza sin frase.** `TransicionLuz` gana `conFrase`, que no es una
-  segunda variante: la frase de apertura es de Lumia (§C7.5) y a Formia no le pertenece. Lo único
-  propio es la paleta, que sale de `--formia-am-*` en `globals.css`. **Es un placeholder declarado**,
-  el mismo trato que los íconos de emoción: existe lo justo para no bloquear la entrega y queda
-  anotado que falta el brief de diseño.
-- **De paso se arregló el velo nocturno de Lumia.** Al montarse el umbral en la raíz del espacio, el
-  tema que manda es `data-space` + `data-moment` y no el `data-lumia` de Hoy: sin la regla nueva,
-  entrar a Lumia a las once daba un velo crema —el fogonazo que la variante de dentro de Hoy ya
-  evitaba desde SPEC_10—.
-- **La fricción del paso extra es una decisión consciente**, no un descuido. No rompe "nada bloquea":
-  el umbral se salta con un toque, el Home no pide nada y con "reducir movimiento" no hay animación
-  ni umbral. Lo que sí hace es reordenar el flujo, y por eso está escrito aquí.
-- **Pendiente:** §C7.1 y §C0.2 del blueprint siguen describiendo el flujo anterior. No bloquea el
-  código. `docs/specs/SPEC_11.md` ya lleva su cabecera de revisión con el detalle.
-
-**Respiración — SPEC_13 (motor, catálogo y datos), 20 ago:**
-
-Strivo suma un tercer acceso desde el Home: **Respiración**. No es una tercera marca ni un tercer
-espacio: es una **herramienta transversal**, hermana menor de Lumia y Formia. Se entra, se usa, se
-sale. SPEC_13 deja el motor, el catálogo y la capa de datos; **cero UI** (la pintan SPEC_14–16).
-
-- **El motor vive en `src/lib/respiracion/`, no en `src/shared/`.** SPEC_13 §4.3 pedía `shared/`,
-  pero **esa carpeta no existe**: lo neutral de este repo es `src/lib/` —ahí están `constancia.js`,
-  `timeSlot.js`, `umbralSesion.js` y el propio `ritmoRespiracion.js`—. Crear `src/shared/` al lado
-  habría dejado dos carpetas con el mismo significado y ninguna regla que dijera cuál usar. El
-  razonamiento de §4.3 se cumple entero: el motor **no** puede vivir en `breathing/` porque Lumia lo
-  consume y Lumia no puede leer `breathing/`.
-- **`ritmoRespiracion.js` es ahora un envoltorio y su firma no cambió.** Los 46 tests de SPEC_08
-  (ritmo, audio y componente) siguen verdes **sin editar ni una línea**. Traduce en un solo sitio las
-  dos diferencias de vocabulario: la fase que Lumia llama `pausa` es `retenerVacio`, y su `ciclo`
-  empieza en 0 mientras el motor cuenta desde 1.
-- **La curva se unificó en `cosenoElevado`; `smoothstep` desaparece.** SPEC_08 suavizaba con
-  t²(3−2t) y los tests solo fijaban los extremos y la monotonía, así que el cambio cabía. Medido: la
-  diferencia máxima es **0,0100 de amplitud, 0,36 px sobre un círculo de 200 px**. Se unificó porque
-  dos curvas para el mismo gesto es la divergencia silenciosa que la cabecera de `ritmoRespiracion.js`
-  ya advertía, y no compensa por un tercio de píxel. Lo decidió el propietario del producto.
-- **`escalaEn` ya no calcula curva: interpola sobre `amplitud`.** RN-RE-MOT y §6.3 exigen que el
-  círculo, la línea y el volumen lean **el mismo número**. Es lo que garantiza que imagen y sonido no
-  puedan desincronizarse, y por eso ningún consumidor calcula su propia amplitud.
-- **No hay stores nuevos ni migración de IndexedDB, y `DB_VERSION` sigue en 1.** SPEC_13 §8.1 pedía
-  cuatro stores; el almacén de Strivo está **direccionado por ruta** (un solo `records` con la forma
-  de Firestore), así que `breathing/` son cuatro colecciones más dentro de lo que ya existe. Subir la
-  versión habría sido lo arriesgado: una build anterior **no puede abrir** una base con versión mayor
-  que la suya, que es justo el requisito de §4.4. `sync.js` las espeja sin tocar una línea.
-- **Las rutas de `breathing/` viven en `src/breathing/data/esquema.js`, no en `lib/db/schema.js`.**
-  Ese archivo es el modelo canónico de §C5, cuyo árbol tiene **tres raíces** y no recoge `breathing/`.
-  Ampliarlo ponía en rojo el criterio 9 de SPEC_08 —"el modelo canónico no tiene dónde guardar una
-  respiración"—, que **sigue diciendo la verdad**: la respiración diaria de Lumia no se registra. Lo
-  que registra es la herramienta, que es otra cosa. Dos afirmaciones compatibles, cada una en su sitio.
-- **`breathing/` valida corrigiendo; `lib/db/` sigue rechazando.** RN-DB4-08 dice "nada se corrige en
-  silencio" y RN-RE-MOT-07/RN-RE-DAT-08 dicen "nunca lanza". No se contradicen: en `lib/db/` los
-  registros los escribe el código y un campo raro es un error de programación; en `breathing/` los
-  escribe una persona moviendo un control, y frenarla con un error sería castigarla por explorar.
-  **La frontera entre las dos filosofías es la carpeta `src/breathing/data/`.**
-- **El respaldo en memoria del caso 9.8 vive en `repositorioRespiracion.js`, no en `lib/db/local.js`.**
-  Degradar el almacén compartido cambiaría el comportamiento de error de Lumia y Formia, diseñado
-  sobre RN-DB4-08 y sostenido por las pruebas de SPEC_02. El radio se queda dentro de la respiración.
-- **`PATRON_BASE` del motor y el preset `calma-553` del catálogo son los mismos números por
-  duplicado, a propósito.** El motor no puede importar `breathing/` (lo prohíbe el lint), así que una
-  prueba del catálogo comprueba que los dos no se separen.
-- **El léxico clínico de §7.1 se comprueba sobre el namespace `respiracion`, no sobre todo `src/`.**
-  `copy.lumia.journal` ofrece **"Con ansiedad"** como emoción del catálogo de días difíciles (SPEC_07)
-  y `TEMAS_DE_RENDIMIENTO` es maquinaria de SPEC_05: prohibir esas palabras en todo el árbol rompería
-  el build por un motivo equivocado. Es el mismo caso que "Seguro/Segura" con el PIN. `lint-copy.js`
-  importa el copy y recorre `copy.respiracion` hoja por hoja — exacto en vez de aproximado. Sí van
-  globales `productividad`, `maximiza` y `trastorno`, que no son vocabulario de nadie.
-- **`interpolar()` no se creó: `interpolate()` existía desde Fase 0** y usa la misma sintaxis `{n}`.
-- **`retenerVacio` cuenta como retención** para `tieneRetenciones`, que es mecánico —cualquier
-  retención por encima de cero— y no una etiqueta que alguien elige a mano.
-- **En modo `ciclos`, `cerrando` se abre al empezar la última respiración**, no al terminarla. Es
-  información útil ("esta es la última") y no corta nada: RN-RE-MOT-16 se cumple igual.
-- **`notificarAusencia()` la llama la capa visual, no la máquina.** El caso 9.4 necesita
-  `visibilitychange` y la máquina no toca el DOM. ~~SPEC_14 conecta el oyente.~~ **Corregido al
-  cerrar SPEC_14: lo conecta SPEC_16.** Las visuales de SPEC_14 no pueden — RN-RE-VIS-02 les prohíbe
-  tener `useEffect` y temporizadores, y un oyente de `visibilitychange` es exactamente eso. El sitio
-  que queda es la pantalla, que es quien ya posee la máquina y el bucle de frames.
-
-| Regla | Enunciado |
-|---|---|
-| **RN-RE-MOT-01/02** | `inhalar` y `exhalar` ≥ 1,0 s; las retenciones pueden ser 0. |
-| **RN-RE-MOT-03/04** | Fase ≤ 20,0 s. Ciclo entre 6,0 s y 60,0 s. |
-| **RN-RE-MOT-05/06** | Décimas de segundo enteras. Paso de edición 0,5 s (no 0,1 s). |
-| **RN-RE-MOT-07** | La validación **nunca lanza**: corrige al valor válido más cercano y lo explica. |
-| **RN-RE-MOT-08** | Un patrón que deja de coincidir con su preset pasa a `personalizado`. La caja es la excepción: la definen sus cuatro fases iguales, no el preset guardado. |
-| **RN-RE-MOT-11** | El tiempo se calcula **contra el origen**, nunca acumulando deltas por fotograma. |
-| **RN-RE-MOT-13/14** | Pausar congela el punto exacto. Una pestaña oculta no pausa: al volver se recalcula y no se recuperan fotogramas. |
-| **RN-RE-MOT-16** | **El ciclo en curso siempre se completa.** Nunca se corta a media exhalación. |
-| **RN-RE-MOT-17** | Excepción: `terminar()` de la persona corta de inmediato. Su decisión manda. |
-| **RN-RE-MOT-20/21** | El límite por minutos se hace efectivo al final del ciclo, así que la sesión dura entre `valor` y `valor + un ciclo`. El acomodo no cuenta. |
-| **RN-RE-DAT-01** | `guiaSonoraActiva` arranca en `false`. **Silencio por defecto**, como corrigió SPEC_08 en `initShared`. |
-| **RN-RE-DAT-03/04/05** | Cinco recientes como mucho; repetir mueve la fecha en vez de duplicar; lo que ya está en favoritos no entra. |
-| **RN-RE-DAT-06/07** | Las sesiones se purgan a los 90 días y **no se derivan rachas, metas ni logros**. |
-| **RN-RE-DAT-09** | Nada de `breathing/` importa `lumia/` ni `formia/`. Lo vigilan el lint y una prueba. |
-| **RN-RE-COPY-01** | El aviso de seguridad se muestra una vez, es descartable y no bloquea. |
-
-**Pendiente de SPEC_13:** la nota de seguridad (RN-RE-COPY-01/02) tiene copy y campo persistido
-(`avisoSeguridadVisto`) pero **nadie la pinta todavía** — es UI y le toca a SPEC_16. Lo mismo con
-`mantenerPantallaEncendida`: el campo existe, la Wake Lock API del caso 9.4 la conecta **SPEC_16**
-—no SPEC_14, como decía esta nota— por el mismo motivo que `visibilitychange`: es un efecto, y la
-capa visual no tiene ninguno a propósito.
-
-**Respiración — SPEC_14 (visuales: círculo y bolita sobre línea), 20 ago:**
-
-Dos guías visuales intercambiables, las dos alimentadas por el mismo `amplitud` del motor de
-SPEC_13. **Sin sonido, sin favoritos y sin pantalla**: la pantalla que las monta es de SPEC_16, y
-hasta entonces esta capa está construida y probada pero no la ve nadie. Es deliberado: el orden lo
-fijan las propias specs.
-
-- **Los cuatro colores de fase salen de la escala Strivo madre, y hubo que ampliarla.** §1.1 obliga a
-  detenerse si la escala no alcanza, y no alcanzaba: sobre `strivo-50`, de los cinco pasos solo
-  `strivo-600` (4,82:1) y `strivo-900` (13,32:1) superan el 3:1 de WCAG 1.4.11, y §5 pide cuatro
-  fases distinguibles. **El propietario del producto eligió añadir dos pasos**, `strivo-700 #58545D`
-  y `strivo-800 #423E47`, interpolados sobre el eje neutro que ya existía entre 600 y 900. No
-  introducen tono: Strivo sigue siendo acromático (manual §4.1). Están en `design-tokens.json`, en
-  `globals.css` y **en el manual §4.2**, que es donde `marca.test.js` exige que viva todo hex de
-  marca — esa prueba fue la que lo cazó.
-- **Las fases se separan por luminancia, no por tono, y §5 pedía otra cosa.** §5 describe un eje
-  cálido→frío ("inhalar: el más luminoso y cálido", "exhalar: más frío y profundo"); una escala
-  acromática no tiene ese eje. Se cumple el propósito —cuatro fases distinguibles, todas ≥3:1— con el
-  único eje que la paleta tiene. **Coste medido y asumido: entre fases contiguas hay 1,4:1**, que no
-  basta para nombrar una fase por su color. Por eso RN-RE-VIS-17 no es aquí un adorno de
-  accesibilidad: es lo que sostiene la lectura. `lint:contraste` mide las cuatro y deja anotadas las
-  contiguas como informativas, con el motivo escrito.
-- **`pintar()` por referencia, no por props: es lo que hace que se sienta suave.** RN-RE-VIS-01 fija
-  las props de una visual en cuatro y RN-RE-VIS-33 prohíbe `setState` por frame. Las dos se cumplen
-  a la vez porque el estado por frame **no pasa por props**: quien monta la visual llama a
-  `pintar(estado)` sobre su `ref`, y eso escribe sobre el nodo. React repinta al cambiar de fase —
-  nueve veces en cuarenta segundos, no dos mil cuatrocientas. Ninguna de las dos visuales tiene
-  `useState`, `useEffect` ni un solo temporizador, y hay pruebas que fallan si aparecen.
-- **La cuenta regresiva también baja por el nodo.** RN-RE-VIS-19 quiere que el número baje de segundo
-  en segundo y §10 que React solo repinte al cambiar de fase. Un dígito no vale un render del árbol,
-  así que `EtiquetaFase` recibe `refCuenta` y `pintar()` le escribe el `textContent` cuando el
-  segundo cambia de verdad.
-- **El anuncio accesible dice lo que DURA la fase, no lo que le queda.** Escrito con el tiempo
-  restante, el texto cambiaba cada segundo y salían **39 anuncios en tres ciclos** en vez de 9: un
-  `aria-live` que se reescribe así se corta a sí mismo y el lector de pantalla queda inservible.
-  `AnuncioAccesible` no recibe ningún valor que cambie dentro de la fase, así que RN-RE-VIS-24 se
-  cumple por construcción y no por vigilancia.
-- **Con movimiento reducido manda un solo reloj.** §7 escalona dos cosas por separado —cuatro pasos
-  de amplitud y un paso de arco por segundo— y gobernadas por separado se turnaban para escribir:
-  **19 actualizaciones en un ciclo de trece segundos**, con RN-RE-VIS-20 pidiendo una por segundo.
-  El portero es ahora el segundo transcurrido de la fase, uno solo. Es la misma idea que sostiene el
-  motor entero: un reloj, no dos.
-- **`prefers-reduced-motion` no apaga la animación, la escalona.** Sin escala continua pero con los
-  cuatro pasos, el arco de segundo en segundo, la onda quieta con un marcador que la recorre, y la
-  estela **fuera del DOM** —no escondida con CSS—. Las duraciones no se tocan: la duración no es una
-  animación, es el ejercicio. Es la misma lectura que SPEC_08 hizo de §6.10.1.
-- **La onda se muestrea una vez y se desplaza.** Es periódica, así que su forma no cambia entre
-  frames: 1.223 puntos memoizados por `(patrón, ancho, alto, posición)` y por frame un `translateX`.
-  Recalcular mil puntos sesenta veces por segundo es el error que hace que una animación de calma se
-  sienta nerviosa. Medido: dos llamadas iguales muestrean una sola vez, y sesenta frames resuelven el
-  motor sesenta veces —una por bolita— y ni una más.
-- **Las mesetas de retención son exactamente planas.** El suavizado une los puntos con cuadráticas
-  que pasan por los puntos medios, y ese esquema tiene la propiedad que hacía falta: sobre un tramo
-  de Y constante, controles y puntos medios comparten esa Y. Varianza cero, comprobada sobre 669
-  puntos. Una meseta que ondula estaría diciendo "sigue moviéndote" justo donde la instrucción es
-  sostener.
-- **La bolita se apoya en el trazo con 0,0076 unidades de error**, no porque se lea del path sino
-  porque las dos alturas salen de la misma amplitud del motor (RN-RE-VIS-09). Dos fuentes de verdad
-  para la misma altura acaban separándose; una no puede.
-- **El disco vacío mide el 32 % del anillo y nunca 0.** Un punto que desaparece del todo se siente
-  como asfixia, y esta app existe para lo contrario.
-- **La cuenta 3-2-1 del acomodo la monta la pantalla, no la visual.** §9 la sitúa en el centro del
-  dibujo, pero vive en `msRestantesAcomodo` de la máquina y RN-RE-VIS-01 fija las props de una visual
-  en cuatro, ninguna de las cuales la lleva. Añadir una quinta abre la puerta a las demás. Lo que sí
-  hace la visual en `acomodando` es la respiración lenta y decorativa de §9. **Le toca a SPEC_16.**
-- **`copy.respiracion.estados.pausado` es copy nuevo, y SPEC_14 §12 decía que no haría falta.**
-  RN-RE-VIS-26 pide anunciar la pausa y no había cómo decirlo: `controles.pausar` es la etiqueta de
-  un botón, es decir una acción, y leerle "Pausar" a quien ya pausó es contarle lo que puede hacer y
-  no lo que pasa. La prueba de bloques de SPEC_13 se actualizó con el motivo escrito al lado.
-- **El filtro de "ni un string fuera de copy" (criterio 19 de SPEC_13) se afinó, no se ablandó.**
-  SPEC_14 trajo los primeros `.jsx` a `breathing/` y con ellos cadenas con espacios que nadie lee:
-  `(prefers-reduced-motion: reduce)`, `xMidYMid meet`, y la costura que deja un `template literal`
-  partido dentro de una etiqueta JSX. La lista de excepciones es explícita —tres patrones— y hay una
-  prueba que falla si esa lista empezara a tragarse texto de verdad.
-- **No se añadió ninguna librería de animación** (§1.3). El repo no tenía ninguna y sigue sin
-  tenerla: todo es SVG con atributos calculados por el motor y transiciones de CSS.
-
-| Regla | Enunciado |
-|---|---|
-| **RN-RE-VIS-00** | Ningún archivo de `src/breathing/**` referencia un token `lumia-*` ni `formia-*`. |
-| **RN-RE-VIS-01/02/03** | Una visual recibe cuatro props, no calcula nada y no conoce la capa de datos. |
-| **RN-RE-VIS-04/05** | El disco vacío es el 32 % del anillo. En las retenciones queda inmóvil. |
-| **RN-RE-VIS-06/07** | El arco mide la **fase actual** y se reinicia en cada cambio. Cambia de color en 200 ms. |
-| **RN-RE-VIS-08** | `preserveAspectRatio="xMidYMid meet"`. El dibujo nunca se deforma. |
-| **RN-RE-VIS-09** | La Y de la bolita sale de la amplitud del motor, jamás de leer el trazo. |
-| **RN-RE-VIS-10** | Las mesetas de retención son planas. Varianza de Y igual a cero. |
-| **RN-RE-VIS-11** | Los dos extremos de la onda se desvanecen. |
-| **RN-RE-VIS-12** | Con movimiento reducido la estela no está en el DOM. |
-| **RN-RE-VIS-14/15** | Solo las marcas futuras llevan texto, y solo si el ciclo llega a 8 s. |
-| **RN-RE-VIS-16** | Los cuatro colores de fase ≥ 3:1 sobre el fondo; el texto asociado, AAA. |
-| **RN-RE-VIS-17** | **La fase nunca se comunica solo por color.** Siempre hay palabra y forma. |
-| **RN-RE-VIS-19** | Cuenta regresiva en segundos enteros; se oculta en fases de menos de 2,0 s. |
-| **RN-RE-VIS-20** | Con movimiento reducido, **como mucho una actualización por segundo**. |
-| **RN-RE-VIS-21/22** | La preferencia del sistema se escucha en vivo, y el interruptor manual la suma. Ninguna manda sobre la otra. |
-| **RN-RE-VIS-24** | El anuncio se actualiza al cambiar de fase, nunca por frame. |
-| **RN-RE-VIS-25/27** | El SVG es `role="img"` con `<title>`; lo de dentro va `aria-hidden` y nada es enfocable. |
-| **RN-RE-VIS-26** | En pausa se anuncia una vez "En pausa" y se callan las fases. |
-| **RN-RE-VIS-28/29** | `inactivo → acomodando` es un cruce. Cambiar de visual en marcha no interrumpe el ritmo. |
-| **RN-RE-VIS-31/32/33** | El muestreo se memoiza, el desplazamiento va por `transform`, y **no hay `setState` por frame**. |
-
-**Pendiente de SPEC_14:** nada de esto se ve todavía. `GuiaVisual` no lo monta ninguna pantalla —eso
-es SPEC_16— y **las 8 validaciones manuales de §14 están sin hacer** por el mismo motivo: no hay
-dónde mirarlas. Se hacen cuando exista la pantalla.
-
-**Respiración — SPEC_15 (sonido ambiente, guía sonora y favoritos), 20 ago:**
-
-Cinco sonidos de fondo más silencio, todos **sintetizados en tiempo real**, y la gestión de
-combinaciones guardadas. Sigue sin haber pantalla que lo monte: eso es SPEC_16.
-
-- **Síntesis procedural al 100 %, confirmado por el propietario del producto.** Cero archivos de
-  audio, cero dependencias nuevas, cero licencias que resolver, y funciona sin red por construcción.
-  **Medido: la capa de audio entera —singleton, generadores de ruido, las cinco fuentes, mezclador y
-  orquestador— pesa 12,5 kB minificada y 4,2 kB comprimida.** Un solo bucle de lluvia en calidad
-  decente pesa entre 1.500 y 4.000 kB. Una prueba recorre `src/`, `public/` y `docs/` y falla si
-  aparece un `.mp3`, `.ogg`, `.wav`, `.m4a`, `.aac`, `.flac`, `.opus` o `.webm`.
-- **Bosque queda fuera, y es una decisión escrita.** Es el único de los evaluados que la síntesis no
-  resuelve bien: el lecho de ruido sale convincente, pero los cantos de pájaro sintetizados suenan
-  sintéticos y romperían la sensación de refugio. Vale más no tenerlo que tenerlo mal. Si algún día
-  resulta indispensable, entra como **el primer archivo de audio real del repo** y ahí se define su
-  licencia y su precaché — hoy no.
-- **La preferencia de sonido es exclusiva del espacio Respiración**, decidido por el propietario del
-  producto. `shared/preferences.soundEnabled` sigue gobernando la respiración diaria de Lumia y P1
-  (RN-AUD-03 intacta); `breathing/configuracion` lleva ambiente, volúmenes y guía. Silenciar en un
-  sitio no silencia el otro, y es a propósito: son dos herramientas distintas.
-- **Un solo `AudioContext` en toda la app, y el refactor tenía una trampa.** `audioRespiracion.js`
-  cerraba el contexto en `detener()`, y la prueba de SPEC_08 —que está en la lista de "no tocar"—
-  comprueba justamente eso. Con un singleton, cerrarlo al acabar la guía dejaría el ambiente mudo a
-  media sesión. Se resolvió con **préstamos**: quien necesita audio lo pide y lo suelta, y el
-  contexto se cierra cuando lo suelta el último. RN-AUD-04 se cumple igual, y **las 31 pruebas de
-  SPEC_08 siguen verdes sin editar una línea**. Quien inyecta su propia fábrica —las pruebas—
-  conserva la propiedad y cierra lo suyo.
-- **Vive en `src/lib/audio/` y no en `src/shared/audio/`, que es donde lo pedía §2.1.** Misma razón
-  que en SPEC_13: `src/shared/` no existe, y crearlo dejaría dos carpetas con el mismo significado
-  sin ninguna regla que dijera cuál usar. `lib/` es el territorio neutral del repo. El razonamiento
-  de §2.1 se cumple entero: lo consumen Lumia y Respiración, así que no puede vivir en ninguno.
-- **Al pausar, el ambiente baja al 30 % y la guía se calla del todo.** No es una inconsistencia: la
-  guía marca el ritmo y sin ritmo no tiene nada que decir; el ambiente es paisaje y el paisaje sigue
-  ahí. Cortar el fondo en seco sobresalta, que es lo contrario del propósito — y un silencio
-  repentino llama más la atención que el propio sonido.
-- **Ni una asignación directa a `.value` en toda la capa.** Un salto de ganancia es un chasquido
-  audible, y en una app cuyo trabajo es bajarle las pulsaciones a alguien eso es un fallo de
-  producto. El doble de `AudioContext` de las pruebas lleva un `setter` que apunta cualquier
-  asignación, así que la regla la vigila una prueba y no una revisión de código.
-- **El bucle de ruido lleva un cruce de igual potencia, y el motivo no es el chasquido.** Un salto en
-  la costura se oye como un clic, sí, pero se oye **cada cuatro segundos**: el ambiente acabaría
-  teniendo un pulso regular, que es justo lo que RN-RE-SND-07 prohíbe. El fallo empieza siendo un
-  chasquido y termina siendo un metrónomo. Los pesos son senos y no rectas porque al sumar dos
-  señales sin correlación lo que se conserva es la potencia, no la amplitud.
-- **Se encontró una fuga de verdad y se corrigió: 16 nodos al minuto 1, 451 a los sesenta.** La
-  limpieza de las voces efímeras —gotas, chispas, campanas— colgaba solo de `onended`. Ahora hay
-  además una **siega por tiempo en cada tic del planificador**, que no depende de ningún evento del
-  navegador. Una sesión de una hora son miles de gotas: con que un uno por ciento no avisara,
-  quedarían decenas de nodos vivos, y el síntoma no es un error sino un teléfono caliente.
-- **Los intervalos aleatorios no son un capricho** (RN-RE-SND-07). Quien sigue una guía de cinco
-  segundos no necesita un segundo metrónomo discutiéndole el compás por debajo. Se comprueba con una
-  prueba estadística sobre 200 intervalos de cada fuente con eventos.
-- **Las olas y el viento no tienen eventos: su modulación es continua.** Lo que evita el compás ahí
-  son dos LFO con frecuencias distintas (0,05 y 0,03 Hz en el viento), que vuelven a coincidir cada
-  cien segundos — para entonces el oído ya no lo relaciona.
-- **Los cristales usan una pentatónica de Do.** Es la escala sin semitonos: cualesquiera dos notas
-  suenan bien juntas, así que por mucho que el azar solape dos campanas nunca puede salir una
-  disonancia. Con una escala mayor sí podría.
-- **`crearPlanificador` e `impulso.js` no están en la lista de archivos de §7** y se añadieron a
-  propósito: las cinco fuentes necesitan el mismo bucle de anticipación y el mismo gesto de impulso
-  filtrado, y cinco copias serían cinco sitios donde RN-RE-SND-06 y RN-RE-SND-08 se pueden romper sin
-  que nadie lo note.
-- **Elegir `silencio` libera los nodos; poner el volumen a 0 no** (RN-RE-SND-16). Son dos cosas
-  distintas: bajar el control es "ahora no quiero oírlo" y subirlo vuelve a oírse al instante; elegir
-  silencio es "no quiero esto sonando".
-- **La comparación de favoritos incluye la duración; la de recientes no.** `mismaConfiguracion` de
-  SPEC_13 (RN-RE-DAT-04/05) responde "¿son la misma sesión?"; `mismaConfiguracionCompleta` de SPEC_15
-  (RN-RE-FAV-05) responde "¿ya está guardada?". "4-7-8 diez minutos" y "4-7-8 tres minutos" son dos
-  cosas que alguien puede querer tener a la vez. **Los volúmenes quedan fuera de las dos**: son un
-  ajuste del momento —los audífonos, la hora, quién duerme al lado—, y bloquear un guardado porque el
-  volumen está al 55 % en vez de al 60 % sería incomprensible. Pero **sí cuentan para "modificado"**
-  (RN-RE-FAV-11): quien movió el volumen tiene derecho a que le ofrezcan guardarlo.
-- **`MAX_FAVORITOS = 20` vive en `data/esquema.js`**, junto a `MAX_RECIENTES` y
-  `MAX_NOMBRE_FAVORITO`, que es donde ya estaban sus hermanos. Los favoritos **no desalojan** y las
-  recientes sí: aquellas las escribe la app, estas las escribe una persona, y desalojar la más vieja
-  en silencio es decidir por alguien sobre algo suyo.
-- **El límite de 40 caracteres cuenta grafemas con `Intl.Segmenter`.** `'👨‍👩‍👧‍👦'.length` es 11:
-  contar unidades de código dejaría a alguien sin poder escribir seis emojis mientras la app le dice
-  que se pasó de cuarenta.
-- **El filtro de "ni un string fuera de copy" ahora excluye por POSICIÓN, no por forma.** SPEC_15
-  trajo componentes con `className` de Tailwind, que son cadenas con espacios indistinguibles de una
-  frase. Se descarta lo que está **dentro de un `className`** y nada más: cualquier filtro basado en
-  "parece técnico" acabaría tragándose copy de verdad, que es lo que el criterio existe para cazar.
-- **El separador `' · '` de las filas se movió a `copy.respiracion.favoritos.separador`.** Es
-  puntuación, pero se ve, y elegirla es una decisión editorial: podría ser «·», «•» o un guion largo.
-
-| Regla | Enunciado |
-|---|---|
-| **RN-RE-SND-00** | El `dist` no crece por activos de audio. Ni un archivo, ni una dependencia. |
-| **RN-RE-SND-01/02** | `silencio` es el valor de fábrica **y** una opción explícita de la lista. |
-| **RN-RE-SND-03** | `liberar()` deja 0 nodos conectados y 0 eventos programados. |
-| **RN-RE-SND-04/05** | El ruido se genera una vez en un buffer de 4 s, con 200 ms de cruce interno. |
-| **RN-RE-SND-06** | Los eventos se programan con 200 ms de anticipación sobre `ctx.currentTime`. `setTimeout` despierta el planificador; **nunca dispara un sonido**. |
-| **RN-RE-SND-07** | Ningún ambiente tiene un pulso periódico perceptible. |
-| **RN-RE-SND-08** | Toda ganancia se mueve con rampa. **Nunca `.value = x`.** |
-| **RN-RE-SND-09/10/11** | Entrada 2,0 s · cierre 3,0 s · `terminar()` 0,8 s. |
-| **RN-RE-SND-12/13** | Al pausar: ambiente al 30 %, guía a 0. |
-| **RN-RE-SND-14** | Cambio en vivo: cruce de 1,2 s sin silencio intermedio. |
-| **RN-RE-SND-15** | La ganancia maestra se queda en 1: el volumen del sistema es de quien lo tiene. |
-| **RN-RE-SND-16** | Volumen 0 ≠ `silencio`. Lo primero no libera nodos; lo segundo sí. |
-| **RN-RE-SND-19/20/21** | La guía suena al **inicio** de `inhalar` y de `exhalar`, nunca en retenciones, y se dispara desde el cambio de fase del motor. |
-| **RN-RE-SND-27/28/29** | Vista previa inmediata al volumen configurado; se apaga sola a los 20 s; el primer toque es el gesto que crea el contexto. |
-| **RN-RE-FAV-01** | 20 favoritos. Al intentar el 21 se explica; **no se borra nada solo**. |
-| **RN-RE-FAV-02/03** | Nombre de 1 a 40 grafemas, único sin distinguir mayúsculas ni espacios de los extremos. |
-| **RN-RE-FAV-04** | El campo llega prellenado y seleccionado, con sufijo numérico si hace falta. |
-| **RN-RE-FAV-05** | Configuración idéntica → "ya la tienes guardada", no un duplicado. |
-| **RN-RE-FAV-09/10** | Cargar aplica los ocho campos e incrementa `usos`; **no arranca la sesión**. |
-| **RN-RE-FAV-11** | Tras modificar, "Guardar cambios" o "Guardar como nueva". Nunca se sobrescribe en silencio. |
-| **RN-RE-FAV-12/13** | Un sonido o un patrón que ya no valen se corrigen al cargar y se avisa. No falla. |
-| **RN-RE-FAV-14/15/16** | 44 px de área táctil · Enter confirma y Escape cancela · el vacío no ofrece crear de la nada. |
-
-**Pendiente de SPEC_15:**
-- **Nada de esto se ve todavía.** Ninguna pantalla monta `PanelSonido` ni `ListaFavoritos`, así que
-  el bundler **elimina la capa entera por tree-shaking** y el `dist` solo creció ~1 kB (el singleton
-  y el copy). La cifra real —12,5 kB, 4,2 kB comprimida— se midió aparte forzando la inclusión.
-  **Hay que volver a medirla cuando SPEC_16 monte la pantalla.**
-- **Las 7 validaciones manuales de audio de §10 están sin hacer**, y son las que más importan de todo
-  este spec: las pruebas no oyen. Hace falta escuchar cada sonido dos minutos seguidos con audífonos
-  y con la bocina del teléfono, comprobar que ninguno enmascara el ritmo, y sentir si la bajada al
-  30 % al pausar se percibe cuidada o brusca.
-- **La Media Session API (RN-RE-SND-25) y el manejo de `visibilitychange` (RN-RE-SND-23/24/26) no se
-  conectaron.** Son efectos de pantalla, igual que la Wake Lock: le tocan a SPEC_16, que es quien
-  tiene el ciclo de vida. La lógica que necesitan —`restablecer()` con rampa de 400 ms— ya está en el
-  mezclador y probada.
-- **Caso 6.14 (dos pestañas abiertas): la última escritura gana**, sin bloqueo optimista. Queda como
-  limitación conocida, tal como la propia spec pide documentar.
-- **Caso 6.15: los cambios sin guardar se pierden al salir, sin advertencia.** Es coherente con que
-  la configuración sea efímera hasta que se guarda, y la spec pide anotarlo aquí.
-- **Deshacer una eliminación (RN-RE-FAV-08) y su ventana de 6 s** están en el copy y en la interfaz
-  de `ListaFavoritos`, pero **quien cuenta los seis segundos y confirma el borrado al navegar
-  (caso 6.11) es la pantalla**, que no existe. La lista solo pinta el aviso que le pasan.
-
-**Respiración — SPEC_16 (Home, navegación e integración), 20 ago. Cierra Fase 1C:**
-
-El tercer acceso en el Home, las dos pantallas y el ensamblado de todo lo que SPEC_13–15 dejaron
-suelto a propósito.
-
-- **Respiración no es un tercer espacio, y el Home tiene dos niveles y no tres elementos iguales.**
-  Lumia y Formia se **habitan**: tienen marca, subtítulo, transición de entrada. Respiración se
-  **toma**: se entra, se usa, se sale. El acceso va en componente propio (RN-RE-NAV-08c) y **fuera
-  del `<nav>` de los espacios**, porque compartir contenedor ya la ascendería de categoría.
-- **No hizo falta tocar la animación de bienvenida.** El caso 8.5 obligaba a parar y pedir permiso
-  antes de recortarla; medido en 360×640, los tres accesos ocupan **466 px de 640** y quedan 174
-  libres. En 320×568 sobran 102. Las tarjetas de Lumia y Formia quedan byte por byte iguales
-  (RN-RE-NAV-08b), y una prueba falla si cambian.
-- **RN-RE-NAV-01 y RN-RE-NAV-06 se contradicen: manda la accesibilidad.** La primera pide que el
-  acceso mida ≈40 % de una tarjeta —34 px— y la segunda un área táctil de 56 px como mínimo. No se
-  puede entregar un blanco de 34 px, y menos a alguien que lo busca porque está mal. Se queda en 56,
-  que es el 66 % de una tarjeta, y **la subordinación la cargan las otras cuatro palancas que la
-  propia regla lista**: sin subtítulo, píldora en vez de tarjeta, peso normal en vez de
-  `font-display`, y un anillo dibujado en vez de un símbolo de marca. Las cuatro están probadas.
-- **Tres reglas salieron gratis porque `espacioDe('/respiracion')` devuelve `null`.** Sin barra de
-  navegación (RN-RE-NAV-12), sin umbral de luz de Lumia (RN-RE-NAV-34) y con el cromo en los neutros
-  de Strivo. No hubo que escribir ninguna de las tres: la función que decide qué es un espacio ya lo
-  decía. Es la señal de que la arquitectura de SPEC_11 estaba bien puesta.
-- **La sesión vive en un contenedor por encima de las dos rutas** (`Respiracion.jsx`, añadido fuera
-  de la lista de §9). Si viviera en `PantallaSesion`, el botón atrás la destruiría al desmontarla, y
-  RN-RE-NAV-10 pide lo contrario: que pause y se retome en su punto exacto. El estado tiene que estar
-  por encima de la ruta, y de ahí cuelgan también RN-RE-NAV-09, 16, 17 y 33.
-- **`useSesionRespiracion` es donde converge todo lo que las tres specs anteriores no podían tener.**
-  Las visuales de SPEC_14 no pueden tener efectos ni temporizadores (RN-RE-VIS-02), así que el bucle
-  de frames vive aquí y les habla por su referencia con `pintar()`. La máquina de SPEC_13 no toca el
-  DOM, así que el oyente de `visibilitychange` vive aquí. La capa de audio de SPEC_15 no conoce el
-  ciclo de vida de una pantalla, así que el `AudioContext` se pide aquí **dentro del gesto**. Es el
-  único punto de la respiración donde un error se manifiesta como "a veces falla": conviene mirar dos
-  veces lo que se le añada.
-- **La primera vez de todas arranca en `entrada-suave`, y no hizo falta un campo nuevo.**
-  RN-RE-NAV-17 lo pide; las preferencias de fábrica de SPEC_13 guardan `calma-553`. Se distingue por
-  `actualizadoEn`, que es nulo mientras nadie haya guardado nada. Empezar aguantando el aire sin
-  haberlo hecho nunca es innecesariamente exigente, y `entrada-suave` no tiene retenciones.
-- **Los controles de la sesión se apagan del todo, no a 0,25, y lo decidió una medición.**
-  RN-RE-NAV-23 pide opacidad 0,25 tras seis segundos sin tocar nada; medido, el texto del botón a
-  0,25 sobre el fondo da **1,67:1**, ilegible. **RN-RE-NAV-46 anticipa exactamente ese caso y da la
-  salida**: "o el texto se oculta del todo en vez de quedar ilegible". A 0,25 se obtiene lo peor de
-  las dos cosas —una mancha que no se lee pero que sigue tirando del ojo—; a 0 la pantalla queda de
-  verdad limpia, que es lo que "cerrar los ojos sin que la pantalla grite" pedía. **Siguen siendo
-  tocables**: `pointer-events` no se toca, y una prueba lo vigila. El 1,67:1 queda anotado en
-  `lint:contraste` como informativo, con el motivo.
-- **La entrada no lleva transición de frase, y es la decisión de fondo del spec.** Quien entra a
-  Lumia va a reflexionar y una frase lo prepara; **quien entra a Respiración puede estar mal en ese
-  momento**. Interponer una pantalla contemplativa ahí es fricción exactamente en el peor instante
-  posible. Una prueba comprueba que ningún archivo de Respiración importa `TransicionLuz`,
-  `frases-apertura` ni `umbralSesion`.
-- **Los favoritos van debajo de "Empezar", y "Empezar" está fijo abajo.** Hacer atravesar un catálogo
-  para llegar al botón es poner una tienda entre alguien y lo que vino a buscar. El orden del DOM lo
-  fija una prueba, no solo el CSS.
-- **El aviso de seguridad es una tarjeta descartable dentro de la pantalla, nunca un modal.** Un modal
-  obliga a leer y aceptar antes de poder hacer nada, y quien abre esto puede estar en mitad de una
-  crisis de ansiedad. Ponerle una puerta delante es el gesto contrario al del producto.
-- **El panel de ajustes en vivo no ofrece patrón ni duración, y esa ausencia es la mitad de su
-  diseño.** Cambiar el ritmo a mitad de sesión no es ajustar: es empezar otra sesión, y hacerlo pasar
-  por un ajuste dejaría a alguien a media exhalación con un patrón que no eligió para este momento.
-- **El `aria-live` de los controles `−`/`+` va en el grupo, no en cada botón** (RN-RE-NAV-43). Puesto
-  en los botones, un lector de pantalla anunciaría el cambio dos veces —una por el botón y otra por
-  el valor— y quien lo usa acabaría oyendo el doble de lo que pidió.
-- **Los tiempos van con coma decimal** (RN-RE-NAV-18) y sin `toLocaleString`: su resultado depende
-  del navegador y de los datos de región instalados, y un separador que cambia de un teléfono a otro
-  no es una decisión de producto, es una lotería.
-- **Tres pruebas de specs anteriores tuvieron que afinarse, y ninguna se ablandó.** El filtro de "ni
-  un string fuera de copy" ganó dos patrones técnicos precisos —la tecla `' '` y los selectores CSS,
-  que llevan corchetes y ningún texto los lleva—; el quitador de comentarios de `navegacion.test.js`
-  aprendió que `/*` solo abre comentario tras un espacio, porque la ruta comodín `"/respiracion/*"`
-  se comía el resto del archivo; y dos pruebas más aprendieron a neutralizar las flechas `=>`, cuyo
-  `>` partía el JSX por la mitad y daba por infractores a componentes que no escriben nada.
-
-| Regla | Enunciado |
-|---|---|
-| **RN-RE-NAV-01/02/06** | El acceso es subordinado: sin subtítulo, píldora, peso normal, sin símbolo. 56 px de área táctil — la accesibilidad gana al 40 %. |
-| **RN-RE-NAV-03/04/05** | Tokens Strivo, siempre debajo de los dos espacios, siempre sobre el pliegue. |
-| **RN-RE-NAV-08/08b/08c** | La bienvenida no se toca, las tarjetas quedan idénticas, el acceso es componente propio. |
-| **RN-RE-NAV-09/10** | La ruta de sesión no es enlazable; el botón atrás pausa y no destruye. |
-| **RN-RE-NAV-12** | Dentro de Respiración no hay barra de navegación. Para ir a otro lado, se sale al Home. |
-| **RN-RE-NAV-14/15** | "Empezar" fijo abajo; favoritos y recientes **debajo** de él. |
-| **RN-RE-NAV-16/17** | Todo llega precargado. La primera vez de todas, `entrada-suave`. |
-| **RN-RE-NAV-18/19** | Coma decimal y paso de 0,5 s; la caja se edita con un solo control. |
-| **RN-RE-NAV-20** | Un patrón inválido **nunca** deshabilita "Empezar": se corrige y se avisa. |
-| **RN-RE-NAV-21/23/45** | La visual domina; los controles se retiran a los 6 s y vuelven al tocar; con teclado no se retiran. |
-| **RN-RE-NAV-24** | En vivo se cambia visual, sonido y volúmenes. **Nunca patrón ni duración.** |
-| **RN-RE-NAV-26** | En `cerrando` el progreso no cambia: no se avisa del último ciclo. |
-| **RN-RE-NAV-27** | Salir no pide confirmación. Pide confirmación quien quiere retener. |
-| **RN-RE-NAV-28** | Wake Lock en `activo` y `cerrando`; se suelta al pausar, completar o salir. Degradación silenciosa. |
-| **RN-RE-NAV-30/32** | Sin felicitación ni puntaje. Menos de un ciclo, sin resumen numérico. |
-| **RN-RE-NAV-34/37** | Sin transición de frase y **sin puente** con Lumia ni Formia: los cruces van por el Home. |
-| **RN-RE-NAV-41/43/44** | Foco inicial al encabezado y al control de pausa; `aria-live` en el grupo; el panel atrapa el foco. |
-
-**Pendiente de SPEC_16 — lo que no puede cerrar el código:**
-- **Los 8 recorridos manuales de §11 están sin hacer**, y con ellos los 15 acumulados de SPEC_14 y
-  SPEC_15: **23 validaciones manuales en total**. Las que más pesan son el recorrido 4 —quince
-  minutos con los ojos cerrados, que es lo que decide si el audio está bien calibrado— y el
-  recorrido 8, cuya última pregunta es la que dice si este spec cumplió su propósito: *¿el tercer
-  acceso se lee como herramienta y no como un tercer espacio?* Eso no lo puede contestar una prueba.
-- **`ROADMAP.md` está actualizado; `INDEX.md` no existe** en este repo y no se creó: inventar un
-  índice nuevo al cerrar una fase es material de documentación, no de código.
-- **Una prueba de Lumia, `journal.test.js` › "viene de la más reciente a la más antigua", falló una
-  vez en una corrida completa y pasó en las tres siguientes y en aislado.** Es un intermitente
-  preexistente —muy probablemente dos entradas con la misma marca de tiempo al milisegundo— y no lo
-  toca este spec. Queda anotado para que quien lo vea no lo busque en Respiración.
-
-**La entrada a la respiración pasa a ser una tarjeta, 24 ago:**
-
-En las dos secciones de Hoy —Mañana y Noche— el acceso al ejercicio de respiración era un enlace de
-texto pequeño bajo el conmutador, en `text-on-surface-soft`: el mismo registro con el que se pintan
-las ayudas y los pies de campo. Se leía como información de apoyo y se pasaba por alto. Lo pidió el
-propietario del producto. Ahora es un recuadro a ancho completo, con el rótulo **"Respira un
-momento"** centrado.
-
-- **La tarjeta entera es el control, no un botón dentro de una caja.** `TarjetaRespiracion.jsx` es
-  un `<button>` con `min-h-touch`: un recuadro con una zona tocable más pequeña que él mismo es una
-  invitación que se retira en cuanto la aceptas.
-- **Mide lo que mide su texto, no el ancho de la columna.** Se probó a ancho completo y competía con
-  los bloques del Diario, que sí ocupan la columna entera. Ceñida y alineada a la izquierda —con el
-  mismo borde de arranque que el conmutador— se lee como lo que es: una pieza suelta que se ofrece.
-  Conserva los 56 px de alto, así que el blanco sigue siendo cómodo.
-- **Destaca por luminancia y no por borde** (RN-HOY-07). Usa `bg-lumia-tarjeta`, que es el escalón
-  más claro del momento —por encima de `bg-lumia-campo`, el de los bloques del Diario de más abajo—
-  más `shadow-elev-2`. No compite con el conmutador porque aquel va en contratono y no juega en esta
-  escala; hoy es la única superficie de Hoy en el tono más claro, que es lo que RN-HOY-07 pedía.
-- **Sigue siendo una sola pieza para las dos secciones, sin ramas.** El componente **no recibe el
-  momento ni lo consulta**: pide superficies por su papel y la mañana y la noche se resuelven solas
-  (RN-SURF-01). Dos pruebas lo fijan — que no aparezca ni un hex ni la palabra `manana`/`noche`
-  dentro, y que `abrir('respiracion')` siga apareciendo una sola vez en `Hoy.jsx`.
-- **Va pegada al conmutador y por delante de la frase del día.** El orden del héroe es fecha →
-  conmutador → respiración → frase: la frase es el aire previo a la primera pregunta del Diario, así
-  que lo que se ofrece antes de escribir se ofrece antes de ese aire y no partiéndolo. Lo pidió el
-  propietario del producto, y descarta el sitio que se le había dado primero —entre el héroe y el
-  Diario, debajo de la frase—.
-- **`HeroeHoy` gana un segundo hueco, `respiracion`, en vez de meterla en el primero.** `conmutador`
-  es el conmutador y nada más; dos piezas distintas en un hueco llamado por una de ellas es un
-  nombre que empieza a mentir. El héroe sigue sin saber a dónde lleva ninguna de las dos.
-- **`SelectorMomento` necesitó `self-start`, y es un arreglo de paso.** El héroe es una columna flex
-  y estira a sus hijos: sin él, un `inline-flex` se va al ancho completo y el contratono queda como
-  una franja de borde a borde. Lo sostenía el `items-start` del envoltorio que la entrada vieja
-  compartía con él, y al separarlos se cayó. Ahora lo declara el propio componente, que es quien
-  sabe que quiere ceñirse.
-- **"Poco más de medio minuto" se retiró entero**, y con él el campo `entrada.ayuda` del copy. Era
-  el único texto secundario de la entrada y la devolvía al registro informativo del que se la quiso
-  sacar. `entrada` se queda con una sola cadena y una prueba falla si vuelve a nombrar minutos o
-  segundos. **RN-LU-RESP-01 se sigue cumpliendo**: lo que dura y que se puede salir se dicen en
-  `lead`, que es la pantalla donde está el botón "Empezar" — es decir, donde alguien decide de
-  verdad, no donde solo se le invita.
-- **Sin ícono y sin subtítulo.** Un símbolo aquí sería material de marca inventado en código, que es
-  justo lo que la deuda de los 16 íconos de emoción dice que no se hace; y una segunda línea en gris
-  reabriría el registro de apoyo. El rótulo es toda su superficie de texto.
-- **El rótulo va en cursiva, a `text-md` (20 px)**: un escalón por encima de los 16 px del
-  conmutador. La escala pasó por los tres peldaños hasta dar con este — `font-display text-lg`
-  (25 px) era demasiado, `text-base` se confundía con el conmutador, y el propietario del producto
-  fijó el punto intermedio. Una prueba compara los dos archivos, así que si el conmutador cambia de
-  cuerpo se entera.
-- **La cursiva es real y costó una hoja de fuente.** `@fontsource-variable/inter` solo trae los
-  cortes verticales: sin importar nada más, `font-style: italic` lo resuelve el navegador inclinando
-  la vertical por software —falsa cursiva, con las curvas deformadas—, que es justo lo que el manual
-  §5.1 evita al fijar una familia bien servida. `globals.css` importa ahora
-  `@fontsource-variable/inter/wght-italic.css`. **Coste medido: el subconjunto latino son 51,8 kB**
-  y los demás no se descargan (van por `unicode-range`); el precaché del service worker sube 2 kB
-  —solo el CSS—, porque `globPatterns` no incluye `woff2` y las fuentes nunca se precachearon.
-- **Medido y registrado en `lint:contraste`:** el cuerpo sobre la tarjeta da 14,47:1 en el peor caso
-  de la mañana y 9,46:1 en el peor de la noche, los dos AAA. Son dos pares nuevos en el script, con
-  el velo compuesto sobre la parada más desfavorable de cada degradado.
-- **`npm run lint`, `test`, `build`, `lint:copy`, `lint:contraste` y `format:check` en verde ·
-  1457 pruebas** (7 nuevas).
-- **Pendiente: sin validar en navegador.** Falta ver la tarjeta en un teléfono real en las dos
-  secciones — sobre todo si de noche, con el velo al 10 % sobre el degradado, se percibe como
-  recuadro o se disuelve en el fondo.
-
-**Respiración se muda a Lumia, 24 ago. Deroga la parte de SPEC_16 que la ponía en el Home:**
-
-Respiración deja de ser la herramienta transversal que colgaba del vestíbulo de
-Strivo y pasa a ser **la tercera sección de Lumia**, entre Journal e Historial.
-Se migró el componente entero —motor, máquina, audio, visuales, favoritos,
-sesión, ajustes en vivo—: no es una versión reducida ni una reinterpretación.
-Lo pidió el propietario del producto.
-
-```
-Antes                          Ahora
-┌ Home de Strivo ─────┐        ┌ Lumia · Reflexión ───────────────────────┐
-│  Lumia              │        │  Hoy · Journal · Respiración · Historial │
-│  Formia             │        └──────────────────────────────────────────┘
-│  ○ Respiración      │        ┌ Home de Strivo ─────┐
-└─────────────────────┘        │  Lumia · Formia     │
-   /respiracion                └─────────────────────┘
-                                  /lumia/respiracion
-```
-
-- **El acceso del Home se retira entero**, y con él `AccesoRespiracion.jsx`,
-  `copy.respiracion.home`, la regla `.acceso-respiracion__icono` y la ruta
-  `/respiracion`. **Quedan derogadas RN-RE-NAV-01 a 08c** —toda la jerarquía de
-  tres niveles del vestíbulo— y los criterios 2, 3, 4 y 5 de SPEC_16. Lo eligió
-  el propietario del producto entre tres opciones sobre la mesa; las otras dos
-  eran conservar los dos accesos o dejar la ruta vieja redirigiendo.
-- **Lo que NO cambia es el argumento de fondo de SPEC_16: Respiración no es un
-  espacio.** Antes eso se sostenía haciéndola subordinada en el Home; ahora se
-  sostiene dándole el sitio que le corresponde —una sección dentro del espacio
-  que la usa— en vez de una categoría propia junto a las dos marcas. Sigue sin
-  leer `lumia/` ni `formia/` (RN-RE-DAT-09 intacta) y sin cruzar un solo dato.
-- **Tres reglas de SPEC_16 se invierten, y es exactamente lo que se pidió.**
-  `espacioDe('/lumia/respiracion')` devuelve `lumia`, así que ahora hay barra
-  (RN-RE-NAV-12), cromo de espacio y paleta de Lumia. La cuarta —RN-RE-NAV-34,
-  sin transición de frase— **sigue en pie sin escribir nada**: el umbral lo
-  cruza `App` al entrar al espacio, una vez por sesión (`umbralSesion`), así que
-  abrir esta sección no interpone nada que no interpusiera ya el Journal.
-- **`breathing/` no nombra a Lumia en un solo import**, y esa es la restricción
-  que dio forma a toda la migración. `base` y `salida` llegan **por props** desde
-  `App.jsx` —quien enruta es el único que sabe dónde vive—, y el color entra por
-  CSS. Es la misma división que SPEC_10 tomó con el velo de `TransicionLuz` y
-  SPEC_11 con la barra: el tema en el CSS del sitio que lo conoce, nunca en el
-  componente. El lint y las pruebas de separación siguen verdes sin tocarlos.
-- **La sesión oculta el cromo** (`onHideNav`), como el Journal al escribir
-  (§4.3.2, regla 2). Con pestañas arriba y barra abajo, la pantalla que
-  RN-RE-NAV-21 quiere vacía dejaba de estarlo.
-- **La cabecera propia de la pantalla de configuración se retiró.** Tenía un ✕ y
-  un título; arriba ya está la franja del espacio con la pestaña activa, y dos
-  cabeceras seguidas son dos sitios diciendo dónde estás. Salir es cambiar de
-  pestaña. Sobrevive el acceso al aviso de seguridad.
-- **"Empezar" ya no va a `bottom: 0`.** Dentro de un espacio hay una barra fija
-  al pie y ahí el botón quedaba debajo de ella: presente en el DOM, invisible en
-  pantalla — el mismo tropiezo que la cabecera de Lumia resolvió con su `z-30`.
-  El desplazamiento vive en `.respiracion-accion` porque es el alto de esa barra,
-  no una decisión de maquetación. RN-RE-NAV-14 y 15 intactas.
-
-**Los colores salen de siete variables semánticas, no de la escala Strivo:**
-
-- `respiracion.css` **ya no escribe un solo `--strivo-*`**. Pide cuatro colores
-  de fase y tres de trazo —`--respiracion-trazo` (la onda), `-trazo-suave`
-  (anillo, halo, marcas y guía) y `-tinta` (marcador y barras de pausa)— y quien
-  decide qué son es `globals.css`, por espacio. **RN-RE-VIS-00 se cumple igual y
-  un poco más**: aquí no entra un token de espacio, y ahora tampoco uno de la
-  marca madre.
-- **Las cuatro fases conservan el orden de luminancia de SPEC_14** —inhalar la
-  más oscura, descanso la más clara— porque esa rampa es lo que hace que el
-  cambio de fase se lea de reojo. Lo que cambia es de qué escala salen:
-
-  | Fase | Token | Hex | Mañana | Noche |
-  |---|---|---|---|---|
-  | inhalar | `--color-ink` | `#241E33` | 14,36:1 | 14,02:1 |
-  | sostén | `lumia-pm-700` | `#5A5568` | 6,41:1 | 6,25:1 |
-  | exhalar | `lumia-pm-500` | `#6C5AA7` | 5,14:1 | 5,02:1 |
-  | descanso | `lumia-pm-400` | `#8D82B6` | 3,13:1 | 3,06:1 |
-
-  Las cuatro pasan el 3:1 de RN-RE-VIS-16 sobre las **dos** superficies de Lumia.
-  El primario de la marca cae en `exhalar` y no es casualidad: es la fase más
-  larga de casi todos los patrones. `--color-ink` es el token compartido del
-  manual §6, no un hex a mano.
-- **Entre fases contiguas hay entre 1,25:1 y 1,64:1**, igual que pasaba con la
-  escala de Strivo (1,4:1). No basta para nombrar una fase por su color, así que
-  RN-RE-VIS-17 —palabra y forma siempre— sigue siendo lo que sostiene la lectura
-  y no un adorno de accesibilidad. Queda anotado como informativo en el script.
-- **Los `--strivo-*` siguen siendo el valor por defecto en `:root`** y hoy no los
-  pinta ninguna pantalla. Se miden como informativos para que el día que otro
-  espacio monte la herramienta se sepa de dónde se parte.
-- **Los bloques de ajustes son tarjetas** (`components/Bloque.jsx`): `bg-raised`,
-  `border-on-surface` y radio de 24 px, el mismo idioma que el Home y el Diario.
-  Ninguna clase nombra un color (RN-SURF-01), así que la pantalla se viste sola
-  con la paleta del momento. Los `rounded-2xl` sueltos —que caían fuera de la
-  escala de radios del proyecto— pasaron a `rounded-md`.
-
-**El estado elegido no se veía, y ese era el defecto de fondo:**
-
-- **`data-elegido` estaba en los cuatro selectores desde SPEC_16 y no había una
-  sola regla de CSS que lo pintara.** El único rastro de la elección era el
-  `aria-pressed` / `aria-checked`: existía para quien escucha la pantalla y no
-  para quien la mira. Tocar un sonido o una duración no cambiaba absolutamente
-  nada. No era una regresión de esta migración; llevaba ahí desde el cierre de
-  Fase 1C, sin que ninguna prueba pudiera cazarlo porque todas leen la fuente.
-- **Tres señales a la vez, nunca solo el color** (criterio 7 de SPEC_11):
-  superficie elevada, borde de acento a 2 px y —en las filas de sonido— una
-  palomita. El borde compensa su grosor con menos relleno, o la lista entera
-  daba un salto de un píxel al elegir.
-- **Va con clase propia (`.respiracion-opcion`) y no solo con el atributo.** Las
-  utilidades de Tailwind se generan después de esta hoja, así que
-  `[data-elegido='si']` a secas perdía contra el `border-on-surface` del propio
-  botón y el borde de acento no llegaba a verse. La clase le da peso dos y gana
-  sin un solo `!important`.
-- **La palomita se dibuja, no se escribe** —dos lados de un cuadrado girados—,
-  así que no hay un carácter suelto fuera de `copy/` (criterio 42). Va
-  `aria-hidden`: `aria-pressed` ya lo dice y anunciarlo dos veces es ruido.
-- **La exclusividad no es del CSS, es del modelo.** `sonidoAmbienteId` y
-  `duracion.modo` son un valor y no una lista, así que no se puede romper desde
-  la interfaz. Las píldoras de patrón, visual y duración pasaron de
-  `border-espacio` a `border-on-surface` en reposo: el borde de marca y el acento
-  se distinguen entre sí en 1,25:1 y todas las opciones parecían elegidas.
-
-**El sonido: dos fallos distintos y una fuga:**
-
-- **La vista previa estaba construida entera y no la llamaba nadie.**
-  `PantallaRespiracion` declaraba la prop `vistaPreviaSonido` desde SPEC_16 y el
-  contenedor nunca se la pasaba, así que **elegir un sonido en la pantalla de
-  configuración era mudo** y lo único que llegaba a oírse era ya dentro de la
-  sesión. Ese era el "a veces suena y a veces no" tal como se percibía.
-- **La otra mitad: `adquirir()` no reanudaba.** Devuelve el contexto **que ya
-  existía** —lo creó la respiración diaria de Lumia, o esta misma pantalla antes
-  de que el teléfono se bloqueara— y un contexto reutilizado llega suspendido:
-  sin error, sin excepción y sin sonido. Ahora `asegurarAudio()` llama a
-  `reanudar()` siempre, esté recién creado o no.
-- **Un solo motor de ambiente para la vista previa y la sesión.** `empezar()
-  reutiliza el que montó la vista previa en vez de crear otro: dos motores sobre
-  el mismo contexto son dos grafos sonando a la vez, que es exactamente cómo se
-  superponen los sonidos. Con la sesión en marcha `vistaPreviaSonido` no hace
-  nada y el cambio va por `ajustarEnVivo`, por el mismo motivo.
-- **`confirmarSonido` es nuevo y arregla un tercer caso.** Empezar justo después
-  de escuchar un sonido dejaba vivo el temporizador de veinte segundos de la
-  vista previa: **el ambiente enmudecía solo a mitad de sesión** y no había forma
-  de relacionarlo con su causa. Cancela ese apagado sin cortar lo que ya suena.
-- **El cruce entre sonidos ya estaba bien y no se tocó** (RN-RE-SND-14): cinco
-  toques seguidos dejan exactamente una fuente viva porque `cambiarSonido` suelta
-  la saliente antes de montar la entrante. Hay una prueba que lo fija.
-- **Fuga: el préstamo del contexto solo se devolvía en `salir()`.** Irse por el
-  botón atrás del navegador o cambiando de pestaña dejaba el `AudioContext`
-  abierto para siempre. Ahora lo devuelve también el desmontaje, con un `ref` que
-  lleva la cuenta para no soltar dos veces (RN-AUD-04).
-- **"Otra vez" del cierre no hacía nada, y no lo cazó nadie.** `maquina.current`
-  sigue en pie tras `completado`, así que la guarda de idempotencia del caso 8.13
-  —`if (maquina.current !== null) return`— lo devolvía sin arrancar. Ahora una
-  máquina agotada se tira y se monta otra; el audio no se toca, que es lo que
-  deja el ambiente sonando entre una sesión y la siguiente.
-- **Mover el volumen mientras se escucha ahora se oye.** Solo el volumen: el
-  patrón y la duración no tocan el grafo de audio.
-
-**El recorrido de la bolita va punteado — y la línea llevaba invisible desde
-SPEC_14:**
-
-- **Bug encontrado al hacer esto: la máscara borraba el dibujo entero.** Una
-  `<mask>` de SVG es de **luminancia** y el valor inicial de `stop-color` es
-  **negro**. Los cuatro topes del degradado de desvanecido solo declaraban
-  `stopOpacity`, así que la máscara valía cero en todo su ancho y **el grupo
-  enmascarado no se pintaba**: ni recorrido, ni marcas de fase, ni marcador de
-  movimiento reducido. Lo único visible de la visual "línea" era la bolita
-  flotando sin camino. Estaba así desde que se escribió SPEC_14, y no lo cazó
-  nadie porque **las 8 validaciones manuales de §14 nunca se hicieron** y todas
-  las pruebas de esta capa leen la fuente. Corregido con una clase
-  (`.respiracion-linea__velo`, `stop-color: white`): el blanco va en el CSS
-  porque un valor de máscara no es un color de diseño, pero escribirlo en el JSX
-  abriría la puerta a los que sí lo son.
-- **El trazo del recorrido pasa a punteado** (`stroke-dasharray: 2 7`, remate
-  redondo): sube en diagonal al inhalar, se queda plano en las retenciones y baja
-  en diagonal al exhalar. Punteado porque lo que hay delante de la bolita todavía
-  no ha pasado —se anuncia, no se afirma— y porque anticipar el punto alto es lo
-  que permite dosificar el aire en vez de perseguir el dibujo. Sube a opacidad 1:
-  un punteado tiene la mitad de tinta que un continuo del mismo grosor.
-- **Es una sola línea y la bolita se apoya exactamente en ella** (RN-RE-VIS-09).
-  Se descartó dibujar el recorrido aparte, como un zigzag de rectas entre los
-  vértices: la altura de la bolita sale del suavizado del motor, no de una recta
-  entre dos puntos, así que un zigzag sería **un segundo trazo que la bolita no
-  pisa** —hasta 13 unidades de separación en mitad de cada fase— y dos caminos
-  donde solo hay uno. La curvatura que se ve entre subida y bajada es el propio
-  suavizado del ritmo: es el ejercicio, no un adorno.
-- **Se retiró la guía vertical del borde derecho** que se había entregado antes.
-  Marcaba las dos alturas con un punteado vertical y dos topes; el encargo era
-  otro —marcar el camino, no sus extremos— y con el recorrido punteado sobraba.
-- **Con `prefers-contrast: more` deja de estar punteado.** Quien pide eso
-  necesita el trazo entero; la anticipación la sigue dando la posición de la
-  bolita sobre él.
-- **El círculo no lleva recorrido y no es un olvido**: no tiene eje que recorrer,
-  crece y decrece desde el centro. Su `strokeDasharray` es otra cosa —recorta el
-  arco de la fase (§3.2)—, y por eso la prueba comprueba la ausencia sobre la
-  palabra y no sobre la propiedad.
-
-**"Cómo lo quieres ver" sube al principio, pegada al dibujo:**
-
-- Estaba entre la duración y el sonido, a media pantalla del dibujo que decide:
-  había que elegir a ciegas y bajar a comprobar. Ahora es el primer bloque, justo
-  debajo de la vista previa, así que cambiar de opción reemplaza el dibujo que se
-  tiene encima y **la diferencia entre círculo y línea se ve en el momento**. Lo
-  pidió el propietario del producto.
-- El orden queda: vista previa → cómo verlo → ritmo → cuánto tiempo → sonido. La
-  vista previa se queda arriba del todo y no baja con el selector: es la
-  ilustración de la pantalla, no una respuesta a una pregunta.
-
-- **`npm run lint`, `test`, `build`, `lint:copy`, `lint:contraste` y
-  `format:check` en verde · 1477 pruebas** (23 nuevas). `lint:contraste` mide
-  ahora las ocho fases sobre las dos superficies de Lumia, el recorrido, el borde
-  y la palomita del estado elegido, y las dos tarjetas.
-
-**Pendiente de la mudanza a Lumia:**
-- **Sin validar en navegador.** Lo comprobado es la lógica, el marcado y las
-  cifras de contraste. Falta ver el recorrido en un teléfono real: si el estado
-  elegido se lee de un vistazo con la pantalla al sol, si el recorrido punteado
-  acompaña sin distraer, si "Empezar" queda de verdad por encima de la barra con
-  el área segura de un iPhone, y **si los sonidos suenan de forma estable**, que
-  es lo único de este trabajo que ninguna prueba puede contestar porque las
-  pruebas no oyen.
-- **Las 23 validaciones manuales acumuladas de SPEC_14–16 siguen sin hacer**, y
-  ahora hay dónde mirarlas: la pestaña existe. La que más pesa sigue siendo el
-  recorrido 4 —quince minutos con los ojos cerrados—, que es lo que decide si el
-  audio está bien calibrado. **El bug de la máscara es la prueba de lo que cuesta
-  no hacerlas**: una visual entera invisible durante cuatro días, con 1477
-  pruebas en verde.
-- **`docs/specs/SPEC_16.md` sigue describiendo el acceso del Home.** Con esta
-  mudanza caen su §2 entera y RN-RE-NAV-01 a 08c. **La documentación está
-  pendiente de reescribir esa sección**; no bloquea el código, igual que quedó
-  pendiente con SPEC_09, con las victorias, con la mañana y con la noche.
-- **La navegación de Lumia tiene ahora cuatro pestañas.** SPEC_11 §C7.3 habla de
-  tres por espacio y RN-10 (la de la tabla) limita las **pestañas de la barra
-  principal**, no las secciones de un espacio, así que no hay conflicto. Sí queda
-  por ver en un móvil estrecho con el escalado al 200 %: los cuatro rótulos van
-  en `flex-wrap`, así que se reparten en dos filas antes que truncarse, pero la
-  cabecera crece.
-- **La entrada a Respiración desde Hoy no se tocó.** Las dos secciones del Diario
-  siguen abriendo el ejercicio de tres ciclos de SPEC_08, que es otra cosa y sigue
-  viviendo en `components/shared/Respiracion.jsx` (RN-RE-NAV-36 intacta). **Queda
-  abierto si esa tarjeta debería llevar ahora a la pestaña**: son dos herramientas
-  con el mismo nombre a un toque de distancia, y esa decisión es del propietario
-  del producto.
-
-**La frase del día gana recuadro y la tarjeta de respiración cede la cursiva, 24 ago:**
-
-Dos piezas del héroe de Hoy se disputaban el mismo sitio en la jerarquía. Lo
-pidió el propietario del producto y se resolvió a la vez, porque es una sola
-decisión: la cursiva y el cuerpo grande pasan de la entrada a la respiración a
-la frase del día.
-
-- **La tarjeta de respiración baja a 16 px, en redonda y peso normal.** Estaba
-  en `italic text-md font-medium` —20 px, un escalón por encima del conmutador—
-  desde que dejó de ser un enlace. Con la frase metida en su recuadro, dos
-  piezas en el tono alto de la pantalla eran una de más. La tarjeta no necesita
-  ser lo más llamativo de Hoy: necesita encontrarse sin buscarla, y eso lo
-  siguen haciendo su superficie clara, su elevación y sus 56 px de alto. **Todo
-  lo demás se queda**: `bg-lumia-tarjeta`, `self-start`, el rótulo sin
-  subtítulo y sin duración, y la tarjeta entera como control (RN-HOY-07,
-  RN-LU-RESP-01 intactas).
-- **La cursiva se retira de ahí entera y pasa a ser la marca de la frase.**
-  Usarla en dos sitios de la misma pantalla la dejaría sin significar nada. La
-  hoja itálica de Inter que se importó para el rótulo **sigue haciendo falta**
-  —ahora la usa la frase—, así que el coste medido (51,8 kB del subconjunto
-  latino) no cambia; lo que cambia es el comentario del `@import` y el nombre de
-  la prueba que lo vigila.
-- **La frase del día pasa de línea suelta a recuadro propio.** Era un
-  `blockquote` sin superficie entre el conmutador y la primera pregunta del
-  Diario, y se leía en el mismo registro que el resto del texto: pasaba por
-  delante de los ojos sin ser una pausa. Ahora es una figura con relleno de
-  24 px, radio de 24, elevación y borde, en cursiva y con interlineado suelto.
-  **Sigue sin ser un control** (§5.3, Bloque 1): no se toca, no lleva acción, y
-  una prueba falla si aparece un `onClick`.
-- **El cuerpo se queda en 16 px y no en los 20 que tenía.** Se probaron los dos:
-  con recuadro, tinte y cursiva encima, 20 px la convertían en el titular de la
-  pantalla y el saludo dejaba de serlo. Lo que la distingue no es el tamaño. Es
-  el escalón que hay debajo en la escala —no existe uno intermedio y no se
-  inventa—, así que coincide en cuerpo con la tarjeta de respiración y se separa
-  de ella por todo lo demás.
-- **La superficie es el secundario de la paleta, y esa es la decisión de
-  fondo.** Un tercer velo blanco la habría metido en la escala de luminancia
-  donde ya juegan `lumia-tarjeta` y `lumia-campo`, es decir a competir con la
-  tarjeta de respiración por el escalón más claro — justo lo que RN-HOY-07
-  reserva para una sola superficie. Al ir teñida se separa **por color** y no
-  por luminancia, así que las dos piezas pueden convivir sin discutirse.
-- **`--lumia-frase` es `lumia-am-200` (#E5C2DC) de día y un velo del
-  `lumia-pm-400` al 20 % de noche.** No es una asimetría por gusto: en sólido,
-  el secundario de la noche deja el texto claro en 3,06:1 y el oscuro en
-  4,59:1, y ninguno de los dos llega a AAA. Como velo sobre el degradado tiñe
-  sin aclarar y el cuerpo se queda entre 9,5:1 y 11,9:1. **Los dos sólidos
-  descartados quedan medidos en `lint:contraste` como informativos**, con el
-  motivo escrito, para que nadie los reabra sin la cifra delante.
-- **De día la frase da 10,0:1 y el secundario sobre ella 7,4:1**, los dos AAA.
-  Los bordes —`lumia-pm-400` de día, un lavanda al 30 % de noche— dan 2,18:1 y
-  2,01:1, por encima del 1,5:1 con el que el script mide un separador
-  decorativo. **La separación del recuadro contra su fondo (1,44:1 de día,
-  1,32:1 de noche) va como informativa y no como fallo**: no es un indicador, lo
-  que lo separa es el tinte, y además lleva línea y elevación. Es la misma liga
-  en la que juegan las tarjetas de Hoy desde SPEC_06.
-- **El componente no nombra ni un color** (RN-SURF-01): pide `bg-lumia-frase` y
-  `border-lumia-frase`, y los dos momentos se resuelven en `globals.css`. Es el
-  mismo reparto que la tarjeta de respiración y que la barra de Strivo, y hay
-  una prueba que falla si aparece un hex o la palabra `manana`/`noche` dentro.
-  Las utilidades siguen el patrón que ya usaban las tarjetas del Journal
-  (`bg-journal-warm` / `border-journal-warm`).
-- **`sobre()` de `lint-contraste.js` acepta ahora un fondo ya mezclado.** Hacía
-  falta para apilar dos velos —un borde translúcido sobre una superficie
-  translúcida, que es el recuadro de noche— y es la misma tolerancia que
-  `ratio()` ya tenía. Ningún par existente cambia de cifra.
-- **`npm run lint`, `test`, `build`, `lint:copy`, `lint:contraste` y
-  `format:check` en verde · 1479 pruebas** (2 nuevas).
-- **Pendiente: sin validar en navegador.** Falta ver las dos piezas en un
-  teléfono real: si el rosa del recuadro se lee cálido o estridente sobre el
-  degradado de la mañana, si el velo de noche se percibe como recuadro o se
-  disuelve en el fondo —el mismo riesgo que ya tenía la tarjeta de
-  respiración—, y si con la tarjeta a 16 px la respiración sigue
-  encontrándose sin buscarla.
-
-**Deuda consciente de Fase 1 (se salda en su spec):**
-- **Los 16 íconos de emoción no se hicieron, y es una decisión, no un olvido.** SPEC_12 §10 excluye
-  "ilustraciones nuevas" y §7 dice que los íconos de UI siguen pendientes en el manual v1.1 y que hay
-  que **pedirlos, no improvisarlos: son material de marca, no de código**. La mañana conserva sus 15
-  chips con emoji de SPEC_06. Para hacerlos hace falta: (a) que el manual cierre su §9, (b) la
-  geometría de §6.7 —retícula de 24 px, trazo 1,75, formas orgánicas abstractas, nunca caras— y no
-  el lienzo 122×130, que es el de los símbolos de marca, y (c) restaurar "Abundante" para volver a
-  las 16 de §5.3.
-- **La transición de entrada a Formia es un placeholder.** Hoy es la estructura del umbral de Lumia
-  —luz tenue, cinco segundos, saltable— sin frase y con la paleta de Formia. Falta el brief de
-  diseño: qué le corresponde a un espacio de acción al abrirse, que no tiene por qué ser una luz.
-- **Las 60 frases nuevas del día están sin revisar editorialmente**, como las 100 de apertura. Pasan
-  §3.6 con prueba automática; el criterio de qué se lee cada mañana es del propietario del producto.
-- ~~**El escalado de texto al 200 % no funciona.**~~ **Saldada en SPEC_12.** La escala pasó a `rem` y
-  la raíz dejó de fijar `font-size`. Medido: con la raíz a 32 px el texto pasa de 14 px a 28 px.
-- **El `_redirects` de Netlify no existe.** Mientras el router sea `HashRouter` no hace falta; si
-  alguien lo cambia a `BrowserRouter`, hay que añadirlo antes o las rutas profundas darán 404.
-- **Las 100 frases de apertura están sin revisar editorialmente.** Pasan §3.6 con prueba automática
-  —sin exclamaciones, sin léxico prohibido, sin promesas ni lenguaje de coach— pero el criterio de
-  qué se le dice a alguien al abrir la app es del propietario del producto, no de quien programa.
-- **El criterio 8 de SPEC_08 no se puede ejercitar todavía:** ninguna de las doce specs construye el
-  onboarding, así que P1 no existe. Lo que sí está garantizado es que el componente sirve a los dos
-  sitios —props de configuración, cero dependencias de espacio, tres ciclos por defecto y un lint que
-  lo impone—. Cuando exista P1, lo único que tiene que hacer es pasarle su propio copy.
-- **La ventana de activación del Ritual de Noche (RN-RN-01) y la extensión de madrugada** siguen sin
-  construirse: hacen falta dos campos nuevos en `nightRitual`. Es el mismo hueco que deja RN-VN-05
-  a medias desde SPEC_06.
-- **`Journal` e `Historial` entran por el mismo andamio provisional** que ya usaba Formia: la
-  pestaña "Journal" con un conmutador de dos. SPEC_11 lo sustituye entero.
-- **La reautenticación real no se puede ejercitar** hasta que exista el onboarding con sesión de
-  Firebase. Lo que sí está probado es que reestablecer el PIN no toca ni una entrada.
-- `SesionProvisional.jsx` y la entrada por la pestaña "Tú" (con su conmutador Identidad/Hábitos) son andamios: los sustituyen el onboarding y SPEC_11.
-- ~~`src/tokens/index.js` mapea las áreas con ids viejos.~~ **Resuelto al cerrar SPEC_12: se borró.**
-  No lo importaba nadie, así que la limpieza correcta no era corregirle los ids sino retirarlo. Con él
-  se fueron `src/pages/TuPage.jsx` y `src/components/ui/Chip.jsx`, los otros dos restos de Fase 0 sin
-  un solo importador. El catálogo bueno de áreas sigue siendo `AREA_CATALOG` de SPEC_02, que es el que
-  usa todo el código.
-- Los grises de texto van a `text-ink/80` como mínimo: por debajo no llegan a AAA sobre `paper`.
-- El contorno de los días sin marca en la cuadrícula de constancia se mantiene tenue (~2.4:1) por decisión de §5.7. Lo que informa son los días llenos (5.4:1) y el resumen en texto que los acompaña.
-- ~~**No correr `npm run format`.**~~ **Resuelto en SPEC_12:** ya hay `.prettierrc` con el estilo del repo (sin punto y coma, comillas simples, ancho 100) y `format:check` está en verde. El CSS y `design-tokens.json` quedan fuera a propósito; el motivo está en `.prettierignore`.
-- **De §5.3 y §5.4 quedan fuera, y no por olvido:** la ruta express "Hoy voy con prisa", el modo día difícil (§5.14.1, RN-VM-06), el selector de 24 emojis por fila de agradecimiento, guardar una frase manteniéndola pulsada, y la oferta de partir en algo más pequeño una victoria aplazada tres veces. Ninguno aparece en el alcance de SPEC_06.
-- **RN-VN-05 se cumple a medias:** reabrir y volver a cerrar el día no duplica ningún registro, pero la celebración sí se repite tras recargar. Saberlo exigiría un estado `cerrado` que §C5 no recoge; §4.8 lo describía en v3.1.
-- **La pestaña "Hoy" también entra por `SesionProvisional`.** Es el mismo andamio que ya usaba Formia y lo sustituyen el onboarding y SPEC_11.
-
----
-
-Este archivo es **vivo**. Cada spec que cierre actualiza la tabla. Así Claude siempre ve dónde estamos.
-
-Este archivo es **vivo**. Cada decisión nueva se añade aquí, no en otro lado. Así Claude siempre encuentra la fuente única de verdad.
-
----
+Este archivo es **vivo**. Cada decisión nueva se añade aquí, no en otro lado. Así Claude siempre
+encuentra la fuente única de verdad.
 
 **¿Dudas sobre algo de aquí? Pregunta antes de programar.**
