@@ -473,7 +473,7 @@ describe('no hay puente con el diario (criterios 35, 36, 37)', () => {
     // que hizo `eslint.config.js`: queda un solo producto al que no alcanzar.
     for (const ruta of DE_RESPIRACION) {
       const imports = codigoDe(ruta).match(/^\s*import[\s\S]*?from\s+'[^']+'/gm) ?? []
-      imports.forEach((linea) => expect(`${ruta}: ${linea}`).not.toMatch(/lumia/i))
+      imports.forEach((linea) => expect(`${ruta}: ${linea}`).not.toMatch(/diario/i))
     }
   })
 

@@ -63,14 +63,14 @@ const TEXTO = {
 }
 
 const MARCA = {
-  lumiaAm50: '#F6F2E9',
-  lumiaAm100: '#DCCFF1',
-  lumiaAm200: '#E5C2DC',
-  lumiaAm300: '#F6DDE8',
-  lumiaPm50: '#F3EFEA',
-  lumiaPm400: '#8D82B6',
-  lumiaPm500: '#6C5AA7',
-  lumiaPm700: '#5A5568',
+  strivoAm50: '#F6F2E9',
+  strivoAm100: '#DCCFF1',
+  strivoAm200: '#E5C2DC',
+  strivoAm300: '#F6DDE8',
+  strivoPm50: '#F3EFEA',
+  strivoPm400: '#8D82B6',
+  strivoPm500: '#6C5AA7',
+  strivoPm700: '#5A5568',
   strivo50: '#F6F4F1',
   strivo100: '#E9E7E3',
   strivo300: '#D4D1CD',
@@ -108,55 +108,55 @@ const SEPARADOR = 1.5
 
 /** Cada par que la app pinta de verdad, con el umbral que le corresponde. */
 const PARES = [
-  // ── Lumia · Mañana ──────────────────────────────────────────────────────────
-  ['Lumia·AM · cuerpo sobre base', TEXTO.onLight, MARCA.lumiaAm50, CUERPO],
-  ['Lumia·AM · secundario sobre base', TEXTO.onLightSoft, MARCA.lumiaAm50, CUERPO],
-  ['Lumia·AM · cuerpo sobre cabecera', TEXTO.onLight, MARCA.lumiaAm300, CUERPO],
-  ['Lumia·AM · secundario sobre cabecera', TEXTO.onLightSoft, MARCA.lumiaAm300, CUERPO],
-  ['Lumia·AM · acento sobre cabecera', MARCA.lumiaPm500, MARCA.lumiaAm300, NO_TEXTO],
-  ['Lumia·AM · borde sobre cabecera', MARCA.lumiaPm400, MARCA.lumiaAm300, SEPARADOR],
-  ['Lumia·AM · cuerpo sobre conmutador', TEXTO.onDark, MARCA.conmutadorAm, CUERPO],
-  ['Lumia·AM · conmutador sobre base', MARCA.conmutadorAm, MARCA.lumiaAm50, NO_TEXTO],
+  // ── Mañana ──────────────────────────────────────────────────────────
+  ['Mañana · cuerpo sobre base', TEXTO.onLight, MARCA.strivoAm50, CUERPO],
+  ['Mañana · secundario sobre base', TEXTO.onLightSoft, MARCA.strivoAm50, CUERPO],
+  ['Mañana · cuerpo sobre cabecera', TEXTO.onLight, MARCA.strivoAm300, CUERPO],
+  ['Mañana · secundario sobre cabecera', TEXTO.onLightSoft, MARCA.strivoAm300, CUERPO],
+  ['Mañana · acento sobre cabecera', MARCA.strivoPm500, MARCA.strivoAm300, NO_TEXTO],
+  ['Mañana · borde sobre cabecera', MARCA.strivoPm400, MARCA.strivoAm300, SEPARADOR],
+  ['Mañana · cuerpo sobre conmutador', TEXTO.onDark, MARCA.conmutadorAm, CUERPO],
+  ['Mañana · conmutador sobre base', MARCA.conmutadorAm, MARCA.strivoAm50, NO_TEXTO],
   // La cabecera comparte ese contratono en la sección Mañana.
-  ['Lumia·AM · cabecera sobre base', MARCA.conmutadorAm, MARCA.lumiaAm50, NO_TEXTO],
-  ['Lumia·AM · rótulo sobre cabecera', TEXTO.onDarkSoft, MARCA.conmutadorAm, CUERPO],
-  ['Lumia·AM · sección sobre cabecera', TEXTO.onDark, MARCA.conmutadorAm, CUERPO],
+  ['Mañana · cabecera sobre base', MARCA.conmutadorAm, MARCA.strivoAm50, NO_TEXTO],
+  ['Mañana · rótulo sobre cabecera', TEXTO.onDarkSoft, MARCA.conmutadorAm, CUERPO],
+  ['Mañana · sección sobre cabecera', TEXTO.onDark, MARCA.conmutadorAm, CUERPO],
   // El borde de la sección activa. `strivo-pm-500` daría 2,97:1 y por eso ahí se
   // usa el lavanda claro de la misma paleta.
-  ['Lumia·AM · borde activo sobre cabecera', MARCA.lumiaAm100, MARCA.conmutadorAm, NO_TEXTO],
+  ['Mañana · borde activo sobre cabecera', MARCA.strivoAm100, MARCA.conmutadorAm, NO_TEXTO],
   // El símbolo de la app. En su tono de firma daría 1,17:1 sobre el contratono
   // —invisible—, así que ahí va en la versión monocromática del manual §9.
-  ['Lumia·AM · símbolo mono sobre cabecera', MARCA.simboloMono, MARCA.conmutadorAm, NO_TEXTO],
-  // La tarjeta de la respiración: `--lumia-tarjeta`, blanco al 72 %, sobre la
+  ['Mañana · símbolo mono sobre cabecera', MARCA.simboloMono, MARCA.conmutadorAm, NO_TEXTO],
+  // La tarjeta de la respiración: `--strivo-tarjeta`, blanco al 72 %, sobre la
   // parada más oscura del degradado de la mañana, que es su peor caso.
-  ['Lumia·AM · cuerpo sobre tarjeta de respiración', TEXTO.onLight, sobre('#FFFFFF', 0.72, MARCA.lumiaAm100), CUERPO],
+  ['Mañana · cuerpo sobre tarjeta de respiración', TEXTO.onLight, sobre('#FFFFFF', 0.72, MARCA.strivoAm100), CUERPO],
   // El recuadro de la frase del día: el secundario de la paleta en sólido.
-  ['Lumia·AM · frase sobre su recuadro', TEXTO.onLight, MARCA.lumiaAm200, CUERPO],
-  ['Lumia·AM · secundario sobre el recuadro de la frase', TEXTO.onLightSoft, MARCA.lumiaAm200, CUERPO],
-  ['Lumia·AM · borde del recuadro de la frase', MARCA.lumiaPm400, MARCA.lumiaAm200, SEPARADOR],
+  ['Mañana · frase sobre su recuadro', TEXTO.onLight, MARCA.strivoAm200, CUERPO],
+  ['Mañana · secundario sobre el recuadro de la frase', TEXTO.onLightSoft, MARCA.strivoAm200, CUERPO],
+  ['Mañana · borde del recuadro de la frase', MARCA.strivoPm400, MARCA.strivoAm200, SEPARADOR],
 
-  // ── Lumia · Noche ───────────────────────────────────────────────────────────
-  ['Lumia·PM · cuerpo sobre base', TEXTO.onLight, MARCA.lumiaPm50, CUERPO],
-  ['Lumia·PM · secundario sobre base', TEXTO.onLightSoft, MARCA.lumiaPm50, CUERPO],
-  ['Lumia·PM · cuerpo sobre cabecera', TEXTO.onLight, MARCA.lumiaAm100, CUERPO],
-  ['Lumia·PM · secundario sobre cabecera', TEXTO.onLightSoft, MARCA.lumiaAm100, CUERPO],
-  ['Lumia·PM · acento sobre cabecera', MARCA.lumiaPm500, MARCA.lumiaAm100, NO_TEXTO],
-  ['Lumia·PM · borde sobre cabecera', MARCA.lumiaPm400, MARCA.lumiaAm100, SEPARADOR],
+  // ── Noche ───────────────────────────────────────────────────────────
+  ['Noche · cuerpo sobre base', TEXTO.onLight, MARCA.strivoPm50, CUERPO],
+  ['Noche · secundario sobre base', TEXTO.onLightSoft, MARCA.strivoPm50, CUERPO],
+  ['Noche · cuerpo sobre cabecera', TEXTO.onLight, MARCA.strivoAm100, CUERPO],
+  ['Noche · secundario sobre cabecera', TEXTO.onLightSoft, MARCA.strivoAm100, CUERPO],
+  ['Noche · acento sobre cabecera', MARCA.strivoPm500, MARCA.strivoAm100, NO_TEXTO],
+  ['Noche · borde sobre cabecera', MARCA.strivoPm400, MARCA.strivoAm100, SEPARADOR],
   // De noche la cabecera es la pieza clara y el símbolo va tal cual sale del
   // `.svg`: sin filtro y sin monocromo.
-  ['Lumia·PM · símbolo sobre cabecera', MARCA.simbolo, MARCA.lumiaAm100, NO_TEXTO],
+  ['Noche · símbolo sobre cabecera', MARCA.simbolo, MARCA.strivoAm100, NO_TEXTO],
   // El degradado nocturno de Hoy, en sus tres paradas.
   ['Hoy·noche · cuerpo sobre degradado', TEXTO.onDark, MARCA.night, CUERPO],
   ['Hoy·noche · secundario sobre degradado', TEXTO.onDarkSoft, MARCA.night, GRANDE],
-  ['Lumia·PM · cuerpo sobre conmutador', TEXTO.onLight, MARCA.conmutadorPm, CUERPO],
-  ['Lumia·PM · conmutador sobre degradado', MARCA.conmutadorPm, MARCA.night, NO_TEXTO],
-  // La misma tarjeta de noche: `--lumia-tarjeta` es ahí un velo claro al 10 %,
+  ['Noche · cuerpo sobre conmutador', TEXTO.onLight, MARCA.conmutadorPm, CUERPO],
+  ['Noche · conmutador sobre degradado', MARCA.conmutadorPm, MARCA.night, NO_TEXTO],
+  // La misma tarjeta de noche: `--strivo-tarjeta` es ahí un velo claro al 10 %,
   // medido sobre la parada más clara del degradado, que es su peor caso.
-  ['Lumia·PM · cuerpo sobre tarjeta de respiración', TEXTO.onDark, sobre('#F2EEF7', 0.10, '#2C2350'), CUERPO],
+  ['Noche · cuerpo sobre tarjeta de respiración', TEXTO.onDark, sobre('#F2EEF7', 0.10, '#2C2350'), CUERPO],
   // El mismo recuadro de noche: ahí el secundario entra como velo al 20 % sobre
   // el degradado, medido en su parada más clara, que es el peor caso.
-  ['Lumia·PM · frase sobre su recuadro', TEXTO.onDark, sobre(MARCA.lumiaPm400, 0.2, '#2C2350'), CUERPO],
-  ['Lumia·PM · borde del recuadro de la frase', sobre(MARCA.lumiaAm100, 0.3, sobre(MARCA.lumiaPm400, 0.2, '#2C2350')), sobre(MARCA.lumiaPm400, 0.2, '#2C2350'), SEPARADOR],
+  ['Noche · frase sobre su recuadro', TEXTO.onDark, sobre(MARCA.strivoPm400, 0.2, '#2C2350'), CUERPO],
+  ['Noche · borde del recuadro de la frase', sobre(MARCA.strivoAm100, 0.3, sobre(MARCA.strivoPm400, 0.2, '#2C2350')), sobre(MARCA.strivoPm400, 0.2, '#2C2350'), SEPARADOR],
 
   // ── Strivo, el cromo de fuera de los espacios ───────────────────────────────
   ['Strivo · cuerpo sobre base', TEXTO.onLight, MARCA.strivo50, CUERPO],
@@ -165,10 +165,10 @@ const PARES = [
   ['Strivo · acento sobre cabecera', MARCA.strivo900, MARCA.strivo100, NO_TEXTO],
   ['Strivo · borde sobre cabecera', MARCA.strivo600, MARCA.strivo100, SEPARADOR],
 
-  // ── Respiracion dentro de Lumia (24 ago) ────────────────────────────────────
+  // ── Respiracion, seccion del producto (24 ago) ──────────────────────────────
   // **Estos pares cambiaron de fondo y de paleta, no de umbral.** Con SPEC_16
   // Respiracion colgaba del Home de Strivo y se media sobre `strivo-50`; ahora
-  // es una seccion de Lumia y se pinta sobre las dos superficies del espacio:
+  // es una seccion mas y se pinta sobre las dos superficies del producto:
   // `strivo-am-50` de dia y `strivo-pm-50` de noche. Los `--strivo-*` siguen
   // siendo el valor por defecto de las siete variables en `:root`, pero hoy no
   // los usa ninguna pantalla — se miden abajo, como informativos.
@@ -176,7 +176,7 @@ const PARES = [
   // RN-RE-NAV-21/25 — El progreso de la sesion va a opacidad 0,40. Es
   // periferico —se consulta si se busca— y por eso se le pide el umbral de
   // texto grande y no el de cuerpo.
-  ['Respiración · progreso de sesión (α 0,40)', sobre(TEXTO.onLight, 0.4, MARCA.lumiaAm50), MARCA.lumiaAm50, SEPARADOR],
+  ['Respiración · progreso de sesión (α 0,40)', sobre(TEXTO.onLight, 0.4, MARCA.strivoAm50), MARCA.strivoAm50, SEPARADOR],
 
   // ── Respiracion: las cuatro fases (SPEC_14 §5, RN-RE-VIS-16) ────────────────
   // El disco, el arco y la bolita son elementos graficos: su umbral es el 3:1 de
@@ -186,34 +186,34 @@ const PARES = [
   //
   // Conservan el orden de luminancia de SPEC_14 —inhalar la mas oscura, descanso
   // la mas clara— porque esa rampa es lo que hace que el cambio se lea de reojo.
-  // Lo que cambio es de que escala salen: de la de Lumia. Se miden sobre los dos
+  // Lo que cambio es de que escala salen: de la del producto. Se miden sobre los dos
   // momentos porque el reloj decide cual esta puesto y ninguno es opcional.
-  ['Respiración · inhalar sobre Lumia mañana', TEXTO.onLight, MARCA.lumiaAm50, NO_TEXTO],
-  ['Respiración · sostén sobre Lumia mañana', MARCA.lumiaPm700, MARCA.lumiaAm50, NO_TEXTO],
-  ['Respiración · exhalar sobre Lumia mañana', MARCA.lumiaPm500, MARCA.lumiaAm50, NO_TEXTO],
-  ['Respiración · descanso sobre Lumia mañana', MARCA.lumiaPm400, MARCA.lumiaAm50, NO_TEXTO],
-  ['Respiración · inhalar sobre Lumia noche', TEXTO.onLight, MARCA.lumiaPm50, NO_TEXTO],
-  ['Respiración · sostén sobre Lumia noche', MARCA.lumiaPm700, MARCA.lumiaPm50, NO_TEXTO],
-  ['Respiración · exhalar sobre Lumia noche', MARCA.lumiaPm500, MARCA.lumiaPm50, NO_TEXTO],
-  ['Respiración · descanso sobre Lumia noche', MARCA.lumiaPm400, MARCA.lumiaPm50, NO_TEXTO],
+  ['Respiración · inhalar sobre la mañana', TEXTO.onLight, MARCA.strivoAm50, NO_TEXTO],
+  ['Respiración · sostén sobre la mañana', MARCA.strivoPm700, MARCA.strivoAm50, NO_TEXTO],
+  ['Respiración · exhalar sobre la mañana', MARCA.strivoPm500, MARCA.strivoAm50, NO_TEXTO],
+  ['Respiración · descanso sobre la mañana', MARCA.strivoPm400, MARCA.strivoAm50, NO_TEXTO],
+  ['Respiración · inhalar sobre la noche', TEXTO.onLight, MARCA.strivoPm50, NO_TEXTO],
+  ['Respiración · sostén sobre la noche', MARCA.strivoPm700, MARCA.strivoPm50, NO_TEXTO],
+  ['Respiración · exhalar sobre la noche', MARCA.strivoPm500, MARCA.strivoPm50, NO_TEXTO],
+  ['Respiración · descanso sobre la noche', MARCA.strivoPm400, MARCA.strivoPm50, NO_TEXTO],
   // La etiqueta de fase, que es el texto que de verdad lleva el dato: AAA.
-  ['Respiración · etiqueta de fase sobre base', TEXTO.onLight, MARCA.lumiaAm50, CUERPO],
+  ['Respiración · etiqueta de fase sobre base', TEXTO.onLight, MARCA.strivoAm50, CUERPO],
   // El recorrido de la linea: es la figura, asi que se le pide el umbral de
   // indicador. Va a opacidad 1 desde que es punteado —un punteado tiene la mitad
   // de tinta que un continuo del mismo grosor—, asi que se mide en plano.
-  ['Respiración · recorrido de la línea', MARCA.lumiaPm500, MARCA.lumiaAm50, NO_TEXTO],
+  ['Respiración · recorrido de la línea', MARCA.strivoPm500, MARCA.strivoAm50, NO_TEXTO],
 
   // ── El estado elegido (24 ago) ──────────────────────────────────────────────
   // El borde de acento de la opcion elegida es un indicador de estado, asi que
   // le toca el 3:1 de 1.4.11 — y **es la unica de las tres señales que se puede
   // medir con una cifra**: la superficie y la palomita se ven, pero lo que
   // sostiene la lectura para quien distingue mal los tonos es este borde.
-  ['Respiración · borde de la opción elegida', MARCA.lumiaPm500, MARCA.lumiaAm50, NO_TEXTO],
-  ['Respiración · palomita de la opción elegida', MARCA.lumiaPm500, MARCA.lumiaAm50, NO_TEXTO],
+  ['Respiración · borde de la opción elegida', MARCA.strivoPm500, MARCA.strivoAm50, NO_TEXTO],
+  ['Respiración · palomita de la opción elegida', MARCA.strivoPm500, MARCA.strivoAm50, NO_TEXTO],
   // La tarjeta de cada bloque: `bg-raised` es blanco al 72 % sobre el fondo del
   // espacio, y el cuerpo se lee encima.
-  ['Respiración · cuerpo sobre tarjeta de bloque', TEXTO.onLight, sobre(TEXTO.blanco, 0.72, MARCA.lumiaAm50), CUERPO],
-  ['Respiración · secundario sobre tarjeta de bloque', TEXTO.onLightSoft, sobre(TEXTO.blanco, 0.72, MARCA.lumiaAm50), CUERPO],
+  ['Respiración · cuerpo sobre tarjeta de bloque', TEXTO.onLight, sobre(TEXTO.blanco, 0.72, MARCA.strivoAm50), CUERPO],
+  ['Respiración · secundario sobre tarjeta de bloque', TEXTO.onLightSoft, sobre(TEXTO.blanco, 0.72, MARCA.strivoAm50), CUERPO],
 ]
 
 /**
@@ -226,15 +226,15 @@ const INFORMATIVOS = [
   // la dice el texto con `aria-live` ("Inhala", "Exhala", "Descansa"). El
   // círculo es el ritmo, no el dato, y sobre el amanecer se queda en 1,7:1
   // desde SPEC_08 —cifra que sale a la luz al medirlo, no ahora—.
-  ['círculo de respiración sobre el amanecer', MARCA.breathAm, MARCA.lumiaAm300],
+  ['círculo de respiración sobre el amanecer', MARCA.breathAm, MARCA.strivoAm300],
   ['círculo de respiración sobre la noche', MARCA.breathPm, MARCA.night],
-  ['blanco sobre strivo-pm-500', TEXTO.blanco, MARCA.lumiaPm500],
-  ['ink sobre strivo-am-100', TEXTO.onLight, MARCA.lumiaAm100],
+  ['blanco sobre strivo-pm-500', TEXTO.blanco, MARCA.strivoPm500],
+  ['ink sobre strivo-am-100', TEXTO.onLight, MARCA.strivoAm100],
   // Las marcas de fase de la linea van a opacidad 0,12 y su texto a 0,45. Son
   // orientacion, no dato: lo que hay que leer lo dice `EtiquetaFase` a tamano
   // completo. Se anotan para que la cifra conste, no para exigirles un umbral.
-  ['marca de fase de la línea (α 0,12)', sobre(MARCA.lumiaPm400, 0.12, MARCA.lumiaAm50), MARCA.lumiaAm50],
-  ['texto de marca de la línea (α 0,45)', sobre(MARCA.lumiaPm400, 0.45, MARCA.lumiaAm50), MARCA.lumiaAm50],
+  ['marca de fase de la línea (α 0,12)', sobre(MARCA.strivoPm400, 0.12, MARCA.strivoAm50), MARCA.strivoAm50],
+  ['texto de marca de la línea (α 0,45)', sobre(MARCA.strivoPm400, 0.45, MARCA.strivoAm50), MARCA.strivoAm50],
   // **Fases contiguas, medidas entre si. Es el limite conocido de separar cuatro
   // pasos por luminancia sobre una escala acromatica: 1,4:1 entre vecinas.**
   // No se les exige umbral y no es una laguna disimulada: dos fases nunca se ven
@@ -243,11 +243,11 @@ const INFORMATIVOS = [
   // esta cifra es que el color, solo, no bastaria para nombrar la fase. Por eso
   // RN-RE-VIS-17 obliga a la palabra y a la geometria, y por eso ahi la regla no
   // es un adorno de accesibilidad sino lo que sostiene la lectura.
-  ['fase inhalar contra sostén', TEXTO.onLight, MARCA.lumiaPm700],
-  ['fase sostén contra exhalar', MARCA.lumiaPm700, MARCA.lumiaPm500],
-  ['fase exhalar contra descanso', MARCA.lumiaPm500, MARCA.lumiaPm400],
+  ['fase inhalar contra sostén', TEXTO.onLight, MARCA.strivoPm700],
+  ['fase sostén contra exhalar', MARCA.strivoPm700, MARCA.strivoPm500],
+  ['fase exhalar contra descanso', MARCA.strivoPm500, MARCA.strivoPm400],
   // Los valores por defecto de `:root`, en la escala de Strivo. Hoy no los pinta
-  // ninguna pantalla —Respiracion solo se monta dentro de Lumia— y se miden para
+  // ninguna pantalla —Respiracion se monta dentro del producto— y se miden para
   // que el dia que otro espacio la monte se sepa de donde se parte.
   ['por defecto · inhalar sobre strivo-50', MARCA.strivo900, MARCA.strivo50],
   ['por defecto · descanso sobre strivo-50', MARCA.strivo600, MARCA.strivo50],
@@ -257,19 +257,19 @@ const INFORMATIVOS = [
   // a 0 y no a 0,25: RN-RE-NAV-46 da esa salida expresamente —"o el texto se
   // oculta del todo en vez de quedar ilegible"— y a 0,25 se obtiene lo peor de
   // las dos cosas, una mancha ilegible que sigue tirando del ojo.
-  ['control de sesión a α 0,25 (NO se usa)', sobre(TEXTO.onLight, 0.25, MARCA.lumiaAm50), MARCA.lumiaAm50],
+  ['control de sesión a α 0,25 (NO se usa)', sobre(TEXTO.onLight, 0.25, MARCA.strivoAm50), MARCA.strivoAm50],
   // **El recuadro de la frase contra el fondo sobre el que se pinta.** No se le
   // exige umbral: no es un indicador ni un borde funcional —lo que separa el
   // recuadro es su tinte, y además lleva línea y elevación—, y es la misma
   // liga en la que juegan las tarjetas de Hoy desde SPEC_06. Se anota para que
   // la cifra conste el día que alguien retire el borde o la sombra.
-  ['recuadro de la frase sobre la base de la mañana', MARCA.lumiaAm200, MARCA.lumiaAm50],
-  ['recuadro de la frase sobre el degradado de la noche', sobre(MARCA.lumiaPm400, 0.2, '#2C2350'), '#2C2350'],
+  ['recuadro de la frase sobre la base de la mañana', MARCA.strivoAm200, MARCA.strivoAm50],
+  ['recuadro de la frase sobre el degradado de la noche', sobre(MARCA.strivoPm400, 0.2, '#2C2350'), '#2C2350'],
   // Los dos sólidos que **no** se usan de noche, y por qué: el secundario de la
   // paleta en plano no llega a AAA con ninguna de las dos tintas, así que ahí
   // entra como velo.
-  ['blanco sobre strivo-pm-400 (NO se usa)', TEXTO.onDark, MARCA.lumiaPm400],
-  ['ink sobre strivo-pm-400 (NO se usa)', TEXTO.onLight, MARCA.lumiaPm400],
+  ['blanco sobre strivo-pm-400 (NO se usa)', TEXTO.onDark, MARCA.strivoPm400],
+  ['ink sobre strivo-pm-400 (NO se usa)', TEXTO.onLight, MARCA.strivoPm400],
 ]
 
 console.log('🎨 contraste: midiendo los pares que la app pinta de verdad\n')
@@ -289,7 +289,7 @@ INFORMATIVOS.forEach(([nombre, frente, fondo]) => {
 })
 
 // Los bordes translúcidos del sistema de superficies, mezclados sobre su fondo.
-const bordeSobreClaro = ratio(sobre('#241E33', 0.12, MARCA.lumiaAm50), MARCA.lumiaAm50)
+const bordeSobreClaro = ratio(sobre('#241E33', 0.12, MARCA.strivoAm50), MARCA.strivoAm50)
 console.log(`\n   borde del sistema sobre superficie clara     ${bordeSobreClaro.toFixed(2)}:1`)
 
 if (fallos === 0) {

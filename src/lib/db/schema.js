@@ -2,7 +2,7 @@
 // Forma canónica del árbol de datos y validadores. SPEC_02, §C5.1–§C5.5.
 //
 // Este archivo no toca almacenamiento: define qué campos existen, qué valores
-// admiten y qué errores se lanzan. `shared.js` y `lumia.js` lo importan, y no
+// admiten y qué errores se lanzan. `shared.js` y `diario.js` lo importan, y no
 // se importan entre sí.
 //
 // RN-DB4-08 — Nada se corrige en silencio. Un registro incompleto se rechaza al

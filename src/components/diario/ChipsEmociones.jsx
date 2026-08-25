@@ -63,8 +63,8 @@ export default function ChipsEmociones({
       'transition-all duration-180 ease-smooth motion-reduce:transition-none',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30',
       elegida
-        ? 'border-current bg-lumia-tarjeta shadow-elev-2'
-        : 'border-on-surface bg-lumia-campo',
+        ? 'border-current bg-strivo-tarjeta shadow-elev-2'
+        : 'border-on-surface bg-strivo-campo',
       punteado && !elegida && 'border-dashed',
     )
 

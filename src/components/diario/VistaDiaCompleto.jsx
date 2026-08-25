@@ -100,7 +100,7 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
 
       {/* ─── Mañana ─────────────────────────────────────────────────────── */}
       {hayAlgoEscrito(morning) && (
-        <div className="flex flex-col gap-4 rounded-md border border-on-surface bg-lumia-campo p-4">
+        <div className="flex flex-col gap-4 rounded-md border border-on-surface bg-strivo-campo p-4">
           <h2 className="font-display text-md text-on-surface">{textos.manana}</h2>
 
           {animo !== '' && (
@@ -151,7 +151,7 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
 
       {/* ─── Noche ──────────────────────────────────────────────────────── */}
       {hayAlgoDeNoche(night) && (
-        <div className="flex flex-col gap-4 rounded-md border border-on-surface bg-lumia-campo p-4">
+        <div className="flex flex-col gap-4 rounded-md border border-on-surface bg-strivo-campo p-4">
           <h2 className="font-display text-md text-on-surface">{textos.noche}</h2>
 
           {hayReconocimiento(night) && (
@@ -206,7 +206,7 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
 
       {/* ─── Journal ────────────────────────────────────────────────────── */}
       {journal.length > 0 && (
-        <div className="flex flex-col gap-4 rounded-md border border-on-surface bg-lumia-campo p-4">
+        <div className="flex flex-col gap-4 rounded-md border border-on-surface bg-strivo-campo p-4">
           <h2 className="font-display text-md text-on-surface">{textos.journal}</h2>
           <ul className="flex flex-col gap-3">
             {journal.map((entrada) => {

@@ -87,7 +87,7 @@ export default function CampoGratitud({
               onClick={() => setPregunta(opcion.pregunta)}
               className={clsx(
                 'rounded-full border border-on-surface px-4 py-2 min-h-touch-sm text-sm',
-                'text-on-surface bg-lumia-campo',
+                'text-on-surface bg-strivo-campo',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30',
               )}
             >

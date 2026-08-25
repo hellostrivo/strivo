@@ -215,9 +215,9 @@ describe('la cabecera se viste del momento de Hoy (21 ago)', () => {
 
   it('toma el mismo token que el conmutador, así que no pueden separarse', () => {
     expect(css).toMatch(
-      /\[data-momento='manana'\] \.cabecera-espacio \{[^}]*var\(--lumia-conmutador\)/,
+      /\[data-momento='manana'\] \.cabecera-espacio \{[^}]*var\(--strivo-conmutador\)/,
     )
-    expect(codigoDe('src/components/diario/SelectorMomento.jsx')).toMatch(/bg-lumia-conmutador/)
+    expect(codigoDe('src/components/diario/SelectorMomento.jsx')).toMatch(/bg-strivo-conmutador/)
     // Un color copiado a mano sería otro color el día que el conmutador cambie.
     const regla = css.slice(css.indexOf("[data-momento='manana'] .cabecera-espacio"))
     expect(regla.slice(0, regla.indexOf('}'))).not.toMatch(/#[0-9a-fA-F]{3,8}/)

@@ -220,12 +220,12 @@ describe('Respiración sigue sin conocer a nadie (RN-RE-DAT-09)', () => {
   it('ningún archivo nuevo importa la capa del diario', () => {
     for (const ruta of NUEVOS) {
       const imports = codigoDe(ruta).match(/^\s*import[\s\S]*?from\s+'[^']+'/gm) ?? []
-      imports.forEach((linea) => expect(`${ruta}: ${linea}`).not.toMatch(/lumia/i))
+      imports.forEach((linea) => expect(`${ruta}: ${linea}`).not.toMatch(/diario/i))
     }
   })
 
   it('el contexto de audio compartido tampoco', () => {
     const codigo = codigoDe('src/lib/audio/contextoAudio.js')
-    expect(codigo).not.toMatch(/lumia|breathing/i)
+    expect(codigo).not.toMatch(/diario|breathing/i)
   })
 })

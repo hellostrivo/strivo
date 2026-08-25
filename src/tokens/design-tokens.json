@@ -14,25 +14,8 @@
       "800": "#423E47",
       "900": "#2B2730"
     },
-    "lumia": {
-      "am": {
-        "comment": "Claridad suave. Los cuatro confirmados contra el archivo fuente.",
-        "50": "#F6F2E9",
-        "100": "#DCCFF1",
-        "200": "#E5C2DC",
-        "300": "#F6DDE8"
-      },
-      "pm": {
-        "comment": "Introspección profunda.",
-        "50": "#F3EFEA",
-        "400": "#8D82B6",
-        "500": "#6C5AA7",
-        "700": "#5A5568"
-      }
-    },
     "simbolos": {
       "comment": "Manual §3.2 — El tono de firma de cada símbolo NO coincide con el primario de su paleta, y no se fuerza a que coincida. Se usa solo para el símbolo: logo, ícono de app, favicon.",
-      "lumia": "#7563A7",
       "strivo": "#2B2730",
       "viewBox": "0 0 122 130",
       "strokeLinecap": "round",
@@ -120,12 +103,6 @@
     },
     "weights": {
       "comment": "Manual §5.2 — La jerarquía de marca se construye con peso dentro de Inter.",
-      "lumia": {
-        "cuerpo": 400,
-        "enfasis": 500,
-        "display": 500,
-        "comment": "Suave, íntimo, sin urgencia."
-      },
       "strivo": {
         "cuerpo": 400,
         "enfasis": 500,

@@ -23,7 +23,7 @@ export const PILDORA = [
 ]
 
 /** Lo elegido: borde del propio color, superficie más clara y peso medio. */
-export const PILDORA_ELEGIDA = 'border-current bg-lumia-tarjeta shadow-elev-2 font-medium'
+export const PILDORA_ELEGIDA = 'border-current bg-strivo-tarjeta shadow-elev-2 font-medium'
 
 /** Lo que está ahí sin elegir. Solo tiene sentido donde se puede tocar. */
-export const PILDORA_LIBRE = 'border-on-surface bg-lumia-campo'
+export const PILDORA_LIBRE = 'border-on-surface bg-strivo-campo'

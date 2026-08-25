@@ -198,19 +198,21 @@ describe('Respiración no conoce al diario (criterio 20b, RN-RE-VIS-00)', () => 
         .replace(/\/\*[\s\S]*?\*\//g, '')
         .replace(/^\s*\/\/.*$/gm, '')
       expect(`${ruta}`).toBe(ruta)
-      expect(contenido).not.toMatch(/--lumia-|strivo-am-|strivo-pm-/)
+      expect(contenido).not.toMatch(/--strivo-(am|pm|base|fondo|tarjeta|campo|conmutador|frase)/)
     }
   })
 
   it('la hoja de estilos tampoco', () => {
-    expect(readFileSync(CSS, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')).not.toMatch(/--lumia-/)
+    expect(readFileSync(CSS, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')).not.toMatch(
+      /--strivo-(am|pm|base|fondo|tarjeta|campo|conmutador|frase)/,
+    )
   })
 
   it('ni un import cruza la línea', () => {
     for (const ruta of TODO_BREATHING) {
       const imports = codigoDe(ruta).match(/^\s*import[\s\S]*?from\s+'[^']+'/gm) ?? []
       imports.forEach((linea) => {
-        expect(`${ruta}: ${linea}`).not.toMatch(/lumia/i)
+        expect(`${ruta}: ${linea}`).not.toMatch(/diario/i)
       })
     }
   })
@@ -285,7 +287,7 @@ describe('el color sale del espacio, no de Strivo (24 ago)', () => {
   it('globals define el valor por defecto y la variante del momento', () => {
     // **Revisión del paso 8 (25 ago):** la regla de fondo no cambia —Respiración
     // toma su paleta por defecto de la marca madre y la sobrescribe la sección
-    // que la monta—, pero el selector sí. Colgaba de `[data-space='lumia']`, un
+    // que la monta—, pero el selector sí. Colgaba de un `data-space` que ya nadie
     // atributo que se retiró al quedar un solo producto, y ahora cuelga de
     // `[data-moment]`, que es el que la app escribe de verdad.
     expect(globals).toMatch(/--respiracion-trazo: var\(--strivo-700\)/)

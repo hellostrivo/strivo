@@ -1,12 +1,14 @@
 /* src/styles/tokens-strivo.css */
 /* La paleta de marca del producto — manual §4.3 (Mañana) y §4.4 (Noche).
  *
- * **Renombrada de `lumia-*` a `strivo-*` el 25 de agosto de 2026** (tanda C del
- * paso 9). Los ocho hexes son los mismos: el repliegue quita un producto, no
- * recalibra el color del que se queda. **El manual sigue nombrando estos tokens
- * a la vieja usanza** y se reedita en el paso 10 (§4.4 del plan); hasta
- * entonces, la prueba del criterio 4 busca en el manual con el nombre de allí y
- * en esta hoja con el de aquí, y lo deja anotado.
+ * **Renombrada el 25 de agosto de 2026** (paso 9, §8). Los ocho hexes son los
+ * mismos: el repliegue quita un producto, no recalibra el color del que se
+ * queda. **El manual todavía nombra estos tokens como se llamaban antes** y se
+ * reedita en el paso 10 (§4.4 del plan); hasta entonces, la prueba del criterio
+ * 4 busca en el manual con el nombre de allí y en esta hoja con el de aquí.
+ *
+ * Esta hoja es además la fuente única de la paleta en código: el bloque que la
+ * duplicaba en `design-tokens.json` se retiró al cerrar el paso 9.
  *
  * Los hexes vienen del manual y no se corrigen: es la fuente única de color
  * (§C0.6). Ningún componente escribe uno a mano; todos usan estas variables a

@@ -148,7 +148,7 @@ describe('RN-RE-DAT-09 y §4.2 — Respiración no conoce al diario', () => {
   it.each(ARCHIVOS)('%s no importa la capa del diario', (ruta) => {
     const codigo = soloCodigo(readFileSync(ruta, 'utf8'))
     const imports = codigo.match(/from\s+'[^']+'/g) ?? []
-    const cruces = imports.filter((linea) => /lumia/i.test(linea))
+    const cruces = imports.filter((linea) => /diario/i.test(linea))
     expect(cruces).toEqual([])
   })
 

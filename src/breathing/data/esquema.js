@@ -16,7 +16,7 @@ import { ID_POR_DEFECTO, patronDe, resolverPatronBaseId } from './catalogoPatron
 // ─── Rutas y colecciones ──────────────────────────────────────────────────────
 // **Viven aquí y no en `lib/db/schema.js`, y es una decisión.** Ese archivo es
 // el modelo canónico de §C5, cuyo árbol tiene exactamente tres raíces —`shared`,
-// `lumia`, `formia`— y `breathing/` no es ninguna de ellas: SPEC_13 la añade y
+// las del alcance anterior— y `breathing/` no es ninguna de ellas: SPEC_13 la añade y
 // el blueprint todavía no la recoge.
 //
 // Ampliarlo habría puesto en rojo el criterio 9 de SPEC_08, que comprueba que el

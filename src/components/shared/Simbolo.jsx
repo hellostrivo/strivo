@@ -4,8 +4,7 @@
 // **Queda uno** (paso 9, §8: "el símbolo de la app → `strivo_simbolo.svg`", en
 // singular). Eran tres. El del alcance pausado se fue con sus archivos, y la
 // vela —que era lo único que se veía en la cabecera, con el rótulo al lado ya
-// diciendo Strivo— la sustituye la "S" del producto. Con ella sale del repo
-// `lumia_simbolo.svg`.
+// diciendo Strivo— la sustituye la "S" del producto, y su archivo sale del repo.
 //
 // El `.svg` fuente vive en `src/assets/marca/` y **no se edita desde aquí**: es
 // material de marca. Este componente solo lo coloca, le da tamaño y le pone un

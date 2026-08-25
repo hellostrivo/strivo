@@ -1,7 +1,7 @@
 /* src/breathing/styles/respiracion.css
    La piel de la capa visual de Respiracion (SPEC_14).
 
-   RN-RE-VIS-00 — Aqui no entra ni un token `lumia-*` ni `formia-*`, y sigue sin
+   RN-RE-VIS-00 — Aqui no entra ni un token de seccion, y sigue sin
    entrar despues de la mudanza a Lumia (24 ago). Lo que cambio es de donde
    salen los colores: antes eran los `--strivo-*` escritos aqui dentro, y ahora
    son SIETE VARIABLES SEMANTICAS —cuatro de fase, tres de trazo— que

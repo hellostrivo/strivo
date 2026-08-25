@@ -32,7 +32,7 @@ describe('un solo componente para los dos sitios (RN-LU-RESP-02)', () => {
     ;[COMPONENTE, RITMO, AUDIO].forEach((ruta) => {
       const imports = codigoDe(ruta).match(/^\s*import[\s\S]*?from\s+'[^']+'/gm) ?? []
       imports.forEach((linea) => {
-        expect(`${ruta}: ${linea}`).not.toMatch(/lumia|lib\/db/i)
+        expect(`${ruta}: ${linea}`).not.toMatch(/diario|lib\/db/i)
       })
     })
   })

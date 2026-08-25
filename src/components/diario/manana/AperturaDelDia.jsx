@@ -23,7 +23,7 @@ export default function AperturaDelDia({ lineas, onTerminar }) {
     <div
       data-surface="light"
       data-momento="manana"
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-lumia-base px-8 text-center"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-strivo-base px-8 text-center"
     >
       {lineas.length === 0 ? (
         <p

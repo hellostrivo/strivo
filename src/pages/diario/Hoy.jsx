@@ -53,7 +53,7 @@ function Fondo({ momento }) {
         <div
           key={id}
           data-momento={id}
-          className={clsx('absolute inset-0 bg-lumia transicion-fondo')}
+          className={clsx('absolute inset-0 bg-strivo transicion-fondo')}
           style={{ opacity: momento === id ? 1 : 0 }}
         />
       ))}
@@ -140,7 +140,7 @@ export default function Hoy({ uid, onHideNav, onMomento }) {
   }
 
   const marco = (contenido) => (
-    <div data-momento={momento} className="relative min-h-screen bg-lumia-base transicion-tema">
+    <div data-momento={momento} className="relative min-h-screen bg-strivo-base transicion-tema">
       <Fondo momento={momento} />
       <div
         data-surface={superficie}

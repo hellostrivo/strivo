@@ -210,12 +210,12 @@ describe('el tema lo manda el conmutador, no el reloj (RN-HOY-05)', () => {
   })
 
   it('el conmutador va en contratono, fuera de la escala de las superficies', () => {
-    // `lumia-tarjeta` y `lumia-campo` son los dos escalones de luminancia que
+    // `strivo-tarjeta` y `strivo-campo` son los dos escalones de luminancia que
     // usan las piezas que acompañan al fondo. El conmutador no acompaña: lo
     // contradice, y por eso no comparte escala con ninguna de ellas.
     const selector = codigoDe('src/components/diario/SelectorMomento.jsx')
-    expect(selector).toMatch(/bg-lumia-conmutador/)
-    expect(selector).not.toMatch(/bg-lumia-tarjeta|bg-lumia-campo/)
+    expect(selector).toMatch(/bg-strivo-conmutador/)
+    expect(selector).not.toMatch(/bg-strivo-tarjeta|bg-strivo-campo/)
   })
 
   it('el bloque declara su propia superficie, sin nombrar un color', () => {
@@ -227,8 +227,8 @@ describe('el tema lo manda el conmutador, no el reloj (RN-HOY-05)', () => {
 
   it('los dos colores del bloque viven en el CSS, no en el componente', () => {
     const css = readFileSync('src/styles/globals.css', 'utf8')
-    expect(css).toMatch(/\[data-momento='manana'\][\s\S]*?--lumia-conmutador:\s*#1D1833/)
-    expect(css).toMatch(/\[data-momento='noche'\][\s\S]*?--lumia-conmutador:\s*#F2DDE7/)
+    expect(css).toMatch(/\[data-momento='manana'\][\s\S]*?--strivo-conmutador:\s*#1D1833/)
+    expect(css).toMatch(/\[data-momento='noche'\][\s\S]*?--strivo-conmutador:\s*#F2DDE7/)
   })
 })
 
@@ -309,7 +309,7 @@ describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
     expect(marcado).toMatch(/self-start/)
     // Destaca por luminancia sobre el fondo (RN-HOY-07), no solo por borde, y
     // se lee como invitación principal: peso de display y cuerpo grande.
-    expect(marcado).toMatch(/bg-lumia-tarjeta/)
+    expect(marcado).toMatch(/bg-strivo-tarjeta/)
     expect(marcado).toMatch(/shadow-elev-2/)
     // El rótulo baja a 16 px, en redonda y peso normal. Estaba en cursiva a
     // 20 px con peso de medio, y con la frase del día metida en su recuadro
@@ -369,9 +369,9 @@ describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
     // La superficie es el secundario de la paleta, no un tercer escalón de la
     // escala blanca: si compartiera escala con las tarjetas, competiría con la
     // de respiración por el mismo sitio (RN-HOY-07).
-    expect(marcado).toMatch(/bg-lumia-frase/)
-    expect(marcado).not.toMatch(/bg-lumia-tarjeta|bg-lumia-campo|bg-raised/)
-    expect(marcado).toMatch(/border-lumia-frase/)
+    expect(marcado).toMatch(/bg-strivo-frase/)
+    expect(marcado).not.toMatch(/bg-strivo-tarjeta|bg-strivo-campo|bg-raised/)
+    expect(marcado).toMatch(/border-strivo-frase/)
     // Aire: relleno generoso e interlineado suelto. Lo que se lee despacio se
     // compone despacio.
     expect(marcado).toMatch(/py-6/)
@@ -397,8 +397,8 @@ describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
     expect(frase).not.toMatch(/#[0-9a-f]{3,8}\b/i)
     expect(frase).not.toMatch(/momento|manana|noche|data-momento/)
     const css = readFileSync('src/styles/globals.css', 'utf8')
-    expect(css).toMatch(/\[data-momento='manana'\][\s\S]*?--lumia-frase:/)
-    expect(css).toMatch(/\[data-momento='noche'\][\s\S]*?--lumia-frase:/)
+    expect(css).toMatch(/\[data-momento='manana'\][\s\S]*?--strivo-frase:/)
+    expect(css).toMatch(/\[data-momento='noche'\][\s\S]*?--strivo-frase:/)
   })
 
   it('la tarjeta no nombra ni un color ni conoce el momento (RN-SURF-01)', () => {

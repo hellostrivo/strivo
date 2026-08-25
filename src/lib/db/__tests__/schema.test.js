@@ -86,7 +86,7 @@ describe('rutas (§C5.2)', () => {
   })
 
   // **Caso nuevo, con el renombrado de la rama** (tanda B del paso 9). La rama
-  // pasó de `lumia/` a `diario/` y la mitad de las rutas son cadenas que se
+  // pasó a llamarse `diario/` y la mitad de las rutas son cadenas que se
   // arman a mano: aquí, en `COLLECTIONS` y en las etiquetas de los validadores.
   // Una rama a medias —una ruta con el nombre nuevo y una etiqueta con el
   // viejo— no rompería nada al escribir y dejaría dos árboles paralelos.

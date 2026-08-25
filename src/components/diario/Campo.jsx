@@ -10,7 +10,7 @@
 import { clsx } from 'clsx'
 
 const BASE = [
-  'w-full bg-lumia-campo border border-on-surface rounded-md',
+  'w-full bg-strivo-campo border border-on-surface rounded-md',
   'text-on-surface placeholder:text-on-surface-faint',
   'px-4 py-3 text-base',
   'transition-colors duration-260 ease-smooth motion-reduce:transition-none',

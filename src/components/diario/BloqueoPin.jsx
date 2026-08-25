@@ -40,7 +40,7 @@ function CampoPin({ value, onChange, etiqueta, id }) {
         value={value}
         onChange={(evento) => onChange(soloDigitos(evento.target.value))}
         className={clsx(
-          'w-full max-w-[12rem] rounded-md border border-on-surface bg-lumia-campo',
+          'w-full max-w-[12rem] rounded-md border border-on-surface bg-strivo-campo',
           'px-4 py-3 min-h-touch-sm text-md tracking-[0.4em] text-on-surface',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30',
         )}
@@ -209,7 +209,7 @@ export default function BloqueoPin({ modo, estado, acciones, onCerrar }) {
   // sugiere de forma repetida (§5.8.2).
 
   return (
-    <section className="flex flex-col gap-4 rounded-md border border-on-surface bg-lumia-campo p-5">
+    <section className="flex flex-col gap-4 rounded-md border border-on-surface bg-strivo-campo p-5">
       <div className="flex flex-col gap-2">
         <h2 className="font-display text-md text-on-surface">{textos.title}</h2>
         <p className="text-base text-on-surface-soft">{textos.lead}</p>

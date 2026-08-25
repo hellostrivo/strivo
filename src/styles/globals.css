@@ -129,7 +129,7 @@
      escala acromatica no lo tiene. RN-RE-VIS-17 ya exige que la fase nunca se
      comunique solo por color, asi que el dato lo llevan el texto de
      `EtiquetaFase` y la geometria del disco; el color solo acompana.
-     RN-RE-VIS-00 — ni un token `lumia-*` entra aqui. */
+     RN-RE-VIS-00 — ni un token de seccion entra aqui. */
   --respiracion-fase-inhalar: var(--strivo-900);
   --respiracion-fase-sosten: var(--strivo-800);
   --respiracion-fase-exhalar: var(--strivo-700);
@@ -213,40 +213,40 @@
    sustituye por los de la paleta de marca sin tocar ningún componente.
 */
 [data-momento='manana'] {
-  --lumia-base: var(--strivo-am-50);
-  --lumia-fondo: linear-gradient(168deg, var(--strivo-am-50) 0%, var(--strivo-am-300) 62%, var(--strivo-am-100) 100%);
-  --lumia-tarjeta: rgba(255, 255, 255, .72);
-  --lumia-campo: rgba(255, 255, 255, .58);
+  --strivo-base: var(--strivo-am-50);
+  --strivo-fondo: linear-gradient(168deg, var(--strivo-am-50) 0%, var(--strivo-am-300) 62%, var(--strivo-am-100) 100%);
+  --strivo-tarjeta: rgba(255, 255, 255, .72);
+  --strivo-campo: rgba(255, 255, 255, .58);
   /* El conmutador va en contratono: de día, oscuro. Es el primer elemento
      interactivo de Hoy y no comparte superficie con nada más, así que declara
      su propio `data-surface` y el texto se invierte con él. */
-  --lumia-conmutador: #1D1833;
-  --lumia-conmutador-activo: rgba(242, 238, 247, .16);
+  --strivo-conmutador: #1D1833;
+  --strivo-conmutador-activo: rgba(242, 238, 247, .16);
   /* La frase del día va en el secundario de la paleta —`strivo-am-200`, el rosa
      de la mañana— y no en otro velo blanco: es la única superficie teñida de
      Hoy, así que se separa del resto por color y no por un tercer escalón de
      luminancia, que la habría puesto a competir con la tarjeta de respiración
      (RN-HOY-07). Medido: la tinta sobre ella da 10,0:1 y el secundario 7,4:1,
      los dos AAA. El borde es el lavanda de la misma paleta. */
-  --lumia-frase: var(--strivo-am-200);
-  --lumia-frase-borde: var(--strivo-pm-400);
+  --strivo-frase: var(--strivo-am-200);
+  --strivo-frase-borde: var(--strivo-pm-400);
 }
 
 [data-momento='noche'] {
-  --lumia-base: #191428;
-  --lumia-fondo: linear-gradient(168deg, #191428 0%, #221B3A 58%, #2C2350 100%);
-  --lumia-tarjeta: rgba(242, 238, 247, .10);
-  --lumia-campo: rgba(242, 238, 247, .07);
+  --strivo-base: #191428;
+  --strivo-fondo: linear-gradient(168deg, #191428 0%, #221B3A 58%, #2C2350 100%);
+  --strivo-tarjeta: rgba(242, 238, 247, .10);
+  --strivo-campo: rgba(242, 238, 247, .07);
   /* De noche el contratono se invierte: el conmutador es la pieza clara. */
-  --lumia-conmutador: #F2DDE7;
-  --lumia-conmutador-activo: rgba(36, 30, 51, .12);
+  --strivo-conmutador: #F2DDE7;
+  --strivo-conmutador-activo: rgba(36, 30, 51, .12);
   /* De noche el secundario entra como velo y no como color plano: `strivo-pm-400`
      en sólido dejaría el texto claro en 2,9:1 y el oscuro en 5,1:1 —ni uno ni
      otro llegan a AAA—, mientras que al 20 % sobre el degradado tiñe sin
      aclarar y el cuerpo se queda entre 9,5:1 y 11,9:1. El borde es el lavanda
      claro de la mañana, que es el que se ve sobre el velo. */
-  --lumia-frase: rgba(141, 130, 182, .20);
-  --lumia-frase-borde: rgba(220, 207, 241, .30);
+  --strivo-frase: rgba(141, 130, 182, .20);
+  --strivo-frase-borde: rgba(220, 207, 241, .30);
   /* §6.3.9 — El acento de la respiración es el naranja del amanecer y de
      noche no funciona: se pinta sobre un degradado frío y oscuro, que es lo
      contrario del fondo para el que se eligió. De noche toma el lavanda de la
@@ -262,7 +262,7 @@
 /* ─── La cabecera de la sección en la Mañana ─────────────────────────────────
    Sobre `strivo-am-300` —un rosa pálido— la franja se comía con la mañana clara,
    así que toma el mismo contratono que el conmutador Mañana/Noche, que es la
-   otra pieza de cromo de esa pantalla. Las dos leen `--lumia-conmutador`, así
+   otra pieza de cromo de esa pantalla. Las dos leen `--strivo-conmutador`, así
    que no pueden separarse.
 
    Va aquí y no en props porque `NavStrivo` no nombra ni un color: pide
@@ -274,7 +274,7 @@
    de los tokens AAA sobre claro. Este contratono resuelve la mañana, que era el
    caso roto.
 
-   `--lumia-conmutador` solo existe bajo `[data-momento]`, que pone la raíz de la
+   `--strivo-conmutador` solo existe bajo `[data-momento]`, que pone la raíz de la
    app mientras Hoy está montada. En el Journal, en Respiración y en el Historial
    no hay atributo, no hay regla, y la cabecera conserva su rango claro.
 
@@ -284,7 +284,7 @@
    ilegibles.
 */
 [data-momento='manana'] .cabecera-espacio {
-  background-color: var(--lumia-conmutador);
+  background-color: var(--strivo-conmutador);
   /* Igual que abajo: lo que separa la franja es el bloque de color entero, no
      una línea. Contra la mañana clara el borde ya no tiene nada que hacer. */
   border-bottom-color: transparent;
@@ -452,26 +452,26 @@
   .bg-raised             { background-color: var(--color-raised); }
 
   /* Fondo y tarjetas del momento activo de Lumia.
-     `bg-lumia-base` es el color plano del momento, debajo del degradado: si el
+     `bg-strivo-base` es el color plano del momento, debajo del degradado: si el
      degradado se queda corto —rebote de scroll, captura larga, un contenedor
      más alto que la ventana— lo que asoma es el tono del tema, no el papel de
      la app. Sin él, un rebote en la noche enseña una franja crema. */
-  .bg-lumia-base    { background-color: var(--lumia-base); }
-  .bg-lumia         { background-image: var(--lumia-fondo); }
-  .bg-lumia-tarjeta { background-color: var(--lumia-tarjeta); }
-  .bg-lumia-campo   { background-color: var(--lumia-campo); }
+  .bg-strivo-base    { background-color: var(--strivo-base); }
+  .bg-strivo         { background-image: var(--strivo-fondo); }
+  .bg-strivo-tarjeta { background-color: var(--strivo-tarjeta); }
+  .bg-strivo-campo   { background-color: var(--strivo-campo); }
 
   /* El recuadro de la frase del día. Va aparte de las superficies del momento
      porque no es un escalón más de la misma escala: es el secundario de la
      paleta, la única superficie teñida de Hoy. */
-  .bg-lumia-frase     { background-color: var(--lumia-frase); }
-  .border-lumia-frase { border-color: var(--lumia-frase-borde); }
+  .bg-strivo-frase     { background-color: var(--strivo-frase); }
+  .border-strivo-frase { border-color: var(--strivo-frase-borde); }
 
   /* El conmutador Mañana/Noche y su segmento activo. Van aparte de las
      superficies del momento porque son el contratono: no acompañan al fondo,
      lo contradicen. */
-  .bg-lumia-conmutador        { background-color: var(--lumia-conmutador); }
-  .bg-lumia-conmutador-activo { background-color: var(--lumia-conmutador-activo); }
+  .bg-strivo-conmutador        { background-color: var(--strivo-conmutador); }
+  .bg-strivo-conmutador-activo { background-color: var(--strivo-conmutador-activo); }
 
   /* Punto de ánimo del calendario (§6.3.5). El componente pone la clase a
      partir del id que devuelve `animoDerivado`; el color vive arriba. */

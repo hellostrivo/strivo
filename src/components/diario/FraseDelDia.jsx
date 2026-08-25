@@ -12,7 +12,7 @@
 // una frase más y pasa a ser el único sitio de Hoy donde no hay nada que hacer.
 //
 // **La superficie es el secundario de la paleta de Lumia**, no el blanco velado
-// de las tarjetas: `--lumia-frase` es el rosa `strivo-am-200` en la mañana y un
+// de las tarjetas: `--strivo-frase` es el rosa `strivo-am-200` en la mañana y un
 // velo del lavanda `strivo-pm-400` en la noche. Es la única superficie teñida de
 // la pantalla, así que se distingue de todo lo demás por color y no por otro
 // escalón de luminancia — que es lo que la habría puesto a competir con la
@@ -43,7 +43,7 @@ export default function FraseDelDia({ frase }) {
 
   return (
     <figure
-      className="rounded-lg border border-lumia-frase bg-lumia-frase
+      className="rounded-lg border border-strivo-frase bg-strivo-frase
                  px-6 py-6 shadow-elev-2 transicion-tema"
     >
       <figcaption className="sr-only">{copy.diario.hoy.frase.label}</figcaption>

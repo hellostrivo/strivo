@@ -67,16 +67,28 @@ describe('ningún hex a mano en un componente (criterio 1)', () => {
 describe('los valores llegaron intactos del manual (criterios 3 y 4)', () => {
   const manual = readFileSync(MANUAL, 'utf8')
 
+  // **La paleta salió de `design-tokens.json` al cerrar el paso 9.** Aquel bloque
+  // era una segunda copia de los mismos ocho hexes, con el nombre viejo, y sin
+  // un solo consumidor: quien pinta lee la hoja. Así que la comprobación pasa de
+  // la copia al original, que es donde un error tendría consecuencias.
   it('las dos paletas del momento están completas y coinciden con §4.8', () => {
     // Eran cuatro —dos productos por dos momentos— y quedan dos. Los ocho hexes
     // de Mañana y Noche no se han tocado: el repliegue quita un producto, no
     // recalibra el color del que se queda.
-    expect(tokens.brand.lumia.am).toEqual(
-      expect.objectContaining({ 50: '#F6F2E9', 100: '#DCCFF1', 200: '#E5C2DC', 300: '#F6DDE8' }),
-    )
-    expect(tokens.brand.lumia.pm).toEqual(
-      expect.objectContaining({ 50: '#F3EFEA', 400: '#8D82B6', 500: '#6C5AA7', 700: '#5A5568' }),
-    )
+    const hoja = cssDe('src/styles/tokens-strivo.css')
+    Object.entries({
+      'am-50': '#F6F2E9',
+      'am-100': '#DCCFF1',
+      'am-200': '#E5C2DC',
+      'am-300': '#F6DDE8',
+      'pm-50': '#F3EFEA',
+      'pm-400': '#8D82B6',
+      'pm-500': '#6C5AA7',
+      'pm-700': '#5A5568',
+    }).forEach(([token, hex]) => {
+      expect(`${token}: ${hoja}`).toMatch(new RegExp(`--strivo-${token}:\\s*${hex}`))
+    })
+    expect(tokens.brand.lumia).toBeUndefined()
   })
 
   // **El token cambió de nombre en el CSS y el manual todavía no** (tanda C del
@@ -85,9 +97,8 @@ describe('los valores llegaron intactos del manual (criterios 3 y 4)', () => {
   // que volver aquí cuando se reedite (§4.4 del plan). El nombre nuevo se
   // comprueba donde ya es cierto: en la hoja de paleta.
   it('el secundario de la mañana es #E5C2DC (criterio 4)', () => {
-    expect(tokens.brand.lumia.am[200]).toBe('#E5C2DC')
-    expect(manual).toMatch(/`lumia-am-200`\s*\|\s*`#E5C2DC`/)
     expect(cssDe('src/styles/tokens-strivo.css')).toMatch(/--strivo-am-200:\s*#E5C2DC/)
+    expect(manual).toMatch(/`lumia-am-200`\s*\|\s*`#E5C2DC`/)
   })
 
   // El criterio 3 vigilaba `#5D4766`, el punto de convergencia cromática entre
@@ -95,10 +106,17 @@ describe('los valores llegaron intactos del manual (criterios 3 y 4)', () => {
   // deroga con la paleta que la contenía.** Con un solo producto no hay
   // convergencia que proteger, y el hex ya no existe en ningún token.
 
-  it('cada hex de los tokens de marca aparece literal en el manual', () => {
-    const hexes = JSON.stringify(tokens.brand).match(/#[0-9A-F]{6}/g) ?? []
-    expect(hexes.length).toBeGreaterThan(20)
-    hexes.forEach((hex) => expect(manual).toContain(hex))
+  it('cada hex de marca aparece literal en el manual', () => {
+    // Se mide sobre las dos fuentes, y esa es la parte que no podía perderse al
+    // vaciar el JSON: la hoja de paleta es donde de verdad se escriben los hexes
+    // de la app, y es la que caza un color inventado a mano —como el `#7E9E86`
+    // que SPEC_12 encontró en Constancia90—.
+    const hexes = [
+      ...(JSON.stringify(tokens.brand).match(/#[0-9A-F]{6}/g) ?? []),
+      ...(cssDe('src/styles/tokens-strivo.css').match(/#[0-9A-F]{6}/gi) ?? []),
+    ]
+    expect(hexes.length).toBeGreaterThan(18)
+    hexes.forEach((hex) => expect(manual).toContain(hex.toUpperCase()))
   })
 })
 
@@ -146,7 +164,9 @@ describe('el símbolo de la app (criterio 5, revisado 25 ago)', () => {
   it('lleva su tono de firma, distinto del primario de la paleta', () => {
     // Manual §3.2 — No se fuerzan a coincidir: el símbolo tiene su propio tono.
     expect(readFileSync(join(SIMBOLOS, 'strivo_simbolo.svg'), 'utf8')).toContain('#2B2730')
-    expect(tokens.brand.simbolos.strivo).not.toBe(tokens.brand.lumia.pm[500])
+    // El tono de firma no es el primario de la paleta, y siguen sin forzarse.
+    expect(tokens.brand.simbolos.strivo).not.toBe('#6C5AA7')
+    expect(tokens.brand.simbolos.lumia).toBeUndefined()
   })
 
   it('sobre el contratono de la mañana se pinta en monocromo, o no se vería', () => {

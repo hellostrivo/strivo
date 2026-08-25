@@ -77,9 +77,9 @@ export const copy = {
   // Hoy, el Diario de la mañana y de la noche, Respiración, el Journal y el
   // Historial. Vocabulario hacia dentro: reflexión, calma, cierre.
   //
-  // **Renombrado de `lumia` a `diario` el 25 de agosto de 2026** (paso 9 del
-  // plan de separación, §8). Se llamaba por el espacio que lo escribía, cuando
-  // había dos.
+  // **Renombrado a `diario` el 25 de agosto de 2026** (paso 9 del plan de
+  // separación, §8). Se llamaba por el espacio que lo escribía, cuando había
+  // dos. Su nivel interno duplicado se aplanó en la misma pasada.
   //
   // Aquí no hay una sola palabra de construcción: ni "hábito", ni "constancia",
   // ni "progreso", ni "ritual" referido a un checklist (§C2.6, criterio 3).
@@ -1092,8 +1092,8 @@ export const copy = {
   },
 
   // El namespace `empty` de Fase 0 se retira con SPEC_07. Sus cuatro cadenas
-  // tienen dueño en otro sitio —`lumia.journal.vacio`, `lumia.historial.vacio` e
-  // `insights.empty`— y ninguna se usaba ya. Dos
+  // tienen dueño en otro sitio —`diario.journal.vacio`, `diario.historial.vacio`
+  // e `insights.empty`— y ninguna se usaba ya. Dos
   // versiones del mismo estado vacío es una invitación a editar la que nadie ve.
 
   // ─── Respiración (SPEC_13 §7) ─────────────────────────────────────────────

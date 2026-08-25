@@ -24,7 +24,7 @@ export default function MomentoPausa({ pregunta, valor, onCambiar, onVolcar, onO
         <h2 className="font-display text-md text-on-surface">{textos.titulo}</h2>
       </div>
 
-      <div className="flex flex-col gap-3 rounded-md border border-on-surface bg-lumia-campo p-4">
+      <div className="flex flex-col gap-3 rounded-md border border-on-surface bg-strivo-campo p-4">
         <div className="flex flex-col gap-1">
           <h3 className="text-base text-on-surface">{pregunta.titulo}</h3>
           <p className="text-sm text-on-surface-soft">{pregunta.lead}</p>

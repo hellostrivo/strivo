@@ -198,7 +198,7 @@ describe('la misma pieza en los dos sitios (RN-LU-MAN-01, criterio 1)', () => {
     // Pierde una de sus tres mitades por el mismo motivo que la de
     // `Respiracion.jsx`: solo queda un producto al que no puede alcanzar.
     const imports = codigoDe(COMPONENTE).match(/^\s*import[\s\S]*?from\s+'[^']+'/gm) ?? []
-    imports.forEach((linea) => expect(linea).not.toMatch(/lumia|lib\/db/i))
+    imports.forEach((linea) => expect(linea).not.toMatch(/diario|lib\/db/i))
   })
 })
 

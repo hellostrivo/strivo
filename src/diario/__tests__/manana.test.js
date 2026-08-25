@@ -185,7 +185,7 @@ describe('criterio 2 — las dos preguntas emocionales son de selección única'
     expect(chips).toMatch(/PILDORA_ELEGIDA/)
     expect(chips).toMatch(/MARCA/)
     // Ni un color escrito a mano: la píldora es la única fuente.
-    expect(chips).not.toMatch(/border-current|bg-lumia-tarjeta/)
+    expect(chips).not.toMatch(/border-current|bg-strivo-tarjeta/)
   })
 })
 
@@ -664,7 +664,7 @@ describe('la consulta se ve igual que las preguntas, y en una sola pantalla', ()
   it('la píldora de la consulta es la misma que la del recorrido', () => {
     const resumen = codigoDe('src/components/diario/manana/ResumenManana.jsx')
     expect(resumen).toMatch(/PILDORA, PILDORA_ELEGIDA/)
-    expect(resumen).not.toMatch(/rounded-full border px-4|bg-lumia-tarjeta/)
+    expect(resumen).not.toMatch(/rounded-full border px-4|bg-strivo-tarjeta/)
   })
 
   it('la píldora de la consulta no finge ser un control', () => {

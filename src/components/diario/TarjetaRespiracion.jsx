@@ -13,8 +13,8 @@
 // tenga encima—, así que este archivo no nombra ni un color (RN-SURF-01) y las
 // dos atmósferas se resuelven solas.
 //
-// **Destaca por luminancia, no por borde** (RN-HOY-07): `bg-lumia-tarjeta` es
-// el escalón más claro del momento —por encima de `bg-lumia-campo`, que es el
+// **Destaca por luminancia, no por borde** (RN-HOY-07): `bg-strivo-tarjeta` es
+// el escalón más claro del momento —por encima de `bg-strivo-campo`, que es el
 // de los bloques del Diario de más abajo— y la elevación la separa del fondo.
 // No compite con el conmutador porque aquel va en contratono y no juega en
 // esta escala.
@@ -49,7 +49,7 @@ export default function TarjetaRespiracion({ etiqueta, onAbrir }) {
     <button
       type="button"
       onClick={onAbrir}
-      className="self-start min-h-touch rounded-lg border border-on-surface bg-lumia-tarjeta
+      className="self-start min-h-touch rounded-lg border border-on-surface bg-strivo-tarjeta
                  px-6 py-4 text-base font-normal text-on-surface
                  shadow-elev-2 transicion-tema
                  transition-shadow duration-260 ease-smooth
