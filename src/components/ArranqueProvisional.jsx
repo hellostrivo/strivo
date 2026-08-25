@@ -1,31 +1,33 @@
 // src/components/ArranqueProvisional.jsx
 //
-// ⚠ PROVISIONAL — lo sustituye el onboarding, que **ninguna de las doce specs
-// de Fase 1 construye**.
+// ⚠ PROVISIONAL — lo sustituye el onboarding, que todavía no está construido.
 //
 // Antes se llamaba `SesionProvisional` y se montaba una vez por pestaña, lo que
 // lo hacía parecer parte de la navegación. SPEC_11 retiró los dos conmutadores
 // provisionales de la barra, pero esto no es navegación: es el arranque de
-// sesión. Resuelve un uid y, si el árbol de `users/{uid}/` no existe, **pregunta
-// la identidad central** antes de crearlo.
+// sesión. Resuelve un uid y, si el árbol de `users/{uid}/` no existe, lo crea.
 //
-// **Por qué no se retira con los otros dos andamios:** sin él no hay uid, no
-// corre `initUserTree` y no se puede crear ni un hábito, porque RN-DB4-09 exige
-// que la identidad central exista desde el primer momento. No hay autenticación
-// ni onboarding en Fase 1, así que retirarlo deja la app sin arrancar.
+// **Ya no pregunta nada.** Hasta el 24 de agosto de 2026 condicionaba el
+// arranque de la app a que existiera una identidad central: montaba
+// `EditorIdentidad` y no dejaba pasar hasta escribirla, porque RN-DB4-09 exigía
+// que esa identidad existiera desde el primer momento. Al retirarse Formia esa
+// regla desaparece con ella, y con ella la única pantalla que este andamio
+// llegó a tener. Lo que queda es lo que siempre fue su trabajo: un uid y un
+// árbol.
 //
-// Preguntar la identidad en vez de inventarla tampoco es un detalle: RN-DB4-08
-// prohíbe rellenar datos que la persona no ha escrito. El onboarding real (P3)
-// hará esto mismo, con su pantalla y su ritmo.
+// RN-DB4-08 se sigue cumpliendo, y por eso el árbol se crea sin pedir nada en
+// vez de inventarse un dato: `initShared` siembra el perfil con `name: null` y
+// los valores de fábrica de §C5.2, ninguno de los cuales dice nada sobre quien
+// abre la app. El nombre lo preguntará el onboarding real (P4), que es donde ya
+// vive su copy.
 //
-// Se monta **una sola vez, en la raíz**, por encima de la barra de espacios.
+// **Por qué no se retira:** sin él no hay uid ni preferencias, y la app no
+// arranca. Sigue siendo un andamio.
+//
+// Se monta **una sola vez, en la raíz**, por encima de la navegación.
 
 import { useEffect, useState } from 'react'
-import EditorIdentidad from '@components/formia/EditorIdentidad'
-import Simbolo from '@components/shared/Simbolo'
-import { copy } from '@copy'
-import { formia, initUserTree } from '@/lib/db'
-import { conPrefijoCentral } from '@/formia/identidad'
+import { lumia, shared } from '@/lib/db'
 
 const CLAVE_UID = 'strivo.uid.local'
 
@@ -40,40 +42,39 @@ function uidLocal() {
 
 export default function ArranqueProvisional({ children }) {
   const [uid] = useState(uidLocal)
-  const [tieneArbol, setTieneArbol] = useState(null)
+  const [listo, setListo] = useState(false)
 
   useEffect(() => {
-    formia.getIdentity(uid).then((identity) => setTieneArbol(identity !== null))
+    let vigente = true
+
+    async function arrancar() {
+      // El perfil es la primera rama que escribe `initShared`, así que su
+      // ausencia es la señal de que el árbol no existe. Antes lo decía la
+      // identidad central, que era la hoja obligatoria de Formia.
+      const profile = await shared.getProfile(uid)
+
+      if (profile === null) {
+        // Esto es `initUserTree(uid)` menos Formia. Se llaman las dos ramas por
+        // separado porque `initUserTree` todavía exige una identidad central y
+        // lanzaría: lo depura el paso 3 del plan de separación, y cuando lo
+        // haga estas dos líneas vuelven a ser una sola llamada a `initUserTree`.
+        await shared.initShared(uid)
+        // `lumia/` nace vacío a propósito: un día en blanco sería un registro
+        // que nadie escribió (RN-DB4-08).
+        await lumia.initLumia(uid)
+      }
+
+      if (vigente) setListo(true)
+    }
+
+    arrancar()
+
+    return () => {
+      vigente = false
+    }
   }, [uid])
 
-  if (tieneArbol === null) return <div className="min-h-screen bg-paper" aria-busy="true" />
-
-  if (!tieneArbol) {
-    return (
-      <div className="min-h-screen bg-paper px-5 py-8 flex flex-col justify-center gap-6">
-        <div className="flex flex-col gap-2">
-          {/* El único sitio donde aparece el símbolo de Strivo: esta superficie
-              está por encima de los dos espacios —cuenta y perfil, §C0.4— y es
-              lo que la marca madre viste. Nunca es un destino navegable. */}
-          <Simbolo marca="strivo" alto={32} titulo={copy.appName} />
-          <h1 className="font-display text-lg text-ink">{copy.onboarding.p3.headline}</h1>
-          <p className="text-base text-ink/80">{copy.onboarding.p3.subhead}</p>
-        </div>
-        <EditorIdentidad
-          id="arranque-identidad-central"
-          prefijo={copy.formia.identidad.central.prefix}
-          placeholder={copy.formia.identidad.central.placeholder}
-          ayuda={copy.formia.identidad.central.hint}
-          onGuardar={async (texto) => {
-            const identityCentral = conPrefijoCentral(texto)
-            if (identityCentral === '') return
-            await initUserTree(uid, { identityCentral })
-            setTieneArbol(true)
-          }}
-        />
-      </div>
-    )
-  }
+  if (!listo) return <div className="min-h-screen bg-paper" aria-busy="true" />
 
   return children(uid)
 }
