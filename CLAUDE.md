@@ -501,7 +501,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**48 archivos de prueba · 1.393 casos · los seis comandos en verde.**
+**48 archivos de prueba · 1.398 casos · los seis comandos en verde.**
 
 ### Marca: el logo oficial y el video de apertura (25 ago 2026)
 
@@ -548,6 +548,9 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
 - **Copy sin consumidores:** `shared.home`, `navegacion.volver`, `navegacion.barraLabel` (murieron con
   el vestíbulo y la barra inferior) e `insights`, `profile`, `paywall`, `notifications`,
   `difficultDay`, `return`, `days` (restos anteriores). Retirarlos es limpieza, no riesgo.
+  **El bloque `onboarding` ya se retiró** (25 ago 2026): era el del commit raíz —`p1`, `p2`, `p3`,
+  `p3b`, `p3c`, `p4`, `p5`, `p11`—, anterior incluso al onboarding de `feat/onboarding-p1-p3c`, y
+  arrastraba copy de áreas que este producto ya no tiene.
 - **`mananaEscrita` y `nocheEscrita`** (`src/diario/diario.js`) siguen exportadas y probadas sin un
   solo consumidor: eran para el estado «hecho» que RN-HOY-04 retiró.
 
@@ -572,7 +575,8 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
   formas neutras se redactaron en implementación: «Pensando», «Con demasiado encima», «Con
   cansancio», «Con ligereza», «Con inquietud».
 - **No hay onboarding ni autenticación real.** `ArranqueProvisional` crea la sesión local y el árbol
-  de datos sin pedir nada. Es el primer bloque de F-1.
+  de datos sin pedir nada. Es el primer bloque de F-1, y sus ocho pasos ya están decididos: ver
+  «Onboarding — pendiente para F-1» más abajo.
 - **Los recorridos de validación manual siguen sin hacerse**, sobre todo los de Respiración: **las
   pruebas no oyen**. Hace falta escuchar cada sonido con audífonos y con la bocina del teléfono, y
   recorrer quince minutos con los ojos cerrados. **Un bug pasado es la prueba de lo que cuesta no
@@ -583,6 +587,41 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
 - **El `_redirects` de Netlify no existe.** Mientras el router sea `HashRouter` no hace falta.
 - **Con dos pestañas abiertas sobre el mismo día, la última escritura gana.** Sin bloqueo optimista.
   Es el comportamiento de todo el producto y está asumido.
+
+### Onboarding — pendiente para F-1 (decidido el 25 ago 2026)
+
+**Ocho pasos, escritos desde cero contra v5.0.** No se porta nada de `feat/onboarding-p1-p3c`: es una
+rama huérfana y arquitectónicamente incompatible —comparte con `strivo` solo el commit raíz— y su
+diagnóstico completo está en `docs/archivo/SPEC_ONBOARDING_LIMPIEZA_FORMIA.md`. Ese archivo **no se
+aplica**: opera sobre componentes que aquí no existen. Se conserva porque sus §3–§5 son la decisión
+de producto y **su copy es la base de texto ya validada** para reescribir el de F-1.
+
+Son **nueve pantallas y ocho pasos**: el género es un sub-paso (P2A) y no entra en la cuenta del
+indicador, igual que la pausa opcional de la Mañana no entra en la suya (RN-MAN-02).
+
+| Paso | Pantalla | Nota |
+|---|---|---|
+| P1 | Bienvenida | Transición ~5 s + degradado horario |
+| P2 | Nombre | |
+| P2A | Género | Para los pronombres del copy: masculino · femenino · prefiero no contestar · otro |
+| P3 | Motivo | «¿Qué te gustaría encontrar aquí?»: paz, avance, escucha, sueño, espacio, otro |
+| P4 | Identidad central | «Soy alguien que…», con chips de sugerencia editables, sin marca de género salvo la primera |
+| P5 | Horarios | Despertar / dormir |
+| P6 | Recordatorios | Dos avisos al día, opcional |
+| P7 | Crear cuenta | Google · Apple · correo, con opción de saltar |
+| P8 | Cierre | Frase de identidad si existe, mensaje neutro si no |
+
+**Fuera de este flujo, explícitamente:** selección de áreas, identidad por área y hábitos sugeridos.
+Esas pantallas eran de Formia (pausada) y **no vuelven salvo que Formia se reactive**. Por eso el
+motivo (P3) no lleva la opción de construir hábitos: no aplica a Strivo solo.
+
+**Regla de arquitectura a vigilar al escribir el spec.** En la implementación anterior (v3/v4) la
+identidad central terminó acoplada a `areas` **fuera del propio onboarding**: no solo en la
+superficie de Formia, también en `VistaManana.jsx`, `VistaNoche.jsx`, `animos.js` y `emociones.js`.
+El spec de F-1 tiene que dejar explícito que **la identidad central no depende de `areas` en ningún
+punto de la app** — ni en Diario, ni en Journal, ni en Historial.
+
+**`feat/onboarding-p1-p3c` queda sin integrar y sin borrar**, salvo decisión explícita.
 
 ---
 

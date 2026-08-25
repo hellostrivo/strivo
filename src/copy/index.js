@@ -19,60 +19,6 @@ export const copy = {
   appName: 'Strivo',
   tagline: 'Refugio digital para terminar cada día en paz contigo mismo.',
 
-  // ─── Onboarding ──────────────────────────────────────────────────────────
-  onboarding: {
-    p1: {
-      title: 'Refugio digital para terminar cada día en paz.',
-      subtitle: 'Tres minutos al día. Sin presión.',
-    },
-    p2: {
-      question: '¿Por qué estás aquí?',
-      hint: 'Elige los que resuenen',
-      options: [
-        'Ordenar mis emociones',
-        'Reconocer lo que sí logro',
-        'Conectar conmigo mismo',
-        'Establecer hábitos que duren',
-        'Preparar mi mente para dormir',
-      ],
-    },
-    p3: {
-      headline: 'No preguntamos qué quieres lograr.',
-      subhead: 'Preguntamos en quién te estás convirtiendo.',
-      prefix: 'Alguien que…',
-      placeholders: [
-        '…crece cada día',
-        '…se respeta a sí misma',
-        '…no se abandona',
-        '…termina lo que empieza',
-        '…vive con calma',
-      ],
-    },
-    p3b: {
-      question: 'Nadie crece en una sola dirección.',
-      hint: 'Elige las que importan ahora. Podrás cambiarlas cuando quieras.',
-    },
-    p3c: {
-      question: 'Si quieres, ponle palabras.',
-      hint: 'Si no, lo dejamos para después.',
-      prefixTemplate: 'En {área} soy alguien que…',
-    },
-    p4: {
-      question: 'Solo tu nombre. Nada más.',
-      placeholder: 'Tu nombre',
-    },
-    p5: {
-      cta: 'Empecemos ahora',
-      skip: 'Ahora no',
-    },
-    p11: {
-      // Template: "Te estás convirtiendo en alguien que {identidad}, en tu {área1} y en tu {área2}."
-      closingTemplate: 'Te estás convirtiendo en alguien que {identidad}.',
-      closingWithAreas: 'Te estás convirtiendo en alguien que {identidad}, en tu {areas}.',
-      ctaLabel: 'Entrar a Strivo',
-    },
-  },
-
   // ─── El diario ────────────────────────────────────────────────────────────
   // Hoy, el Diario de la mañana y de la noche, Respiración, el Journal y el
   // Historial. Vocabulario hacia dentro: reflexión, calma, cierre.
@@ -1353,7 +1299,7 @@ export const copy = {
 }
 
 // Utilidad: interpolar template strings
-// Uso: interpolate(copy.onboarding.p11.closingTemplate, { identidad: 'crece' })
+// Uso: interpolate(copy.diario.hoy.saludo.conNombreTemplate, { saludo, nombre })
 export function interpolate(template, vars) {
   return template.replace(/\{(\w+)\}/g, (_, key) => vars[key] ?? `{${key}}`)
 }
