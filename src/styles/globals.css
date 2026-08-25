@@ -36,10 +36,6 @@
    ninguna otra pantalla de la app. */
 @import '../breathing/styles/respiracion.css';
 
-/* EXPLORACIÓN (rama explora/lumia-am-amanecer) — paletas alternas de
-   Lumia·Mañana. Inerte sin `?paleta=a|b` en la URL. Se retira con el archivo. */
-@import './explora-lumia-am.css';
-
 /* Tailwind */
 @tailwind base;
 @tailwind components;
