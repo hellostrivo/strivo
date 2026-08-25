@@ -1,32 +1,33 @@
 // eslint.config.js
 // Configuración plana (ESLint 9).
 //
-// Su razón de ser en Fase 1 es RN-DB4-01: la separación Lumia/Formia deja de
-// depender de que quien programa se acuerde. Un import que cruce la línea
-// rompe el lint, y el lint corre antes de cada commit.
-
-const RN_DB4_01 =
-  'RN-DB4-01: Lumia no lee formia/ y Formia no lee lumia/. ' +
-  'Si de verdad hace falta cruzarlos, va en una capa por encima (Fase 2, §C4), ' +
-  'nunca dentro de un espacio.'
+// Su razón de ser es de arquitectura, no de estilo: la separación entre las
+// partes de la app deja de depender de que quien programa se acuerde. Un
+// import que cruce la línea rompe el lint, y el lint corre antes de cada commit.
+//
+// El mapa que custodia tiene dos partes y un territorio neutral:
+//
+//   compartido   `components/shared/`   lo usan todas las secciones
+//   diario       `lumia/`               Hoy, Journal, Historial
+//   Respiración  `breathing/`           la herramienta
+//   neutral      `lib/respiracion/`     el motor de ritmo, que no conoce a nadie
+//
+// Antes el mapa tenía tres partes, porque había dos espacios que no podían
+// leerse entre sí. Al quedar un solo producto, esa regla se queda sin objeto y
+// desaparece: no hay un segundo espacio del que separarse. Lo que sigue siendo
+// cierto —y es lo que vigila esta configuración— es que Respiración no lee el
+// diario, que el diario no lee Respiración, y que lo compartido no conoce ni a
+// uno ni a otra.
+//
+// Nota para el renombrado pendiente: `lumia/` pasa a llamarse `diario/`. Este
+// archivo es uno de los sitios donde ese cambio se nota, porque las rutas se
+// escriben literales.
 
 // Los patrones se comparan contra la cadena del import tal cual se escribe
-// (`'./formia.js'`, `'../../lib/db/formia.js'`, `'@/lib/db'`), no contra la
-// ruta resuelta. Por eso cada forma se lista de manera explícita.
-const FORMIA_MODULES = [
-  './formia',
-  './formia.js',
-  '**/formia',
-  '**/formia.js',
-  '**/formia/**',
-]
-const LUMIA_MODULES = ['./lumia', './lumia.js', '**/lumia', '**/lumia.js', '**/lumia/**']
+// (`'./lumia.js'`, `'../../lib/db/lumia.js'`, `'@/lib/db'`), no contra la ruta
+// resuelta. Por eso cada forma se lista de manera explícita.
+const DIARIO_MODULES = ['./lumia', './lumia.js', '**/lumia', '**/lumia.js', '**/lumia/**']
 
-// SPEC_13 §4.2 — `breathing/` es el tercer hermano y la separación se extiende.
-// Respiración es una herramienta transversal de Strivo, no un tercer espacio:
-// no lee Lumia ni Formia, y ninguno de los dos la lee a ella. El reloj que
-// comparte con Lumia vive en `lib/respiracion/`, que es territorio neutral —esa
-// es toda la razón de que no viva aquí dentro—.
 const BREATHING_MODULES = [
   './breathing',
   './breathing.js',
@@ -35,28 +36,29 @@ const BREATHING_MODULES = [
   '**/breathing/**',
 ]
 
-const RN_BREATHING =
-  'SPEC_13 §4.2: Respiracion no lee lumia/ ni formia/, y ninguno de los dos lee ' +
-  'breathing/. Lo que Lumia y Respiracion comparten es el motor de ritmo, y por ' +
-  'eso vive en lib/respiracion/ y no dentro de un espacio.'
+// RN-RE-DAT-09. Respiración es una sección del producto, no una capa por encima
+// ni por debajo del diario: se entra, se usa, se sale. Lo único que comparte con
+// el diario es el motor de ritmo, y esa es toda la razón de que el motor viva en
+// `lib/respiracion/` y no dentro de ninguna de las dos. Lo demás —dónde volver al
+// salir, con qué color pintarse— llega por props desde `App.jsx`, que es quien
+// enruta y el único que sabe dónde vive cada cosa.
+const RN_RESPIRACION =
+  'RN-RE-DAT-09: Respiración no lee el diario y el diario no lee Respiración. ' +
+  'Lo que comparten es el motor de ritmo, y por eso vive en lib/respiracion/. ' +
+  'Lo demás llega por props desde App.jsx.'
 
 const COMPARTIDO =
-  'Un componente de components/shared/ lo usan los dos espacios y el onboarding: ' +
-  'no puede depender de lumia/ ni de formia/. Lo que necesite, que llegue por props.'
+  'Un componente de components/shared/ lo usan todas las secciones y el ' +
+  'onboarding: no puede depender de lumia/ ni de breathing/. Lo que necesite, ' +
+  'que llegue por props (RN-LU-RESP-02).'
+
 const DB_ENTRYPOINT = ['@/lib/db', '**/lib/db', '**/lib/db/index.js', './index.js', '../index.js']
 
-const LUMIA_FILES = [
+const DIARIO_FILES = [
   'src/lib/db/lumia.js',
   'src/lumia/**/*.{js,jsx}',
   'src/pages/lumia/**/*.{js,jsx}',
   'src/components/lumia/**/*.{js,jsx}',
-]
-
-const FORMIA_FILES = [
-  'src/lib/db/formia.js',
-  'src/formia/**/*.{js,jsx}',
-  'src/pages/formia/**/*.{js,jsx}',
-  'src/components/formia/**/*.{js,jsx}',
 ]
 
 const BREATHING_FILES = [
@@ -65,13 +67,13 @@ const BREATHING_FILES = [
   'src/components/breathing/**/*.{js,jsx}',
 ]
 
-// El motor no conoce a nadie: ni los dos espacios ni la propia Respiracion.
-// Si algun dia necesitara el catalogo de patrones, dejaria de poder usarlo Lumia.
+// El motor no conoce a nadie: ni el diario ni la propia Respiración.
+// Si algún día necesitara el catálogo de patrones, dejaría de poder usarlo el diario.
 const NEUTRAL_FILES = ['src/lib/respiracion/**/*.js']
 
 // Solo se activan las dos reglas que enseñan a `no-unused-vars` a ver el JSX.
 // El resto del conjunto de eslint-plugin-react se queda fuera a propósito:
-// esta configuración existe para RN-DB4-01, no para opinar sobre React.
+// esta configuración existe para custodiar la separación, no para opinar sobre React.
 import react from 'eslint-plugin-react'
 
 const browserGlobals = {
@@ -124,44 +126,39 @@ export default [
     },
   },
 
-  // ─── RN-DB4-01, un sentido ──────────────────────────────────────────────────
+  // ─── El diario no lee Respiración ───────────────────────────────────────────
   {
-    files: LUMIA_FILES,
+    files: DIARIO_FILES,
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [{ group: BREATHING_MODULES, message: RN_RESPIRACION }],
+        },
+      ],
+    },
+  },
+
+  // ─── Respiración no lee el diario ───────────────────────────────────────────
+  {
+    files: BREATHING_FILES,
     rules: {
       'no-restricted-imports': [
         'error',
         {
           patterns: [
-            { group: FORMIA_MODULES, message: RN_DB4_01 },
-            { group: BREATHING_MODULES, message: RN_BREATHING },
-            { group: DB_ENTRYPOINT, importNames: ['formia'], message: RN_DB4_01 },
+            { group: DIARIO_MODULES, message: RN_RESPIRACION },
+            { group: DB_ENTRYPOINT, importNames: ['lumia'], message: RN_RESPIRACION },
           ],
         },
       ],
     },
   },
 
-  // ─── RN-DB4-01, el otro ─────────────────────────────────────────────────────
-  {
-    files: FORMIA_FILES,
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            { group: LUMIA_MODULES, message: RN_DB4_01 },
-            { group: BREATHING_MODULES, message: RN_BREATHING },
-            { group: DB_ENTRYPOINT, importNames: ['lumia'], message: RN_DB4_01 },
-          ],
-        },
-      ],
-    },
-  },
-
-  // ─── Lo compartido no conoce ningún espacio ─────────────────────────────────
-  // `components/shared/` es lo que usan los dos productos y el onboarding a la
-  // vez. Un import a `lumia/` o a `formia/` desde aquí lo convertiría en un
-  // componente de ese espacio disfrazado de compartido, que es la forma en que
+  // ─── Lo compartido no conoce ninguna sección ────────────────────────────────
+  // `components/shared/` es lo que usan todas las secciones y el onboarding a la
+  // vez. Un import a `lumia/` o a `breathing/` desde aquí lo convertiría en un
+  // componente de esa sección disfrazado de compartido, que es la forma en que
   // se pierden los componentes únicos (RN-LU-RESP-02).
   {
     files: ['src/components/shared/**/*.{js,jsx}'],
@@ -170,25 +167,9 @@ export default [
         'error',
         {
           patterns: [
-            { group: [...LUMIA_MODULES, ...FORMIA_MODULES], message: COMPARTIDO },
-            { group: BREATHING_MODULES, message: RN_BREATHING },
-            { group: DB_ENTRYPOINT, importNames: ['lumia', 'formia'], message: COMPARTIDO },
-          ],
-        },
-      ],
-    },
-  },
-
-  // ─── Respiracion no conoce ningun espacio ───────────────────────────────────
-  {
-    files: BREATHING_FILES,
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            { group: [...LUMIA_MODULES, ...FORMIA_MODULES], message: RN_BREATHING },
-            { group: DB_ENTRYPOINT, importNames: ['lumia', 'formia'], message: RN_BREATHING },
+            { group: DIARIO_MODULES, message: COMPARTIDO },
+            { group: BREATHING_MODULES, message: COMPARTIDO },
+            { group: DB_ENTRYPOINT, importNames: ['lumia'], message: COMPARTIDO },
           ],
         },
       ],
@@ -203,11 +184,8 @@ export default [
         'error',
         {
           patterns: [
-            {
-              group: [...LUMIA_MODULES, ...FORMIA_MODULES, ...BREATHING_MODULES],
-              message: RN_BREATHING,
-            },
-            { group: DB_ENTRYPOINT, importNames: ['lumia', 'formia'], message: RN_BREATHING },
+            { group: [...DIARIO_MODULES, ...BREATHING_MODULES], message: RN_RESPIRACION },
+            { group: DB_ENTRYPOINT, importNames: ['lumia'], message: RN_RESPIRACION },
           ],
         },
       ],
