@@ -27,7 +27,7 @@
 // Se monta **una sola vez, en la raíz**, por encima de la navegación.
 
 import { useEffect, useState } from 'react'
-import { lumia, shared } from '@/lib/db'
+import { initUserTree, shared } from '@/lib/db'
 
 const CLAVE_UID = 'strivo.uid.local'
 
@@ -53,16 +53,10 @@ export default function ArranqueProvisional({ children }) {
       // identidad central, que era la hoja obligatoria de Formia.
       const profile = await shared.getProfile(uid)
 
-      if (profile === null) {
-        // Esto es `initUserTree(uid)` menos Formia. Se llaman las dos ramas por
-        // separado porque `initUserTree` todavía exige una identidad central y
-        // lanzaría: lo depura el paso 3 del plan de separación, y cuando lo
-        // haga estas dos líneas vuelven a ser una sola llamada a `initUserTree`.
-        await shared.initShared(uid)
-        // `lumia/` nace vacío a propósito: un día en blanco sería un registro
-        // que nadie escribió (RN-DB4-08).
-        await lumia.initLumia(uid)
-      }
+      // `initUserTree` ya no exige una identidad central: es `shared/` con sus
+      // cuatro ramas y un `lumia/` que nace vacío a propósito, porque un día en
+      // blanco sería un registro que nadie escribió (RN-DB4-08).
+      if (profile === null) await initUserTree(uid)
 
       if (vigente) setListo(true)
     }
