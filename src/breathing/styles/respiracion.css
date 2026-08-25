@@ -2,7 +2,7 @@
    La piel de la capa visual de Respiracion (SPEC_14).
 
    RN-RE-VIS-00 — Aqui no entra ni un token de seccion, y sigue sin
-   entrar despues de la mudanza a Lumia (24 ago). Lo que cambio es de donde
+   entrar despues de la mudanza a una pestana del producto (24 ago). Lo que cambio es de donde
    salen los colores: antes eran los `--strivo-*` escritos aqui dentro, y ahora
    son SIETE VARIABLES SEMANTICAS —cuatro de fase, tres de trazo— que
    `globals.css` define por espacio. Esta hoja pide "el color de la fase que
@@ -10,12 +10,12 @@
 
    Es la misma decision que SPEC_10 tomo con el velo de `TransicionLuz` y
    SPEC_11 con la barra: **el tema en el CSS del sitio que lo conoce, nunca en
-   el componente**. Asi Respiracion se viste de Lumia sin nombrarla, y el dia que
-   Formia la monte tampoco habra que tocar este archivo.
+   el componente**. Asi Respiracion se viste del sitio donde este montada sin
+   nombrarlo, y el dia que la monte otro tampoco habra que tocar este archivo.
 
    Las cuatro fases se separan por LUMINANCIA y no por tono. Con la escala de
    Strivo era forzoso —es acromatica por decision de marca (manual §4.1)—; con
-   la de Lumia se conserva a proposito, porque RN-RE-VIS-17 ya prohibe comunicar
+   la del momento se conserva a proposito, porque RN-RE-VIS-17 ya prohibe comunicar
    la fase solo por color y el dato lo llevan la palabra de `EtiquetaFase` y la
    geometria. El color acompana. Ni un hexadecimal escrito a mano (§5). */
 
@@ -332,8 +332,8 @@
 
 /* ─── SPEC_16 — Las dos pantallas ──────────────────────────────────────────
    El anillo de `.acceso-respiracion__icono` se retiro con el acceso del Home
-   (24 ago): Respiracion ya no cuelga del vestibulo de Strivo, es una seccion de
-   Lumia y se entra por su pestana. */
+   (24 ago): Respiracion ya no cuelga de un vestibulo, es una seccion mas y se
+   entra por su pestana. */
 
 /* RN-RE-NAV-14 — La accion principal, pegada abajo. Lleva su propio fondo para
    que el contenido que pasa por debajo no se lea a traves de ella.
@@ -341,8 +341,8 @@
    **El `bottom` no es cero, y por eso vive aqui y no en una clase de Tailwind.**
    Dentro de un espacio hay una barra fija al pie —56 px mas el area segura— y a
    `bottom: 0` el boton quedaba justo debajo de ella: presente en el DOM,
-   invisible en pantalla. Es el mismo tropiezo que la cabecera de Lumia resolvio
-   con su `z-30`. */
+   invisible en pantalla. Es el mismo tropiezo que la cabecera resolvio con su
+   `z-30`. */
 .respiracion-accion {
   bottom: calc(56px + env(safe-area-inset-bottom, 0px));
   background: var(--espacio-base);
@@ -369,7 +369,7 @@
    Tres senales a la vez, nunca solo el color (criterio 7 de SPEC_11 y
    RN-RE-VIS-17): **superficie** mas clara, **borde** de acento a 2 px y una
    **palomita**. La superficie sale de `--color-raised` y el borde de
-   `--espacio-acento`, asi que dentro de Lumia son el morado de la marca y su
+   `--espacio-acento`, asi que dentro del producto son el morado de la marca y su
    tarjeta, sin que ningun componente nombre un color (RN-SURF-01).
 
    El borde de 2 px lo compensa un `padding` menor: sin eso, la fila da un salto

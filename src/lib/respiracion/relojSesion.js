@@ -2,7 +2,7 @@
 // El motor es puro; esto es lo que lo pone en marcha.
 //
 // Un solo reloj gobierna el círculo, la línea y el sonido (SPEC_13 §6.3). Es la
-// misma decisión que tomó SPEC_08 para la respiración de Lumia y por el mismo
+// misma decisión que tomó SPEC_08 para la respiración diaria y por el mismo
 // motivo: dos relojes con la misma cuenta atrás se separan, y lo que se ve deja
 // de coincidir con lo que se oye justo cuando alguien intenta seguirlo.
 //

@@ -320,8 +320,8 @@ describe('criterio 16 — nada de lo que ya había se toca', () => {
 
   it('el modelo canónico de §C5 sigue teniendo tres raíces, no cuatro', async () => {
     // Es lo que comprueba el criterio 9 de SPEC_08 desde el otro lado: la
-    // respiración de Lumia no se registra, y `breathing/` no entra ahí porque no
-    // es Lumia. Sus rutas viven en `breathing/data/esquema.js`.
+    // respiración diaria de Hoy no se registra, y `breathing/` no entra ahí
+    // porque no es el diario. Sus rutas viven en `breathing/data/esquema.js`.
     const schema = await import('@lib/db/schema')
     expect(JSON.stringify(schema.COLLECTIONS)).not.toMatch(/breath/i)
     expect(Object.keys(schema.paths).some((clave) => /breath/i.test(clave))).toBe(false)

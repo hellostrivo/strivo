@@ -5,7 +5,7 @@
 // constante escondida. Quien quiera un movimiento distinto lo pasa; nadie tiene
 // que editar el motor para conseguirlo.
 //
-// **Una sola curva para toda la app.** La respiración diaria de Lumia venía de
+// **Una sola curva para toda la app.** La respiración diaria de Hoy venía de
 // SPEC_08 con `smoothstep` —t²(3−2t)— y este módulo la sustituye por el coseno
 // elevado. La diferencia máxima entre ambas es de 0,0100 de amplitud, que sobre
 // un círculo de 200 px son 0,36 px: imperceptible. Se unifica porque dos curvas

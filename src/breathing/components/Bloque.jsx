@@ -1,7 +1,7 @@
 // src/breathing/components/Bloque.jsx
 // La tarjeta que envuelve cada grupo de ajustes.
 //
-// Existe desde que Respiración vive dentro de Lumia (24 ago). Antes los bloques
+// Existe desde que Respiración es una sección más (24 ago). Antes los bloques
 // eran secciones sueltas sobre el fondo, separadas solo por aire: legible en una
 // pantalla que era suya y de nadie más, pero dentro de un espacio con cabecera y
 // barra se leía como una lista larga sin jerarquía.

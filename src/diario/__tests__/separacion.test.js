@@ -25,7 +25,7 @@ import { describe, expect, it } from 'vitest'
 import { copy } from '@copy'
 import { COLLECTIONS, FIELDS } from '@/lib/db/schema'
 
-const ARBOL_LUMIA = ['src/diario', 'src/pages/diario', 'src/components/diario']
+const ARBOL_DIARIO = ['src/diario', 'src/pages/diario', 'src/components/diario']
 
 function archivosDe(dir) {
   return readdirSync(dir).flatMap((nombre) => {
@@ -44,7 +44,7 @@ function codigoDe(ruta) {
     .replace(/^\s*\/\/.*$/gm, '')
 }
 
-const ARCHIVOS = ARBOL_LUMIA.flatMap(archivosDe)
+const ARCHIVOS = ARBOL_DIARIO.flatMap(archivosDe)
 
 /** Recorre todas las cadenas de un namespace de copy. */
 function cadenasDe(nodo, ruta = 'copy.diario') {
@@ -106,12 +106,12 @@ describe('el diario no sabe nada de hábitos (§C2.6, revisión 25 ago)', () => 
     expect(hoy).not.toMatch(/ritual de la mañana/i)
   })
 
-  it('el copy de Lumia no usa vocabulario de hábitos', () => {
+  it('el copy del diario no usa vocabulario de hábitos', () => {
     const prohibido = /h[áa]bito|constancia|checklist|streak|racha|progreso/i
     CADENAS.forEach(([ruta, texto]) => expect(`${ruta}: ${texto}`).not.toMatch(prohibido))
   })
 
-  it('ninguna cadena de Lumia le dice "ritual" a nadie', () => {
+  it('ninguna cadena del diario le dice "ritual" a nadie', () => {
     // Ya no queda ni el vocabulario interno: cerrar el día es escribir la
     // sección Noche, y no hay ningún módulo aparte que presentar. Se recogen
     // las rutas infractoras en vez de concatenarlas al texto: lo que se
@@ -389,7 +389,7 @@ describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
   })
 
   it('el recuadro de la frase no nombra un color y tiene sus dos momentos', () => {
-    // Como el resto de Lumia, pide su superficie por el papel que cumple y las
+    // Como el resto del diario, pide su superficie por el papel que cumple y las
     // dos atmósferas se resuelven en el CSS (RN-SURF-01). De noche el
     // secundario entra como velo: en sólido no llegaría a AAA con ninguna de
     // las dos tintas.
@@ -434,7 +434,7 @@ describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
 })
 
 describe('contraste por superficie (§5.2.3, §5.4.3, RN-SURF-01)', () => {
-  it('ningún componente de Lumia fija un color de texto literal', () => {
+  it('ningún componente del diario fija un color de texto literal', () => {
     ARCHIVOS.filter((ruta) => ruta.endsWith('.jsx')).forEach((ruta) => {
       const codigo = codigoDe(ruta)
       // Las clases de color del tema claro heredado (text-ink, text-paper) y
@@ -493,7 +493,7 @@ describe('copy con género (§3.6.5)', () => {
   })
 })
 
-describe('la voz de Lumia (§3.6)', () => {
+describe('la voz del diario (§3.6)', () => {
   it('no hay léxico prohibido ni exclamaciones en el copy', () => {
     const prohibido = /fallaste|incumpliste|abandonaste|deber[íi]as?|tendr[íi]as?|\btareas?\b|[¡!]/i
     CADENAS.forEach(([ruta, texto]) => expect(`${ruta}: ${texto}`).not.toMatch(prohibido))
@@ -531,7 +531,7 @@ describe('las victorias y el checklist de logros se retiraron (23 ago)', () => {
   })
 
   it('nadie las escribe ni las lee, en ningún espacio', () => {
-    // Mismo listón que la intención: el árbol entero de Lumia más la capa de
+    // Mismo listón que la intención: el árbol entero del diario más la capa de
     // datos. Si reaparecen, esta prueba falla antes que nadie las vea.
     ARCHIVOS.concat(archivosDe('src/lib/db')).forEach((ruta) =>
       expect(`${ruta}: ${codigoDe(ruta)}`).not.toMatch(

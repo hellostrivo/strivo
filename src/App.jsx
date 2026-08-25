@@ -72,7 +72,7 @@ function Secciones({ uid }) {
   // La sección que muestra Hoy, o `null` fuera de ella. No es un segundo origen
   // del tema —lo sigue eligiendo el conmutador (RN-HOY-05)—: es el eco que
   // necesita el cromo, porque los tokens viajan por el DOM.
-  const [momentoLumia, setMomentoLumia] = useState(null)
+  const [momentoHoy, setMomentoHoy] = useState(null)
 
   /**
    * §C7.5 — El umbral se cruza al abrir la app, una vez por sesión
@@ -101,7 +101,7 @@ function Secciones({ uid }) {
       // de Hoy. A las diez de la mañana con el conmutador en Noche valen cosas
       // distintas, y ese es justo el caso que hay que resolver bien. Sin
       // atributo fuera de Hoy.
-      data-momento={momentoLumia ?? undefined}
+      data-momento={momentoHoy ?? undefined}
       data-surface="light"
       className="flex min-h-screen flex-col bg-espacio font-sans text-on-surface"
     >
@@ -113,7 +113,7 @@ function Secciones({ uid }) {
 
           <Route
             path="/hoy"
-            element={<Hoy uid={uid} onHideNav={setHideNav} onMomento={setMomentoLumia} />}
+            element={<Hoy uid={uid} onHideNav={setHideNav} onMomento={setMomentoHoy} />}
           />
           <Route path="/journal" element={<Journal uid={uid} onHideNav={setHideNav} />} />
 

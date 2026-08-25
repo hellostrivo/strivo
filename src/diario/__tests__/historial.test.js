@@ -88,7 +88,7 @@ describe('puntos de ánimo (§5.10 · §6.3.5)', () => {
   })
 })
 
-describe('vista de día completo: solo Lumia (§C7.7.2)', () => {
+describe('vista de día completo: solo lo que el diario guarda (§C7.7.2)', () => {
   it('trae mañana, noche y journal', async () => {
     await diario.saveMorningEntry(UID, '2026-08-10', { gratitude: ['el café'] })
     await diario.saveNightRitual(UID, '2026-08-10', { reflection: 'Que se puede pedir ayuda' })

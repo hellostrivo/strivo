@@ -1,6 +1,6 @@
 // src/diario/useHistorial.js
 // Estado de React sobre `historial.js`: el mes que se está mirando y, si se
-// abre un día, todo lo de Lumia de ese día (§5.10).
+// abre un día, todo lo escrito ese día (§5.10).
 //
 // Navegar 12 meses atrás no se nota (§5.10, criterio 1): el mes se lee de
 // IndexedDB en una sola tanda. Con el volumen de un año no hay nada más que

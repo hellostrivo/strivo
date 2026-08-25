@@ -312,11 +312,11 @@ describe('el color sale del espacio, no de Strivo (24 ago)', () => {
   })
 })
 
-describe('el círculo de Lumia sigue intacto (criterio 20c, §1.2)', () => {
+describe('el círculo de la respiración diaria sigue intacto (criterio 20c, §1.2)', () => {
   it('conserva su naranja de amanecer y no toca los tokens de Respiración', () => {
     const css = readFileSync('src/styles/globals.css', 'utf8')
     // §6.3.9 — El círculo de SPEC_08 se pinta con `--color-breath`, que sale de
-    // la paleta de Lumia. Son dos elementos de dos capas de marca distintas.
+    // la paleta del momento. Son dos elementos de dos capas distintas.
     expect(css).toMatch(/\.circulo-respiracion[\s\S]*?background-color: var\(--color-breath\)/)
     expect(codigoDe(SPEC_08)).not.toMatch(/respiracion-fase|strivo-/)
   })

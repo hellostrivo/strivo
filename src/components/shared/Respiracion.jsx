@@ -2,9 +2,9 @@
 // El ejercicio de respiración guiada: 5-5-3, tres ciclos (§C2.3 · §5.1.2).
 //
 // **Un solo componente para los dos sitios** que lo usan: la respiración diaria
-// de la sección Mañana de Lumia y P1 del onboarding (RN-LU-RESP-02). Por eso
+// de la sección Mañana de Hoy y P1 del onboarding (RN-LU-RESP-02). Por eso
 // vive en `components/shared/` y **no conoce ninguno de los dos espacios**: no
-// importa `diario/` ni `formia/`, no lee la capa de datos y no sabe qué copy
+// importa `diario/` ni `breathing/`, no lee la capa de datos y no sabe qué copy
 // está pintando. Todo llega por props. Dos implementaciones divergentes es
 // exactamente lo que produjo la contradicción que v4.1 vino a cerrar.
 //

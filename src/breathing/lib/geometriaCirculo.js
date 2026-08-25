@@ -6,7 +6,7 @@
 // verdad si la geometría no depende de que exista un navegador. El componente
 // pinta lo que estas funciones devuelven y no calcula nada por su cuenta.
 //
-// **No confundir con el círculo de Lumia (SPEC_08).** Aquel es otro elemento,
+// **No confundir con el círculo de la respiración diaria (SPEC_08).** Aquel es otro elemento,
 // de otra capa de marca, y no se toca (§1.2). Este es nuevo e independiente.
 
 import { recortar } from '@lib/respiracion/curvas'

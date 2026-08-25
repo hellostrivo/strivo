@@ -8,7 +8,7 @@
 // la app no puede abrir una base con versión mayor que la suya, y el requisito
 // era justamente que nada se corrompa al volver atrás (SPEC_13 §4.4).
 //
-// **RN-RE-DAT-09 — de aquí no se importa nada de `diario/` ni de `formia/`.** Se
+// **RN-RE-DAT-09 — de aquí no se importa nada de `diario/`.** Se
 // entra por `lib/db/local.js` y `lib/db/schema.js` directamente y no por el
 // barril `lib/db/index.js`, que expone los dos espacios: el lint lo prohíbe, y
 // aunque no lo hiciera, no hay motivo para tenerlos a la vista.
@@ -34,7 +34,7 @@ import {
 // sigue funcionando entera durante la sesión y lo guardado se pierde al salir.
 //
 // El respaldo vive **aquí y no en `lib/db/local.js`** a propósito: degradar el
-// almacén compartido cambiaría el comportamiento de error de Lumia y Formia, que
+// almacén compartido cambiaría el comportamiento de error del diario, que
 // se diseñó sobre RN-DB4-08 —nada se corrige en silencio— y está sostenido por
 // las pruebas de SPEC_02. El radio se queda dentro de la respiración.
 

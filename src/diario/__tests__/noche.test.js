@@ -788,7 +788,7 @@ describe('§12 — la noche se puede recorrer con lector de pantalla y sin ver c
   })
 })
 
-describe('criterio 13 — la mañana y el resto de Lumia no se tocan', () => {
+describe('criterio 13 — la mañana y el resto del diario no se tocan', () => {
   it('ningún archivo de la noche escribe en la mañana', () => {
     // Leer la intención sí; escribir, nunca. Lo que la noche toca de
     // `morningEntry` es una lectura y ni una escritura.

@@ -5,7 +5,7 @@
 // Journal es el silencio disponible: aquí el sistema no sugiere nada, no
 // corrige nada y no comenta nada (RN-JR-03).
 //
-// RN-DB4-01 — Ni un dato de Formia. RN-02 — Local-first: se escribe en
+// RN-DB-10 — Ni un dato ajeno al diario. RN-01 — Local primero: se escribe en
 // IndexedDB al instante y la red va detrás.
 //
 // **Lo que el modelo canónico no guarda, y por eso no se construye:** título,

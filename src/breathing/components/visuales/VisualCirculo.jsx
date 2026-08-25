@@ -1,10 +1,10 @@
 // src/breathing/components/visuales/VisualCirculo.jsx
 // El círculo que respira (SPEC_14 §3).
 //
-// **No es el círculo de Lumia.** Aquel es de SPEC_08, conserva su naranja de
+// **No es el círculo de la respiración diaria.** Aquel es de SPEC_08, conserva su naranja de
 // amanecer y no se toca (§1.2). Este nace aquí, es independiente, y viste los
 // neutros de Strivo madre: la forma dice "esto es respirar" y el color dice
-// "esto es Strivo, no Lumia". Que se parezcan en lo primero y no en lo segundo
+// "esto es la herramienta, no el ejercicio breve". Que se parezcan en lo primero y no en lo segundo
 // es intencional.
 //
 // **Lo que este componente NO hace**, y es la mitad de su diseño:

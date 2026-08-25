@@ -1,13 +1,13 @@
 // src/pages/diario/Historial.jsx
-// Historial — parte emocional de Lumia (§5.10).
+// Historial — el estado emocional de cada día (§5.10).
 //
 // Que se pueda volver a cualquier día de la vida registrada y que hacerlo se
 // sienta bien. Calendario con puntos de ánimo y, al tocar un día, todo lo de
 // ese día en una página serena con la fecha en grande.
 //
-// **Sin hábitos y sin constancia acumulada** (§C7.7.2). La parte de hábitos del
-// §5.10 original se reubicó en Formia (§C3.7); lo que queda aquí es estado
-// emocional. Esta página no importa `formia/` y no tiene forma de hacerlo.
+// **Sin hábitos y sin constancia acumulada** (§C7.7.2). Esa parte del §5.10
+// original pertenecía al alcance que se replegó; lo que queda aquí es estado
+// emocional, y esta página no tiene forma de leer otra cosa.
 //
 // Los días sin registro no llevan marca de ningún tipo: no hay huecos, no hay
 // grises acusatorios y no hay días perdidos.

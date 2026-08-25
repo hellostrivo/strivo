@@ -41,7 +41,7 @@ function codeOf(fn) {
   return null
 }
 
-describe('registros de Lumia', () => {
+describe('registros del diario', () => {
   it('journal solo admite los campos de SPEC_02 §5', () => {
     expect(
       validateJournalEntry({ date: '2026-08-10', text: 'Hoy', emotions: ['calma'] }),

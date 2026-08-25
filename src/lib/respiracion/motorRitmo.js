@@ -2,7 +2,7 @@
 // El ritmo de cualquier patrón de respiración. Lógica pura: sin DOM, sin
 // timers, sin estado. Dado un patrón y un instante, dice dónde se está.
 //
-// Vive en `lib/` y no en `breathing/` a propósito (SPEC_13 §4.3): Lumia consume
+// Vive en `lib/` y no en `breathing/` a propósito (SPEC_13 §4.3): el diario consume
 // este motor para su respiración diaria y `breathing/` no puede ser importado
 // desde un espacio. `lib/` es el territorio neutral que ya existía —aquí están
 // `constancia.js` y `timeSlot.js`— y es donde vivía `ritmoRespiracion.js`, que
@@ -36,7 +36,7 @@ export const PASO_EDICION = 5 // 0,5 s — RN-RE-MOT-06
  * El patrón al que se recurre cuando falta un valor y no hay nada mejor.
  *
  * Son los mismos números que `calma-553` del catálogo, y la coincidencia no es
- * casual: es el ritmo de Lumia. No se importa de `breathing/data/` porque este
+ * casual: es el ritmo de la casa. No se importa de `breathing/data/` porque este
  * módulo no puede conocer `breathing/`; una prueba de allá comprueba que los
  * dos siguen diciendo lo mismo, para que la duplicación no pueda separarse.
  */

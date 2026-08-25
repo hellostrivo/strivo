@@ -19,16 +19,14 @@
 // voluntaria (RN-LU-RESP-01) y no se dispara con esto. Este archivo no la
 // menciona y no la importa.
 //
-// Vive en `components/shared/` y no conoce ningún espacio: el tono del velo y
-// de la luz los pone el tema desde `globals.css`, así que la misma pieza sirve
-// sobre el crema de la mañana, sobre el índigo de la noche y sobre el ocre de
-// Formia sin saberlo.
+// Vive en `components/shared/` y no fija ni un color: el tono del velo y de la
+// luz los pone el tema desde `globals.css`, así que la misma pieza sirve sobre
+// el crema de la mañana y sobre el índigo de la noche sin saberlo (RN-TEC-05).
 //
 // **`conFrase` no es una segunda variante**, es la misma pieza sin su texto. La
-// entrada a Formia todavía no tiene brief de diseño y entra con la estructura
-// de esta —luz tenue, cinco segundos, saltable— y su propia paleta, hasta que
-// exista. La frase es de Lumia: es el repertorio de apertura de §C7.5 y a
-// Formia no le pertenece.
+// frase es contenido —el repertorio de apertura de §C7.5— y no estructura, así
+// que quien monte el umbral sin ella sigue teniendo el mismo umbral: luz tenue,
+// cinco segundos y saltable por toda su superficie.
 
 import { useEffect, useRef, useState } from 'react'
 import { copy } from '@copy'

@@ -1,13 +1,13 @@
 // src/pages/diario/Hoy.jsx
-// Pantalla raíz de Lumia (§5.2 + §5.2.1 + §5.2.3).
+// Pantalla raíz de la app (§5.2 + §5.2.1 + §5.2.3).
 //
 // Orienta en menos de dos segundos: qué momento es, qué hay, cómo estoy. Nunca
 // es un panel de control: no hay gráficas, ni contadores, ni insignias, ni una
 // segunda acción principal.
 //
-// **Sin enlace a Formia** (§C7.7.3). Los dos espacios se cruzan solo por la
-// barra de navegación, así que aquí no hay puente, ni etiqueta, ni vocabulario
-// de hábitos. Tampoco está el texto "Tu día está en curso…" de Fase 0.
+// **Sin vocabulario de hábitos y sin puente a ninguna otra parte.** Lo que se
+// replegó no dejó aquí ni una etiqueta ni un enlace. Tampoco está el texto
+// "Tu día está en curso…" de Fase 0.
 //
 // El tema lo elige el conmutador y solo el conmutador (RN-HOY-05). La hora del
 // sistema decide con cuál se abre la pantalla y nada más.

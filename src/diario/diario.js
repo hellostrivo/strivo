@@ -1,8 +1,8 @@
 // src/diario/diario.js
-// El día de Lumia: lo que la pantalla Hoy y las dos vistas del Diario leen y
+// El día: lo que la pantalla Hoy y las dos vistas del Diario leen y
 // escriben (§5.2, §5.3, §5.4).
 //
-// RN-DB4-01 — Aquí no hay un solo dato de Formia. Ni hábitos, ni constancia, ni
+// RN-DB-10 — Aquí no hay un solo dato ajeno al diario. Ni hábitos, ni constancia, ni
 // identidad. Lo único que se comparte con el otro espacio es `shared/profile`,
 // que por definición es de los dos (RN-DB4-02).
 //

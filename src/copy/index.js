@@ -948,7 +948,7 @@ export const copy = {
     },
 
     // ─── Historial (§5.10) ──────────────────────────────────────────────────
-    // Solo contenido de Lumia: mañana, noche y journal (§C7.7.2). Sin hábitos,
+    // Solo lo que el diario guarda: mañana, noche y journal (§C7.7.2). Sin hábitos,
     // sin cifras acumuladas y sin ninguna vista que cruce los dos espacios.
     historial: {
       title: 'Historial',
@@ -1027,7 +1027,7 @@ export const copy = {
 
     // El Home de Strivo — la pantalla por la que se entra a la app (revisión de
     // §C0.2 y de SPEC_11, 19 ago 2026). **No lleva frase**: la frase de
-    // apertura es del umbral de Lumia y aquí sería una segunda voz antes de
+    // apertura es del umbral de entrada y aquí sería una segunda voz antes de
     // haber elegido nada. Tampoco lleva saludo ni fecha: eso es R2, suprimido
     // de raíz (Anexo E, E.0).
     //
@@ -1097,7 +1097,7 @@ export const copy = {
   // versiones del mismo estado vacío es una invitación a editar la que nadie ve.
 
   // ─── Respiración (SPEC_13 §7) ─────────────────────────────────────────────
-  // Voz de **Strivo madre**, no de Lumia ni de Formia: sobria, cálida, sin
+  // Voz **de la marca**, no la de un recorrido concreto: sobria, cálida, sin
   // adornos. Es una herramienta transversal y suena a la marca, no a un espacio.
   //
   // Este es el desvío deliberado frente a la referencia externa que se analizó,

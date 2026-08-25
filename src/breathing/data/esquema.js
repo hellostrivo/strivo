@@ -21,7 +21,7 @@ import { ID_POR_DEFECTO, patronDe, resolverPatronBaseId } from './catalogoPatron
 //
 // Ampliarlo habría puesto en rojo el criterio 9 de SPEC_08, que comprueba que el
 // modelo canónico no tiene dónde guardar una respiración. Esa prueba **sigue
-// diciendo la verdad**: la respiración diaria de Lumia no se registra en ninguna
+// diciendo la verdad**: la respiración diaria de Hoy no se registra en ninguna
 // parte. Lo que registra es la herramienta, que es otra cosa y guarda lo suyo por
 // su cuenta. Dos afirmaciones compatibles, cada una en su sitio.
 //

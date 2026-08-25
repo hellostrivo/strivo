@@ -256,12 +256,12 @@ describe('el conmutador sigue siendo el único origen del tema (RN-HOY-05)', () 
     expect(hoy).toMatch(/useState\(momentoInicial\)/)
     // App recibe el momento; nunca lo decide. El reloj que sí consulta es para
     // `data-moment`, que es la paleta de marca y otra cosa distinta.
-    expect(app).toMatch(/onMomento=\{setMomentoLumia\}/)
-    expect(app).not.toMatch(/setMomentoLumia\(/)
+    expect(app).toMatch(/onMomento=\{setMomentoHoy\}/)
+    expect(app).not.toMatch(/setMomentoHoy\(/)
   })
 
   it('la raíz refleja el momento, y `data-moment` sigue siendo cosa del reloj', () => {
-    expect(app).toMatch(/data-momento=\{momentoLumia \?\? undefined\}/)
+    expect(app).toMatch(/data-momento=\{momentoHoy \?\? undefined\}/)
     expect(app).toMatch(/data-moment=\{momentoDe\(\)\}/)
   })
 

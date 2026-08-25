@@ -160,7 +160,7 @@ describe('RN-RE-DAT-09 y §4.2 — Respiración no conoce al diario', () => {
     })
   })
 
-  it('el motor tampoco conoce a Respiración: por eso lo puede usar Lumia', () => {
+  it('el motor tampoco conoce a Respiración: por eso lo puede usar el diario', () => {
     archivosDe('src/lib/respiracion').forEach((ruta) => {
       const codigo = soloCodigo(readFileSync(ruta, 'utf8'))
       expect(codigo).not.toMatch(/breathing/)
@@ -168,8 +168,8 @@ describe('RN-RE-DAT-09 y §4.2 — Respiración no conoce al diario', () => {
   })
 
   it('el envoltorio de SPEC_08 sigue sin conocer a Respiración', () => {
-    // `ritmoRespiracion.js` lo consume Lumia. Si algún día importara el catálogo,
-    // Lumia estaría leyendo `breathing/` sin que se note.
+    // `ritmoRespiracion.js` lo consume el diario. Si algún día importara el
+    // catálogo, el diario estaría leyendo `breathing/` sin que se note.
     const codigo = soloCodigo(readFileSync('src/lib/ritmoRespiracion.js', 'utf8'))
     expect(codigo).not.toMatch(/breathing/)
     expect(codigo).toMatch(/respiracion\/motorRitmo/)

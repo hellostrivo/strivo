@@ -11,12 +11,12 @@
 // ojos sin ser una pausa. En un recuadro con su propia superficie deja de ser
 // una frase más y pasa a ser el único sitio de Hoy donde no hay nada que hacer.
 //
-// **La superficie es el secundario de la paleta de Lumia**, no el blanco velado
+// **La superficie es el secundario de la paleta del momento**, no el blanco velado
 // de las tarjetas: `--strivo-frase` es el rosa `strivo-am-200` en la mañana y un
 // velo del lavanda `strivo-pm-400` en la noche. Es la única superficie teñida de
 // la pantalla, así que se distingue de todo lo demás por color y no por otro
 // escalón de luminancia — que es lo que la habría puesto a competir con la
-// tarjeta de respiración (RN-HOY-07). Como en el resto de Lumia, el componente
+// tarjeta de respiración (RN-HOY-07). Como en el resto del diario, el componente
 // no nombra ni un color: pide su superficie por el papel que cumple y las dos
 // atmósferas se resuelven en `globals.css` (RN-SURF-01).
 //

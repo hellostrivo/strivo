@@ -67,7 +67,7 @@ describe('el catálogo (§5.2)', () => {
     })
   })
 
-  it('`calma-553` es el de por defecto, y es el ritmo de Lumia', () => {
+  it('`calma-553` es el de por defecto, y es el ritmo de la casa', () => {
     expect(ID_POR_DEFECTO).toBe('calma-553')
     // El puente de identidad de §5.2: el motor guarda el mismo patrón como base
     // y no puede importarlo de aquí, así que se comprueba que no se separen.

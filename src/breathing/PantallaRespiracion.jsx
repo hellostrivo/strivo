@@ -1,5 +1,5 @@
 // src/breathing/PantallaRespiracion.jsx
-// Configurar y arrancar (SPEC_16 §3.2), ya dentro de Lumia.
+// Configurar y arrancar (SPEC_16 §3.2), ya como una sección más de la app.
 //
 // **"Empezar" está fijo abajo y las listas van debajo de él** (RN-RE-NAV-14 y
 // 15). Es la regla que más forma le da a esta pantalla: quien abre esto puede
@@ -12,15 +12,15 @@
 // —sin retenciones— porque empezar aguantando el aire sin haberlo hecho nunca es
 // innecesariamente exigente (RN-RE-NAV-17).
 //
-// ── Lo que cambió al entrar a Lumia (24 ago) ─────────────────────────────────
+// ── Lo que cambió al pasar a ser una sección (24 ago) ────────────────────────
 //
 // **La cabecera propia se retiró.** Tenía un ✕ para salir y un título; arriba
-// ya está la franja del espacio con "Lumia · Reflexión" y la pestaña activa, y
+// ya está la franja de la cabecera con la marca y la pestaña activa, y
 // dos cabeceras seguidas son dos sitios distintos diciendo dónde estás. Salir
 // es cambiar de pestaña, como en el Journal y en el Historial. Lo único que
 // sobrevive de aquella fila es el acceso al aviso de seguridad.
 //
-// **Los bloques son tarjetas, no secciones sueltas.** Es el idioma de Lumia:
+// **Los bloques son tarjetas, no secciones sueltas.** Es el idioma de la app:
 // superficie elevada, borde heredado y esquinas de 24 px, igual que las tarjetas
 // del Home y las del Diario. Aquí ninguna clase nombra un color (RN-SURF-01):
 // `bg-raised`, `border-on-surface` y `border-espacio-acento` los resuelve el

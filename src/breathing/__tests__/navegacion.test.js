@@ -2,7 +2,7 @@
 // Los criterios de SPEC_16 que se comprueban sobre la fuente y sobre lógica
 // pura: las rutas, la pantalla y lo que NO debe existir.
 //
-// **Revisado el 24 ago, cuando Respiración se mudó al espacio Lumia.** Lo que
+// **Revisado el 24 ago, cuando Respiración pasó a ser una sección más.** Lo que
 // se fue con el acceso del Home —criterios 2, 3, 4, 5 y toda la familia
 // RN-RE-NAV-01..08c— está abajo, en su propio bloque, comprobado en negativo:
 // una prueba que falla si el tercer acceso reaparece sin que nadie lo decida.
@@ -107,7 +107,7 @@ describe('el acceso del vestíbulo se retiró entero (24 ago)', () => {
   })
 })
 
-describe('la pestaña de Lumia (24 ago)', () => {
+describe('la pestaña de la cabecera (24 ago)', () => {
   const nav = codigoDe(NAV_SECCIONES)
 
   it('Respiración va entre Journal e Historial', () => {
@@ -132,7 +132,7 @@ describe('las rutas (criterios 6, 7, 9)', () => {
   const app = codigoDe(APP)
   const contenedor = codigoDe(CONTENEDOR)
 
-  it('respiracion cuelga de su propio contenedor, dentro de Lumia', () => {
+  it('respiracion cuelga de su propio contenedor, dentro de la app', () => {
     expect(app).toContain('path="/respiracion/*"')
     expect(app).toMatch(/<Respiracion\b/)
   })
@@ -202,8 +202,8 @@ describe('las rutas (criterios 6, 7, 9)', () => {
     }
   })
 
-  it('no monta la transición de frase de Lumia (criterio 6, RN-RE-NAV-34)', () => {
-    // Quien entra a Lumia va a reflexionar y una frase lo prepara. Quien abre
+  it('no monta la transición de frase del umbral (criterio 6, RN-RE-NAV-34)', () => {
+    // Quien entra al diario va a reflexionar y una frase lo prepara. Quien abre
     // Respiración puede estar mal en ese momento: interponer una pantalla
     // contemplativa ahí es fricción en el peor momento posible.
     //
@@ -289,7 +289,7 @@ describe('la configuración (criterios 12, 13, 14, 15, 16, 17)', () => {
   })
 
   it('y no a bottom-0, que lo dejaba debajo de la barra del espacio', () => {
-    // Dentro de Lumia hay una barra fija al pie. El desplazamiento vive en el
+    // Dentro de la app hay una barra fija al pie. El desplazamiento vive en el
     // CSS y no en una clase suelta porque es exactamente el alto de esa barra.
     const css = readFileSync(CSS, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
     const regla = css.match(/\.respiracion-accion \{[\s\S]*?\n\}/)[0]
@@ -491,7 +491,7 @@ describe('no hay puente con el diario (criterios 35, 36, 37)', () => {
     }
   })
 
-  it('la respiración diaria de Lumia sigue en su sitio (criterio 36)', () => {
+  it('la respiración diaria de Hoy sigue en su sitio (criterio 36)', () => {
     // RN-RE-NAV-36 — No se sustituye, no se enlaza a Respiración, no cambia de
     // sitio. Sus tests de SPEC_08 siguen verdes sin modificar.
     const hoy = codigoDe('src/pages/diario/Hoy.jsx')
@@ -593,7 +593,7 @@ describe('el sonido suena de verdad (24 ago)', () => {
 
   it('el contexto se reanuda al pedirlo, no solo se adquiere', () => {
     // `adquirir()` puede devolver un contexto **que ya existía** —lo creó la
-    // respiración diaria de Lumia, o esta pantalla antes de que el teléfono se
+    // respiración diaria de Hoy, o esta pantalla antes de que el teléfono se
     // bloqueara— y uno reutilizado llega suspendido: sin error y sin sonido.
     // Era la mitad del "a veces suena y a veces no".
     const asegurar = hook.slice(

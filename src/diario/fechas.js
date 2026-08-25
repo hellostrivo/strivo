@@ -1,5 +1,5 @@
 // src/diario/fechas.js
-// Presentación de fechas en Lumia: el saludo, el encabezado del Diario y el
+// Presentación de fechas: el saludo, el encabezado del Diario y el
 // nombre del día que abre la noche.
 //
 // Las claves de fecha ('YYYY-MM-DD') las calcula la capa de datos con

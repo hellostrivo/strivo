@@ -1,11 +1,10 @@
 // src/components/diario/VistaDiaCompleto.jsx
 // Un día entero, en una página serena y con la fecha en grande (§5.10).
 //
-// **Únicamente contenido de Lumia: mañana, noche y journal. Sin hábitos**
-// (§C7.7.2). §5.10 describía aquí "todo lo registrado ese día (mañana, noche,
-// journal, hábitos)", pero tras la división esa vista es un insight cruzado de
-// facto y no puede vivir en Lumia sin leer `formia/`. Si algún día se quiere la
-// vista unificada, será una superficie de Strivo Intelligence.
+// **Un día son mañana, noche y journal, y nada más** (blueprint §7.3). Una
+// versión anterior describía aquí "todo lo registrado ese día (mañana, noche,
+// journal, hábitos)", pero los hábitos pertenecían al alcance que se replegó.
+// Hoy el día completo es exactamente lo que el diario guarda.
 //
 // **Sin victorias ni logros.** Los dos bloques se retiraron del producto el
 // 23 ago junto con la colección `diario/victories` y el campo

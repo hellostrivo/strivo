@@ -21,7 +21,7 @@ export const ID_PERSONALIZADO = 'personalizado'
 export const ID_CAJA = 'caja'
 
 /**
- * `calma-553` es el ritmo de Lumia y el preset por defecto.
+ * `calma-553` es el ritmo de la casa y el preset por defecto.
  * Es el puente de identidad entre la herramienta y el resto de la app: quien
  * respira en Hoy y quien entra a Respiración empiezan en el mismo sitio.
  */

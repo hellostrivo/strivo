@@ -1,5 +1,5 @@
 // src/lib/ritmoRespiracion.js
-// El ritmo de la respiración diaria de Lumia: **5-5-3, tres ciclos** (§C2.3 · §5.1.2).
+// El ritmo de la respiración diaria de Hoy: **5-5-3, tres ciclos** (§C2.3 · §5.1.2).
 //
 // **Desde SPEC_13 esto es un envoltorio.** La lógica vive en
 // `lib/respiracion/motorRitmo.js`, que resuelve cualquier patrón de cuatro
@@ -21,7 +21,7 @@
 // lo que buscaba —aceleraba en vez de calmar—; cualquier regresión hacia una
 // duración menor es un defecto, no una optimización.
 //
-// Aquí no se guarda nada y no hay nada que guardar. La respiración de Lumia no
+// Aquí no se guarda nada y no hay nada que guardar. La respiración diaria no
 // tiene registro, no cuenta para constancia y no alimenta ningún insight: es una
 // experiencia, no un dato (SPEC_08 §5). Lo que sí registra es la herramienta de
 // Respiración, que es otra cosa y vive en `breathing/`.
@@ -33,7 +33,7 @@ import { amplitudEn, duracionCiclo, resolverEstado } from './respiracion/motorRi
  * El 5-5-3 en el modelo canónico de cuatro fases (SPEC_13 §5.1).
  * `retenerLleno: 0` es lo que lo distingue de un 5-5-5-3.
  */
-export const PATRON_LUMIA = Object.freeze({
+export const PATRON_DIARIO = Object.freeze({
   inhalar: 50,
   retenerLleno: 0,
   exhalar: 50,
@@ -41,13 +41,13 @@ export const PATRON_LUMIA = Object.freeze({
 })
 
 /**
- * Nombre que usa Lumia para `retenerVacio`.
+ * Nombre que usa la respiración diaria para `retenerVacio`.
  *
- * En Lumia la fase se llamó siempre "pausa" y así la nombran el componente y sus
+ * Aquí la fase se llamó siempre "pausa" y así la nombran el componente y sus
  * pruebas. En el modelo canónico es `retenerVacio`, que es lo que de verdad es.
  * La traducción vive aquí y en ningún otro sitio.
  */
-const FASE_LUMIA = Object.freeze({ retenerVacio: 'pausa' })
+const FASE_DIARIO = Object.freeze({ retenerVacio: 'pausa' })
 const FASE_CANONICA = Object.freeze({ pausa: 'retenerVacio' })
 
 /** Las tres fases de un ciclo, en su orden, con su duración en milisegundos. */
@@ -60,7 +60,7 @@ export const FASES = Object.freeze([
 export const IDS_FASE = Object.freeze(FASES.map((fase) => fase.id))
 
 /** 13 s exactos (SPEC_08, criterio 1). Sale del patrón, no de una constante. */
-export const DURACION_CICLO = duracionCiclo(PATRON_LUMIA)
+export const DURACION_CICLO = duracionCiclo(PATRON_DIARIO)
 
 /** RN-LU-RESP-02 — Tres, y los mismos en P1 y en la respiración diaria. */
 export const CICLOS = 3
@@ -109,9 +109,9 @@ export function faseEn(ms, ciclos = CICLOS) {
     return { fase: null, ciclo: ciclos, progreso: 1, restante: 0, terminado: true }
   }
 
-  const estado = resolverEstado(PATRON_LUMIA, transcurrido)
+  const estado = resolverEstado(PATRON_DIARIO, transcurrido)
   return {
-    fase: FASE_LUMIA[estado.fase] ?? estado.fase,
+    fase: FASE_DIARIO[estado.fase] ?? estado.fase,
     ciclo: estado.cicloActual - 1,
     progreso: estado.progresoFase,
     restante: estado.msRestantesFase,

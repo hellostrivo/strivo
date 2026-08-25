@@ -1,5 +1,5 @@
 // src/components/diario/DiarioNoche.jsx
-// La noche de Lumia, en tres momentos (actualización del 23 ago a §5.4).
+// La noche, en tres momentos (actualización del 23 ago a §5.4).
 //
 //   1. ¿Qué quiero reconocer de hoy?
 //   2. Una reflexión breve, distinta cada noche
@@ -21,7 +21,7 @@
 // preguntó, no para reprochárselo a nadie.
 //
 // **Se guarda solo, todo el rato** (RN-02). Los toques se escriben al momento y
-// lo que se teclea a los 800 ms, igual que en el resto de Lumia: salir a media
+// lo que se teclea a los 800 ms, igual que en el resto del diario: salir a media
 // frase no pierde nada, y volver la misma noche devuelve todo donde estaba.
 //
 // **Se muestra empotrada en Hoy**, bajo el conmutador: no trae cabecera, ni

@@ -15,14 +15,14 @@
 // están `constancia.js`, `timeSlot.js` y el motor de respiración— sin ninguna
 // regla que dijera cuál usar. Es la misma decisión que tomó SPEC_13 con
 // `lib/respiracion/`, y por el mismo motivo. El razonamiento de §2.1 se cumple
-// entero: esto lo consumen Lumia y Respiración, así que no puede vivir dentro
+// entero: esto lo consumen el diario y Respiración, así que no puede vivir dentro
 // de ninguno de los dos.
 //
 // **Préstamos, no propiedad.** Quien necesita audio lo pide y lo suelta. El
 // contexto se cierra cuando lo suelta el último, y no antes: si `detener()` de
 // la guía cerrara el contexto, el ambiente se quedaría mudo a media sesión sin
 // que nadie entendiera por qué. Cerrarlo al llegar a cero es lo que mantiene
-// intacta RN-AUD-04 —al salir del ejercicio de Lumia no queda nada vivo—, que es
+// intacta RN-AUD-04 —al salir del ejercicio diario no queda nada vivo—, que es
 // exactamente lo que la prueba de SPEC_08 comprueba desde entonces.
 
 let contexto = null

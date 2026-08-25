@@ -792,7 +792,7 @@ describe('§3 — los adjetivos siguen al género del perfil', () => {
 
 // ─── Criterio 10 ──────────────────────────────────────────────────────────────
 
-describe('criterio 10 — la noche y el resto de Lumia no se tocan', () => {
+describe('criterio 10 — la noche y el resto del diario no se tocan', () => {
   // Este criterio se escribió cuando la actualizada era la mañana. La noche se
   // actualizó después, el 23 ago, y sus criterios viven en `noche.test.js`; lo
   // que se comprueba aquí es la otra mitad, que sigue siendo verdad en los dos

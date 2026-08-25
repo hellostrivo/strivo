@@ -82,7 +82,7 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
    *
    * `reanudar()` no sobra aunque estemos dentro del gesto: `adquirir()` puede
    * devolver un contexto **que ya existía** —lo creó la respiración diaria de
-   * Lumia, o esta misma pantalla antes de que el teléfono se bloqueara— y un
+   * diaria, o esta misma pantalla antes de que el teléfono se bloqueara— y un
    * contexto reutilizado llega suspendido, sin error y sin sonido. Era la otra
    * mitad del "a veces suena y a veces no".
    */

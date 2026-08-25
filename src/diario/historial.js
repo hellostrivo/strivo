@@ -1,9 +1,9 @@
 // src/diario/historial.js
-// Historial de Lumia: calendario de ánimo y vista de día completo (§5.10).
+// Historial: calendario de ánimo y vista de día completo (§5.10).
 //
-// **Solo contenido de Lumia** (§C7.7.2). §5.10 describía una vista de día con
+// **Solo contenido del diario** (§C7.7.2). §5.10 describía una vista de día con
 // "mañana, noche, journal y hábitos"; tras la división esa vista sería un
-// insight cruzado y no puede vivir aquí sin leer `formia/`. v4.1 la acota a
+// insight cruzado sobre un alcance que ya no existe. El blueprint la acota a
 // mañana, noche y journal. Si algún día se quiere la vista unificada, será una
 // superficie de Strivo Intelligence, no del Historial.
 //
@@ -133,9 +133,9 @@ function hayAlgoDeManana(morning) {
 // ─── Vista de día completo ────────────────────────────────────────────────────
 
 /**
- * Todo lo de Lumia de un día: mañana, noche y journal.
+ * Todo lo escrito de un día: mañana, noche y journal.
  *
- * **Sin hábitos** (§C7.7.2). Esta función no importa `formia/` y no tiene forma
+ * **Sin hábitos** (§C7.7.2). Esta función no tiene forma
  * de hacerlo: el lint lo impide y la prueba de separación lo comprueba.
  *
  * `conJournal` en `false` **no lee** las entradas, no solo evita pintarlas. Es

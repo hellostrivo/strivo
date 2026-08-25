@@ -1,5 +1,5 @@
 // src/diario/__tests__/diario.test.js
-// El día de Lumia: lectura, escritura y síntesis de cierre (§5.3, §5.4).
+// El día: lectura, escritura y síntesis de cierre (§5.3, §5.4).
 
 import { beforeEach, describe, expect, it } from 'vitest'
 
@@ -20,7 +20,7 @@ import {
 
 const HOY = '2026-08-10'
 
-describe('el día de Lumia', () => {
+describe('el día', () => {
   beforeEach(resetLocalDB)
 
   it('carga el día entero en una sola lectura, con perfil y frase', async () => {

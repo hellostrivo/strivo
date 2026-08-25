@@ -1,5 +1,5 @@
 // src/components/diario/Campo.jsx
-// Los dos campos de escritura de Lumia: una línea y área amplia.
+// Los dos campos de escritura del diario: una línea y área amplia.
 //
 // Ninguno fija color de texto: heredan de `data-surface` (RN-SURF-01). Es lo
 // que hace que el mismo campo sea legible en la mañana clara y en la noche

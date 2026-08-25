@@ -148,9 +148,9 @@
   --respiracion-tinta: var(--strivo-900);
 }
 
-/* ─── Respiración dentro de Lumia (24 ago) ───────────────────────────────────
-   Respiración dejó de colgar del Home de Strivo y es una sección de Lumia, así
-   que se viste con su paleta. **`respiracion.css` no se enteró**: pide siete
+/* ─── Respiración dentro de la app (24 ago) ──────────────────────────────────
+   Respiración dejó de colgar de un vestíbulo y es una sección más, así
+   que se viste con la paleta del momento. **`respiracion.css` no se enteró**: pide siete
    variables semánticas y aquí se decide qué son, que es la misma división que
    sostienen el velo de `TransicionLuz` (SPEC_10) y la barra (SPEC_11).
 
@@ -158,7 +158,7 @@
    más oscura, descanso la más clara— porque esa rampa es lo que hace que el
    cambio de fase se lea de reojo. Lo que cambia es de qué escala salen.
 
-   Medido sobre las dos superficies de Lumia (`strivo-am-50` de día y
+   Medido sobre las dos superficies del producto (`strivo-am-50` de día y
    `strivo-pm-50` de noche), que es donde se pintan:
 
      inhalar   color-ink       #241E33   14,36:1 / 14,02:1
@@ -172,10 +172,10 @@
    por eso RN-RE-VIS-17 —palabra y forma siempre— no es aquí un adorno de
    accesibilidad sino lo que sostiene la lectura.
 
-   `--color-ink` es el token compartido del manual §6, no un hex escrito a mano
-   ni un color de otra marca: es la tinta de toda la app.
+   `--color-ink` es el token compartido del manual §4.5, no un hex escrito a
+   mano: es la tinta de toda la app.
 
-   El primario de Lumia (`strivo-pm-500`) cae en `exhalar` y no es casualidad: es
+   El primario de marca (`strivo-pm-500`) cae en `exhalar` y no es casualidad: es
    la fase más larga de casi todos los patrones y la que la marca quiere firmar. */
 [data-moment] {
   --respiracion-fase-inhalar: var(--color-ink);
@@ -204,7 +204,7 @@
   --color-raised:     rgba(242, 238, 247, .12);
 }
 
-/* ─── Superficies de Lumia ───────────────────────────────────────────────────
+/* ─── Superficies del momento ────────────────────────────────────────────────
    Mañana: claridad suave. Noche: azul oscuro (§5.2.1, comportamiento vigente).
    La tarjeta va en un tono distinto del fondo para que destaque por luminancia
    y no solo por borde (RN-HOY-07).
@@ -295,7 +295,7 @@
   /* El acento marca el borde de la sección activa. `strivo-pm-500` sobre el
      contratono cae a 2,97:1 y se queda por debajo del 3:1 que WCAG 1.4.11 pide
      a un indicador; el lavanda claro de la misma paleta da 11,57:1. Sigue siendo
-     color de Lumia, y el estado activo además lleva peso y relleno, así que
+     color de la marca, y el estado activo además lleva peso y relleno, así que
      nunca se comunica solo por color (criterio 7 de SPEC_11). */
   --espacio-acento: var(--strivo-am-100);
 }
@@ -320,7 +320,7 @@
    en una calificación. La escala va de frío-apagado a fresco-luminoso, sin
    connotación de éxito ni de fracaso.
 
-   Viven aquí y no en el componente porque ninguna pieza de Lumia fija un color
+   Viven aquí y no en el componente porque ninguna pieza del diario fija un color
    literal (RN-SURF-01): `CalendarioAnimo` conoce el id del ánimo y nada más.
 */
 :root {
@@ -333,7 +333,7 @@
 
 /* ─── Transición de entrada (§C7.5) ──────────────────────────────────────────
    Luz tenue y frase. El velo y la luz se definen aquí y no en el componente
-   porque `TransicionLuz` es compartido y no puede conocer Lumia: se monta en la
+   porque `TransicionLuz` es compartido y no conoce ninguna sección: se monta en la
    entrada a la app y en la entrada a la mañana, y hereda el tono de donde esté.
 
    La variante nocturna vive junto al resto del tema, más abajo, con los demás
@@ -451,7 +451,7 @@
      por el borde (RN-HOY-07). Sirve en los dos temas sin invertir nada. */
   .bg-raised             { background-color: var(--color-raised); }
 
-  /* Fondo y tarjetas del momento activo de Lumia.
+  /* Fondo y tarjetas del momento activo.
      `bg-strivo-base` es el color plano del momento, debajo del degradado: si el
      degradado se queda corto —rebote de scroll, captura larga, un contenedor
      más alto que la ventana— lo que asoma es el tono del tema, no el papel de

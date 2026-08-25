@@ -28,7 +28,7 @@ const textos = copy.shared.navegacion
 
 // **Respiración entra entre Journal e Historial (24 ago).** Deja de ser la
 // herramienta transversal que colgaba del Home de Strivo y pasa a ser una
-// sección de Lumia: el mismo componente, el mismo estado, la misma sesión, con
+// una sección más: el mismo componente, el mismo estado, la misma sesión, con
 // el cromo y la paleta del espacio. Lo pidió el propietario del producto.
 //
 // El orden no es alfabético ni histórico: Hoy, Journal y Respiración son lo que

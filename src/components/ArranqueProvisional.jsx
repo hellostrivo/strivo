@@ -9,10 +9,10 @@
 //
 // **Ya no pregunta nada.** Hasta el 24 de agosto de 2026 condicionaba el
 // arranque de la app a que existiera una identidad central: montaba
-// `EditorIdentidad` y no dejaba pasar hasta escribirla, porque RN-DB4-09 exigía
-// que esa identidad existiera desde el primer momento. Al retirarse Formia esa
-// regla desaparece con ella, y con ella la única pantalla que este andamio
-// llegó a tener. Lo que queda es lo que siempre fue su trabajo: un uid y un
+// un editor de identidad y no dejaba pasar hasta escribirla, porque una regla
+// del alcance anterior exigía que esa identidad existiera desde el primer
+// momento. Al replegarse ese alcance la regla desaparece con él, y con ella la
+// única pantalla que este andamio llegó a tener. Lo que queda es lo que siempre fue su trabajo: un uid y un
 // árbol.
 //
 // RN-DB4-08 se sigue cumpliendo, y por eso el árbol se crea sin pedir nada en
@@ -50,7 +50,7 @@ export default function ArranqueProvisional({ children }) {
     async function arrancar() {
       // El perfil es la primera rama que escribe `initShared`, así que su
       // ausencia es la señal de que el árbol no existe. Antes lo decía la
-      // identidad central, que era la hoja obligatoria de Formia.
+      // identidad central, que era la hoja obligatoria del alcance retirado.
       const profile = await shared.getProfile(uid)
 
       // `initUserTree` ya no exige una identidad central: es `shared/` con sus
