@@ -3,9 +3,8 @@
  *
  * **Renombrada el 25 de agosto de 2026** (paso 9, §8). Los ocho hexes son los
  * mismos: el repliegue quita un producto, no recalibra el color del que se
- * queda. **El manual todavía nombra estos tokens como se llamaban antes** y se
- * reedita en el paso 10 (§4.4 del plan); hasta entonces, la prueba del criterio
- * 4 busca en el manual con el nombre de allí y en esta hoja con el de aquí.
+ * queda. El manual se reeditó en el paso 10 y ya los nombra así, de modo que la
+ * prueba del criterio 4 busca el mismo nombre en los dos sitios.
  *
  * Esta hoja es además la fuente única de la paleta en código: el bloque que la
  * duplicaba en `design-tokens.json` se retiró al cerrar el paso 9.

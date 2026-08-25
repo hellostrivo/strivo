@@ -20,7 +20,7 @@ import { describe, expect, it } from 'vitest'
 
 import tokens from '@tokens/design-tokens.json'
 
-const MANUAL = 'docs/blueprint/BRAND_MANUAL_STRIVO_LUMIA_FORMIA.md'
+const MANUAL = 'docs/blueprint/BRAND_MANUAL_STRIVO.md'
 const SIMBOLOS = 'src/assets/marca'
 
 function archivosDe(dir) {
@@ -91,14 +91,16 @@ describe('los valores llegaron intactos del manual (criterios 3 y 4)', () => {
     expect(tokens.brand.lumia).toBeUndefined()
   })
 
-  // **El token cambió de nombre en el CSS y el manual todavía no** (tanda C del
-  // paso 9). El hex es lo que el criterio 4 protege y ese no se ha movido: la
-  // aserción sobre el manual se hace con el nombre que el manual usa hoy, y hay
-  // que volver aquí cuando se reedite (§4.4 del plan). El nombre nuevo se
-  // comprueba donde ya es cierto: en la hoja de paleta.
+  // **Costura cerrada en el paso 10** (§4.4 del plan). El paso 9 renombró el
+  // token en la hoja y dejó el manual con el nombre viejo, así que esta prueba
+  // vivía partida: el nombre nuevo se comprobaba en el CSS y el viejo en el
+  // manual. Con el manual reeditado a una marca, las dos mitades dicen lo mismo.
+  //
+  // El hex es lo que el criterio 4 protege, y ese no se ha movido en ninguno de
+  // los dos pasos: el repliegue renombra un token, no recalibra un color.
   it('el secundario de la mañana es #E5C2DC (criterio 4)', () => {
     expect(cssDe('src/styles/tokens-strivo.css')).toMatch(/--strivo-am-200:\s*#E5C2DC/)
-    expect(manual).toMatch(/`lumia-am-200`\s*\|\s*`#E5C2DC`/)
+    expect(manual).toMatch(/`strivo-am-200`\s*\|\s*`#E5C2DC`/)
   })
 
   // El criterio 3 vigilaba `#5D4766`, el punto de convergencia cromática entre

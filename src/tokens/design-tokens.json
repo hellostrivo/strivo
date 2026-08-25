@@ -1,9 +1,9 @@
 {
   "version": "1.1",
   "date": "11 ago 2026",
-  "description": "Tokens de diseño de Strivo. Comportamiento: blueprint v4.1, cap. 12. Color, símbolos y tipografía: BRAND_MANUAL v1.1, que manda sobre el capítulo 12 (§C0.6).",
+  "description": "Tokens de diseño de Strivo. Comportamiento: Blueprint de Producto v5.0, cap. 10. Color, símbolos y tipografía: BRAND_MANUAL_STRIVO v2.0, que es la fuente única de lo cromático (blueprint §10.1).",
   "brand": {
-    "comment": "Paletas por marca y momento del manual §4.8, copiadas sin corregir. La paleta de marca dice QUÉ SUPERFICIE usar; el sistema de contraste de `semantic` sigue decidiendo QUÉ TEXTO va encima (manual §4.8, nota técnica).",
+    "comment": "Neutros y símbolo, del manual §4.2 y §3.1, copiados sin corregir. La paleta de los dos momentos vive en `src/styles/tokens-strivo.css`, que es su fuente única en código. La paleta de marca dice QUÉ SUPERFICIE usar; el sistema de contraste de `semantic` sigue decidiendo QUÉ TEXTO va encima (manual §4.6, nota técnica).",
     "strivo": {
       "comment": "Neutros conectores. Constantes: Strivo no cambia con el momento del día. Los pasos 700 y 800 los añadió SPEC_14: la escala de cinco no alcanzaba para separar las cuatro fases de la respiración cumpliendo RN-RE-VIS-16, porque sobre `strivo-50` solo 600 y 900 llegan a 3:1. Están interpolados sobre el eje neutro que ya existía entre 600 y 900, así que no introducen tono: Strivo sigue siendo acromático (manual §4.1).",
       "50": "#F6F4F1",
@@ -79,7 +79,7 @@
   },
   "typography": {
     "fontFamilies": {
-      "comment": "UNA SOLA FAMILIA: Inter, para las tres marcas (manual §5.1, confirmada ✅). Se diferencian por peso y tratamiento, nunca por familia. Sustituye a Fraunces + Satoshi del blueprint §6.4.1: el capítulo 12 concede en su preámbulo que el manual manda en tipografía.",
+      "comment": "UNA SOLA FAMILIA: Inter (manual §5.1, confirmada ✅). La jerarquía se construye con peso y tamaño, nunca con familias distintas (manual §5.2). Sustituye a Fraunces + Satoshi: el manual manda en tipografía (blueprint §10.1).",
       "base": "Inter Variable",
       "display": "Inter Variable",
       "interface": "Inter Variable",
