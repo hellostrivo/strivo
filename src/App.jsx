@@ -17,7 +17,7 @@
 // usuario (SPEC_11 §5).
 //
 // `HashRouter` y no `BrowserRouter`: la app se sirve como PWA estática y, sin
-// una regla de reescritura en el hospedaje, recargar en `/lumia/historial`
+// una regla de reescritura en el hospedaje, recargar en `/historial`
 // devolvería un 404. El hash no depende de configuración que esta spec no toca.
 
 import { useEffect, useState } from 'react'
@@ -26,7 +26,7 @@ import { getTimeSlot } from '@lib/timeSlot'
 
 import ArranqueProvisional from '@/components/ArranqueProvisional'
 import TransicionLuz, { prefiereMenosMovimiento } from '@components/shared/TransicionLuz'
-import NavLumia from '@components/lumia/NavLumia'
+import NavStrivo from '@components/lumia/NavStrivo'
 import { cruzarUmbral, umbralPendiente } from '@lib/umbralSesion'
 
 import Respiracion from '@/breathing/Respiracion'
@@ -35,10 +35,10 @@ import Journal from '@/pages/lumia/Journal'
 import Historial from '@/pages/lumia/Historial'
 
 /** La raíz: por dónde se entra a la app. */
-const INICIO = '/lumia/hoy'
+const INICIO = '/hoy'
 
 /** La sección de Respiración. La conoce quien enruta, no ella. */
-const RUTA_RESPIRACION = '/lumia/respiracion'
+const RUTA_RESPIRACION = '/respiracion'
 
 /**
  * El momento que viste el cromo (manual §4.1).
@@ -95,23 +95,27 @@ function Secciones({ uid }) {
     // (manual §4.8).
     <div
       data-moment={momentoDe()}
-      // `data-moment` lo decide el reloj y `data-lumia` lo decide quien mira:
-      // no son lo mismo y por eso conviven. Sin atributo fuera de Hoy.
-      data-lumia={momentoLumia ?? undefined}
+      // Se parecen y no son lo mismo, así que conviene el recordatorio: el de
+      // arriba —`data-moment`, en inglés— lo decide el reloj y elige la paleta
+      // de marca; este —`data-momento`— lo decide quien mira, con el conmutador
+      // de Hoy. A las diez de la mañana con el conmutador en Noche valen cosas
+      // distintas, y ese es justo el caso que hay que resolver bien. Sin
+      // atributo fuera de Hoy.
+      data-momento={momentoLumia ?? undefined}
       data-surface="light"
       className="flex min-h-screen flex-col bg-espacio font-sans text-on-surface"
     >
-      {!hideNav && <NavLumia />}
+      {!hideNav && <NavStrivo />}
 
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<Navigate to={INICIO} replace />} />
 
           <Route
-            path="/lumia/hoy"
+            path="/hoy"
             element={<Hoy uid={uid} onHideNav={setHideNav} onMomento={setMomentoLumia} />}
           />
-          <Route path="/lumia/journal" element={<Journal uid={uid} onHideNav={setHideNav} />} />
+          <Route path="/journal" element={<Journal uid={uid} onHideNav={setHideNav} />} />
 
           {/* La herramienta. Sus dos pantallas las resuelve su propio
               contenedor, que es quien sostiene la sesión entre ellas para que
@@ -119,7 +123,7 @@ function Secciones({ uid }) {
               `salida` llegan por props: `breathing/` sigue sin nombrar al
               diario en ningún import, que es lo que la separación exige. */}
           <Route
-            path="/lumia/respiracion/*"
+            path="/respiracion/*"
             element={
               <Respiracion
                 uid={uid}
@@ -130,7 +134,7 @@ function Secciones({ uid }) {
             }
           />
 
-          <Route path="/lumia/historial" element={<Historial uid={uid} />} />
+          <Route path="/historial" element={<Historial uid={uid} />} />
 
           {/* Cualquier ruta desconocida vuelve a Hoy. */}
           <Route path="*" element={<Navigate to={INICIO} replace />} />

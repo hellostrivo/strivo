@@ -227,8 +227,8 @@ describe('el tema lo manda el conmutador, no el reloj (RN-HOY-05)', () => {
 
   it('los dos colores del bloque viven en el CSS, no en el componente', () => {
     const css = readFileSync('src/styles/globals.css', 'utf8')
-    expect(css).toMatch(/\[data-lumia='manana'\][\s\S]*?--lumia-conmutador:\s*#1D1833/)
-    expect(css).toMatch(/\[data-lumia='noche'\][\s\S]*?--lumia-conmutador:\s*#F2DDE7/)
+    expect(css).toMatch(/\[data-momento='manana'\][\s\S]*?--lumia-conmutador:\s*#1D1833/)
+    expect(css).toMatch(/\[data-momento='noche'\][\s\S]*?--lumia-conmutador:\s*#F2DDE7/)
   })
 })
 
@@ -289,7 +289,7 @@ describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
     expect(hoy.match(/abrir\('respiracion'\)/g) ?? []).toHaveLength(1)
     expect(hoy.match(/<TarjetaRespiracion/g) ?? []).toHaveLength(1)
     const css = readFileSync('src/styles/globals.css', 'utf8')
-    expect(css).toMatch(/\[data-lumia='noche'\][\s\S]*?--color-breath:/)
+    expect(css).toMatch(/\[data-momento='noche'\][\s\S]*?--color-breath:/)
   })
 
   it('la entrada a la respiración es una tarjeta seleccionable entera', () => {
@@ -395,10 +395,10 @@ describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
     // las dos tintas.
     const frase = codigoDe('src/components/lumia/FraseDelDia.jsx')
     expect(frase).not.toMatch(/#[0-9a-f]{3,8}\b/i)
-    expect(frase).not.toMatch(/momento|manana|noche|data-lumia/)
+    expect(frase).not.toMatch(/momento|manana|noche|data-momento/)
     const css = readFileSync('src/styles/globals.css', 'utf8')
-    expect(css).toMatch(/\[data-lumia='manana'\][\s\S]*?--lumia-frase:/)
-    expect(css).toMatch(/\[data-lumia='noche'\][\s\S]*?--lumia-frase:/)
+    expect(css).toMatch(/\[data-momento='manana'\][\s\S]*?--lumia-frase:/)
+    expect(css).toMatch(/\[data-momento='noche'\][\s\S]*?--lumia-frase:/)
   })
 
   it('la tarjeta no nombra ni un color ni conoce el momento (RN-SURF-01)', () => {
@@ -408,7 +408,7 @@ describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
     const tarjeta = codigoDe('src/components/lumia/TarjetaRespiracion.jsx')
     const codigo = tarjeta.slice(tarjeta.indexOf('export default'))
     expect(codigo).not.toMatch(/#[0-9a-f]{3,8}\b/i)
-    expect(codigo).not.toMatch(/momento|manana|noche|data-lumia/)
+    expect(codigo).not.toMatch(/momento|manana|noche|data-momento/)
   })
 
   it('no queda rastro de la duración en la entrada de ninguna de las dos secciones', () => {

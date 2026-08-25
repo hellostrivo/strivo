@@ -19,7 +19,7 @@ import { describe, expect, it } from 'vitest'
 import { copy } from '@copy'
 
 const APP = 'src/App.jsx'
-const NAV = 'src/components/lumia/NavLumia.jsx'
+const NAV = 'src/components/lumia/NavStrivo.jsx'
 const HOY = 'src/pages/lumia/Hoy.jsx'
 const CSS = 'src/styles/globals.css'
 
@@ -27,7 +27,7 @@ const CSS = 'src/styles/globals.css'
  * El código sin comentarios: lo que se ejecuta, no lo que se explica.
  *
  * `/*` solo abre comentario tras un espacio o al principio de línea: sin esa
- * condición, la ruta comodín `"/lumia/respiracion/*"` se lleva por delante el
+ * condición, la ruta comodín `"/respiracion/*"` se lleva por delante el
  * resto del archivo. Es el mismo quitador que usa `breathing/navegacion.test.js`.
  */
 function codigoDe(ruta) {
@@ -52,7 +52,7 @@ describe('la app abre en su primera sección (revisión 25 ago)', () => {
   it('cada apertura aterriza en Hoy', () => {
     // **Deroga** "cada apertura aterriza en el Home": el vestíbulo existía para
     // elegir entre dos productos y ya no hay entre qué elegir (§D-1).
-    expect(app).toMatch(/const INICIO = '\/lumia\/hoy'/)
+    expect(app).toMatch(/const INICIO = '\/hoy'/)
     expect(app).toMatch(/path="\/" element=\{<Navigate to=\{INICIO\} replace/)
   })
 
@@ -62,14 +62,7 @@ describe('la app abre en su primera sección (revisión 25 ago)', () => {
 
   it('las cuatro secciones tienen ruta, y no hay una quinta', () => {
     const rutas = (app.match(/<Route\s+path="([^"]+)"/g) ?? []).map((r) => r.match(/"([^"]+)"/)[1])
-    expect(rutas).toEqual([
-      '/',
-      '/lumia/hoy',
-      '/lumia/journal',
-      '/lumia/respiracion/*',
-      '/lumia/historial',
-      '*',
-    ])
+    expect(rutas).toEqual(['/', '/hoy', '/journal', '/respiracion/*', '/historial', '*'])
   })
 })
 
@@ -104,9 +97,13 @@ describe('lo que sostenía el vestíbulo se retiró entero', () => {
 describe('la cabecera lleva la marca y sus cuatro secciones', () => {
   const nav = codigoDe(NAV)
 
-  it('el descriptor va arriba, donde se aprende qué es esto (§C7.3)', () => {
+  it('la marca va arriba, y es solo el nombre (renombrado del 25 ago)', () => {
+    // **Deroga** "el descriptor va arriba": «Marca · Reflexión» distinguía un
+    // espacio del otro y ya no hay otro. Lo que sobrevive de aquella regla es
+    // que la cabecera es donde se aprende qué es esto, y ahora lo dice entero
+    // con una palabra.
     expect(nav).toMatch(/textos\.lumia\.cabecera/)
-    expect(copy.shared.navegacion.lumia.cabecera).toMatch(/·/)
+    expect(copy.shared.navegacion.lumia.cabecera).toBe('Strivo')
   })
 
   it('las secciones son cuatro y en su orden, que es una decisión', () => {
@@ -155,7 +152,7 @@ describe('profundidad máxima de tres toques (§4.3.2, regla 1)', () => {
   })
 
   it('la cabecera pone las cuatro secciones a un toque desde cualquier otra', () => {
-    expect(codigoDe(NAV).match(/ruta: '\/lumia\//g) ?? []).toHaveLength(4)
+    expect(codigoDe(NAV).match(/ruta: '\/\w+'/g) ?? []).toHaveLength(4)
   })
 })
 
@@ -218,16 +215,16 @@ describe('la cabecera se viste del momento de Hoy (21 ago)', () => {
 
   it('toma el mismo token que el conmutador, así que no pueden separarse', () => {
     expect(css).toMatch(
-      /\[data-lumia='manana'\] \.cabecera-espacio \{[^}]*var\(--lumia-conmutador\)/,
+      /\[data-momento='manana'\] \.cabecera-espacio \{[^}]*var\(--lumia-conmutador\)/,
     )
     expect(codigoDe('src/components/lumia/SelectorMomento.jsx')).toMatch(/bg-lumia-conmutador/)
     // Un color copiado a mano sería otro color el día que el conmutador cambie.
-    const regla = css.slice(css.indexOf("[data-lumia='manana'] .cabecera-espacio"))
+    const regla = css.slice(css.indexOf("[data-momento='manana'] .cabecera-espacio"))
     expect(regla.slice(0, regla.indexOf('}'))).not.toMatch(/#[0-9a-fA-F]{3,8}/)
   })
 
   it('solo en Mañana: de noche la cabecera conserva su rango claro (SPEC_12)', () => {
-    expect(css).not.toMatch(/\[data-lumia='noche'\] \.cabecera-espacio/)
+    expect(css).not.toMatch(/\[data-momento='noche'\] \.cabecera-espacio/)
   })
 
   it('las cuatro secciones conservan forma, peso y borde', () => {
@@ -241,13 +238,13 @@ describe('la cabecera se viste del momento de Hoy (21 ago)', () => {
   it('el borde de la sección activa sube a un tono que sí se ve', () => {
     // `lumia-pm-500` sobre el contratono da 2,97:1 — por debajo del 3:1 de
     // WCAG 1.4.11 para un indicador. El lavanda de la misma paleta, 11,57:1.
-    const regla = css.slice(css.indexOf("[data-lumia='manana'] .cabecera-espacio"))
+    const regla = css.slice(css.indexOf("[data-momento='manana'] .cabecera-espacio"))
     expect(regla.slice(0, regla.indexOf('}'))).toMatch(/--espacio-acento:\s*var\(--lumia-am-100\)/)
   })
 
   it('la vela va en monocromo, y solo sobre el contratono', () => {
-    expect(css).toMatch(/\[data-lumia='manana'\] \.cabecera-espacio img/)
-    expect(css).not.toMatch(/\[data-lumia='noche'\] \.cabecera-espacio img/)
+    expect(css).toMatch(/\[data-momento='manana'\] \.cabecera-espacio img/)
+    expect(css).not.toMatch(/\[data-momento='noche'\] \.cabecera-espacio img/)
   })
 })
 
@@ -264,7 +261,7 @@ describe('el conmutador sigue siendo el único origen del tema (RN-HOY-05)', () 
   })
 
   it('la raíz refleja el momento, y `data-moment` sigue siendo cosa del reloj', () => {
-    expect(app).toMatch(/data-lumia=\{momentoLumia \?\? undefined\}/)
+    expect(app).toMatch(/data-momento=\{momentoLumia \?\? undefined\}/)
     expect(app).toMatch(/data-moment=\{momentoDe\(\)\}/)
   })
 

@@ -212,7 +212,7 @@
    Los degradados se definen aquí, en un solo sitio, porque SPEC_12 los
    sustituye por los de la paleta de marca sin tocar ningún componente.
 */
-[data-lumia='manana'] {
+[data-momento='manana'] {
   --lumia-base: var(--lumia-am-50);
   --lumia-fondo: linear-gradient(168deg, var(--lumia-am-50) 0%, var(--lumia-am-300) 62%, var(--lumia-am-100) 100%);
   --lumia-tarjeta: rgba(255, 255, 255, .72);
@@ -232,7 +232,7 @@
   --lumia-frase-borde: var(--lumia-pm-400);
 }
 
-[data-lumia='noche'] {
+[data-momento='noche'] {
   --lumia-base: #191428;
   --lumia-fondo: linear-gradient(168deg, #191428 0%, #221B3A 58%, #2C2350 100%);
   --lumia-tarjeta: rgba(242, 238, 247, .10);
@@ -265,7 +265,7 @@
    otra pieza de cromo de esa pantalla. Las dos leen `--lumia-conmutador`, así
    que no pueden separarse.
 
-   Va aquí y no en props porque `NavLumia` no nombra ni un color: pide
+   Va aquí y no en props porque `NavStrivo` no nombra ni un color: pide
    superficies por su papel (RN-SURF-01) y quien decide qué son es el tema. Es
    la misma decisión que SPEC_10 tomó con el velo de `TransicionLuz`.
 
@@ -274,7 +274,7 @@
    de los tokens AAA sobre claro. Este contratono resuelve la mañana, que era el
    caso roto.
 
-   `--lumia-conmutador` solo existe bajo `[data-lumia]`, que pone la raíz de la
+   `--lumia-conmutador` solo existe bajo `[data-momento]`, que pone la raíz de la
    app mientras Hoy está montada. En el Journal, en Respiración y en el Historial
    no hay atributo, no hay regla, y la cabecera conserva su rango claro.
 
@@ -283,7 +283,7 @@
    cabecera, así que no podían quedarse literalmente iguales sin volverse
    ilegibles.
 */
-[data-lumia='manana'] .cabecera-espacio {
+[data-momento='manana'] .cabecera-espacio {
   background-color: var(--lumia-conmutador);
   /* Igual que abajo: lo que separa la franja es el bloque de color entero, no
      una línea. Contra la mañana clara el borde ya no tiene nada que hacer. */
@@ -308,7 +308,7 @@
    archivo nuevo para que aprobarla —o sustituirla por la del diseñador— sea
    borrar tres líneas. **Pendiente de esa aprobación.** De noche la cabecera es
    clara y no hace falta. */
-[data-lumia='manana'] .cabecera-espacio img {
+[data-momento='manana'] .cabecera-espacio img {
   filter: brightness(0) invert(1);
 }
 
@@ -334,7 +334,7 @@
    entrada a la app y en la entrada a la mañana, y hereda el tono de donde esté.
 
    La variante nocturna vive junto al resto del tema, más abajo, con los demás
-   `[data-lumia='noche']`.
+   `[data-momento='noche']`.
 */
 :root {
   --transicion-velo: #FBF8F4;
@@ -342,7 +342,7 @@
 }
 
 /* El umbral se monta también en la raíz de la app, donde el tema que manda es
-   `data-moment` —el reloj— y no el `data-lumia` de la pantalla Hoy. De noche,
+   `data-moment` —el reloj— y no el `data-momento` de la pantalla Hoy. De noche,
    sin esta regla, abrir la app daba un velo crema a las once: el mismo fogonazo
    que la variante de abajo evita dentro de Hoy. */
 [data-moment='noche'] {

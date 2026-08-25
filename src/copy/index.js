@@ -1030,17 +1030,15 @@ export const copy = {
     home: {
       simbolo: 'Strivo',
       espaciosLabel: 'Espacios',
-      lumia: { titulo: 'Lumia · Reflexión', pregunta: '¿Cómo estoy?' },
+      lumia: { titulo: 'Strivo', pregunta: '¿Cómo estoy?' },
     },
 
-    // §C7.3 — Naming de la navegación. **Opción A, decidida el 11 ago 2026**:
-    // rótulo corto en la pestaña y marca + descriptor en la cabecera del
-    // espacio. Era la última decisión abierta del proyecto.
-    //
-    // El naming es mixto por decisión: la marca se aprende sin que la barra
-    // deje de decir qué hay dentro. "Lumia · Reflexión" completo no cabe en una
-    // pestaña de móvil a un tamaño legible, así que la marca sola va abajo y el
-    // descriptor aparece arriba, al entrar.
+    // §C7.3 — Naming de la navegación. **Revisado el 25 de agosto de 2026, con
+    // el renombrado del paso 9.** La opción A del 11 de agosto repartía el
+    // nombre en dos —marca sola en la pestaña de abajo, marca + descriptor en la
+    // cabecera— porque había dos espacios y el descriptor era lo que los
+    // distinguía. Con un solo producto no hay de qué distinguirlo: la cabecera
+    // dice **Strivo** y nada más. El descriptor se retira entero.
     navegacion: {
       // La barra ya no salta entre espacios: devuelve al Home. Para cambiar de
       // espacio se pasa por Strivo (revisión de SPEC_11, 19 ago 2026).
@@ -1050,8 +1048,8 @@ export const copy = {
       volverLabel: 'Volver a Strivo',
 
       lumia: {
-        pestana: 'Lumia',
-        cabecera: 'Lumia · Reflexión',
+        pestana: 'Strivo',
+        cabecera: 'Strivo',
         // Respiración va entre Journal e Historial, y ese sitio es la decisión:
         // las tres primeras son lo que se hace hoy —el día, lo que se escribe,
         // el aire— y el Historial es lo que ya pasó. Dejarla al final la habría

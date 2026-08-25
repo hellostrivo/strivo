@@ -37,7 +37,7 @@ const SESION = 'src/breathing/PantallaSesion.jsx'
 const CIERRE = 'src/breathing/components/CierreSesion.jsx'
 const PANEL = 'src/breathing/components/PanelAjustesVivo.jsx'
 const CSS = 'src/breathing/styles/respiracion.css'
-const NAV_LUMIA = 'src/components/lumia/NavLumia.jsx'
+const NAV_SECCIONES = 'src/components/lumia/NavStrivo.jsx'
 const BLOQUE = 'src/breathing/components/Bloque.jsx'
 
 /**
@@ -80,9 +80,22 @@ describe('el acceso del vestíbulo se retiró entero (24 ago)', () => {
     expect(existsSync('src/breathing/components/AccesoRespiracion.jsx')).toBe(false)
   })
 
-  it('y tampoco existe su copy ni su ruta suelta', () => {
+  it('y tampoco existe su copy', () => {
     expect(copy.respiracion.home).toBeUndefined()
-    expect(app).not.toContain('path="/respiracion/*"')
+  })
+
+  // **Se elimina la mitad que comprobaba que no tuviera "ruta suelta"**
+  // (`path="/respiracion/*"`). Decía que Respiración no colgaba de la raíz junto
+  // a los dos espacios, y con el renombrado del paso 9 las cuatro secciones
+  // cuelgan de la raíz: la ruta de Respiración y la que aquella prueba prohibía
+  // son ahora la misma cadena, así que ya no distingue nada.
+  //
+  // Lo que aquella regla protegía —que es una sección y no una categoría propia—
+  // sobrevive con esta: entra por la misma puerta que las otras tres, y su sitio
+  // en la lista lo custodia el bloque de la cabecera, más abajo.
+  it('entra por la cabecera, como las otras tres secciones', () => {
+    expect(codigoDe(NAV_SECCIONES)).toContain("ruta: '/respiracion'")
+    expect(app).toContain('path="/respiracion/*"')
   })
 
   it('el anillo del acceso se fue del CSS con él', () => {
@@ -95,7 +108,7 @@ describe('el acceso del vestíbulo se retiró entero (24 ago)', () => {
 })
 
 describe('la pestaña de Lumia (24 ago)', () => {
-  const nav = codigoDe(NAV_LUMIA)
+  const nav = codigoDe(NAV_SECCIONES)
 
   it('Respiración va entre Journal e Historial', () => {
     const secciones = nav.match(/const SECCIONES = \[[\s\S]*?\]/)[0]
@@ -104,8 +117,8 @@ describe('la pestaña de Lumia (24 ago)', () => {
   })
 
   it('apunta a la ruta que monta App', () => {
-    expect(nav).toContain("ruta: '/lumia/respiracion'")
-    expect(codigoDe(APP)).toContain('path="/lumia/respiracion/*"')
+    expect(nav).toContain("ruta: '/respiracion'")
+    expect(codigoDe(APP)).toContain('path="/respiracion/*"')
   })
 
   it('las cuatro secciones tienen rótulo', () => {
@@ -120,7 +133,7 @@ describe('las rutas (criterios 6, 7, 9)', () => {
   const contenedor = codigoDe(CONTENEDOR)
 
   it('respiracion cuelga de su propio contenedor, dentro de Lumia', () => {
-    expect(app).toContain('path="/lumia/respiracion/*"')
+    expect(app).toContain('path="/respiracion/*"')
     expect(app).toMatch(/<Respiracion\b/)
   })
 
@@ -133,17 +146,18 @@ describe('las rutas (criterios 6, 7, 9)', () => {
   })
 
   it('su ruta cuelga de la misma raíz que el resto, y de ahí sale su cromo', () => {
-    // Antes `espacioDe` devolvía null para `/respiracion` y eso daba gratis tres
-    // reglas de SPEC_16: sin barra, sin umbral y con los neutros de Strivo. Al
-    // mudarse a `/lumia/` las tres se invirtieron, **que es lo que se pidió**: la
-    // herramienta tiene que sentirse nativa de su sección.
+    // Antes `espacioDe` devolvía null para la ruta de Respiración y eso daba
+    // gratis tres reglas de SPEC_16: sin barra, sin umbral y con los neutros de
+    // Strivo. Al colgarla de la misma raíz que las demás secciones las tres se
+    // invirtieron, **que es lo que se pidió**: la herramienta tiene que sentirse
+    // nativa de su sección.
     //
     // **Revisión del paso 8 (25 ago):** `espacioDe()` se retiró con el vestíbulo
     // —no queda entre qué decidir— y la comprobación pasa de la función a la
     // ruta, que es de donde salía la respuesta. Su cromo es ahora el de la app.
     expect(app).not.toMatch(/espacioDe/)
-    expect(app).toContain('path="/lumia/respiracion/*"')
-    expect(app).toMatch(/const RUTA_RESPIRACION = '\/lumia\/respiracion'/)
+    expect(app).toContain('path="/respiracion/*"')
+    expect(app).toMatch(/const RUTA_RESPIRACION = '\/respiracion'/)
   })
 
   it('el umbral lo cruza la app al abrirse, y esta sección no lo repite', () => {
@@ -184,7 +198,7 @@ describe('las rutas (criterios 6, 7, 9)', () => {
   it('ninguna pantalla de Respiración monta una barra (criterio 9)', () => {
     for (const ruta of [CONFIG, SESION, CONTENEDOR]) {
       expect(`${ruta}`).toBe(ruta)
-      expect(codigoDe(ruta)).not.toMatch(/BarraStrivo|NavLumia/)
+      expect(codigoDe(ruta)).not.toMatch(/BarraStrivo|NavStrivo/)
     }
   })
 

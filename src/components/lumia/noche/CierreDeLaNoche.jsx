@@ -37,7 +37,7 @@ export default function CierreDeLaNoche({ reconocido, conDescarga, onTerminar })
   return (
     <div
       data-surface="dark"
-      data-lumia="noche"
+      data-momento="noche"
       className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-night px-8 text-center"
     >
       {despidiendo ? (

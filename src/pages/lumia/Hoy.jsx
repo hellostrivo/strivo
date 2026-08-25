@@ -52,7 +52,7 @@ function Fondo({ momento }) {
       {['manana', 'noche'].map((id) => (
         <div
           key={id}
-          data-lumia={id}
+          data-momento={id}
           className={clsx('absolute inset-0 bg-lumia transicion-fondo')}
           style={{ opacity: momento === id ? 1 : 0 }}
         />
@@ -140,11 +140,11 @@ export default function Hoy({ uid, onHideNav, onMomento }) {
   }
 
   const marco = (contenido) => (
-    <div data-lumia={momento} className="relative min-h-screen bg-lumia-base transicion-tema">
+    <div data-momento={momento} className="relative min-h-screen bg-lumia-base transicion-tema">
       <Fondo momento={momento} />
       <div
         data-surface={superficie}
-        data-lumia={momento}
+        data-momento={momento}
         className="relative transicion-tema text-on-surface"
       >
         {contenido}

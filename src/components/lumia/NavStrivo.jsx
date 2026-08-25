@@ -1,25 +1,22 @@
-// src/components/lumia/NavLumia.jsx
-// La navegación interna de Lumia: cabecera del espacio y sus cuatro secciones.
+// src/components/lumia/NavStrivo.jsx
+// La navegación de la app: cabecera de marca y sus cuatro secciones.
 //
-// **Hoy · Journal · Respiración · Historial.** Es la navegación propia del espacio, distinta
-// de la de Formia, y con el vocabulario de Lumia: reflexión, calma, cierre. La
-// barra de espacios no mezcla los dos registros y esta tampoco.
+// **Hoy · Journal · Respiración · Historial.**
 //
-// La cabecera dice "Lumia · Reflexión" —opción A de §C7.3— porque la pestaña de
-// abajo solo lleva la marca. Es donde se aprende qué es Lumia.
+// **Renombrada el 25 de agosto de 2026** (paso 9 del plan de separación, §8).
+// Se llamaba por el espacio al que servía, cuando había dos; con un solo
+// producto la navegación de sección es la navegación de Strivo. Con el nombre
+// cae también su gemela: no hay una segunda a la que parecerse ni de la que
+// mantenerse aparte.
 //
-// **Es gemela de `NavFormia` y sigue siendo un archivo aparte a propósito.**
-// SPEC_12 le da a cada espacio su paleta y sus símbolos: dentro de una spec las
-// dos navegaciones van a dejar de parecerse, y factorizar ahora lo que está a
-// punto de divergir solo adelanta el trabajo de deshacerlo.
-//
-// RN-DB4-01 — Aquí no hay un solo enlace a Formia. El único cruce entre
-// espacios es la barra de abajo (§C7.7.3).
+// La cabecera dice **"Strivo"** y nada más. El descriptor que la acompañaba
+// —opción A de §C7.3— existía para distinguir un espacio del otro, y ya no hay
+// otro.
 //
 // **No nombra ni un color.** Pide superficies por su papel —`espacio-cabecera`,
 // `on-surface`, `espacio-acento`— y quien decide qué son es el tema (RN-SURF-01).
 // Por eso vestirla de contratono en la mañana no toca este archivo más que para
-// darle su clase: las tres secciones conservan forma, peso y borde, y solo se
+// darle su clase: las cuatro secciones conservan forma, peso y borde, y solo se
 // invierte lo que hay debajo de ellas.
 
 import { NavLink } from 'react-router-dom'
@@ -38,13 +35,13 @@ const textos = copy.shared.navegacion
 // se hace ahora —el día, lo que se escribe, el aire— y el Historial es lo que ya
 // pasó. Dejarla al final la habría metido en el pasado.
 const SECCIONES = [
-  { id: 'hoy', ruta: '/lumia/hoy' },
-  { id: 'journal', ruta: '/lumia/journal' },
-  { id: 'respiracion', ruta: '/lumia/respiracion' },
-  { id: 'historial', ruta: '/lumia/historial' },
+  { id: 'hoy', ruta: '/hoy' },
+  { id: 'journal', ruta: '/journal' },
+  { id: 'respiracion', ruta: '/respiracion' },
+  { id: 'historial', ruta: '/historial' },
 ]
 
-export default function NavLumia() {
+export default function NavStrivo() {
   return (
     // `z-30` no es decorativo: la pantalla Hoy pinta su degradado en una capa
     // `fixed` que cubre la ventana entera, y sin esto la cabecera queda debajo
