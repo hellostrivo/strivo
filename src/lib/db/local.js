@@ -30,8 +30,6 @@ export function getLocalDB() {
           records.createIndex('byUser', 'uid')
           records.createIndex('byCollection', ['uid', 'collection'])
           records.createIndex('byCollectionDate', ['uid', 'collection', 'data.date'])
-          records.createIndex('byCollectionHabit', ['uid', 'collection', 'data.habitId'])
-          records.createIndex('byCollectionIdentity', ['uid', 'collection', 'data.identityRef'])
         }
 
         if (!db.objectStoreNames.contains(STORE_SYNC_QUEUE)) {
@@ -113,8 +111,6 @@ export async function readCollectionBy(uid, collection, field, value) {
 
 const INDEX_BY_FIELD = Object.freeze({
   date: 'byCollectionDate',
-  habitId: 'byCollectionHabit',
-  identityRef: 'byCollectionIdentity',
 })
 
 function toItem(row) {
