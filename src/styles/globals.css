@@ -33,7 +33,7 @@
 
 /* La capa visual de Respiración (SPEC_14). Se carga siempre, como las paletas:
    sus clases solo existen dentro de `src/breathing/`, así que no alcanzan a
-   ninguna pantalla de Lumia ni de Formia. */
+   ninguna otra pantalla de la app. */
 @import '../breathing/styles/respiracion.css';
 
 /* EXPLORACIÓN (rama explora/lumia-am-amanecer) — paletas alternas de
@@ -77,10 +77,10 @@
    claro. Sobre `paper` se queda en 6,7:1 y Fase 1 pide AAA.
 
    **Recalibrado en SPEC_12.** Valía #4F4A5A, que daba 8,1:1 sobre `paper` pero
-   solo 5,5:1 sobre las cabeceras teñidas de marca — la más oscura es
-   `formia-am-400` (#FFC29C). Aplicar la paleta lo sacó de AAA sin que se viera
-   a simple vista; lo cazó `npm run lint:contraste`. Ahora vale #3A3546, que da
-   7,57:1 en el peor fondo de toda la app y sigue subiendo desde ahí.
+   solo 5,5:1 sobre la más oscura de las cabeceras teñidas de marca (#FFC29C, de
+   la paleta que se retiró después). Aplicar la paleta lo sacó de AAA sin que se
+   viera a simple vista; lo cazó `npm run lint:contraste`. Ahora vale #3A3546,
+   que da 7,57:1 en el peor fondo de toda la app y sigue subiendo desde ahí.
 */
 :root {
   --color-text-on-light:       #241E33;
@@ -95,13 +95,11 @@
   /* Cambio de tema de la pantalla Hoy (§5.2.1, token dur-theme). */
   --dur-theme: 320ms;
 
-  /* Peso del tratamiento display. Lo reescribe cada espacio: Lumia va suave y
-     sin urgencia, Formia enérgico y directo (manual §5.2). */
+  /* Peso del tratamiento display (manual §5.2). Con un solo producto ya no lo
+     reescribe nadie: las dos reglas por espacio se fueron con el segundo
+     producto. */
   --peso-display: 600;
 }
-
-[data-space='lumia'] { --peso-display: 500; }
-[data-space='formia'] { --peso-display: 700; }
 
 /* ─── Neutros conectores de Strivo (manual §4.2) ─────────────────────────────
    Son el valor por defecto del cromo cuando no hay espacio activo: el arranque
@@ -135,7 +133,7 @@
      escala acromatica no lo tiene. RN-RE-VIS-17 ya exige que la fase nunca se
      comunique solo por color, asi que el dato lo llevan el texto de
      `EtiquetaFase` y la geometria del disco; el color solo acompana.
-     RN-RE-VIS-00 — ni un token `lumia-*` ni `formia-*` entra aqui. */
+     RN-RE-VIS-00 — ni un token `lumia-*` entra aqui. */
   --respiracion-fase-inhalar: var(--strivo-900);
   --respiracion-fase-sosten: var(--strivo-800);
   --respiracion-fase-exhalar: var(--strivo-700);
@@ -279,8 +277,8 @@
    La barra solo declara su clase; el espacio en el que esté decide cómo se ve.
 
    `--lumia-conmutador` solo existe bajo `[data-lumia]`, que hoy pone la raíz de
-   la app mientras Hoy está montada. En Formia, en el Journal y en el Historial
-   no hay atributo, no hay regla, y la barra conserva su gris de siempre.
+   la app mientras Hoy está montada. En el Journal, en Respiración y en el
+   Historial no hay atributo, no hay regla, y la barra conserva su gris.
 */
 [data-lumia] .barra-strivo {
   background-color: var(--lumia-conmutador);
@@ -398,23 +396,6 @@
 [data-space='lumia'][data-moment='noche'] {
   --transicion-velo: var(--color-night);
   --transicion-luz: radial-gradient(circle, rgba(232, 165, 74, .18) 0%, rgba(232, 165, 74, 0) 70%);
-}
-
-/* Umbral de entrada a Formia — **placeholder, pendiente de brief de diseño**.
-   Misma estructura que el de Lumia (luz tenue, cinco segundos, saltable) y sin
-   frase: el repertorio de apertura es de Lumia. Lo único propio es la paleta,
-   que sale de los tokens de marca y no de un hex escrito aquí. Se queda en el
-   rango claro también de noche, por la misma razón que las cabeceras (SPEC_12).
-
-   Es el mismo trato que los íconos de emoción: existe lo que hace falta para no
-   bloquear la entrega, y queda anotado que falta el material de marca. */
-[data-space='formia'] {
-  --transicion-velo: var(--formia-am-50);
-  --transicion-luz: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--formia-am-500) 30%, transparent) 0%,
-    transparent 70%
-  );
 }
 
 /* ─── Acento de la respiración (§6.3.9) ──────────────────────────────────────

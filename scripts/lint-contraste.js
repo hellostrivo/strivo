@@ -2,7 +2,7 @@
 // scripts/lint-contraste.js
 // Mide el contraste de los pares texto/fondo que la app usa de verdad.
 //
-// Existe porque el criterio 2 de SPEC_12 pide AAA en las cuatro paletas y eso
+// Existe porque el criterio 2 de SPEC_12 pide AAA en las paletas de marca y eso
 // no se puede afirmar a ojo. Cada par se mide con la fórmula de WCAG 2.2 y se
 // compara con el umbral que le toca:
 //
@@ -12,10 +12,9 @@
 //   · Elementos no textuales —bordes, indicadores— → 3:1 (WCAG 2.2, 1.4.11).
 //
 // **Los primarios de marca no llevan texto de cuerpo encima**, y no es un
-// descuido: blanco sobre `lumia-pm-500` da 5,3:1 y sobre `formia-pm-600`, 5,2:1.
-// Pasan AA y no llegan a AAA. El manual §4.8 ya lo resuelve: la paleta de marca
-// dice qué superficie usar y el sistema de contraste decide qué texto va
-// encima. Por eso los primarios se usan como acento y como borde —donde el
+// descuido: blanco sobre `lumia-pm-500` da 5,3:1. Pasa AA y no llega a AAA. El
+// manual §4.8 ya lo resuelve: la paleta de marca dice qué superficie usar y el
+// sistema de contraste decide qué texto va encima. Por eso los primarios se usan como acento y como borde —donde el
 // umbral es 3:1— y nunca como fondo de un párrafo.
 //
 // Cómo correr: npm run lint:contraste
@@ -72,14 +71,6 @@ const MARCA = {
   lumiaPm400: '#8D82B6',
   lumiaPm500: '#6C5AA7',
   lumiaPm700: '#5A5568',
-  formiaAm50: '#F7F2E9',
-  formiaAm200: '#E8D9C4',
-  formiaAm400: '#FFC29C',
-  formiaAm500: '#E9A387',
-  formiaPm600: '#B45A2B',
-  formiaPm700: '#8F4A2F',
-  formiaPm800: '#5D4766',
-  formiaPm900: '#1F1D22',
   strivo50: '#F6F4F1',
   strivo100: '#E9E7E3',
   strivo300: '#D4D1CD',
@@ -169,22 +160,6 @@ const PARES = [
   ['Lumia·PM · frase sobre su recuadro', TEXTO.onDark, sobre(MARCA.lumiaPm400, 0.2, '#2C2350'), CUERPO],
   ['Lumia·PM · borde del recuadro de la frase', sobre(MARCA.lumiaAm100, 0.3, sobre(MARCA.lumiaPm400, 0.2, '#2C2350')), sobre(MARCA.lumiaPm400, 0.2, '#2C2350'), SEPARADOR],
 
-  // ── Formia · Mañana ─────────────────────────────────────────────────────────
-  ['Formia·AM · cuerpo sobre base', TEXTO.onLight, MARCA.formiaAm50, CUERPO],
-  ['Formia·AM · secundario sobre base', TEXTO.onLightSoft, MARCA.formiaAm50, CUERPO],
-  ['Formia·AM · cuerpo sobre cabecera', TEXTO.onLight, MARCA.formiaAm200, CUERPO],
-  ['Formia·AM · secundario sobre cabecera', TEXTO.onLightSoft, MARCA.formiaAm200, CUERPO],
-  ['Formia·AM · acento sobre cabecera', MARCA.formiaPm600, MARCA.formiaAm200, NO_TEXTO],
-  ['Formia·AM · borde sobre cabecera', MARCA.formiaPm600, MARCA.formiaAm200, SEPARADOR],
-
-  // ── Formia · Noche ──────────────────────────────────────────────────────────
-  ['Formia·PM · cuerpo sobre base', TEXTO.onLight, MARCA.formiaAm50, CUERPO],
-  ['Formia·PM · cuerpo sobre cabecera', TEXTO.onLight, MARCA.formiaAm400, CUERPO],
-  ['Formia·PM · secundario sobre cabecera', TEXTO.onLightSoft, MARCA.formiaAm400, CUERPO],
-  ['Formia·PM · acento sobre cabecera', MARCA.formiaPm600, MARCA.formiaAm400, NO_TEXTO],
-  // §4.7 — La convergencia con Lumia, usada como borde: umbral de no-texto.
-  ['Formia·PM · borde de convergencia', MARCA.formiaPm800, MARCA.formiaAm400, NO_TEXTO],
-
   // ── Strivo, el cromo de fuera de los espacios ───────────────────────────────
   ['Strivo · cuerpo sobre base', TEXTO.onLight, MARCA.strivo50, CUERPO],
   ['Strivo · secundario sobre base', TEXTO.onLightSoft, MARCA.strivo50, CUERPO],
@@ -256,10 +231,7 @@ const INFORMATIVOS = [
   ['círculo de respiración sobre el amanecer', MARCA.breathAm, MARCA.lumiaAm300],
   ['círculo de respiración sobre la noche', MARCA.breathPm, MARCA.night],
   ['blanco sobre lumia-pm-500', TEXTO.blanco, MARCA.lumiaPm500],
-  ['blanco sobre formia-pm-600', TEXTO.blanco, MARCA.formiaPm600],
-  ['blanco sobre formia-pm-800 (convergencia)', TEXTO.blanco, MARCA.formiaPm800],
   ['ink sobre lumia-am-100', TEXTO.onLight, MARCA.lumiaAm100],
-  ['ink sobre formia-am-400', TEXTO.onLight, MARCA.formiaAm400],
   // Las marcas de fase de la linea van a opacidad 0,12 y su texto a 0,45. Son
   // orientacion, no dato: lo que hay que leer lo dice `EtiquetaFase` a tamano
   // completo. Se anotan para que la cifra conste, no para exigirles un umbral.
@@ -323,7 +295,7 @@ const bordeSobreClaro = ratio(sobre('#241E33', 0.12, MARCA.lumiaAm50), MARCA.lum
 console.log(`\n   borde del sistema sobre superficie clara     ${bordeSobreClaro.toFixed(2)}:1`)
 
 if (fallos === 0) {
-  console.log('\n✅ contraste: las cuatro paletas pasan su umbral.\n')
+  console.log('\n✅ contraste: todas las paletas pasan su umbral.\n')
   process.exit(0)
 }
 console.error(`\n⚠️  contraste: ${fallos} par(es) por debajo del umbral.\n`)

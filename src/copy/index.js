@@ -1024,15 +1024,13 @@ export const copy = {
     // haber elegido nada. Tampoco lleva saludo ni fecha: eso es R2, suprimido
     // de raíz (Anexo E, E.0).
     //
-    // Las dos preguntas centrales son las del blueprint —Lumia pregunta "¿cómo
-    // estoy?" y Formia "¿quién quiero ser?"— y están aquí porque son lo único
-    // que distingue de verdad a los dos espacios para quien abre la app por
-    // primera vez. No son una frase del repertorio: son fijas.
+    // La pregunta central es la del blueprint —"¿cómo estoy?"— y está aquí
+    // porque es lo que dice de qué va la app a quien la abre por primera vez.
+    // No es una frase del repertorio: es fija.
     home: {
       simbolo: 'Strivo',
       espaciosLabel: 'Espacios',
       lumia: { titulo: 'Lumia · Reflexión', pregunta: '¿Cómo estoy?' },
-      formia: { titulo: 'Formia · Acción', pregunta: '¿Quién quiero ser?' },
     },
 
     // §C7.3 — Naming de la navegación. **Opción A, decidida el 11 ago 2026**:
@@ -1043,10 +1041,6 @@ export const copy = {
     // deje de decir qué hay dentro. "Lumia · Reflexión" completo no cabe en una
     // pestaña de móvil a un tamaño legible, así que la marca sola va abajo y el
     // descriptor aparece arriba, al entrar.
-    //
-    // **La barra no mezcla los dos registros.** Lumia habla de reflexión;
-    // Formia, de construcción. Cada lista de secciones usa su vocabulario y
-    // ninguna toma prestado el de la otra.
     navegacion: {
       // La barra ya no salta entre espacios: devuelve al Home. Para cambiar de
       // espacio se pasa por Strivo (revisión de SPEC_11, 19 ago 2026).
@@ -1069,16 +1063,6 @@ export const copy = {
           historial: 'Historial',
         },
       },
-
-      formia: {
-        pestana: 'Formia',
-        cabecera: 'Formia · Acción',
-        secciones: {
-          identidad: 'Identidad',
-          habitos: 'Hábitos',
-          progreso: 'Progreso',
-        },
-      },
     },
   },
 
@@ -1086,14 +1070,6 @@ export const copy = {
   insights: {
     empty: 'Necesito conocerte un poco más. En unos días empezaré a notar cosas.',
     reject: 'No me sirve',
-    area: {
-      // Template: "Eres alguien que crece. En {área} lo demostraste {n} de los últimos {total} días."
-      evidenceTemplate:
-        'Eres alguien que {identidad}. En {área} lo demostraste {n} de los últimos {total} días.',
-      // Desequilibrio (NUNCA acusatorio):
-      lowActivity:
-        'Llevas un tiempo enfocado en {áreaActiva}. Es natural. {áreaBaja} sigue aquí cuando quieras.',
-    },
     weekly: {
       // Template: "Cinco días esta semana. Tu palabra más repetida: calma."
       template: '{n} días esta semana. Tu palabra más repetida: {palabra}.',
@@ -1102,13 +1078,6 @@ export const copy = {
 
   // ─── Perfil / Identidad ───────────────────────────────────────────────────
   profile: {
-    identity: {
-      title: 'Quién te estás convirtiendo',
-      central: 'Identidad central',
-      editHistory: 'Ver historial de versiones',
-      areaPrefix: 'En {área} eres alguien que',
-      addArea: 'Añadir área',
-    },
     cancel: {
       title: '¿Seguro que quieres cancelar?',
       body: 'Tu historial se queda. La suscripción termina al final del ciclo.',
@@ -1117,211 +1086,9 @@ export const copy = {
     },
   },
 
-  // ─── Formia ───────────────────────────────────────────────────────────────
-  // Vocabulario de Formia: construcción, dirección, hacia delante.
-  // Nunca el de Lumia (ritual, reflexión, calma, cierre) — §C3.0, principio 1.
-  formia: {
-    identidad: {
-      title: 'Quién estás construyendo',
-      lead: 'Esto es lo que te propusiste ser. Cámbialo cuando cambies tú.',
-
-      central: {
-        label: 'Tu identidad',
-        lead: 'Te estás convirtiendo en',
-        edit: 'Cambiar esto',
-        editorTitle: 'Quién quieres ser',
-        prefix: 'Alguien que',
-        placeholder: 'crece cada día',
-        hint: 'Amplia y estable. No es algo que se termine.',
-        restored: 'Esta parte siempre está contigo. Dejamos la que tenías.',
-        history: 'Ver cómo ha cambiado',
-        historyHide: 'Cerrar el historial',
-        historyTitle: 'Quién has sido',
-        historyCurrent: 'Ahora',
-        historyUntilTemplate: 'Hasta el {hasta}',
-        historyEmpty: 'Cuando cambies esto, lo anterior se queda aquí.',
-      },
-
-      areas: {
-        title: 'Dónde lo estás construyendo',
-        lead: 'Hasta tres áreas a la vez. Las que importan ahora.',
-        empty: 'Todavía no has elegido áreas. Tu identidad se sostiene igual.',
-        open: 'Elegir áreas',
-        close: 'Listo',
-        pickerTitle: 'Elige hasta tres',
-        pickerLead: 'Podrás cambiarlas cuando quieras.',
-        max: 'Tres a la vez es el tope, para que quepan de verdad. Quita una y hay sitio para otra.',
-        identityPrefixTemplate: 'En {area} soy alguien que',
-        identityTemplate: 'En {area}, alguien que {identidad}.',
-        identityPlaceholder: 'cuida su cuerpo',
-        identityEmpty: 'Si quieres, ponle palabras a esta área. Si no, así está bien.',
-        identityAdd: 'Ponerle palabras',
-        identityEdit: 'Cambiar esto',
-        pause: 'Pausar',
-        pausedTitle: 'En pausa',
-        pausedNote: 'Aquí está todo, tal como lo dejaste.',
-        resume: 'Reanudar',
-        remove: 'Quitar',
-        names: {
-          salud: 'Salud',
-          trabajo: 'Trabajo',
-          relaciones: 'Relaciones',
-          espiritualidad: 'Espiritualidad',
-          crecimiento: 'Crecimiento personal',
-          finanzas: 'Finanzas',
-          creatividad: 'Creatividad',
-        },
-      },
-
-      editor: {
-        save: 'Guardar',
-        cancel: 'Cancelar',
-      },
-
-      error: {
-        load: {
-          body: 'No pudimos abrir esto. Lo que escribiste sigue guardado.',
-          retry: 'Reintentar',
-        },
-        save: {
-          body: 'No pudimos guardar ese cambio. Lo tenemos aquí.',
-          retry: 'Reintentar',
-        },
-      },
-    },
-
-    // La palabra "ritual" no aparece en ninguna pantalla de Formia
-    // (§C3.0, principio 1 · §C3.5, criterio de aceptación 2).
-    habitos: {
-      title: 'Hábitos',
-      lead: 'Lo que haces porque es lo que hace quien quieres ser.',
-      add: 'Nuevo hábito',
-      back: 'Volver',
-      empty: 'Todavía no hay hábitos aquí. Uno solo es un buen comienzo.',
-
-      momento: {
-        manana: 'Mañana',
-        noche: 'Noche',
-        ninguno: 'Sin momento fijo',
-      },
-
-      // Confirmación al completar los hábitos de un momento (§C7.7.6).
-      // Sustituye a "Ritual completo. Buen comienzo." — vocabulario de Lumia
-      // dentro de Formia. Acompaña a la barra que se llena y nada más
-      // (RN-FO-HAB-02): sin exclamación y sin celebrar de más.
-      progreso: {
-        template: '{hecho} de {total}',
-        completoManana: 'Todo lo de esta mañana, hecho.',
-        completoNoche: 'Todo lo de esta noche, hecho.',
-      },
-
-      grupo: {
-        inactiva: 'No activa ahora',
-        pausadosTitle: 'En pausa',
-        archivadosTitle: 'Archivados',
-        revisionTitle: 'Sin identidad todavía',
-        revisionBody: 'Ábrelos cuando quieras y elige a quién construyen.',
-      },
-
-      detalle: {
-        totalTemplate: 'Lo has hecho {n} veces',
-        totalUna: 'Lo has hecho una vez',
-        totalNinguna: 'Aquí aparecerán tus marcas.',
-        diasTemplate: '{n} de los últimos {total} días',
-        gridTitle: 'Los últimos 90 días',
-        edit: 'Editar',
-        pause: 'Pausar',
-        paused: 'Pausado. Aquí estará cuando lo quieras de vuelta.',
-        pausedLabel: 'En pausa',
-        resume: 'Reanudar',
-        archive: 'Archivar',
-        archived: 'Archivado. Su historia se queda contigo.',
-        archivedLabel: 'Archivado',
-      },
-
-      editor: {
-        titleNuevo: 'Nuevo hábito',
-        titleEditar: 'Editar hábito',
-        nombre: {
-          label: '¿Cuál es tu nuevo hábito?',
-          labelEditar: 'El hábito',
-          placeholder: 'Beber agua, leer, estirar…',
-        },
-        emoji: {
-          label: 'Un emoji, si quieres',
-          choose: 'Elegir',
-          none: 'Sin emoji',
-        },
-        identidad: {
-          label: '¿Qué identidad construye este hábito?',
-          // RN-FO-H3-04 — La sugerencia se propone, nunca se asigna sola.
-          suggested: 'Por lo que escribiste, quizá sea esta. Tócala si es así.',
-        },
-        contexto: {
-          label: '¿En qué momento del día?',
-          hint: 'Solo es una etiqueta. Nada te espera a esa hora.',
-        },
-        // RN-FO-H3-02 — Dice qué falta, nunca que hayas hecho algo mal.
-        // Prohibido: "campo obligatorio", "debes seleccionar", asteriscos rojos.
-        pendiente: 'Elige a quién estás construyendo con esto.',
-        pendienteNombre: 'Escribe primero qué quieres hacer.',
-        save: 'Guardar',
-        cancel: 'Cancelar',
-      },
-
-      error: {
-        load: {
-          body: 'No pudimos abrir tus hábitos. Siguen guardados.',
-          retry: 'Reintentar',
-        },
-        save: {
-          body: 'No pudimos guardar eso. Tu marca sigue aquí.',
-          retry: 'Reintentar',
-        },
-      },
-    },
-
-    // Además del léxico general de §3.6, aquí está prohibido el vocabulario de
-    // rendimiento y cualquier porcentaje de cumplimiento (SPEC_05 §8). La lista
-    // exacta y la prueba que recorre este namespace entero están en
-    // `src/lib/__tests__/constancia.test.js`.
-    progreso: {
-      title: 'Progreso',
-      lead: 'La evidencia de quien estás siendo. Esto solo suma.',
-      empty: 'Aquí se irá acumulando lo que construyas. Empieza por un hábito.',
-
-      constancia: {
-        title: 'Tu constancia',
-        // Cuenta días con algún hábito marcado, no días de presencia en la app:
-        // desde Formia no se ve el resto (RN-DB4-01), y decir "días contigo"
-        // sobre esta cifra sería contarle a alguien menos días de los que estuvo.
-        template: '{n} días construyendo',
-        uno: 'Un día construyendo',
-        cero: 'Aquí aparecerán tus días en cuanto marques algo.',
-      },
-
-      identidad: {
-        diasTemplate: '{n} días construyendo esto',
-        diasUno: 'Un día construyendo esto',
-        diasCero: 'Todavía sin marcas. Aquí se van a guardar.',
-        inactiva: 'No activa ahora',
-      },
-
-      // §C4.3 — Evidencia de identidad: identidad + área + evidencia numérica.
-      // Se genera por reglas, no por IA (§C4.2), y siempre puede citar los días
-      // que la sostienen (RN-SI-03).
-      evidencia: {
-        areaTemplate: 'Eres {identidad}. En {area} lo demostraste {n} de los últimos {total} días.',
-        centralTemplate: 'Eres {identidad}. Lo demostraste {n} de los últimos {total} días.',
-        ver: 'Ver los días',
-        ocultar: 'Cerrar',
-      },
-    },
-  },
-
   // El namespace `empty` de Fase 0 se retira con SPEC_07. Sus cuatro cadenas
-  // tienen dueño en otro sitio —`lumia.journal.vacio`, `lumia.historial.vacio`,
-  // `insights.empty` y `formia.habitos.empty`— y ninguna se usaba ya. Dos
+  // tienen dueño en otro sitio —`lumia.journal.vacio`, `lumia.historial.vacio` e
+  // `insights.empty`— y ninguna se usaba ya. Dos
   // versiones del mismo estado vacío es una invitación a editar la que nadie ve.
 
   // ─── Respiración (SPEC_13 §7) ─────────────────────────────────────────────

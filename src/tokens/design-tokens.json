@@ -30,38 +30,16 @@
         "700": "#5A5568"
       }
     },
-    "formia": {
-      "am": {
-        "comment": "Energía cálida.",
-        "50": "#F7F2E9",
-        "200": "#E8D9C4",
-        "400": "#FFC29C",
-        "500": "#E9A387"
-      },
-      "pm": {
-        "comment": "Avance con propósito.",
-        "600": "#B45A2B",
-        "700": "#8F4A2F",
-        "800": "#5D4766",
-        "900": "#1F1D22"
-      }
-    },
     "simbolos": {
       "comment": "Manual §3.2 — El tono de firma de cada símbolo NO coincide con el primario de su paleta, y no se fuerza a que coincida. Se usa solo para el símbolo: logo, ícono de app, favicon.",
       "lumia": "#7563A7",
       "strivo": "#2B2730",
-      "formia": "#D56732",
       "viewBox": "0 0 122 130",
       "strokeLinecap": "round",
       "strokeLinejoin": "round"
     },
-    "convergencia": {
-      "comment": "Manual §4.7, confirmado ✅ — `#5D4766` es morado dentro de la paleta de Formia y es INTENCIONAL: el punto donde 'hacia dentro' y 'hacia delante' se encuentran al final del día. No se corrige para alejarlo del morado.",
-      "token": "formia.pm.800",
-      "hex": "#5D4766"
-    },
     "respiracion": {
-      "comment": "SPEC_14 §5 — Las cuatro fases de la herramienta de Respiración. Salen íntegramente de la escala Strivo madre (RN-RE-VIS-00: cero tokens `lumia-*` o `formia-*`). §5 describía un eje cálido→frío; en una escala acromática ese eje no existe, así que las fases se separan por LUMINANCIA. No es una pérdida: RN-RE-VIS-17 ya prohíbe comunicar la fase solo por color, y el texto de `EtiquetaFase` más la geometría del disco llevan el dato.",
+      "comment": "SPEC_14 §5 — Las cuatro fases de la herramienta de Respiración. Salen íntegramente de la escala Strivo madre (RN-RE-VIS-00: cero tokens de sección). §5 describía un eje cálido→frío; en una escala acromática ese eje no existe, así que las fases se separan por LUMINANCIA. No es una pérdida: RN-RE-VIS-17 ya prohíbe comunicar la fase solo por color, y el texto de `EtiquetaFase` más la geometría del disco llevan el dato.",
       "inhalar": { "token": "strivo.900", "hex": "#2B2730", "rol": "El más presente. Apertura." },
       "sosten": { "token": "strivo.800", "hex": "#423E47", "rol": "Un paso atrás. Suspensión." },
       "exhalar": { "token": "strivo.700", "hex": "#58545D", "rol": "Se retira. Soltar." },
@@ -153,12 +131,6 @@
         "enfasis": 500,
         "display": 600,
         "comment": "Neutro, confiable, estructurado."
-      },
-      "formia": {
-        "cuerpo": 400,
-        "enfasis": 600,
-        "display": 700,
-        "comment": "Enérgico, directo, orientado a la acción."
       }
     },
     "lineHeights": {
