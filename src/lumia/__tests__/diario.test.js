@@ -3,7 +3,10 @@
 
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { initUserTree, lumia, shared } from '@/lib/db'
+// La rama de datos se llama `diario` desde el renombrado del paso 9, y este
+// archivo ya usaba ese nombre para el módulo que prueba. Se le da alias: `db`
+// es la capa de datos y `diario` la lógica del día que se apoya en ella.
+import { initUserTree, diario as db, shared } from '@/lib/db'
 import { UID, resetLocalDB } from '../../lib/db/__tests__/helpers.js'
 import * as diario from '../diario.js'
 import {
@@ -40,20 +43,20 @@ describe('el día de Lumia', () => {
     const dia = await cargarDia(UID, HOY)
     expect(dia.morning).toBeNull()
     expect(dia.night).toBeNull()
-    expect(await lumia.getMorningEntry(UID, HOY)).toBeNull()
+    expect(await db.getMorningEntry(UID, HOY)).toBeNull()
   })
 
   it('guarda por bloques: escribir uno no borra los demás', async () => {
     await guardarManana(UID, HOY, { gratitude: ['uno'] })
     await guardarManana(UID, HOY, { action: 'salir a caminar' })
-    const morning = await lumia.getMorningEntry(UID, HOY)
+    const morning = await db.getMorningEntry(UID, HOY)
     expect(morning).toEqual({ gratitude: ['uno'], action: 'salir a caminar' })
   })
 
   it('no persiste el ánimo derivado: es una vista, no un dato (§5.4.1)', async () => {
     await guardarNoche(UID, HOY, { closingFeeling: 'cansado' })
-    expect(await lumia.getDayState(UID, HOY)).toBeNull()
-    expect(await lumia.getNightRitual(UID, HOY)).toEqual({ closingFeeling: 'cansado' })
+    expect(await db.getDayState(UID, HOY)).toBeNull()
+    expect(await db.getNightRitual(UID, HOY)).toEqual({ closingFeeling: 'cansado' })
   })
 
   it('el estado de sueño se fue con su pregunta: ya no hay quien lo escriba', () => {

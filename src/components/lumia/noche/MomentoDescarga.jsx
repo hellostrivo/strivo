@@ -25,7 +25,7 @@ import { CampoTexto } from '../Campo'
 import { copy } from '@copy'
 import { MAX_DESCARGA } from '@/lumia/noche'
 
-const textos = copy.lumia.diario.noche.descarga
+const textos = copy.diario.noche.descarga
 
 export default function MomentoDescarga({
   valor,

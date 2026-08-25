@@ -7,17 +7,17 @@
 // interfaz y nada más. Quien tenga el dispositivo y conocimientos técnicos
 // puede leer IndexedDB directamente. Por eso el copy de este flujo no promete
 // inviolabilidad de ninguna forma (§7.8), y por eso una prueba automática
-// recorre `copy.lumia.journal.pin` entero para comprobarlo.
+// recorre `copy.diario.journal.pin` entero para comprobarlo.
 //
 // **El PIN nunca se guarda.** Se guarda su derivación: PBKDF2 con SHA-256, salt
 // aleatorio de 16 bytes del generador criptográfico del navegador y ≥ 150.000
 // iteraciones, que se persisten junto al hash para poder subirlas en el futuro
 // sin invalidar los PIN existentes.
 //
-// RN-DB-04 — `lumia/pinConfig` se escribe con `sync: false` y nunca sale del
+// RN-DB-04 — `diario/pinConfig` se escribe con `sync: false` y nunca sale del
 // dispositivo. Es la única rama del árbol que no llega a Firestore.
 
-import { lumia, shared } from '@/lib/db'
+import { diario, shared } from '@/lib/db'
 
 /** Lo que se persiste en `pinConfig.algorithm`. */
 export const ALGORITMO = 'PBKDF2-SHA-256'
@@ -137,7 +137,7 @@ export async function metodoDeRecuperacion(uid) {
  * sería corregir en silencio (RN-DB4-08)—: se avisa y se deja elegir.
  */
 export async function estadoPin(uid) {
-  const [config, metodo] = await Promise.all([lumia.getPinConfig(uid), metodoDeRecuperacion(uid)])
+  const [config, metodo] = await Promise.all([diario.getPinConfig(uid), metodoDeRecuperacion(uid)])
   const activo = config?.enabled === true
   return {
     activo,
@@ -156,7 +156,7 @@ export async function estadoPin(uid) {
 export async function crearPin(uid, pin) {
   if (!esPinValido(pin)) return { ok: false, motivo: 'formato' }
   if ((await metodoDeRecuperacion(uid)) === null) return { ok: false, motivo: 'sin-metodo' }
-  await lumia.savePinConfig(uid, await configDe(pin))
+  await diario.savePinConfig(uid, await configDe(pin))
   return { ok: true }
 }
 
@@ -168,7 +168,7 @@ export async function crearPin(uid, pin) {
  * Sin protección activa devuelve `true`: no hay puerta que abrir.
  */
 export async function verificarPin(uid, pin) {
-  const config = await lumia.getPinConfig(uid)
+  const config = await diario.getPinConfig(uid)
   if (config?.enabled !== true) return true
   if (!esPinValido(pin)) return false
 
@@ -176,7 +176,7 @@ export async function verificarPin(uid, pin) {
   if (!comparaIgual(candidato, config.hash)) return false
 
   if (config.iterations < ITERACIONES) {
-    await lumia.savePinConfig(uid, { ...(await configDe(pin)), enabled: true })
+    await diario.savePinConfig(uid, { ...(await configDe(pin)), enabled: true })
   }
   return true
 }
@@ -184,7 +184,7 @@ export async function verificarPin(uid, pin) {
 /** Retira la protección. Exige el PIN vigente (§5.8.2). */
 export async function desactivarPin(uid, pin) {
   if (!(await verificarPin(uid, pin))) return { ok: false, motivo: 'incorrecto' }
-  await lumia.clearPinConfig(uid)
+  await diario.clearPinConfig(uid)
   return { ok: true }
 }
 
@@ -242,7 +242,7 @@ export async function reautenticar(uid) {
  */
 export async function reestablecerPin(uid, pin) {
   if (!esPinValido(pin)) return { ok: false, motivo: 'formato' }
-  await lumia.savePinConfig(uid, await configDe(pin))
+  await diario.savePinConfig(uid, await configDe(pin))
   return { ok: true }
 }
 

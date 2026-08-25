@@ -123,19 +123,19 @@ describe('lo que se lee en el bloque de la mañana antes de escribir', () => {
   it('bajo la pregunta, una línea que no pide nada', () => {
     // La redacción la fijó la actualización del 23 ago; el patrón —título más
     // una línea que no pide nada— es el mismo de antes.
-    expect(copy.lumia.diario.manana.gratitud.lead).toBe('Puede ser algo pequeño.')
+    expect(copy.diario.manana.gratitud.lead).toBe('Puede ser algo pequeño.')
     expect(codigoDe(MANANA)).toMatch(/\{textos\.lead\}/)
   })
 
   it('la pista de qué cabe va dentro de los campos, en el gris del marcador', () => {
-    expect(copy.lumia.diario.manana.gratitud.placeholder).toBe(
+    expect(copy.diario.manana.gratitud.placeholder).toBe(
       'Una persona, un momento o algo cotidiano…',
     )
     expect(codigoDe(MANANA)).toMatch(/placeholder=\{textos\.placeholder\}/)
   })
 
   it('es la misma en los tres renglones: ninguno tiene la suya', () => {
-    expect(copy.lumia.diario.manana.gratitud.ayudas).toBeUndefined()
+    expect(copy.diario.manana.gratitud.ayudas).toBeUndefined()
     expect(codigoDe(FILAS)).toMatch(/placeholder=\{placeholder\}/)
     expect(codigoDe(FILAS)).not.toMatch(/ayudas/)
   })
@@ -143,13 +143,13 @@ describe('lo que se lee en el bloque de la mañana antes de escribir', () => {
   it('la noche ya no tiene un bloque de gratitud: se retiró el 23 ago', () => {
     // "¿Qué agradezco de este día?" la sustituyó "¿Qué quiero reconocer de
     // hoy?", que no lleva ideas de apoyo. Este bloque es solo de la mañana.
-    expect(copy.lumia.diario.noche.gratitud).toBeUndefined()
+    expect(copy.diario.noche.gratitud).toBeUndefined()
   })
 })
 
 describe('el repertorio de ideas no se toca: esto era del disparador', () => {
   it('la mañana conserva sus cinco puertas de entrada', () => {
-    expect(copy.lumia.diario.manana.gratitud.sugerencias.opciones.map((o) => o.label)).toEqual([
+    expect(copy.diario.manana.gratitud.sugerencias.opciones.map((o) => o.label)).toEqual([
       'tu familia',
       'tu cuerpo',
       'este momento',
@@ -159,7 +159,7 @@ describe('el repertorio de ideas no se toca: esto era del disparador', () => {
   })
 
   it('cada idea sigue abriendo una pregunta y ninguna rellena el campo', () => {
-    const { opciones } = copy.lumia.diario.manana.gratitud.sugerencias
+    const { opciones } = copy.diario.manana.gratitud.sugerencias
     opciones.forEach((opcion) => expect(opcion.pregunta).toMatch(/\?$/))
     expect(codigoDe(CAMPO)).toMatch(/setPregunta\(opcion\.pregunta\)/)
     expect(codigoDe(CAMPO)).not.toMatch(/onCambiar\([^)]*opcion/)
@@ -168,7 +168,7 @@ describe('el repertorio de ideas no se toca: esto era del disparador', () => {
   it('el reconocimiento de la noche no ofrece ideas, y no es un olvido', () => {
     // La pregunta ya trae su propio abanico en el texto de apoyo; una lista de
     // sugerencias encima sería decirle a alguien de qué tiene que hablar su día.
-    expect(copy.lumia.diario.noche.reconocimiento.sugerencias).toBeUndefined()
+    expect(copy.diario.noche.reconocimiento.sugerencias).toBeUndefined()
     expect(codigoDe('src/components/lumia/noche/MomentoReconocimiento.jsx')).not.toMatch(
       /CampoGratitud|sugerencias/,
     )

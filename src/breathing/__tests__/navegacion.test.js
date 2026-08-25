@@ -122,7 +122,7 @@ describe('la pestaña de Lumia (24 ago)', () => {
   })
 
   it('las cuatro secciones tienen rótulo', () => {
-    const secciones = copy.shared.navegacion.lumia.secciones
+    const secciones = copy.shared.navegacion.diario.secciones
     expect(Object.keys(secciones)).toEqual(['hoy', 'journal', 'respiracion', 'historial'])
     Object.values(secciones).forEach((rotulo) => expect(rotulo.length).toBeGreaterThan(0))
   })
@@ -168,8 +168,8 @@ describe('las rutas (criterios 6, 7, 9)', () => {
     // La otra mitad sobrevive y es la que importa (RN-RE-NAV-34): el umbral se
     // cruza una vez por sesión al abrir la app, así que entrar aquí no interpone
     // nada que no interpusiera ya el Journal.
-    expect(app).toMatch(/umbralPendiente\('lumia'\)/)
-    expect(app).toMatch(/cruzarUmbral\('lumia'\)/)
+    expect(app).toMatch(/umbralPendiente\('diario'\)/)
+    expect(app).toMatch(/cruzarUmbral\('diario'\)/)
     expect(codigoDe(CONTENEDOR)).not.toMatch(/umbral/i)
   })
 

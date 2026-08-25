@@ -29,7 +29,7 @@ import {
   topeAlcanzado,
 } from '@/lumia/filas'
 
-const textos = copy.lumia.diario.filas
+const textos = copy.diario.filas
 
 export default function FilasDinamicas({
   filas,

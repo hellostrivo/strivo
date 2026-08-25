@@ -54,7 +54,7 @@ export default function ArranqueProvisional({ children }) {
       const profile = await shared.getProfile(uid)
 
       // `initUserTree` ya no exige una identidad central: es `shared/` con sus
-      // cuatro ramas y un `lumia/` que nace vacío a propósito, porque un día en
+      // cuatro ramas y un `diario/` que nace vacío a propósito, porque un día en
       // blanco sería un registro que nadie escribió (RN-DB4-08).
       if (profile === null) await initUserTree(uid)
 

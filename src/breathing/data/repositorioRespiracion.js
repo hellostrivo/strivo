@@ -8,7 +8,7 @@
 // la app no puede abrir una base con versión mayor que la suya, y el requisito
 // era justamente que nada se corrompa al volver atrás (SPEC_13 §4.4).
 //
-// **RN-RE-DAT-09 — de aquí no se importa nada de `lumia/` ni de `formia/`.** Se
+// **RN-RE-DAT-09 — de aquí no se importa nada de `diario/` ni de `formia/`.** Se
 // entra por `lib/db/local.js` y `lib/db/schema.js` directamente y no por el
 // barril `lib/db/index.js`, que expone los dos espacios: el lint lo prohíbe, y
 // aunque no lo hiciera, no hay motivo para tenerlos a la vista.

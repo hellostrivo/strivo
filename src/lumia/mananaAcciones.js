@@ -24,7 +24,7 @@ import { copy } from '@copy'
 import { ID_OTRA } from './seleccionUnica.js'
 import { sumarDias } from './fechas.js'
 
-const textos = copy.lumia.diario.manana.accion
+const textos = copy.diario.manana.accion
 
 /** §5 — "hasta tres ideas breves relacionadas con esa intención". */
 export const MAX_IDEAS = 3

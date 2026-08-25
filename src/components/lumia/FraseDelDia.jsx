@@ -46,7 +46,7 @@ export default function FraseDelDia({ frase }) {
       className="rounded-lg border border-lumia-frase bg-lumia-frase
                  px-6 py-6 shadow-elev-2 transicion-tema"
     >
-      <figcaption className="sr-only">{copy.lumia.hoy.frase.label}</figcaption>
+      <figcaption className="sr-only">{copy.diario.hoy.frase.label}</figcaption>
       <blockquote className="font-display text-base italic leading-relaxed text-on-surface">
         {frase.texto}
       </blockquote>

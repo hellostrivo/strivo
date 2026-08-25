@@ -9,7 +9,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { UID, resetLocalDB } from '@/lib/db/__tests__/helpers.js'
-import { lumia, shared } from '@/lib/db'
+import { diario, shared } from '@/lib/db'
 import { listQueue } from '@/lib/db/local.js'
 import { copy } from '@copy'
 import {
@@ -62,7 +62,7 @@ describe('almacenamiento: el PIN nunca se guarda (§5.8.2, criterio 4)', () => {
   it('se persisten salt, hash, iteraciones y algoritmo', async () => {
     await conCorreo()
     await crearPin(UID, '1234')
-    const config = await lumia.getPinConfig(UID)
+    const config = await diario.getPinConfig(UID)
 
     expect(config.algorithm).toBe(ALGORITMO)
     expect(config.iterations).toBeGreaterThanOrEqual(150000)
@@ -74,7 +74,7 @@ describe('almacenamiento: el PIN nunca se guarda (§5.8.2, criterio 4)', () => {
   it('el PIN en claro no aparece por ningún lado del registro', async () => {
     await conCorreo()
     await crearPin(UID, '482913')
-    const config = await lumia.getPinConfig(UID)
+    const config = await diario.getPinConfig(UID)
     expect(JSON.stringify(config)).not.toContain('482913')
   })
 
@@ -129,15 +129,15 @@ describe('bloqueo y desbloqueo (criterio 7)', () => {
     expect((await estadoPin(UID)).activo).toBe(true)
 
     expect(await desactivarPin(UID, '1234')).toEqual({ ok: true })
-    expect(await lumia.getPinConfig(UID)).toBeNull()
+    expect(await diario.getPinConfig(UID)).toBeNull()
   })
 
   it('un PIN derivado con menos iteraciones se rederiva al verificarlo', async () => {
     await conCorreo()
-    await lumia.savePinConfig(UID, await configDe('1234', 1000))
+    await diario.savePinConfig(UID, await configDe('1234', 1000))
     expect(await verificarPin(UID, '1234')).toBe(true)
 
-    const config = await lumia.getPinConfig(UID)
+    const config = await diario.getPinConfig(UID)
     expect(config.iterations).toBe(ITERACIONES)
     expect(await verificarPin(UID, '1234')).toBe(true)
   })
@@ -146,7 +146,7 @@ describe('bloqueo y desbloqueo (criterio 7)', () => {
 describe('sin forma de recuperarlo no hay PIN (RN-JR-PIN-02, criterio 6)', () => {
   it('una cuenta sin correo ni teléfono no puede activarlo', async () => {
     expect(await crearPin(UID, '1234')).toEqual({ ok: false, motivo: 'sin-metodo' })
-    expect(await lumia.getPinConfig(UID)).toBeNull()
+    expect(await diario.getPinConfig(UID)).toBeNull()
     expect((await estadoPin(UID)).puedeActivar).toBe(false)
   })
 
@@ -187,11 +187,11 @@ describe('"Olvidé mi PIN": ninguna entrada se pierde (criterio 5)', () => {
     await guardar(UID, { ...entradaNueva('2026-08-10'), text: 'Algo íntimo' })
     await guardar(UID, { ...entradaNueva('2026-08-09'), emotions: ['triste'] })
     await crearPin(UID, '1234')
-    const anterior = await lumia.getPinConfig(UID)
+    const anterior = await diario.getPinConfig(UID)
 
     expect(await reestablecerPin(UID, '5678')).toEqual({ ok: true })
 
-    const nueva = await lumia.getPinConfig(UID)
+    const nueva = await diario.getPinConfig(UID)
     expect(nueva.salt).not.toBe(anterior.salt)
     expect(await verificarPin(UID, '5678')).toBe(true)
     expect(await verificarPin(UID, '1234')).toBe(false)
@@ -220,7 +220,7 @@ describe('el copy dice la verdad sobre lo que esto hace (§5.8.2, criterio 7)', 
     return []
   }
 
-  const CADENAS = cadenasDe(copy.lumia.journal.pin, 'copy.lumia.journal.pin')
+  const CADENAS = cadenasDe(copy.diario.journal.pin, 'copy.diario.journal.pin')
 
   it('hay copy que revisar', () => {
     expect(CADENAS.length).toBeGreaterThan(20)
@@ -231,6 +231,6 @@ describe('el copy dice la verdad sobre lo que esto hace (§5.8.2, criterio 7)', 
   })
 
   it('el copy autorizado habla de acceso en este dispositivo', () => {
-    expect(copy.lumia.journal.pin.lead).toMatch(/en este dispositivo/i)
+    expect(copy.diario.journal.pin.lead).toMatch(/en este dispositivo/i)
   })
 })

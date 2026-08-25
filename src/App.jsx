@@ -84,8 +84,8 @@ function Secciones({ uid }) {
    * y 02). Navegar entre secciones no lo vuelve a disparar.
    */
   useEffect(() => {
-    if (prefiereMenosMovimiento() || !umbralPendiente('lumia')) return
-    cruzarUmbral('lumia')
+    if (prefiereMenosMovimiento() || !umbralPendiente('diario')) return
+    cruzarUmbral('diario')
     setEntrando(true)
   }, [])
 

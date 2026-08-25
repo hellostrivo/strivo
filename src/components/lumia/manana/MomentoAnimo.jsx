@@ -18,7 +18,7 @@ import ChipsUnicos from '../ChipsUnicos'
 import { copy } from '@copy'
 import { ANIMO } from '@/lumia/mananaEmociones'
 
-const textos = copy.lumia.diario.manana.animo
+const textos = copy.diario.manana.animo
 
 export default function MomentoAnimo({ valores, genero, onCambiar }) {
   return (

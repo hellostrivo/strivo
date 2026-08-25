@@ -14,7 +14,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import * as shared from '../shared.js'
-import * as lumia from '../lumia.js'
+import * as diario from '../lumia.js'
 import { listQueue } from '../local.js'
 import { cancelRetries, flush } from '../sync.js'
 import { UID, resetLocalDB } from './helpers.js'
@@ -56,17 +56,17 @@ afterEach(() => {
 
 describe('cola local-first (RN-02)', () => {
   it('una escritura encola exactamente una entrada por ruta', async () => {
-    await lumia.saveMorningEntry(UID, '2026-08-10', { action: 'Salir a caminar.' })
+    await diario.saveMorningEntry(UID, '2026-08-10', { action: 'Salir a caminar.' })
     const queue = await listQueue(UID)
 
     expect(queue).toHaveLength(1)
-    expect(queue[0].path).toBe('users/usuario-de-prueba/lumia/morningEntry/items/2026-08-10')
+    expect(queue[0].path).toBe('users/usuario-de-prueba/diario/morningEntry/items/2026-08-10')
     expect(queue[0].op).toBe('put')
   })
 
   it('cinco escrituras sobre la misma ruta dejan una entrada con el último estado', async () => {
     for (const texto of ['a', 'b', 'c', 'd', 'e']) {
-      await lumia.saveMorningEntry(UID, '2026-08-10', { action: texto })
+      await diario.saveMorningEntry(UID, '2026-08-10', { action: texto })
     }
 
     const queue = await listQueue(UID)
@@ -80,13 +80,13 @@ describe('criterio 5: sin red se guarda en local y se sincroniza al volver', () 
     conRed(false)
 
     await shared.initShared(UID, { profile: { name: 'Alejandra' } })
-    await lumia.saveMorningEntry(UID, '2026-08-10', { feeling: 'calma' })
-    await lumia.saveMorningEntry(UID, '2026-08-10', { action: 'Salir a caminar.' })
+    await diario.saveMorningEntry(UID, '2026-08-10', { feeling: 'calma' })
+    await diario.saveMorningEntry(UID, '2026-08-10', { action: 'Salir a caminar.' })
 
     // Lo escrito está a salvo aunque la red no exista, y las dos escrituras
     // parciales sobre el mismo día se han fundido en un solo registro.
     expect((await shared.getProfile(UID)).name).toBe('Alejandra')
-    expect(await lumia.getMorningEntry(UID, '2026-08-10')).toMatchObject({
+    expect(await diario.getMorningEntry(UID, '2026-08-10')).toMatchObject({
       feeling: 'calma',
       action: 'Salir a caminar.',
     })
@@ -113,7 +113,7 @@ describe('criterio 5: sin red se guarda en local y se sincroniza al volver', () 
   })
 
   it('volver a vaciar la cola no reenvía lo que ya salió', async () => {
-    await lumia.saveDayState(UID, '2026-08-10', { mood: 'tranquilo' })
+    await diario.saveDayState(UID, '2026-08-10', { mood: 'tranquilo' })
     await flush(UID)
     const enviadasPrimeraVez = escrituras.length
 
@@ -122,7 +122,7 @@ describe('criterio 5: sin red se guarda en local y se sincroniza al volver', () 
   })
 
   it('si Firestore falla, la entrada se queda en la cola', async () => {
-    await lumia.saveDayState(UID, '2026-08-10', { mood: 'tranquilo' })
+    await diario.saveDayState(UID, '2026-08-10', { mood: 'tranquilo' })
     falla = true
 
     const resultado = await flush(UID)
@@ -141,13 +141,13 @@ describe('criterio 5: sin red se guarda en local y se sincroniza al volver', () 
   })
 
   it('un borrado también viaja por la cola', async () => {
-    const entry = await lumia.createJournalEntry(UID, { date: '2026-08-10', text: 'x' })
+    const entry = await diario.createJournalEntry(UID, { date: '2026-08-10', text: 'x' })
     await flush(UID)
 
-    await lumia.deleteJournalEntry(UID, entry.id)
+    await diario.deleteJournalEntry(UID, entry.id)
     await flush(UID)
 
     expect(borrados).toHaveLength(1)
-    expect(borrados[0]).toContain('lumia/journal/items/')
+    expect(borrados[0]).toContain('diario/journal/items/')
   })
 })

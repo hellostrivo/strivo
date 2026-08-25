@@ -28,7 +28,7 @@ import { clsx } from 'clsx'
 import { PILDORA, PILDORA_ELEGIDA } from '../pildora'
 import { copy } from '@copy'
 
-const textos = copy.lumia.diario.noche
+const textos = copy.diario.noche
 
 function Respuesta({ bloque }) {
   if (bloque.forma === 'chip') {

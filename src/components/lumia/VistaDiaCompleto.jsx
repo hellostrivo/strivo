@@ -8,7 +8,7 @@
 // vista unificada, será una superficie de Strivo Intelligence.
 //
 // **Sin victorias ni logros.** Los dos bloques se retiraron del producto el
-// 23 ago junto con la colección `lumia/victories` y el campo
+// 23 ago junto con la colección `diario/victories` y el campo
 // `nightRitual.newWins`; un día guardado antes de esa fecha conserva sus datos
 // escritos, pero aquí ya no se leen ni se pintan.
 //
@@ -45,8 +45,8 @@ import { preguntaGuardada } from '@/lumia/nocheReflexion'
 import { horaDe } from '@/lumia/journal'
 import { fechaLarga } from '@/lumia/fechas'
 
-const textos = copy.lumia.historial.dia
-const noche = copy.lumia.diario.noche
+const textos = copy.diario.historial.dia
+const noche = copy.diario.noche
 
 function Bloque({ titulo, children }) {
   return (

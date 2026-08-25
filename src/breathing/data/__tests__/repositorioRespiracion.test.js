@@ -3,7 +3,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import * as lumia from '@lib/db/lumia'
+import * as diario from '@lib/db/lumia'
 import * as local from '@lib/db/local'
 import { UID, resetLocalDB } from '@lib/db/__tests__/helpers.js'
 
@@ -280,12 +280,12 @@ describe('criterio 16 — nada de lo que ya había se toca', () => {
     // **Revisión del paso 8 (25 ago):** comprobaba las dos ramas del árbol y
     // ahora comprueba la que queda. La regla de fondo —Respiración no toca lo
     // que no es suyo— no cambia; lo que cambia es cuánto hay que no sea suyo.
-    await lumia.saveMorningEntry(UID, '2026-08-20', {
+    await diario.saveMorningEntry(UID, '2026-08-20', {
       action: 'Salir a caminar',
       gratitude: ['el café'],
       feeling: 'calma',
     })
-    const entrada = await lumia.createJournalEntry(UID, {
+    const entrada = await diario.createJournalEntry(UID, {
       date: '2026-08-20',
       text: 'Hoy escribí esto.',
     })
@@ -300,11 +300,11 @@ describe('criterio 16 — nada de lo que ya había se toca', () => {
       ciclosCompletados: 4,
     })
 
-    expect(await lumia.getMorningEntry(UID, '2026-08-20')).toMatchObject({
+    expect(await diario.getMorningEntry(UID, '2026-08-20')).toMatchObject({
       action: 'Salir a caminar',
       gratitude: ['el café'],
     })
-    expect((await lumia.listJournalEntries(UID)).map((e) => e.id)).toEqual([entrada.id])
+    expect((await diario.listJournalEntries(UID)).map((e) => e.id)).toEqual([entrada.id])
   })
 
   it('no hace falta subir la versión del esquema: no hay stores nuevos', async () => {

@@ -8,7 +8,7 @@
 //   1. Una entrada por ruta. Cinco escrituras sin red se envían como una.
 //   2. La entrada no se borra hasta que Firestore confirma. Si el envío falla,
 //      se reintenta; nada se pierde por un corte.
-//   3. `lumia/pinConfig` nunca llega hasta aquí: `savePinConfig` escribe con
+//   3. `diario/pinConfig` nunca llega hasta aquí: `savePinConfig` escribe con
 //      `sync: false` (RN-DB-04, el PIN no sale del dispositivo).
 
 import { dequeue, listQueue, markQueueAttempt, pendingCount } from './local.js'

@@ -19,9 +19,14 @@
 // diario, que el diario no lee Respiración, y que lo compartido no conoce ni a
 // uno ni a otra.
 //
-// Nota para el renombrado pendiente: `lumia/` pasa a llamarse `diario/`. Este
-// archivo es uno de los sitios donde ese cambio se nota, porque las rutas se
-// escriben literales.
+// Nota para el renombrado pendiente: la carpeta `lumia/` pasa a llamarse
+// `diario/`. Este archivo es uno de los sitios donde ese cambio se nota, porque
+// las rutas se escriben literales.
+//
+// **El export del punto de entrada ya se renombró** (tanda B del paso 9): lo que
+// `importNames` prohíbe es `diario`, no `lumia`. Si esta lista se queda con el
+// nombre viejo la regla deja de morder sin que nada falle, que es la forma más
+// silenciosa de perder una barrera de arquitectura.
 
 // Los patrones se comparan contra la cadena del import tal cual se escribe
 // (`'./lumia.js'`, `'../../lib/db/lumia.js'`, `'@/lib/db'`), no contra la ruta
@@ -148,7 +153,7 @@ export default [
         {
           patterns: [
             { group: DIARIO_MODULES, message: RN_RESPIRACION },
-            { group: DB_ENTRYPOINT, importNames: ['lumia'], message: RN_RESPIRACION },
+            { group: DB_ENTRYPOINT, importNames: ['diario'], message: RN_RESPIRACION },
           ],
         },
       ],
@@ -169,7 +174,7 @@ export default [
           patterns: [
             { group: DIARIO_MODULES, message: COMPARTIDO },
             { group: BREATHING_MODULES, message: COMPARTIDO },
-            { group: DB_ENTRYPOINT, importNames: ['lumia'], message: COMPARTIDO },
+            { group: DB_ENTRYPOINT, importNames: ['diario'], message: COMPARTIDO },
           ],
         },
       ],
@@ -185,7 +190,7 @@ export default [
         {
           patterns: [
             { group: [...DIARIO_MODULES, ...BREATHING_MODULES], message: RN_RESPIRACION },
-            { group: DB_ENTRYPOINT, importNames: ['lumia'], message: RN_RESPIRACION },
+            { group: DB_ENTRYPOINT, importNames: ['diario'], message: RN_RESPIRACION },
           ],
         },
       ],

@@ -40,7 +40,7 @@ import { clsx } from 'clsx'
 import { PILDORA, PILDORA_ELEGIDA } from '../pildora'
 import { copy } from '@copy'
 
-const textos = copy.lumia.diario.manana
+const textos = copy.diario.manana
 
 function Respuesta({ bloque }) {
   if (bloque.forma === 'chip') {

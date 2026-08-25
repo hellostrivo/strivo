@@ -38,7 +38,7 @@ import { copy } from '@copy'
 import { MAX_ACCION } from '@/lumia/manana'
 import { INTENCION } from '@/lumia/mananaEmociones'
 
-const textos = copy.lumia.diario.manana
+const textos = copy.diario.manana
 
 function Ideas({ titulo, ideas, onElegir }) {
   if (ideas.length === 0) return null

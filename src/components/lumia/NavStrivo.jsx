@@ -54,7 +54,7 @@ export default function NavStrivo() {
     <header className="cabecera-espacio relative z-30 flex flex-col gap-3 border-b border-espacio bg-espacio-cabecera px-5 pb-3 pt-safe transicion-tema">
       <p className="flex items-center gap-2 text-sm text-on-surface-soft">
         <Simbolo marca="lumia" alto={18} />
-        {textos.lumia.cabecera}
+        {textos.diario.cabecera}
       </p>
 
       <nav aria-label={textos.seccionesLabel}>
@@ -76,7 +76,7 @@ export default function NavStrivo() {
                   )
                 }
               >
-                {textos.lumia.secciones[seccion.id]}
+                {textos.diario.secciones[seccion.id]}
               </NavLink>
             </li>
           ))}

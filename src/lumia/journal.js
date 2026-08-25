@@ -14,7 +14,7 @@
 // updatedAt`— y rechaza cualquier otro campo al escribir. Si alguna de esas
 // piezas de §5.8 vuelve, se amplía SPEC_02 §5 primero.
 
-import { lumia, shared, strivoDateKey } from '@/lib/db'
+import { diario, shared, strivoDateKey } from '@/lib/db'
 import { etiquetasDe, paraGuardar } from './emocionesJournal.js'
 
 /** RN-JR-01 — Ninguna entrada se elimina automáticamente jamás. */
@@ -42,11 +42,11 @@ export function esVacia(entrada) {
 
 /** Lo escrito, de lo más reciente a lo más antiguo. */
 export async function listar(uid) {
-  return lumia.listJournalEntries(uid)
+  return diario.listJournalEntries(uid)
 }
 
 export async function cargarDeDia(uid, fecha) {
-  return lumia.listJournalEntriesByDate(uid, fecha)
+  return diario.listJournalEntriesByDate(uid, fecha)
 }
 
 /**
@@ -70,18 +70,18 @@ export async function guardar(uid, entrada) {
   }
 
   if (esVacia(datos)) {
-    if (entrada.id) await lumia.deleteJournalEntry(uid, entrada.id)
+    if (entrada.id) await diario.deleteJournalEntry(uid, entrada.id)
     return null
   }
 
-  if (entrada.id) return lumia.updateJournalEntry(uid, entrada.id, datos)
-  return lumia.createJournalEntry(uid, datos)
+  if (entrada.id) return diario.updateJournalEntry(uid, entrada.id, datos)
+  return diario.createJournalEntry(uid, datos)
 }
 
 /** Borrar a mano una entrada que sí existió. Solo lo pide quien la escribió. */
 export async function borrar(uid, entryId) {
   if (!entryId) return
-  await lumia.deleteJournalEntry(uid, entryId)
+  await diario.deleteJournalEntry(uid, entryId)
 }
 
 // ─── Presentación ─────────────────────────────────────────────────────────────

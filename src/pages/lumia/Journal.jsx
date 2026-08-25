@@ -33,7 +33,7 @@ import { fechaCorta } from '@/lumia/fechas'
 import { useJournal } from '@/lumia/useJournal'
 import { usePin } from '@/lumia/usePin'
 
-const textos = copy.lumia.journal
+const textos = copy.diario.journal
 
 function Marco({ children }) {
   return (
@@ -99,10 +99,10 @@ function JournalAbierto({ uid, pin, onHideNav }) {
   if (carga === 'error') {
     return (
       <div className="flex min-h-screen flex-col justify-center gap-4 px-5">
-        <p className="text-base text-on-surface">{copy.lumia.diario.error.load.body}</p>
+        <p className="text-base text-on-surface">{copy.diario.error.load.body}</p>
         <div>
           <Button size="sm" variant="surface" onClick={reintentar}>
-            {copy.lumia.diario.error.load.retry}
+            {copy.diario.error.load.retry}
           </Button>
         </div>
       </div>
@@ -215,9 +215,9 @@ function JournalAbierto({ uid, pin, onHideNav }) {
             className="flex flex-wrap items-center gap-3 text-sm text-on-surface-soft"
             role="status"
           >
-            {copy.lumia.diario.error.save.body}
+            {copy.diario.error.save.body}
             <Button size="sm" variant="surface" onClick={error.reintentar}>
-              {copy.lumia.diario.error.save.retry}
+              {copy.diario.error.save.retry}
             </Button>
           </p>
         )}

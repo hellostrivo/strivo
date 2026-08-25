@@ -17,7 +17,7 @@
 // la pregunta "¿cómo cerró ese día?", y `animoDeNoche` lee las dos versiones:
 // la emoción de cierre de hoy y el estado de sueño de las noches viejas.
 
-import { lumia } from '@/lib/db'
+import { diario } from '@/lib/db'
 import { animoDeNoche, hayAlgoEscrito as hayAlgoDeNocheEscrito } from './noche.js'
 import { hayAlgoEscrito } from './manana.js'
 import { fechaDeClave } from './fechas.js'
@@ -89,9 +89,9 @@ export async function cargarMes(uid, mes) {
   const dias = diasDelMes(mes)
 
   const [rituales, mananas, journal] = await Promise.all([
-    Promise.all(dias.map((fecha) => lumia.getNightRitual(uid, fecha))),
-    Promise.all(dias.map((fecha) => lumia.getMorningEntry(uid, fecha))),
-    lumia.listJournalEntries(uid),
+    Promise.all(dias.map((fecha) => diario.getNightRitual(uid, fecha))),
+    Promise.all(dias.map((fecha) => diario.getMorningEntry(uid, fecha))),
+    diario.listJournalEntries(uid),
   ])
 
   const conJournal = new Set(journal.map((entrada) => entrada.date))
@@ -145,9 +145,9 @@ function hayAlgoDeManana(morning) {
  */
 export async function cargarDia(uid, fecha, { conJournal = true } = {}) {
   const [morning, night, journal] = await Promise.all([
-    lumia.getMorningEntry(uid, fecha),
-    lumia.getNightRitual(uid, fecha),
-    conJournal ? lumia.listJournalEntriesByDate(uid, fecha) : Promise.resolve([]),
+    diario.getMorningEntry(uid, fecha),
+    diario.getNightRitual(uid, fecha),
+    conJournal ? diario.listJournalEntriesByDate(uid, fecha) : Promise.resolve([]),
   ])
 
   return {

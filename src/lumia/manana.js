@@ -137,7 +137,7 @@ export function camposOmitidos(entrada, { conPausa = false } = {}) {
  * como cualquier otro.
  */
 export function lineasDeCierre(entrada, genero) {
-  const textos = copy.lumia.diario.manana.cierre
+  const textos = copy.diario.manana.cierre
   const lineas = []
 
   const intencion = INTENCION.etiquetaDeRespuesta(
@@ -193,7 +193,7 @@ export function etiquetaDeIntencion(entrada, genero) {
  *                   emoji: ?string, lineas: string[]}>}
  */
 export function resumenDeManana(entrada, genero) {
-  const textos = copy.lumia.diario.manana
+  const textos = copy.diario.manana
   const bloques = []
 
   const animo = etiquetaDeAnimo(entrada, genero)

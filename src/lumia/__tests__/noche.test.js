@@ -62,7 +62,7 @@ import {
   siguienteDelBanco,
 } from '@/lumia/nocheReflexion'
 
-const textos = copy.lumia.diario.noche
+const textos = copy.diario.noche
 
 const codigoDe = (ruta) =>
   readFileSync(ruta, 'utf8')
@@ -99,7 +99,7 @@ describe('criterio 1 — el reconocimiento sustituye a la pregunta de gratitud',
   })
 
   it('la pregunta anterior no aparece por ningún lado', () => {
-    const todo = JSON.stringify(copy.lumia.diario)
+    const todo = JSON.stringify(copy.diario)
     ;[/cosas buenas/i, /¿Qué agradezco de este día\?/].forEach((patron) =>
       expect(todo).not.toMatch(patron),
     )
@@ -372,7 +372,7 @@ describe('criterio 5 y 6 — la emoción de cierre, en selección única', () =>
   it('la pregunta sustituye a "¿Cómo te vas a dormir?"', () => {
     expect(textos.emocion.titulo).toBe('¿Cómo me siento al cerrar el día?')
     expect(textos.emocion.lead).toBe('Elige lo que más se acerque a cómo estás.')
-    expect(JSON.stringify(copy.lumia.diario)).not.toMatch(/¿Cómo te vas a dormir\?/)
+    expect(JSON.stringify(copy.diario)).not.toMatch(/¿Cómo te vas a dormir\?/)
   })
 
   it('el catálogo son las doce de §7, en su orden y con su emoji', () => {
@@ -688,7 +688,7 @@ describe('criterio 12 — los registros anteriores quedan intactos', () => {
 
 describe('§9 — de lo anterior solo se usa lo que las reglas permiten', () => {
   it('no hay una sola frase que interprete un patrón emocional', () => {
-    const todo = JSON.stringify(copy.lumia.diario.noche)
+    const todo = JSON.stringify(copy.diario.noche)
     ;[/sigues/i, /llevas varios/i, /parece que/i, /esto te sucede/i, /siempre te/i].forEach(
       (patron) => expect(todo).not.toMatch(patron),
     )
@@ -798,8 +798,8 @@ describe('criterio 13 — la mañana y el resto de Lumia no se tocan', () => {
   })
 
   it('la mañana conserva su ceremonia y su copy', () => {
-    expect(copy.lumia.diario.manana.cierre.cta).toBe('Comenzar mi día')
-    expect(copy.lumia.diario.manana.gratitud.titulo).toBe('¿Qué agradezco hoy?')
+    expect(copy.diario.manana.cierre.cta).toBe('Comenzar mi día')
+    expect(copy.diario.manana.gratitud.titulo).toBe('¿Qué agradezco hoy?')
     expect(existsSync('src/components/lumia/manana/AperturaDelDia.jsx')).toBe(true)
   })
 

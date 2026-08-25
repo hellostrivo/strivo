@@ -34,7 +34,7 @@ import { sumarDias } from './fechas.js'
 // lo pide expresamente y no abre la puerta a nada más.
 import { ID_OTRA, INTENCION, recortarPropia } from './mananaEmociones.js'
 
-const textos = copy.lumia.diario.noche.reflexion
+const textos = copy.diario.noche.reflexion
 
 /** Las cinco preguntas del banco, en su orden de rotación (§4). */
 export const BANCO = Object.freeze(textos.banco)

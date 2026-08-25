@@ -229,9 +229,9 @@ describe('un solo umbral por sesión (nota de producto, 19 ago · revisada 25 ag
   it('abrir la app lo consume, y la mañana ya no lo repite', async () => {
     const { cruzarUmbral, olvidarUmbrales, umbralPendiente } = await import('@lib/umbralSesion')
     olvidarUmbrales()
-    expect(umbralPendiente('lumia')).toBe(true)
-    cruzarUmbral('lumia')
-    expect(umbralPendiente('lumia')).toBe(false)
+    expect(umbralPendiente('diario')).toBe(true)
+    cruzarUmbral('diario')
+    expect(umbralPendiente('diario')).toBe(false)
     olvidarUmbrales()
   })
 

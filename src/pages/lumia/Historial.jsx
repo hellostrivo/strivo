@@ -18,7 +18,7 @@ import Button from '@components/ui/Button'
 import { copy } from '@copy'
 import { useHistorial } from '@/lumia/useHistorial'
 
-const textos = copy.lumia.historial
+const textos = copy.diario.historial
 
 function Marco({ children }) {
   return (
@@ -44,10 +44,10 @@ export default function Historial({ uid }) {
     return (
       <Marco>
         <div className="flex min-h-screen flex-col justify-center gap-4 px-5">
-          <p className="text-base text-on-surface">{copy.lumia.diario.error.load.body}</p>
+          <p className="text-base text-on-surface">{copy.diario.error.load.body}</p>
           <div>
             <Button size="sm" variant="surface" onClick={reintentar}>
-              {copy.lumia.diario.error.load.retry}
+              {copy.diario.error.load.retry}
             </Button>
           </div>
         </div>

@@ -73,16 +73,35 @@ describe('rutas (§C5.2)', () => {
     // alcance retirado, que ya no existen en `paths`.
     const rutas = [
       paths.sharedDoc('u1', 'profile'),
-      paths.lumiaDoc('u1', 'pinConfig'),
-      paths.lumiaItem('u1', 'journal', 'e1'),
-      paths.lumiaItem('u1', 'morningEntry', '2026-08-10'),
+      paths.diarioDoc('u1', 'pinConfig'),
+      paths.diarioItem('u1', 'journal', 'e1'),
+      paths.diarioItem('u1', 'morningEntry', '2026-08-10'),
     ]
     // Y que no queden constructores de ruta sin árbol al que apuntar.
-    expect(Object.keys(paths).sort()).toEqual(['lumiaDoc', 'lumiaItem', 'sharedDoc'])
+    expect(Object.keys(paths).sort()).toEqual(['diarioDoc', 'diarioItem', 'sharedDoc'])
     rutas.forEach((ruta) => {
       expect(ruta.split('/').length % 2).toBe(0)
       expect(ruta.startsWith('users/u1/')).toBe(true)
     })
+  })
+
+  // **Caso nuevo, con el renombrado de la rama** (tanda B del paso 9). La rama
+  // pasó de `lumia/` a `diario/` y la mitad de las rutas son cadenas que se
+  // arman a mano: aquí, en `COLLECTIONS` y en las etiquetas de los validadores.
+  // Una rama a medias —una ruta con el nombre nuevo y una etiqueta con el
+  // viejo— no rompería nada al escribir y dejaría dos árboles paralelos.
+  it('la rama del diario se llama igual en la ruta y en la colección', () => {
+    expect(paths.diarioDoc('u1', 'pinConfig')).toBe('users/u1/diario/pinConfig')
+    expect(paths.diarioItem('u1', 'journal', 'e1')).toBe('users/u1/diario/journal/items/e1')
+
+    Object.entries(COLLECTIONS).forEach(([clave, valor]) => {
+      if (clave === 'shared') return expect(valor).toBe('shared')
+      expect(valor.startsWith('diario')).toBe(true)
+    })
+
+    // Y que no quede ni un rastro del nombre viejo en ninguna de las dos.
+    const todo = [...Object.values(COLLECTIONS), paths.diarioDoc('u1', 'x')].join(' ')
+    expect(todo).not.toMatch(/lumia/i)
   })
 })
 

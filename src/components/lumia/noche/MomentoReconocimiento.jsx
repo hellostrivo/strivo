@@ -22,7 +22,7 @@ import { copy } from '@copy'
 import { LIMITES } from '@/lumia/filas'
 import { MAX_RECONOCIMIENTO_LINEA } from '@/lumia/noche'
 
-const textos = copy.lumia.diario.noche.reconocimiento
+const textos = copy.diario.noche.reconocimiento
 
 export default function MomentoReconocimiento({ filas, onCambiar, onVolcar, onOmitir }) {
   const enBlanco = filas.every((fila) => String(fila.texto ?? '').trim() === '')

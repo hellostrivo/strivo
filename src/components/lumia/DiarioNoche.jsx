@@ -55,7 +55,7 @@ import {
 import { CIERRE, ofreceDescarga } from '@/lumia/nocheEmociones'
 import { puedeOfrecerDescarga, reflexionDeLaNoche } from '@/lumia/nocheReflexion'
 
-const textos = copy.lumia.diario.noche
+const textos = copy.diario.noche
 
 /** El paso de la descarga opcional, que va detrás de los tres momentos. */
 const PASO_DESCARGA = MOMENTOS.length

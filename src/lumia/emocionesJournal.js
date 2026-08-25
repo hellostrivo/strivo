@@ -20,7 +20,7 @@
 import { copy } from '@copy'
 import { resolveGender } from '@copy/gender'
 
-const textos = copy.lumia.journal.editor.emociones
+const textos = copy.diario.journal.editor.emociones
 
 /** Orden fijo, de las más ligeras a las más pesadas (§5.8.1). */
 export const CATALOGO = Object.freeze(textos.catalogo)

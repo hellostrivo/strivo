@@ -19,7 +19,7 @@ import { crearSeleccion } from './seleccionUnica.js'
 
 export { ID_OTRA, MAX_PALABRA_PROPIA, etiquetaPropia, recortarPropia } from './seleccionUnica.js'
 
-const textos = copy.lumia.diario.manana
+const textos = copy.diario.manana
 
 export const ANIMO = crearSeleccion(textos.animo)
 export const INTENCION = crearSeleccion(textos.intencion)

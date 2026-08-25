@@ -19,7 +19,7 @@ import { CampoTexto } from '../Campo'
 import { copy } from '@copy'
 import { MAX_REFLEXION } from '@/lumia/noche'
 
-const textos = copy.lumia.diario.noche.reflexion
+const textos = copy.diario.noche.reflexion
 
 export default function MomentoReflexion({ pregunta, valor, onCambiar, onVolcar, onOmitir }) {
   return (

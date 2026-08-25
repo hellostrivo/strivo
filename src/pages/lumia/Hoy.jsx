@@ -38,7 +38,7 @@ import { getTimeSlot } from '@lib/timeSlot'
 import { franjaDelSaludo } from '@/lumia/fechas'
 import { useDiario } from '@/lumia/useDiario'
 
-const textos = copy.lumia.hoy
+const textos = copy.diario.hoy
 
 /** Con cuál se abre la pantalla (§5.2.1). A partir de ahí manda el conmutador. */
 function momentoInicial() {
@@ -122,9 +122,9 @@ export default function Hoy({ uid, onHideNav, onMomento }) {
    * entrando solo por su enlace, que es lo que la hace voluntaria.
    */
   useEffect(() => {
-    const puedeCruzarse = umbralPendiente('lumia') && !prefiereMenosMovimiento()
+    const puedeCruzarse = umbralPendiente('diario') && !prefiereMenosMovimiento()
     if (carga !== 'lista' || momento !== 'manana' || !puedeCruzarse) return
-    cruzarUmbral('lumia')
+    cruzarUmbral('diario')
     setUmbral(true)
   }, [carga, momento])
 
@@ -159,10 +159,10 @@ export default function Hoy({ uid, onHideNav, onMomento }) {
   if (carga === 'error') {
     return marco(
       <div className="flex min-h-screen flex-col justify-center gap-4 px-5">
-        <p className="text-base text-on-surface">{copy.lumia.diario.error.load.body}</p>
+        <p className="text-base text-on-surface">{copy.diario.error.load.body}</p>
         <div>
           <Button size="sm" variant="surface" onClick={reintentar}>
-            {copy.lumia.diario.error.load.retry}
+            {copy.diario.error.load.retry}
           </Button>
         </div>
       </div>,
@@ -172,7 +172,7 @@ export default function Hoy({ uid, onHideNav, onMomento }) {
   if (vista === 'respiracion') {
     return marco(
       <Respiracion
-        textos={copy.lumia.respiracion}
+        textos={copy.diario.respiracion}
         sonido={sonido}
         onSonido={guardarSonido}
         onSalir={cerrar}
@@ -180,7 +180,7 @@ export default function Hoy({ uid, onHideNav, onMomento }) {
     )
   }
 
-  const saludo = copy.lumia.hoy.saludo[franjaDelSaludo()]
+  const saludo = copy.diario.hoy.saludo[franjaDelSaludo()]
 
   return marco(
     <div className="flex min-h-screen flex-col gap-8 px-5 pb-24 pt-10">
@@ -203,7 +203,7 @@ export default function Hoy({ uid, onHideNav, onMomento }) {
            que dura son aceptables. */
         respiracion={
           <TarjetaRespiracion
-            etiqueta={copy.lumia.respiracion.entrada.abrir}
+            etiqueta={copy.diario.respiracion.entrada.abrir}
             onAbrir={() => abrir('respiracion')}
           />
         }
@@ -228,9 +228,9 @@ export default function Hoy({ uid, onHideNav, onMomento }) {
 
       {error && (
         <p className="flex flex-wrap items-center gap-3 text-sm text-on-surface-soft" role="status">
-          {copy.lumia.diario.error.save.body}
+          {copy.diario.error.save.body}
           <Button size="sm" variant="surface" onClick={error.reintentar}>
-            {copy.lumia.diario.error.save.retry}
+            {copy.diario.error.save.retry}
           </Button>
         </p>
       )}

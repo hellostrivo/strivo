@@ -47,7 +47,7 @@ function codigoDe(ruta) {
 const ARCHIVOS = ARBOL_LUMIA.flatMap(archivosDe)
 
 /** Recorre todas las cadenas de un namespace de copy. */
-function cadenasDe(nodo, ruta = 'copy.lumia') {
+function cadenasDe(nodo, ruta = 'copy.diario') {
   if (typeof nodo === 'string') return [[ruta, nodo]]
   if (Array.isArray(nodo)) return nodo.flatMap((hijo, i) => cadenasDe(hijo, `${ruta}[${i}]`))
   if (nodo && typeof nodo === 'object') {
@@ -56,7 +56,7 @@ function cadenasDe(nodo, ruta = 'copy.lumia') {
   return []
 }
 
-const CADENAS = cadenasDe(copy.lumia)
+const CADENAS = cadenasDe(copy.diario)
 
 describe('el diario no sabe nada de hábitos (§C2.6, revisión 25 ago)', () => {
   it('hay archivos que revisar', () => {
@@ -155,7 +155,7 @@ describe('la intención del día se retiró entera (deroga SPEC_09)', () => {
   it('no queda ni componente, ni chips, ni copy, ni campo en el modelo', () => {
     expect(existsSync('src/components/lumia/IntencionDelDia.jsx')).toBe(false)
     expect(existsSync('src/content/chips-intencion.js')).toBe(false)
-    expect(copy.lumia.intencion).toBeUndefined()
+    expect(copy.diario.intencion).toBeUndefined()
     expect(FIELDS.dailyIntention).toBeUndefined()
     expect(COLLECTIONS.dailyIntention).toBeUndefined()
   })
@@ -242,9 +242,9 @@ describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
   })
 
   it('no queda el botón que llevaba al Diario, ni su copy', () => {
-    expect(copy.lumia.hoy.tarjeta).toBeUndefined()
-    expect(copy.lumia.hoy.hecho).toBeUndefined()
-    const todo = JSON.stringify(copy.lumia)
+    expect(copy.diario.hoy.tarjeta).toBeUndefined()
+    expect(copy.diario.hoy.hecho).toBeUndefined()
+    const todo = JSON.stringify(copy.diario)
     ;['Empieza tu día', 'Cerrar tu día', 'Volver a Hoy'].forEach((cadena) =>
       expect(todo).not.toContain(cadena),
     )
@@ -256,7 +256,7 @@ describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
     // guardado. Vuelve en otro sitio y con otro trabajo — es el único control
     // del cierre de la mañana (§8), la ceremonia que cierra el recorrido, y su
     // hermano es "Cerrar mi día", no un botón de navegación.
-    expect(copy.lumia.diario.manana.cierre.cta).toBe('Comenzar mi día')
+    expect(copy.diario.manana.cierre.cta).toBe('Comenzar mi día')
     expect(codigoDe('src/components/lumia/manana/AperturaDelDia.jsx')).toMatch(/textos\.cta/)
     // No está al final de ninguna pantalla de escritura.
     ;['MomentoAnimo', 'MomentoGratitud', 'MomentoIntencionAccion', 'MomentoPausa'].forEach(
@@ -270,7 +270,7 @@ describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
     // ceremonia, y la ceremonia nunca falla (no-negociable 3). Cambió de
     // archivo con la actualización del 23 ago —`CierreDelDia` pasó a
     // `noche/CierreDeLaNoche`, sin recuento— pero no de sitio ni de trabajo.
-    expect(copy.lumia.diario.noche.cierre.cta).toBe('Cerrar mi día')
+    expect(copy.diario.noche.cierre.cta).toBe('Cerrar mi día')
     expect(codigoDe('src/components/lumia/DiarioNoche.jsx')).toMatch(/<CierreDeLaNoche/)
     expect(existsSync('src/components/lumia/CierreDelDia.jsx')).toBe(false)
   })
@@ -415,8 +415,8 @@ describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
     // "Poco más de medio minuto" se retiró entero: era el texto que hacía leer
     // la respiración como una ficha informativa. Lo que dura se sigue diciendo
     // en la pantalla del ejercicio, antes del botón que lo arranca.
-    expect(copy.lumia.respiracion.entrada.ayuda).toBeUndefined()
-    expect(JSON.stringify(copy.lumia.respiracion.entrada)).not.toMatch(/minuto|segundo/i)
+    expect(copy.diario.respiracion.entrada.ayuda).toBeUndefined()
+    expect(JSON.stringify(copy.diario.respiracion.entrada)).not.toMatch(/minuto|segundo/i)
     expect(hoy).not.toMatch(/entrada\.ayuda/)
     expect(codigoDe('src/components/lumia/TarjetaRespiracion.jsx')).not.toMatch(/minuto/i)
   })
@@ -425,7 +425,7 @@ describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
     // El módulo de cinco pantallas de SPEC_07 se retiró entero. La ceremonia
     // de cierre se queda donde se escribe, al final de la sección Noche.
     expect(hoy).not.toMatch(/guiado|RitualNoche/)
-    expect(copy.lumia.ritualNoche).toBeUndefined()
+    expect(copy.diario.ritualNoche).toBeUndefined()
     expect(existsSync('src/components/lumia/RitualNoche.jsx')).toBe(false)
     expect(existsSync('src/components/lumia/ritual')).toBe(false)
     expect(existsSync('src/lumia/ritualNoche.js')).toBe(false)
@@ -462,7 +462,7 @@ describe('copy con género (§3.6.5)', () => {
       }
       return undefined
     }
-    recorrer(copy.lumia)
+    recorrer(copy.diario)
 
     expect(conMarca.length).toBeGreaterThan(20)
     conMarca.forEach((label) => {
@@ -483,7 +483,7 @@ describe('copy con género (§3.6.5)', () => {
       }
       return undefined
     }
-    recorrer(copy.lumia)
+    recorrer(copy.diario)
   })
 
   it('ningún componente lee .m ni .f: todo pasa por el helper (RN-GEN-01)', () => {
@@ -541,13 +541,13 @@ describe('las victorias y el checklist de logros se retiraron (23 ago)', () => {
   })
 
   it('el copy no ofrece ni un texto de victoria o de logro', () => {
-    expect(copy.lumia.diario.manana.victorias).toBeUndefined()
-    expect(copy.lumia.diario.noche.victorias).toBeUndefined()
-    expect(copy.lumia.diario.noche.logros).toBeUndefined()
-    expect(copy.lumia.historial.dia.victorias).toBeUndefined()
-    expect(copy.lumia.historial.dia.logros).toBeUndefined()
+    expect(copy.diario.manana.victorias).toBeUndefined()
+    expect(copy.diario.noche.victorias).toBeUndefined()
+    expect(copy.diario.noche.logros).toBeUndefined()
+    expect(copy.diario.historial.dia.victorias).toBeUndefined()
+    expect(copy.diario.historial.dia.logros).toBeUndefined()
     // Y el cierre pierde sus tres templates de recuento de logros.
-    const cierre = copy.lumia.diario.noche.cierre
+    const cierre = copy.diario.noche.cierre
     expect(cierre.unLogro).toBeUndefined()
     expect(cierre.logrosTemplate).toBeUndefined()
     expect(cierre.ambosTemplate).toBeUndefined()

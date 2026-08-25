@@ -22,7 +22,7 @@ import Button from '@components/ui/Button'
 import { copy } from '@copy'
 import { MAX_DIGITOS, MIN_DIGITOS, esPinValido, soloDigitos } from '@/lumia/pin'
 
-const textos = copy.lumia.journal.pin
+const textos = copy.diario.journal.pin
 
 /** El teclado es numérico y no revela los dígitos introducidos (§5.8.2). */
 function CampoPin({ value, onChange, etiqueta, id }) {

@@ -22,7 +22,7 @@ import ChipsUnicos from '../ChipsUnicos'
 import { copy } from '@copy'
 import { CIERRE } from '@/lumia/nocheEmociones'
 
-const textos = copy.lumia.diario.noche
+const textos = copy.diario.noche
 
 export default function MomentoEmocion({
   valores,

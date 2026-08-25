@@ -25,7 +25,7 @@ import { crearSeleccion } from './seleccionUnica.js'
 
 export { ID_OTRA, MAX_PALABRA_PROPIA, etiquetaPropia, recortarPropia } from './seleccionUnica.js'
 
-const textos = copy.lumia.diario.noche.emocion
+const textos = copy.diario.noche.emocion
 
 export const CIERRE = crearSeleccion(textos)
 

@@ -5,7 +5,7 @@
 // aquí antes de cualquier intento de red. Firestore recibe después, desde la
 // cola de `sync.js`.
 //
-// Un solo almacén direccionado por ruta (`users/{uid}/lumia/journal/items/{id}`)
+// Un solo almacén direccionado por ruta (`users/{uid}/diario/journal/items/{id}`)
 // en vez de un almacén por entidad: la forma local es idéntica a la de
 // Firestore, así que la sincronización no traduce nada y no puede desalinearse.
 

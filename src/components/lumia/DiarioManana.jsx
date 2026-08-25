@@ -60,7 +60,7 @@ import { debeAparecer, siguientePregunta } from '@/lumia/mananaPausa'
 const PASO_PAUSA = MOMENTOS.length
 
 /** El copy del indicador. `Pasos` sirve a los dos recorridos y no lo alcanza. */
-const PASOS = copy.lumia.diario.manana.pasos
+const PASOS = copy.diario.manana.pasos
 
 const VALORES_VACIOS = Object.freeze({
   animo: null,

@@ -4,7 +4,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { UID, resetLocalDB } from '@/lib/db/__tests__/helpers.js'
-import { lumia } from '@/lib/db'
+import { diario } from '@/lib/db'
 import {
   ANIMOS,
   cargarDia,
@@ -56,13 +56,13 @@ describe('puntos de ánimo (§5.10 · §6.3.5)', () => {
   })
 
   it('el punto sale de la emoción de cierre, derivada al vuelo', async () => {
-    await lumia.saveNightRitual(UID, '2026-08-10', { closingFeeling: 'en_paz' })
+    await diario.saveNightRitual(UID, '2026-08-10', { closingFeeling: 'en_paz' })
     const dias = await cargarMes(UID, AGOSTO)
     expect(dias.find((dia) => dia.fecha === '2026-08-10').animo).toBe('en_paz')
   })
 
   it('una emoción difícil no se maquilla para que el calendario se vea mejor', async () => {
-    await lumia.saveNightRitual(UID, '2026-08-10', { closingFeeling: 'triste' })
+    await diario.saveNightRitual(UID, '2026-08-10', { closingFeeling: 'triste' })
     const dias = await cargarMes(UID, AGOSTO)
     expect(dias.find((dia) => dia.fecha === '2026-08-10').animo).toBe('inquieto')
   })
@@ -76,22 +76,22 @@ describe('puntos de ánimo (§5.10 · §6.3.5)', () => {
   })
 
   it('todo ánimo que se pinta está en la paleta de cinco', async () => {
-    await lumia.saveNightRitual(UID, '2026-08-10', { closingFeeling: 'inquieto' })
+    await diario.saveNightRitual(UID, '2026-08-10', { closingFeeling: 'inquieto' })
     const dias = await cargarMes(UID, AGOSTO)
     dias.filter((dia) => dia.animo !== null).forEach((dia) => expect(ANIMOS).toContain(dia.animo))
   })
 
   it('el ánimo no se persiste: `dayState` sigue sin escribirse (§5.4.1)', async () => {
-    await lumia.saveNightRitual(UID, '2026-08-10', { closingFeeling: 'en_paz' })
+    await diario.saveNightRitual(UID, '2026-08-10', { closingFeeling: 'en_paz' })
     await cargarMes(UID, AGOSTO)
-    expect(await lumia.getDayState(UID, '2026-08-10')).toBeNull()
+    expect(await diario.getDayState(UID, '2026-08-10')).toBeNull()
   })
 })
 
 describe('vista de día completo: solo Lumia (§C7.7.2)', () => {
   it('trae mañana, noche y journal', async () => {
-    await lumia.saveMorningEntry(UID, '2026-08-10', { gratitude: ['el café'] })
-    await lumia.saveNightRitual(UID, '2026-08-10', { reflection: 'Que se puede pedir ayuda' })
+    await diario.saveMorningEntry(UID, '2026-08-10', { gratitude: ['el café'] })
+    await diario.saveNightRitual(UID, '2026-08-10', { reflection: 'Que se puede pedir ayuda' })
     await guardar(UID, { ...entradaNueva('2026-08-10'), text: 'Hoy escribí' })
 
     const dia = await cargarDia(UID, '2026-08-10')
@@ -101,18 +101,18 @@ describe('vista de día completo: solo Lumia (§C7.7.2)', () => {
   })
 
   it('lo devuelto no tiene ni un campo de hábitos', async () => {
-    await lumia.saveNightRitual(UID, '2026-08-10', { recognized: ['algo'] })
+    await diario.saveNightRitual(UID, '2026-08-10', { recognized: ['algo'] })
     const dia = await cargarDia(UID, '2026-08-10')
     expect(Object.keys(dia).sort()).toEqual(['fecha', 'journal', 'morning', 'night'])
     expect(JSON.stringify(dia)).not.toMatch(/habit/i)
   })
 
   it('las victorias se retiraron: el día no las trae ni como lista vacía', async () => {
-    // El 23 ago se eliminó `lumia/victories` del modelo. Un día ya escrito
+    // El 23 ago se eliminó `diario/victories` del modelo. Un día ya escrito
     // conserva sus registros en el almacén, pero el Historial no los lee.
     const dia = await cargarDia(UID, '2026-08-10')
     expect(dia).not.toHaveProperty('victorias')
-    expect(lumia.listVictoriesByDate).toBeUndefined()
+    expect(diario.listVictoriesByDate).toBeUndefined()
   })
 
   it('un día en blanco se reconoce como tal, sin llamarlo perdido', async () => {
@@ -130,7 +130,7 @@ describe('con PIN puesto, el journal no se lee desde aquí (RN-JR-PIN-01)', () =
   })
 
   it('el resto del día se sigue viendo entero', async () => {
-    await lumia.saveNightRitual(UID, '2026-08-10', { recognized: ['el café'] })
+    await diario.saveNightRitual(UID, '2026-08-10', { recognized: ['el café'] })
     await guardar(UID, { ...entradaNueva('2026-08-10'), text: 'Privado' })
 
     const conPin = await cargarDia(UID, '2026-08-10', { conJournal: false })

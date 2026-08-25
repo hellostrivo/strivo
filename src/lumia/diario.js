@@ -14,7 +14,7 @@
 //     lectura de cómo se cerró el día y §5.4.1 prohíbe persistirla.
 //
 // Las victorias de la mañana y los logros de la noche se retiraron el 23 ago,
-// y con ellos la colección `lumia/victories` y el campo `nightRitual.newWins`.
+// y con ellos la colección `diario/victories` y el campo `nightRitual.newWins`.
 // Lo que se logró sin haberlo previsto se anota en el Journal (§5.8).
 //
 // Ese mismo día la noche pasó a tres momentos y se fue con ella la **síntesis
@@ -22,7 +22,7 @@
 // agradecer"). §10 de la actualización prohíbe los recuentos: el cierre dice
 // una frase fija y, si acaso, devuelve una de las cosas que se reconocieron.
 
-import { lumia, shared, strivoDateKey } from '@/lib/db'
+import { diario, shared, strivoDateKey } from '@/lib/db'
 import { fraseDelDia } from '@/content/frases-del-dia'
 import { hayAlgoEscrito } from './manana.js'
 import { animoDeNoche, hayAlgoEscrito as hayAlgoDeNoche } from './noche.js'
@@ -49,7 +49,7 @@ export async function animoBajoReciente(uid, fecha) {
     fechas.push(sumarDias(fecha, -i))
   }
 
-  const rituales = await Promise.all(fechas.map((dia) => lumia.getNightRitual(uid, dia)))
+  const rituales = await Promise.all(fechas.map((dia) => diario.getNightRitual(uid, dia)))
   // `animoDeNoche` lee las dos versiones: la emoción de cierre de hoy y el
   // estado de sueño de las noches viejas. Una noche sin ánimo declarado no
   // cuenta ni a favor ni en contra.
@@ -92,11 +92,11 @@ export async function cargarDia(uid, fechaPedida = null) {
 
   const [perfil, morning, night, animoBajo, recientes, noches] = await Promise.all([
     shared.getProfile(uid),
-    lumia.getMorningEntry(uid, fecha),
-    lumia.getNightRitual(uid, fecha),
+    diario.getMorningEntry(uid, fecha),
+    diario.getNightRitual(uid, fecha),
     animoBajoReciente(uid, fecha),
-    lumia.listMorningEntries(uid),
-    lumia.listNightRituals(uid),
+    diario.listMorningEntries(uid),
+    diario.listNightRituals(uid),
   ])
 
   return {
@@ -108,7 +108,7 @@ export async function cargarDia(uid, fechaPedida = null) {
     // Las mañanas ya escritas. Solo sirven para dos cosas, las dos hechas de lo
     // que la propia persona escribió: las ideas de acción que ya eligió para
     // una intención y la rotación de la pausa opcional. Nada de esto sale de
-    // `lumia/` ni se cruza con nada (RN-DB4-01).
+    // `diario/` ni se cruza con nada (RN-DB4-01).
     recientes,
     // Las noches ya escritas, y para una sola cosa: qué preguntas reflexivas
     // salieron, para no repetirlas (§5 y §6). No se lee ni una palabra de lo
@@ -123,13 +123,13 @@ export async function cargarDia(uid, fechaPedida = null) {
 // otra, así que una vista a medias nunca deja el día en un estado imposible.
 
 export async function guardarManana(uid, fecha, patch) {
-  await lumia.saveMorningEntry(uid, fecha, patch)
-  return lumia.getMorningEntry(uid, fecha)
+  await diario.saveMorningEntry(uid, fecha, patch)
+  return diario.getMorningEntry(uid, fecha)
 }
 
 export async function guardarNoche(uid, fecha, patch) {
-  await lumia.saveNightRitual(uid, fecha, patch)
-  return lumia.getNightRitual(uid, fecha)
+  await diario.saveNightRitual(uid, fecha, patch)
+  return diario.getNightRitual(uid, fecha)
 }
 
 // El estado de sueño dejó de escribirse el 23 ago: "¿Cómo te vas a dormir?" la

@@ -16,8 +16,8 @@ import { copy, interpolate } from '@copy'
 import { huecoInicial, nombreDelMes, numeroDeDia } from '@/lumia/historial'
 import { fechaCorta } from '@/lumia/fechas'
 
-const textos = copy.lumia.historial.calendario
-const nombresDeAnimo = copy.lumia.historial.animo
+const textos = copy.diario.historial.calendario
+const nombresDeAnimo = copy.diario.historial.animo
 
 /**
  * Los cinco ánimos, cada uno con su clase. Escrito a mano y no compuesto con

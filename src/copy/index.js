@@ -73,14 +73,17 @@ export const copy = {
     },
   },
 
-  // ─── Lumia ────────────────────────────────────────────────────────────────
-  // Vocabulario de Lumia: hacia dentro, reflexión, calma, cierre. Nunca el de
-  // Formia (construcción, identidad, hábitos) — §C2.0.
+  // ─── El diario ────────────────────────────────────────────────────────────
+  // Hoy, el Diario de la mañana y de la noche, Respiración, el Journal y el
+  // Historial. Vocabulario hacia dentro: reflexión, calma, cierre.
   //
-  // Aquí no hay una sola palabra de hábitos: ni "hábito", ni "constancia", ni
-  // "progreso", ni "ritual" referido a un checklist (§C2.6, criterio 3). La
-  // palabra "ritual" solo aparece para el Ritual de Noche, que es de Lumia.
-  lumia: {
+  // **Renombrado de `lumia` a `diario` el 25 de agosto de 2026** (paso 9 del
+  // plan de separación, §8). Se llamaba por el espacio que lo escribía, cuando
+  // había dos.
+  //
+  // Aquí no hay una sola palabra de construcción: ni "hábito", ni "constancia",
+  // ni "progreso", ni "ritual" referido a un checklist (§C2.6, criterio 3).
+  diario: {
     hoy: {
       // §5.3, Bloque 1 — saludo por hora local, con el nombre si lo hay.
       saludo: {
@@ -104,595 +107,599 @@ export const copy = {
       frase: { label: 'Frase de hoy' },
     },
 
-    diario: {
-      volver: 'Volver',
-      // §5.3, "Estado offline" — solo si hay algo pendiente de subir.
-      pendiente: 'Se guardará en la nube más tarde',
+    // El día que se escribe en Hoy: las dos secciones y lo que las enmarca.
+    //
+    // **Aplanado el 25 de agosto de 2026** (tanda B del paso 9). Vivía en un
+    // `diario` dentro de `diario`, un nivel que solo existía para separarlo del
+    // espacio que lo contenía. Sin espacio, el nivel sobraba: sus seis claves
+    // suben, y ninguna chocaba con las de arriba.
+    volver: 'Volver',
+    // §5.3, "Estado offline" — solo si hay algo pendiente de subir.
+    pendiente: 'Se guardará en la nube más tarde',
 
-      error: {
-        load: {
-          body: 'No pudimos abrir tu día. Lo que escribiste sigue guardado.',
-          retry: 'Reintentar',
-        },
-        save: {
-          body: 'No pudimos guardar eso. Tu texto sigue aquí.',
-          retry: 'Reintentar',
-        },
+    error: {
+      load: {
+        body: 'No pudimos abrir tu día. Lo que escribiste sigue guardado.',
+        retry: 'Reintentar',
+      },
+      save: {
+        body: 'No pudimos guardar eso. Tu texto sigue aquí.',
+        retry: 'Reintentar',
+      },
+    },
+
+    // Filas dinámicas de agradecimientos (§5.3, Bloque 2).
+    filas: {
+      anadir: 'Añadir otra',
+      quitar: 'Quitar',
+      // Solo se pregunta si hay texto de sobra que perder (§5.3, B2).
+      quitarConfirmar: '¿Quitar esto?',
+      // El tope no reprende: celebra en voz baja y deja de crecer.
+      tope: 'Diez cosas. Nada mal.',
+    },
+
+    // ─── La mañana, en tres momentos (§5.3, actualización del 23 ago) ──────
+    // El recorrido pregunta, por este orden: cómo estoy, cómo me gustaría
+    // estar, qué agradezco y qué puedo hacer hoy. Después, algunos días, una
+    // pausa opcional. Nada bloquea y todo se puede dejar en blanco.
+    //
+    // Las preguntas principales **no cambian de redacción nunca**: la
+    // estabilidad es lo que las vuelve familiares (§6 de la actualización).
+    // Lo que se personaliza son las ideas de apoyo, y solo esas.
+    manana: {
+      titulo: 'Tu mañana',
+
+      // El indicador cuenta momentos, no campos: "1 de 3" habla de dónde
+      // estás en el recorrido, no de cuánto te falta por rellenar.
+      pasos: {
+        etiqueta: 'Momentos de la mañana',
+        indicadorTemplate: '{n} de {total}',
+        atras: 'Atrás',
+        siguiente: 'Continuar',
+        finalizar: 'Listo',
       },
 
-      // Filas dinámicas de agradecimientos (§5.3, Bloque 2).
-      filas: {
-        anadir: 'Añadir otra',
-        quitar: 'Quitar',
-        // Solo se pregunta si hay texto de sobra que perder (§5.3, B2).
-        quitarConfirmar: '¿Quitar esto?',
-        // El tope no reprende: celebra en voz baja y deja de crecer.
-        tope: 'Diez cosas. Nada mal.',
+      // ─── Momento 1A — punto de partida ───────────────────────────────────
+      // Selección única: se nombra un estado, no se hace un inventario.
+      // Aquí sí caben las emociones difíciles, porque la pregunta es qué hay.
+      animo: {
+        titulo: '¿Cómo me siento esta mañana?',
+        lead: 'Elige lo que más se acerque a cómo estás.',
+        // Palabra propia: hasta 30 caracteres, sin emoji automático y
+        // siempre editable. No pasa por el helper de género (RN-GEN-06).
+        otra: {
+          chip: '＋ Algo más',
+          label: 'Cómo me siento esta mañana, en mis palabras',
+          placeholder: 'en tus palabras',
+          confirmar: 'Listo',
+          quitar: 'Quitar',
+        },
+        catalogo: [
+          { id: 'calma', emoji: '😌', label: { m: 'En calma', f: 'En calma', n: 'En calma' } },
+          {
+            id: 'energia',
+            emoji: '⚡',
+            label: { m: 'Con energía', f: 'Con energía', n: 'Con energía' },
+          },
+          { id: 'alegre', emoji: '😊', label: { m: 'Alegre', f: 'Alegre', n: 'Alegre' } },
+          {
+            id: 'motivado',
+            emoji: '✨',
+            label: { m: 'Motivado', f: 'Motivada', n: 'Con motivación' },
+          },
+          { id: 'neutral', emoji: '😐', label: { m: 'Neutral', f: 'Neutral', n: 'Neutral' } },
+          {
+            id: 'pensativo',
+            emoji: '🤔',
+            label: { m: 'Pensativo', f: 'Pensativa', n: 'Pensando' },
+          },
+          {
+            id: 'cansado',
+            emoji: '😴',
+            label: { m: 'Cansado', f: 'Cansada', n: 'Con cansancio' },
+          },
+          {
+            id: 'poca_energia',
+            emoji: '🪫',
+            label: { m: 'Con poca energía', f: 'Con poca energía', n: 'Con poca energía' },
+          },
+          {
+            id: 'inquieto',
+            emoji: '😟',
+            label: { m: 'Inquieto', f: 'Inquieta', n: 'Con inquietud' },
+          },
+          {
+            id: 'abrumado',
+            emoji: '😵‍💫',
+            label: { m: 'Abrumado', f: 'Abrumada', n: 'Con demasiado encima' },
+          },
+          { id: 'triste', emoji: '😔', label: { m: 'Triste', f: 'Triste', n: 'Triste' } },
+        ],
       },
 
-      // ─── La mañana, en tres momentos (§5.3, actualización del 23 ago) ──────
-      // El recorrido pregunta, por este orden: cómo estoy, cómo me gustaría
-      // estar, qué agradezco y qué puedo hacer hoy. Después, algunos días, una
-      // pausa opcional. Nada bloquea y todo se puede dejar en blanco.
-      //
-      // Las preguntas principales **no cambian de redacción nunca**: la
-      // estabilidad es lo que las vuelve familiares (§6 de la actualización).
-      // Lo que se personaliza son las ideas de apoyo, y solo esas.
-      manana: {
-        titulo: 'Tu mañana',
-
-        // El indicador cuenta momentos, no campos: "1 de 3" habla de dónde
-        // estás en el recorrido, no de cuánto te falta por rellenar.
-        pasos: {
-          etiqueta: 'Momentos de la mañana',
-          indicadorTemplate: '{n} de {total}',
-          atras: 'Atrás',
-          siguiente: 'Continuar',
-          finalizar: 'Listo',
+      // ─── Momento 1B — intención ──────────────────────────────────────────
+      // Una intención acompaña; no es una meta que haya que alcanzar. La
+      // distancia entre 1A y 1B no se mide, no se nombra y no se colorea.
+      intencion: {
+        titulo: '¿Cómo me gustaría sentirme durante el día de hoy?',
+        lead: 'Elige una intención para acompañar tu día.',
+        otra: {
+          chip: '＋ Algo más',
+          label: 'Cómo me gustaría sentirme, en mis palabras',
+          placeholder: 'en tus palabras',
+          confirmar: 'Listo',
+          quitar: 'Quitar',
         },
-
-        // ─── Momento 1A — punto de partida ───────────────────────────────────
-        // Selección única: se nombra un estado, no se hace un inventario.
-        // Aquí sí caben las emociones difíciles, porque la pregunta es qué hay.
-        animo: {
-          titulo: '¿Cómo me siento esta mañana?',
-          lead: 'Elige lo que más se acerque a cómo estás.',
-          // Palabra propia: hasta 30 caracteres, sin emoji automático y
-          // siempre editable. No pasa por el helper de género (RN-GEN-06).
-          otra: {
-            chip: '＋ Algo más',
-            label: 'Cómo me siento esta mañana, en mis palabras',
-            placeholder: 'en tus palabras',
-            confirmar: 'Listo',
-            quitar: 'Quitar',
+        catalogo: [
+          { id: 'calma', emoji: '😌', label: { m: 'En calma', f: 'En calma', n: 'En calma' } },
+          {
+            id: 'energia',
+            emoji: '⚡',
+            label: { m: 'Con energía', f: 'Con energía', n: 'Con energía' },
           },
-          catalogo: [
-            { id: 'calma', emoji: '😌', label: { m: 'En calma', f: 'En calma', n: 'En calma' } },
-            {
-              id: 'energia',
-              emoji: '⚡',
-              label: { m: 'Con energía', f: 'Con energía', n: 'Con energía' },
-            },
-            { id: 'alegre', emoji: '😊', label: { m: 'Alegre', f: 'Alegre', n: 'Alegre' } },
-            {
-              id: 'motivado',
-              emoji: '✨',
-              label: { m: 'Motivado', f: 'Motivada', n: 'Con motivación' },
-            },
-            { id: 'neutral', emoji: '😐', label: { m: 'Neutral', f: 'Neutral', n: 'Neutral' } },
-            {
-              id: 'pensativo',
-              emoji: '🤔',
-              label: { m: 'Pensativo', f: 'Pensativa', n: 'Pensando' },
-            },
-            {
-              id: 'cansado',
-              emoji: '😴',
-              label: { m: 'Cansado', f: 'Cansada', n: 'Con cansancio' },
-            },
-            {
-              id: 'poca_energia',
-              emoji: '🪫',
-              label: { m: 'Con poca energía', f: 'Con poca energía', n: 'Con poca energía' },
-            },
-            {
-              id: 'inquieto',
-              emoji: '😟',
-              label: { m: 'Inquieto', f: 'Inquieta', n: 'Con inquietud' },
-            },
-            {
-              id: 'abrumado',
-              emoji: '😵‍💫',
-              label: { m: 'Abrumado', f: 'Abrumada', n: 'Con demasiado encima' },
-            },
-            { id: 'triste', emoji: '😔', label: { m: 'Triste', f: 'Triste', n: 'Triste' } },
-          ],
-        },
-
-        // ─── Momento 1B — intención ──────────────────────────────────────────
-        // Una intención acompaña; no es una meta que haya que alcanzar. La
-        // distancia entre 1A y 1B no se mide, no se nombra y no se colorea.
-        intencion: {
-          titulo: '¿Cómo me gustaría sentirme durante el día de hoy?',
-          lead: 'Elige una intención para acompañar tu día.',
-          otra: {
-            chip: '＋ Algo más',
-            label: 'Cómo me gustaría sentirme, en mis palabras',
-            placeholder: 'en tus palabras',
-            confirmar: 'Listo',
-            quitar: 'Quitar',
+          { id: 'enfocado', emoji: '🎯', label: { m: 'Enfocado', f: 'Enfocada', n: 'Con foco' } },
+          {
+            id: 'motivado',
+            emoji: '✨',
+            label: { m: 'Motivado', f: 'Motivada', n: 'Con motivación' },
           },
-          catalogo: [
-            { id: 'calma', emoji: '😌', label: { m: 'En calma', f: 'En calma', n: 'En calma' } },
-            {
-              id: 'energia',
-              emoji: '⚡',
-              label: { m: 'Con energía', f: 'Con energía', n: 'Con energía' },
-            },
-            { id: 'enfocado', emoji: '🎯', label: { m: 'Enfocado', f: 'Enfocada', n: 'Con foco' } },
-            {
-              id: 'motivado',
-              emoji: '✨',
-              label: { m: 'Motivado', f: 'Motivada', n: 'Con motivación' },
-            },
-            {
-              id: 'confianza',
-              emoji: '🧭',
-              label: { m: 'Con confianza', f: 'Con confianza', n: 'Con confianza' },
-            },
-            { id: 'ligero', emoji: '🪶', label: { m: 'Ligero', f: 'Ligera', n: 'Con ligereza' } },
-            { id: 'presente', emoji: '🌿', label: { m: 'Presente', f: 'Presente', n: 'Presente' } },
-            {
-              id: 'paciencia',
-              emoji: '🌱',
-              label: { m: 'Con paciencia', f: 'Con paciencia', n: 'Con paciencia' },
-            },
-            { id: 'alegre', emoji: '😊', label: { m: 'Alegre', f: 'Alegre', n: 'Alegre' } },
-          ],
-        },
-
-        // ─── Momento 2 — gratitud ────────────────────────────────────────────
-        // Abre con **un** campo. Varios campos vacíos a la vez se leen como
-        // huecos por rellenar, y esto no es un formulario.
-        gratitud: {
-          titulo: '¿Qué agradezco hoy?',
-          lead: 'Puede ser algo pequeño.',
-          placeholder: 'Una persona, un momento o algo cotidiano…',
-          anadir: 'Añadir otro',
-          // Salida discreta, sin nada que reprochar al volver mañana.
-          omitir: 'Omitir por hoy',
-          // Las ideas de apoyo se conservan de la versión anterior: se ofrecen
-          // bajo el renglón enfocado tras 5 s sin escribir en él, y **nunca**
-          // rellenan el campo — abren una pregunta detonante y ahí acaban.
-          // Ninguna da por hecho que la mañana esté siendo agradable.
-          sugerencias: {
-            titulo: '¿Te ayudo con una idea?',
-            descartar: 'Ahora no',
-            opciones: [
-              {
-                id: 'familia',
-                label: 'tu familia',
-                pregunta: '¿Quién de tu familia te hizo bien esta semana?',
-              },
-              {
-                id: 'cuerpo',
-                label: 'tu cuerpo',
-                pregunta: '¿Qué te permite hacer tu cuerpo esta mañana?',
-              },
-              {
-                id: 'momento',
-                label: 'este momento',
-                pregunta: '¿Qué tiene de bueno este momento?',
-              },
-              {
-                id: 'silencio',
-                label: 'el silencio',
-                pregunta: '¿Dónde encuentras silencio en tu día?',
-              },
-              {
-                id: 'tienes',
-                label: 'lo que tienes',
-                pregunta: '¿Qué tienes hoy que hace un año esperabas?',
-              },
-            ],
+          {
+            id: 'confianza',
+            emoji: '🧭',
+            label: { m: 'Con confianza', f: 'Con confianza', n: 'Con confianza' },
           },
-        },
-
-        // ─── Momento 3 — acción del día ──────────────────────────────────────
-        // Una acción, no una lista de pendientes. Las ideas se ofrecen; tocar
-        // una la deja en el campo para que se pueda cambiar entera.
-        accion: {
-          titulo: '¿Qué puedo hacer hoy para acercarme a esa sensación?',
-          lead: 'Piensa en algo sencillo y posible.',
-          placeholder: 'Hoy puedo…',
-          ideasTitulo: 'Por si te sirve',
-          // §6 — Solo lo que la propia persona escribió antes para esa misma
-          // intención. Nunca se afirma que le funcionara: eso no se sabe.
-          anterioresTitulo: 'Ideas que elegiste antes',
-          ideas: {
-            calma: [
-              'Hacer una pausa consciente',
-              'Silenciar notificaciones un momento',
-              'Respirar durante tres minutos',
-            ],
-            energia: [
-              'Dar una caminata breve',
-              'Tomar agua al comenzar',
-              'Empezar con algo sencillo',
-            ],
-            enfocado: [
-              'Elegir una prioridad',
-              'Trabajar 25 minutos sin interrupciones',
-              'Despejar mi espacio',
-            ],
-            motivado: [
-              'Empezar solo por cinco minutos',
-              'Dividir algo grande en un primer paso',
-              'Reconocer un pequeño avance',
-            ],
-            confianza: [
-              'Dar un paso que he pospuesto',
-              'Recordar algo que sé hacer bien',
-              'Pedir el apoyo que necesito',
-            ],
-            ligero: [
-              'Dejar fuera algo no esencial',
-              'Hacer una cosa a la vez',
-              'Tomarme una pausa sin culpa',
-            ],
-            presente: [
-              'Hacer una actividad sin el teléfono',
-              'Prestar atención a una comida',
-              'Volver a mi respiración',
-            ],
-            paciencia: [
-              'Hacer una pausa antes de responder',
-              'Dejar espacio entre actividades',
-              'Avanzar sin apresurarme',
-            ],
-            alegre: [
-              'Buscar un momento que disfrute',
-              'Escuchar algo que me anime',
-              'Compartir tiempo con alguien',
-            ],
-            // Para una intención escrita a mano, o sin intención elegida. No
-            // se interpreta lo que alguien escribió: se ofrece lo general.
-            generales: [
-              'Dar un paso pequeño',
-              'Hacer una pausa',
-              'Elegir una prioridad',
-              'Cuidar algo que necesito',
-            ],
+          { id: 'ligero', emoji: '🪶', label: { m: 'Ligero', f: 'Ligera', n: 'Con ligereza' } },
+          { id: 'presente', emoji: '🌿', label: { m: 'Presente', f: 'Presente', n: 'Presente' } },
+          {
+            id: 'paciencia',
+            emoji: '🌱',
+            label: { m: 'Con paciencia', f: 'Con paciencia', n: 'Con paciencia' },
           },
-        },
-
-        // ─── Pausa opcional (§7) ─────────────────────────────────────────────
-        // No es una afirmación positiva y no se llama así: cabe el ánimo, el
-        // permiso, la perspectiva o el trato amable, sin obligación de sonar
-        // optimista.
-        reflexion: {
-          titulo: 'Si quieres, una última pausa',
-          opcional: 'Opcional',
-          omitir: 'Ahora no',
-          banco: [
-            {
-              id: 'recordarme',
-              titulo: '¿Qué necesito recordarme hoy?',
-              lead: 'Escribe una frase que quieras llevar contigo.',
-            },
-            {
-              id: 'tratarme',
-              titulo: '¿Cómo quiero tratarme hoy?',
-              lead: 'Piensa en el tono con el que quieres acompañarte.',
-            },
-            {
-              id: 'sencillo',
-              titulo: '¿Qué puedo hacer más sencillo hoy?',
-              lead: 'No todo necesita la misma energía.',
-            },
-          ],
-        },
-
-        // ─── Cierre (§8) ─────────────────────────────────────────────────────
-        // Sin puntuación, sin porcentajes y sin felicitación. Con todo en
-        // blanco cierra igual, y lo dice sin señalar el vacío.
-        cierre: {
-          intencionTemplate: 'Tu intención para hoy: {intencion}',
-          accionTemplate: 'Un paso que puedes dar: {accion}',
-          vacio: 'Tu día puede comenzar desde donde estás.',
-          cta: 'Comenzar mi día',
-        },
-
-        // La pantalla de consulta. **No tiene etiquetas propias**: repite las
-        // preguntas del recorrido, con la misma redacción y la misma
-        // tipografía, y debajo lo que se respondió. Un resumen con etiquetas
-        // cortas —"Cómo empezaste · Cansada"— sería un inventario con otro
-        // vocabulario, y §6 pide que las preguntas se digan siempre igual.
-        //
-        // Tampoco hay etiqueta de "hecho": el contenido está a la vista y
-        // decirlo sería contarle a alguien lo que está leyendo.
-        resumen: {
-          editar: 'Cambiar algo',
-        },
-
-        // Catálogo heredado. Las mañanas escritas antes de esta actualización
-        // guardaron hasta tres emociones de esta lista en `morning.emotions`;
-        // se conserva **solo para leerlas** en el Historial (§9: nada de lo ya
-        // escrito se sobrescribe ni desaparece). Ninguna pantalla de escritura
-        // lo ofrece.
-        emocionesHeredadas: {
-          catalogo: [
-            {
-              id: 'agradecido',
-              emoji: '🙏',
-              label: { m: 'Agradecido', f: 'Agradecida', n: 'Con gratitud' },
-            },
-            { id: 'en_paz', emoji: '🕊️', label: { m: 'En paz', f: 'En paz', n: 'En paz' } },
-            { id: 'enfocado', emoji: '🎯', label: { m: 'Enfocado', f: 'Enfocada', n: 'Con foco' } },
-            {
-              id: 'orgulloso',
-              emoji: '✨',
-              label: { m: 'Orgulloso de mí', f: 'Orgullosa de mí', n: 'Con orgullo' },
-            },
-            { id: 'pleno', emoji: '🌕', label: { m: 'Pleno', f: 'Plena', n: 'En plenitud' } },
-            {
-              id: 'inspirado',
-              emoji: '💡',
-              label: { m: 'Inspirado', f: 'Inspirada', n: 'Con inspiración' },
-            },
-            { id: 'feliz', emoji: '😊', label: { m: 'Feliz', f: 'Feliz', n: 'Feliz' } },
-            {
-              id: 'conectado_dios',
-              emoji: '🕯️',
-              label: {
-                m: 'Conectado con Dios',
-                f: 'Conectada con Dios',
-                n: 'En conexión con Dios',
-              },
-            },
-            { id: 'amado', emoji: '💛', label: { m: 'Amado', f: 'Amada', n: 'Con amor' } },
-            { id: 'seguro', emoji: '🛡️', label: { m: 'Seguro', f: 'Segura', n: 'Con seguridad' } },
-            { id: 'valiente', emoji: '🦁', label: { m: 'Valiente', f: 'Valiente', n: 'Valiente' } },
-            {
-              id: 'creativo',
-              emoji: '🎨',
-              label: { m: 'Creativo', f: 'Creativa', n: 'Con creatividad' },
-            },
-            { id: 'paciente', emoji: '🌱', label: { m: 'Paciente', f: 'Paciente', n: 'Paciente' } },
-            {
-              id: 'generoso',
-              emoji: '🤲',
-              label: { m: 'Generoso', f: 'Generosa', n: 'Con generosidad' },
-            },
-            {
-              id: 'prospero',
-              emoji: '🌾',
-              label: { m: 'Próspero', f: 'Próspera', n: 'Con prosperidad' },
-            },
-          ],
-        },
+          { id: 'alegre', emoji: '😊', label: { m: 'Alegre', f: 'Alegre', n: 'Alegre' } },
+        ],
       },
 
-      // ─── La noche, en tres momentos (actualización del 23 ago a §5.4) ─────
-      //
-      //   1 de 3 · ¿Qué quiero reconocer de hoy?     (lista de 1 a 3, uno al abrir)
-      //   2 de 3 · Una reflexión breve               (rotativa, o ligada a la mañana)
-      //   3 de 3 · ¿Cómo me siento al cerrar el día? (selección única, 12 + Algo más)
-      //      +   · Si quieres, deja algo aquí        (por la emoción, o a mano)
-      //      →     El cierre: "Tu día puede terminar aquí."
-      //
-      // **La noche no evalúa el día.** No pide que nada haya salido bien, no
-      // exige una lección, no pregunta si se cumplió lo que se dijo por la
-      // mañana y no cuenta nada de lo escrito. Reconocer no es lo mismo que
-      // agradecer: cabe lo que costó, lo que se intentó y lo que se atravesó.
-      //
-      // La pregunta reflexiva **cambia de una noche a otra** y es la única del
-      // recorrido que lo hace: las otras dos se dicen siempre igual, porque la
-      // estabilidad es lo que las vuelve familiares.
-      noche: {
-        titulo: 'Tu noche',
-        // §5.4, Bloque 1 — frase de apertura con el día de la semana.
-        aperturaTemplate: 'Vamos a cerrar el {dia}.',
-
-        // El indicador cuenta momentos, no campos. La descarga opcional no
-        // entra en la cuenta: no está todas las noches, y un total que cambia
-        // de un día para otro deja de orientar.
-        pasos: {
-          etiqueta: 'Momentos de la noche',
-          indicadorTemplate: '{n} de {total}',
-          atras: 'Atrás',
-          siguiente: 'Continuar',
-          finalizar: 'Listo',
-        },
-
-        // ─── Momento 1 — reconocimiento del día ──────────────────────────────
-        // Sustituye a "¿Qué agradezco de este día?". La redacción es más ancha
-        // a propósito: no pide que el día haya sido bueno, ni que lo escrito
-        // suene positivo. Abre con **un** campo; el segundo lo pide quien
-        // escribe.
-        reconocimiento: {
-          titulo: '¿Qué quiero reconocer de hoy?',
-          lead: 'Puede ser algo que disfrutaste, intentaste, enfrentaste o resolviste.',
-          placeholder: 'Algo que hice, sentí o atravesé…',
-          anadir: 'Añadir otro',
-          // Salida discreta, sin nada que reprochar al volver mañana.
-          omitir: 'Omitir por hoy',
-        },
-
-        // ─── Momento 2 — reflexión rotativa (§4, §5, §6) ─────────────────────
-        // Una sola pregunta por noche, nunca dos. El banco rota sin repetirse
-        // hasta haber pasado por las demás, y algunas noches lo sustituye la
-        // pregunta ligada a la intención de esa misma mañana.
-        reflexion: {
-          opcional: 'Opcional',
-          omitir: 'Ahora no',
-          placeholder: 'Lo que se te ocurra',
-          banco: [
-            {
-              id: 'general',
-              titulo: '¿Qué me dejó el día de hoy?',
-              lead: 'Una emoción, un aprendizaje o algo que quieras recordar.',
-            },
-            {
-              id: 'autoconocimiento',
-              titulo: '¿Qué aprendí hoy sobre mí?',
-              lead: 'No necesita ser una gran conclusión.',
-            },
-            {
-              id: 'memoria',
-              titulo: '¿Qué quiero recordar de este día?',
-              lead: 'Puede ser un instante muy pequeño.',
-            },
-            {
-              id: 'espacio',
-              titulo: '¿Qué ocupó más espacio en mí hoy?',
-              lead: 'Una emoción, una preocupación, una persona o una idea.',
-            },
-            {
-              id: 'soltar',
-              titulo: '¿Qué necesito soltar por hoy?',
-              lead: 'No tienes que resolverlo esta noche.',
-            },
-          ],
-          // §6 — La única personalización del recorrido. Nombra la intención
-          // que se eligió por la mañana y pregunta qué se notó; **nunca** si se
-          // cumplió, y nunca convierte la respuesta en una medida.
-          manana: {
-            tituloTemplate:
-              'Esta mañana elegiste {emocion} como intención. ¿Qué notaste al respecto?',
-            lead: 'No importa si el día resultó distinto a lo que esperabas.',
-          },
-        },
-
-        // ─── Momento 3 — cómo se cierra el día ───────────────────────────────
-        // Sustituye a "¿Cómo te vas a dormir?". Selección única: nombrar un
-        // estado no es hacer un inventario.
-        //
-        // Las emociones difíciles comparten jerarquía con las agradables: mismo
-        // tamaño, mismo borde, mismo orden de lectura. No hay rojo, no hay
-        // aviso y no hay ninguna que esté peor contestada que otra.
-        emocion: {
-          titulo: '¿Cómo me siento al cerrar el día?',
-          lead: 'Elige lo que más se acerque a cómo estás.',
-          // Palabra propia: hasta 30 caracteres, sin emoji automático y
-          // siempre editable. No pasa por el helper de género (RN-GEN-06).
-          otra: {
-            chip: '＋ Algo más',
-            label: 'Cómo me siento al cerrar el día, en mis palabras',
-            placeholder: 'en tus palabras',
-            confirmar: 'Listo',
-            quitar: 'Quitar',
-          },
-          catalogo: [
-            { id: 'en_paz', emoji: '😌', label: { m: 'En paz', f: 'En paz', n: 'En paz' } },
-            {
-              id: 'tranquilo',
-              emoji: '🌿',
-              label: { m: 'Tranquilo', f: 'Tranquila', n: 'En calma' },
-            },
-            {
-              id: 'agradecido',
-              emoji: '🤍',
-              label: { m: 'Agradecido', f: 'Agradecida', n: 'Con gratitud' },
-            },
-            {
-              id: 'orgulloso',
-              emoji: '✨',
-              label: { m: 'Orgulloso', f: 'Orgullosa', n: 'Con orgullo' },
-            },
-            {
-              id: 'aliviado',
-              emoji: '😮‍💨',
-              label: { m: 'Aliviado', f: 'Aliviada', n: 'Con alivio' },
-            },
-            {
-              id: 'pensativo',
-              emoji: '🤔',
-              label: { m: 'Pensativo', f: 'Pensativa', n: 'Pensando' },
-            },
-            { id: 'neutral', emoji: '😐', label: { m: 'Neutral', f: 'Neutral', n: 'Neutral' } },
-            {
-              id: 'cansado',
-              emoji: '😴',
-              label: { m: 'Cansado', f: 'Cansada', n: 'Con cansancio' },
-            },
-            {
-              id: 'inquieto',
-              emoji: '😟',
-              label: { m: 'Inquieto', f: 'Inquieta', n: 'Con inquietud' },
-            },
-            {
-              id: 'frustrado',
-              emoji: '😣',
-              label: { m: 'Frustrado', f: 'Frustrada', n: 'Con frustración' },
-            },
-            { id: 'triste', emoji: '😔', label: { m: 'Triste', f: 'Triste', n: 'Triste' } },
-            {
-              id: 'abrumado',
-              emoji: '😵‍💫',
-              label: { m: 'Abrumado', f: 'Abrumada', n: 'Con demasiado encima' },
-            },
-          ],
-        },
-
-        // ─── Descarga opcional (§8) ──────────────────────────────────────────
-        // Un espacio para dejar algo, no una intervención. La app no interpreta
-        // lo que se escriba aquí, no responde y no propone nada: se guarda y se
-        // cierra el día.
-        descarga: {
-          // El enlace va debajo de las emociones, siempre y para todas. Que
-          // aparezca solo tras una emoción difícil convertiría el catálogo en
-          // un diagnóstico.
-          abrir: 'Necesito soltar algo antes de cerrar',
-          opcional: 'Opcional',
-          titulo: '¿Hay algo que quieras dejar aquí por hoy?',
-          lead: 'No necesitas resolverlo ahora.',
-          placeholder: 'Lo que quieras dejar aquí',
-          omitir: 'Ahora no',
-          cta: 'Dejarlo aquí y cerrar mi día',
-        },
-
-        // ─── Cierre (§10) ────────────────────────────────────────────────────
-        // Sin recuento, sin porcentaje, sin comparar la mañana con la noche y
-        // sin prometer que nadie se va a sentir mejor. Dos líneas fijas, una de
-        // ellas distinta si se dejó algo escrito en la descarga, y —si hay algo
-        // reconocido— una sola de esas líneas, la primera.
-        cierre: {
-          titulo: 'Tu día puede terminar aquí.',
-          lead: 'Lo que viviste hoy no necesita quedar resuelto esta noche.',
-          leadDescarga: 'Por ahora, puedes dejarlo aquí.',
-          reconocidoTitulo: 'Algo que reconoces de hoy',
-          cta: 'Cerrar mi día',
-          despedida: 'Buenas noches.',
-          reabrir: 'Puedes volver y cambiar lo que quieras.',
-        },
-
-        // La pantalla de consulta. Repite las preguntas del recorrido con su
-        // redacción exacta; no tiene etiquetas propias ni marca de "hecho".
-        resumen: {
-          editar: 'Cambiar algo',
-        },
-
-        // ─── Catálogo heredado: "¿Cómo te vas a dormir?" ─────────────────────
-        // Las noches escritas antes de esta actualización guardaron hasta dos
-        // estados de esta lista en `nightRitual.sleepState`; se conserva **solo
-        // para leerlas** en el Historial (§11: nada de lo ya escrito se
-        // sobrescribe ni desaparece). Ninguna pantalla de escritura lo ofrece.
-        sueno: {
-          guardadoTemplate: 'Te fuiste a dormir: {estados}',
-          separador: ' · ',
+      // ─── Momento 2 — gratitud ────────────────────────────────────────────
+      // Abre con **un** campo. Varios campos vacíos a la vez se leen como
+      // huecos por rellenar, y esto no es un formulario.
+      gratitud: {
+        titulo: '¿Qué agradezco hoy?',
+        lead: 'Puede ser algo pequeño.',
+        placeholder: 'Una persona, un momento o algo cotidiano…',
+        anadir: 'Añadir otro',
+        // Salida discreta, sin nada que reprochar al volver mañana.
+        omitir: 'Omitir por hoy',
+        // Las ideas de apoyo se conservan de la versión anterior: se ofrecen
+        // bajo el renglón enfocado tras 5 s sin escribir en él, y **nunca**
+        // rellenan el campo — abren una pregunta detonante y ahí acaban.
+        // Ninguna da por hecho que la mañana esté siendo agradable.
+        sugerencias: {
+          titulo: '¿Te ayudo con una idea?',
+          descartar: 'Ahora no',
           opciones: [
-            { id: 'en_paz', label: { m: 'En paz', f: 'En paz', n: 'En paz' } },
-            { id: 'agradecido', label: { m: 'Agradecido', f: 'Agradecida', n: 'Con gratitud' } },
-            { id: 'orgulloso', label: { m: 'Orgulloso', f: 'Orgullosa', n: 'Con orgullo' } },
-            { id: 'tranquilo', label: { m: 'Tranquilo', f: 'Tranquila', n: 'En calma' } },
-            { id: 'contento', label: { m: 'Contento', f: 'Contenta', n: 'Con alegría' } },
-            { id: 'pensativo', label: { m: 'Pensativo', f: 'Pensativa', n: 'Pensando' } },
-            { id: 'cansado', label: { m: 'Cansado', f: 'Cansada', n: 'Con cansancio' } },
-            { id: 'inquieto', label: { m: 'Inquieto', f: 'Inquieta', n: 'Con inquietud' } },
-            { id: 'otro', label: { m: 'Algo más', f: 'Algo más', n: 'Algo más' } },
+            {
+              id: 'familia',
+              label: 'tu familia',
+              pregunta: '¿Quién de tu familia te hizo bien esta semana?',
+            },
+            {
+              id: 'cuerpo',
+              label: 'tu cuerpo',
+              pregunta: '¿Qué te permite hacer tu cuerpo esta mañana?',
+            },
+            {
+              id: 'momento',
+              label: 'este momento',
+              pregunta: '¿Qué tiene de bueno este momento?',
+            },
+            {
+              id: 'silencio',
+              label: 'el silencio',
+              pregunta: '¿Dónde encuentras silencio en tu día?',
+            },
+            {
+              id: 'tienes',
+              label: 'lo que tienes',
+              pregunta: '¿Qué tienes hoy que hace un año esperabas?',
+            },
           ],
         },
+      },
+
+      // ─── Momento 3 — acción del día ──────────────────────────────────────
+      // Una acción, no una lista de pendientes. Las ideas se ofrecen; tocar
+      // una la deja en el campo para que se pueda cambiar entera.
+      accion: {
+        titulo: '¿Qué puedo hacer hoy para acercarme a esa sensación?',
+        lead: 'Piensa en algo sencillo y posible.',
+        placeholder: 'Hoy puedo…',
+        ideasTitulo: 'Por si te sirve',
+        // §6 — Solo lo que la propia persona escribió antes para esa misma
+        // intención. Nunca se afirma que le funcionara: eso no se sabe.
+        anterioresTitulo: 'Ideas que elegiste antes',
+        ideas: {
+          calma: [
+            'Hacer una pausa consciente',
+            'Silenciar notificaciones un momento',
+            'Respirar durante tres minutos',
+          ],
+          energia: [
+            'Dar una caminata breve',
+            'Tomar agua al comenzar',
+            'Empezar con algo sencillo',
+          ],
+          enfocado: [
+            'Elegir una prioridad',
+            'Trabajar 25 minutos sin interrupciones',
+            'Despejar mi espacio',
+          ],
+          motivado: [
+            'Empezar solo por cinco minutos',
+            'Dividir algo grande en un primer paso',
+            'Reconocer un pequeño avance',
+          ],
+          confianza: [
+            'Dar un paso que he pospuesto',
+            'Recordar algo que sé hacer bien',
+            'Pedir el apoyo que necesito',
+          ],
+          ligero: [
+            'Dejar fuera algo no esencial',
+            'Hacer una cosa a la vez',
+            'Tomarme una pausa sin culpa',
+          ],
+          presente: [
+            'Hacer una actividad sin el teléfono',
+            'Prestar atención a una comida',
+            'Volver a mi respiración',
+          ],
+          paciencia: [
+            'Hacer una pausa antes de responder',
+            'Dejar espacio entre actividades',
+            'Avanzar sin apresurarme',
+          ],
+          alegre: [
+            'Buscar un momento que disfrute',
+            'Escuchar algo que me anime',
+            'Compartir tiempo con alguien',
+          ],
+          // Para una intención escrita a mano, o sin intención elegida. No
+          // se interpreta lo que alguien escribió: se ofrece lo general.
+          generales: [
+            'Dar un paso pequeño',
+            'Hacer una pausa',
+            'Elegir una prioridad',
+            'Cuidar algo que necesito',
+          ],
+        },
+      },
+
+      // ─── Pausa opcional (§7) ─────────────────────────────────────────────
+      // No es una afirmación positiva y no se llama así: cabe el ánimo, el
+      // permiso, la perspectiva o el trato amable, sin obligación de sonar
+      // optimista.
+      reflexion: {
+        titulo: 'Si quieres, una última pausa',
+        opcional: 'Opcional',
+        omitir: 'Ahora no',
+        banco: [
+          {
+            id: 'recordarme',
+            titulo: '¿Qué necesito recordarme hoy?',
+            lead: 'Escribe una frase que quieras llevar contigo.',
+          },
+          {
+            id: 'tratarme',
+            titulo: '¿Cómo quiero tratarme hoy?',
+            lead: 'Piensa en el tono con el que quieres acompañarte.',
+          },
+          {
+            id: 'sencillo',
+            titulo: '¿Qué puedo hacer más sencillo hoy?',
+            lead: 'No todo necesita la misma energía.',
+          },
+        ],
+      },
+
+      // ─── Cierre (§8) ─────────────────────────────────────────────────────
+      // Sin puntuación, sin porcentajes y sin felicitación. Con todo en
+      // blanco cierra igual, y lo dice sin señalar el vacío.
+      cierre: {
+        intencionTemplate: 'Tu intención para hoy: {intencion}',
+        accionTemplate: 'Un paso que puedes dar: {accion}',
+        vacio: 'Tu día puede comenzar desde donde estás.',
+        cta: 'Comenzar mi día',
+      },
+
+      // La pantalla de consulta. **No tiene etiquetas propias**: repite las
+      // preguntas del recorrido, con la misma redacción y la misma
+      // tipografía, y debajo lo que se respondió. Un resumen con etiquetas
+      // cortas —"Cómo empezaste · Cansada"— sería un inventario con otro
+      // vocabulario, y §6 pide que las preguntas se digan siempre igual.
+      //
+      // Tampoco hay etiqueta de "hecho": el contenido está a la vista y
+      // decirlo sería contarle a alguien lo que está leyendo.
+      resumen: {
+        editar: 'Cambiar algo',
+      },
+
+      // Catálogo heredado. Las mañanas escritas antes de esta actualización
+      // guardaron hasta tres emociones de esta lista en `morning.emotions`;
+      // se conserva **solo para leerlas** en el Historial (§9: nada de lo ya
+      // escrito se sobrescribe ni desaparece). Ninguna pantalla de escritura
+      // lo ofrece.
+      emocionesHeredadas: {
+        catalogo: [
+          {
+            id: 'agradecido',
+            emoji: '🙏',
+            label: { m: 'Agradecido', f: 'Agradecida', n: 'Con gratitud' },
+          },
+          { id: 'en_paz', emoji: '🕊️', label: { m: 'En paz', f: 'En paz', n: 'En paz' } },
+          { id: 'enfocado', emoji: '🎯', label: { m: 'Enfocado', f: 'Enfocada', n: 'Con foco' } },
+          {
+            id: 'orgulloso',
+            emoji: '✨',
+            label: { m: 'Orgulloso de mí', f: 'Orgullosa de mí', n: 'Con orgullo' },
+          },
+          { id: 'pleno', emoji: '🌕', label: { m: 'Pleno', f: 'Plena', n: 'En plenitud' } },
+          {
+            id: 'inspirado',
+            emoji: '💡',
+            label: { m: 'Inspirado', f: 'Inspirada', n: 'Con inspiración' },
+          },
+          { id: 'feliz', emoji: '😊', label: { m: 'Feliz', f: 'Feliz', n: 'Feliz' } },
+          {
+            id: 'conectado_dios',
+            emoji: '🕯️',
+            label: {
+              m: 'Conectado con Dios',
+              f: 'Conectada con Dios',
+              n: 'En conexión con Dios',
+            },
+          },
+          { id: 'amado', emoji: '💛', label: { m: 'Amado', f: 'Amada', n: 'Con amor' } },
+          { id: 'seguro', emoji: '🛡️', label: { m: 'Seguro', f: 'Segura', n: 'Con seguridad' } },
+          { id: 'valiente', emoji: '🦁', label: { m: 'Valiente', f: 'Valiente', n: 'Valiente' } },
+          {
+            id: 'creativo',
+            emoji: '🎨',
+            label: { m: 'Creativo', f: 'Creativa', n: 'Con creatividad' },
+          },
+          { id: 'paciente', emoji: '🌱', label: { m: 'Paciente', f: 'Paciente', n: 'Paciente' } },
+          {
+            id: 'generoso',
+            emoji: '🤲',
+            label: { m: 'Generoso', f: 'Generosa', n: 'Con generosidad' },
+          },
+          {
+            id: 'prospero',
+            emoji: '🌾',
+            label: { m: 'Próspero', f: 'Próspera', n: 'Con prosperidad' },
+          },
+        ],
+      },
+    },
+
+    // ─── La noche, en tres momentos (actualización del 23 ago a §5.4) ─────
+    //
+    //   1 de 3 · ¿Qué quiero reconocer de hoy?     (lista de 1 a 3, uno al abrir)
+    //   2 de 3 · Una reflexión breve               (rotativa, o ligada a la mañana)
+    //   3 de 3 · ¿Cómo me siento al cerrar el día? (selección única, 12 + Algo más)
+    //      +   · Si quieres, deja algo aquí        (por la emoción, o a mano)
+    //      →     El cierre: "Tu día puede terminar aquí."
+    //
+    // **La noche no evalúa el día.** No pide que nada haya salido bien, no
+    // exige una lección, no pregunta si se cumplió lo que se dijo por la
+    // mañana y no cuenta nada de lo escrito. Reconocer no es lo mismo que
+    // agradecer: cabe lo que costó, lo que se intentó y lo que se atravesó.
+    //
+    // La pregunta reflexiva **cambia de una noche a otra** y es la única del
+    // recorrido que lo hace: las otras dos se dicen siempre igual, porque la
+    // estabilidad es lo que las vuelve familiares.
+    noche: {
+      titulo: 'Tu noche',
+      // §5.4, Bloque 1 — frase de apertura con el día de la semana.
+      aperturaTemplate: 'Vamos a cerrar el {dia}.',
+
+      // El indicador cuenta momentos, no campos. La descarga opcional no
+      // entra en la cuenta: no está todas las noches, y un total que cambia
+      // de un día para otro deja de orientar.
+      pasos: {
+        etiqueta: 'Momentos de la noche',
+        indicadorTemplate: '{n} de {total}',
+        atras: 'Atrás',
+        siguiente: 'Continuar',
+        finalizar: 'Listo',
+      },
+
+      // ─── Momento 1 — reconocimiento del día ──────────────────────────────
+      // Sustituye a "¿Qué agradezco de este día?". La redacción es más ancha
+      // a propósito: no pide que el día haya sido bueno, ni que lo escrito
+      // suene positivo. Abre con **un** campo; el segundo lo pide quien
+      // escribe.
+      reconocimiento: {
+        titulo: '¿Qué quiero reconocer de hoy?',
+        lead: 'Puede ser algo que disfrutaste, intentaste, enfrentaste o resolviste.',
+        placeholder: 'Algo que hice, sentí o atravesé…',
+        anadir: 'Añadir otro',
+        // Salida discreta, sin nada que reprochar al volver mañana.
+        omitir: 'Omitir por hoy',
+      },
+
+      // ─── Momento 2 — reflexión rotativa (§4, §5, §6) ─────────────────────
+      // Una sola pregunta por noche, nunca dos. El banco rota sin repetirse
+      // hasta haber pasado por las demás, y algunas noches lo sustituye la
+      // pregunta ligada a la intención de esa misma mañana.
+      reflexion: {
+        opcional: 'Opcional',
+        omitir: 'Ahora no',
+        placeholder: 'Lo que se te ocurra',
+        banco: [
+          {
+            id: 'general',
+            titulo: '¿Qué me dejó el día de hoy?',
+            lead: 'Una emoción, un aprendizaje o algo que quieras recordar.',
+          },
+          {
+            id: 'autoconocimiento',
+            titulo: '¿Qué aprendí hoy sobre mí?',
+            lead: 'No necesita ser una gran conclusión.',
+          },
+          {
+            id: 'memoria',
+            titulo: '¿Qué quiero recordar de este día?',
+            lead: 'Puede ser un instante muy pequeño.',
+          },
+          {
+            id: 'espacio',
+            titulo: '¿Qué ocupó más espacio en mí hoy?',
+            lead: 'Una emoción, una preocupación, una persona o una idea.',
+          },
+          {
+            id: 'soltar',
+            titulo: '¿Qué necesito soltar por hoy?',
+            lead: 'No tienes que resolverlo esta noche.',
+          },
+        ],
+        // §6 — La única personalización del recorrido. Nombra la intención
+        // que se eligió por la mañana y pregunta qué se notó; **nunca** si se
+        // cumplió, y nunca convierte la respuesta en una medida.
+        manana: {
+          tituloTemplate:
+            'Esta mañana elegiste {emocion} como intención. ¿Qué notaste al respecto?',
+          lead: 'No importa si el día resultó distinto a lo que esperabas.',
+        },
+      },
+
+      // ─── Momento 3 — cómo se cierra el día ───────────────────────────────
+      // Sustituye a "¿Cómo te vas a dormir?". Selección única: nombrar un
+      // estado no es hacer un inventario.
+      //
+      // Las emociones difíciles comparten jerarquía con las agradables: mismo
+      // tamaño, mismo borde, mismo orden de lectura. No hay rojo, no hay
+      // aviso y no hay ninguna que esté peor contestada que otra.
+      emocion: {
+        titulo: '¿Cómo me siento al cerrar el día?',
+        lead: 'Elige lo que más se acerque a cómo estás.',
+        // Palabra propia: hasta 30 caracteres, sin emoji automático y
+        // siempre editable. No pasa por el helper de género (RN-GEN-06).
+        otra: {
+          chip: '＋ Algo más',
+          label: 'Cómo me siento al cerrar el día, en mis palabras',
+          placeholder: 'en tus palabras',
+          confirmar: 'Listo',
+          quitar: 'Quitar',
+        },
+        catalogo: [
+          { id: 'en_paz', emoji: '😌', label: { m: 'En paz', f: 'En paz', n: 'En paz' } },
+          {
+            id: 'tranquilo',
+            emoji: '🌿',
+            label: { m: 'Tranquilo', f: 'Tranquila', n: 'En calma' },
+          },
+          {
+            id: 'agradecido',
+            emoji: '🤍',
+            label: { m: 'Agradecido', f: 'Agradecida', n: 'Con gratitud' },
+          },
+          {
+            id: 'orgulloso',
+            emoji: '✨',
+            label: { m: 'Orgulloso', f: 'Orgullosa', n: 'Con orgullo' },
+          },
+          {
+            id: 'aliviado',
+            emoji: '😮‍💨',
+            label: { m: 'Aliviado', f: 'Aliviada', n: 'Con alivio' },
+          },
+          {
+            id: 'pensativo',
+            emoji: '🤔',
+            label: { m: 'Pensativo', f: 'Pensativa', n: 'Pensando' },
+          },
+          { id: 'neutral', emoji: '😐', label: { m: 'Neutral', f: 'Neutral', n: 'Neutral' } },
+          {
+            id: 'cansado',
+            emoji: '😴',
+            label: { m: 'Cansado', f: 'Cansada', n: 'Con cansancio' },
+          },
+          {
+            id: 'inquieto',
+            emoji: '😟',
+            label: { m: 'Inquieto', f: 'Inquieta', n: 'Con inquietud' },
+          },
+          {
+            id: 'frustrado',
+            emoji: '😣',
+            label: { m: 'Frustrado', f: 'Frustrada', n: 'Con frustración' },
+          },
+          { id: 'triste', emoji: '😔', label: { m: 'Triste', f: 'Triste', n: 'Triste' } },
+          {
+            id: 'abrumado',
+            emoji: '😵‍💫',
+            label: { m: 'Abrumado', f: 'Abrumada', n: 'Con demasiado encima' },
+          },
+        ],
+      },
+
+      // ─── Descarga opcional (§8) ──────────────────────────────────────────
+      // Un espacio para dejar algo, no una intervención. La app no interpreta
+      // lo que se escriba aquí, no responde y no propone nada: se guarda y se
+      // cierra el día.
+      descarga: {
+        // El enlace va debajo de las emociones, siempre y para todas. Que
+        // aparezca solo tras una emoción difícil convertiría el catálogo en
+        // un diagnóstico.
+        abrir: 'Necesito soltar algo antes de cerrar',
+        opcional: 'Opcional',
+        titulo: '¿Hay algo que quieras dejar aquí por hoy?',
+        lead: 'No necesitas resolverlo ahora.',
+        placeholder: 'Lo que quieras dejar aquí',
+        omitir: 'Ahora no',
+        cta: 'Dejarlo aquí y cerrar mi día',
+      },
+
+      // ─── Cierre (§10) ────────────────────────────────────────────────────
+      // Sin recuento, sin porcentaje, sin comparar la mañana con la noche y
+      // sin prometer que nadie se va a sentir mejor. Dos líneas fijas, una de
+      // ellas distinta si se dejó algo escrito en la descarga, y —si hay algo
+      // reconocido— una sola de esas líneas, la primera.
+      cierre: {
+        titulo: 'Tu día puede terminar aquí.',
+        lead: 'Lo que viviste hoy no necesita quedar resuelto esta noche.',
+        leadDescarga: 'Por ahora, puedes dejarlo aquí.',
+        reconocidoTitulo: 'Algo que reconoces de hoy',
+        cta: 'Cerrar mi día',
+        despedida: 'Buenas noches.',
+        reabrir: 'Puedes volver y cambiar lo que quieras.',
+      },
+
+      // La pantalla de consulta. Repite las preguntas del recorrido con su
+      // redacción exacta; no tiene etiquetas propias ni marca de "hecho".
+      resumen: {
+        editar: 'Cambiar algo',
+      },
+
+      // ─── Catálogo heredado: "¿Cómo te vas a dormir?" ─────────────────────
+      // Las noches escritas antes de esta actualización guardaron hasta dos
+      // estados de esta lista en `nightRitual.sleepState`; se conserva **solo
+      // para leerlas** en el Historial (§11: nada de lo ya escrito se
+      // sobrescribe ni desaparece). Ninguna pantalla de escritura lo ofrece.
+      sueno: {
+        guardadoTemplate: 'Te fuiste a dormir: {estados}',
+        separador: ' · ',
+        opciones: [
+          { id: 'en_paz', label: { m: 'En paz', f: 'En paz', n: 'En paz' } },
+          { id: 'agradecido', label: { m: 'Agradecido', f: 'Agradecida', n: 'Con gratitud' } },
+          { id: 'orgulloso', label: { m: 'Orgulloso', f: 'Orgullosa', n: 'Con orgullo' } },
+          { id: 'tranquilo', label: { m: 'Tranquilo', f: 'Tranquila', n: 'En calma' } },
+          { id: 'contento', label: { m: 'Contento', f: 'Contenta', n: 'Con alegría' } },
+          { id: 'pensativo', label: { m: 'Pensativo', f: 'Pensativa', n: 'Pensando' } },
+          { id: 'cansado', label: { m: 'Cansado', f: 'Cansada', n: 'Con cansancio' } },
+          { id: 'inquieto', label: { m: 'Inquieto', f: 'Inquieta', n: 'Con inquietud' } },
+          { id: 'otro', label: { m: 'Algo más', f: 'Algo más', n: 'Algo más' } },
+        ],
       },
     },
 
@@ -1030,7 +1037,7 @@ export const copy = {
     home: {
       simbolo: 'Strivo',
       espaciosLabel: 'Espacios',
-      lumia: { titulo: 'Strivo', pregunta: '¿Cómo estoy?' },
+      diario: { titulo: 'Strivo', pregunta: '¿Cómo estoy?' },
     },
 
     // §C7.3 — Naming de la navegación. **Revisado el 25 de agosto de 2026, con
@@ -1047,7 +1054,7 @@ export const copy = {
       volver: 'Strivo',
       volverLabel: 'Volver a Strivo',
 
-      lumia: {
+      diario: {
         pestana: 'Strivo',
         cabecera: 'Strivo',
         // Respiración va entre Journal e Historial, y ese sitio es la decisión:

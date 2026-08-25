@@ -29,7 +29,7 @@ import { clsx } from 'clsx'
 import Button from '@components/ui/Button'
 import { copy } from '@copy'
 
-const textos = copy.lumia.diario.noche.cierre
+const textos = copy.diario.noche.cierre
 
 export default function CierreDeLaNoche({ reconocido, conDescarga, onTerminar }) {
   const [despidiendo, setDespidiendo] = useState(false)

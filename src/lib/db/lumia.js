@@ -1,9 +1,10 @@
 // src/lib/db/lumia.js
-// `lumia/` — todo lo que la persona escribe, siente y reflexiona (§C5.1).
+// `diario/` — todo lo que la persona escribe, siente y reflexiona (§C5.1).
 //
-// RN-DB4-01 — Este módulo NO importa `formia.js`, ni directa ni indirectamente.
-// Ninguna función de aquí puede leer hábitos, identidad ni registros de Formia.
-// La regla está además impuesta por ESLint (`no-restricted-imports`).
+// **La rama se renombró el 25 de agosto de 2026** (paso 9 del plan de
+// separación, §8): se llamaba por el espacio que la escribía, cuando había dos.
+// El archivo conserva su nombre viejo hasta la tanda C, que es la que mueve
+// carpetas y archivos; su contenido ya no lo nombra.
 
 import {
   deletePath,
@@ -33,7 +34,7 @@ import {
 function journalSpec(uid, entryId) {
   return {
     uid,
-    path: paths.lumiaItem(uid, 'journal', entryId),
+    path: paths.diarioItem(uid, 'journal', entryId),
     collection: COLLECTIONS.journal,
     id: entryId,
   }
@@ -63,7 +64,7 @@ export async function updateJournalEntry(uid, entryId, patch) {
 export async function getJournalEntry(uid, entryId) {
   assertUid(uid)
   assertId(entryId, 'entryId')
-  return readPath(paths.lumiaItem(uid, 'journal', entryId))
+  return readPath(paths.diarioItem(uid, 'journal', entryId))
 }
 
 export async function listJournalEntries(uid) {
@@ -81,7 +82,7 @@ export async function listJournalEntriesByDate(uid, date) {
 export async function deleteJournalEntry(uid, entryId) {
   assertUid(uid)
   assertId(entryId, 'entryId')
-  await deletePath({ uid, path: paths.lumiaItem(uid, 'journal', entryId) })
+  await deletePath({ uid, path: paths.diarioItem(uid, 'journal', entryId) })
 }
 
 // ─── morningEntry ─────────────────────────────────────────────────────────────
@@ -89,7 +90,7 @@ export async function deleteJournalEntry(uid, entryId) {
 export async function getMorningEntry(uid, date) {
   assertUid(uid)
   assertDateKey(date)
-  return readPath(paths.lumiaItem(uid, 'morningEntry', date))
+  return readPath(paths.diarioItem(uid, 'morningEntry', date))
 }
 
 /**
@@ -97,7 +98,7 @@ export async function getMorningEntry(uid, date) {
  *
  * La lee la mañana para dos cosas que solo pueden salir de lo que la propia
  * persona escribió antes: las ideas de acción que ya eligió para una intención
- * y la rotación de la pausa opcional. Ninguna de las dos sale de `lumia/`.
+ * y la rotación de la pausa opcional. Ninguna de las dos sale de `diario/`.
  */
 export async function listMorningEntries(uid) {
   assertUid(uid)
@@ -107,10 +108,10 @@ export async function listMorningEntries(uid) {
 export async function saveMorningEntry(uid, date, entry) {
   assertUid(uid)
   assertDateKey(date)
-  assertFields(entry, FIELDS.morningEntry, 'lumia/morningEntry')
+  assertFields(entry, FIELDS.morningEntry, 'diario/morningEntry')
   return mergePath({
     uid,
-    path: paths.lumiaItem(uid, 'morningEntry', date),
+    path: paths.diarioItem(uid, 'morningEntry', date),
     collection: COLLECTIONS.morningEntry,
     id: date,
     patch: entry,
@@ -124,7 +125,7 @@ export async function saveMorningEntry(uid, date, entry) {
 export async function getNightRitual(uid, date) {
   assertUid(uid)
   assertDateKey(date)
-  return readPath(paths.lumiaItem(uid, 'nightRitual', date))
+  return readPath(paths.diarioItem(uid, 'nightRitual', date))
 }
 
 /**
@@ -132,7 +133,7 @@ export async function getNightRitual(uid, date) {
  *
  * La lee la noche para una sola cosa, y hecha por completo de lo que la propia
  * persona ya escribió: saber qué preguntas reflexivas salieron, para no
- * repetirlas (§5 y §6 de la actualización del 23 ago). No sale de `lumia/` y no
+ * repetirlas (§5 y §6 de la actualización del 23 ago). No sale de `diario/` y no
  * se cruza con nada (RN-DB4-01).
  */
 export async function listNightRituals(uid) {
@@ -143,10 +144,10 @@ export async function listNightRituals(uid) {
 export async function saveNightRitual(uid, date, ritual) {
   assertUid(uid)
   assertDateKey(date)
-  assertFields(ritual, FIELDS.nightRitual, 'lumia/nightRitual')
+  assertFields(ritual, FIELDS.nightRitual, 'diario/nightRitual')
   return mergePath({
     uid,
-    path: paths.lumiaItem(uid, 'nightRitual', date),
+    path: paths.diarioItem(uid, 'nightRitual', date),
     collection: COLLECTIONS.nightRitual,
     id: date,
     patch: ritual,
@@ -158,7 +159,7 @@ export async function saveNightRitual(uid, date, ritual) {
 export async function getDayState(uid, date) {
   assertUid(uid)
   assertDateKey(date)
-  return readPath(paths.lumiaItem(uid, 'dayState', date))
+  return readPath(paths.diarioItem(uid, 'dayState', date))
 }
 
 export async function saveDayState(uid, date, dayState) {
@@ -167,7 +168,7 @@ export async function saveDayState(uid, date, dayState) {
   validateDayState(dayState)
   return mergePath({
     uid,
-    path: paths.lumiaItem(uid, 'dayState', date),
+    path: paths.diarioItem(uid, 'dayState', date),
     collection: COLLECTIONS.dayState,
     id: date,
     patch: dayState,
@@ -188,16 +189,16 @@ const PIN_SYNC = false
 
 export async function getPinConfig(uid) {
   assertUid(uid)
-  return readPath(paths.lumiaDoc(uid, 'pinConfig'))
+  return readPath(paths.diarioDoc(uid, 'pinConfig'))
 }
 
 export async function savePinConfig(uid, pinConfig) {
   assertUid(uid)
-  assertFields(pinConfig, FIELDS.pinConfig, 'lumia/pinConfig')
+  assertFields(pinConfig, FIELDS.pinConfig, 'diario/pinConfig')
   return writePath({
     uid,
-    path: paths.lumiaDoc(uid, 'pinConfig'),
-    collection: COLLECTIONS.lumiaDoc,
+    path: paths.diarioDoc(uid, 'pinConfig'),
+    collection: COLLECTIONS.diarioDoc,
     id: 'pinConfig',
     data: pinConfig,
     sync: PIN_SYNC,
@@ -206,20 +207,20 @@ export async function savePinConfig(uid, pinConfig) {
 
 export async function clearPinConfig(uid) {
   assertUid(uid)
-  await deletePath({ uid, path: paths.lumiaDoc(uid, 'pinConfig'), sync: PIN_SYNC })
+  await deletePath({ uid, path: paths.diarioDoc(uid, 'pinConfig'), sync: PIN_SYNC })
 }
 
 // ─── Árbol de un usuario nuevo ────────────────────────────────────────────────
 
 /**
- * `lumia/` no necesita ningún registro inicial: journal, morningEntry,
+ * `diario/` no necesita ningún registro inicial: journal, morningEntry,
  * nightRitual y dayState nacen vacíos y pinConfig no existe hasta que alguien
  * decide poner un PIN.
  *
  * Se declara para que `initUserTree()` documente la rama, no para escribirla:
  * crear un día vacío inventaría un registro que nadie escribió (RN-DB4-08).
  */
-export async function initLumia(uid) {
+export async function initDiario(uid) {
   assertUid(uid)
   return []
 }

@@ -96,7 +96,7 @@ describe('no se registra en ninguna parte (criterio 9)', () => {
 })
 
 describe('el copy invita, no vende (SPEC_08 §8)', () => {
-  const textos = copy.lumia.respiracion
+  const textos = copy.diario.respiracion
 
   function cadenasDe(nodo, ruta) {
     if (typeof nodo === 'string') return [[ruta, nodo]]
@@ -106,7 +106,7 @@ describe('el copy invita, no vende (SPEC_08 §8)', () => {
     return []
   }
 
-  const CADENAS = cadenasDe(textos, 'copy.lumia.respiracion')
+  const CADENAS = cadenasDe(textos, 'copy.diario.respiracion')
 
   it('no promete ningún beneficio ni usa lenguaje de meditación guiada', () => {
     const prohibido =

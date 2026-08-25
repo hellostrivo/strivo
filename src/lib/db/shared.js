@@ -1,10 +1,10 @@
 // src/lib/db/shared.js
-// `shared/` — lo que Lumia, Formia y Strivo necesitan por igual (§C5.1).
+// `shared/` — lo que no es de ninguna rama en particular (§C5.1).
 //
-// RN-DB4-02 — Si un dato hace falta en los dos espacios y no está aquí, es un
+// RN-DB4-02 — Si un dato hace falta en más de un sitio y no está aquí, es un
 // error de diseño, no un caso a resolver con una copia.
 //
-// Este módulo no importa `lumia.js` ni `formia.js`.
+// Este módulo no importa el de la rama del diario, ni al revés.
 
 import { readPath, writePath, mergePath } from './local.js'
 import {

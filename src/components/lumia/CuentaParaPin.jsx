@@ -14,7 +14,7 @@ import Button from '@components/ui/Button'
 import { CampoLinea } from './Campo'
 import { copy } from '@copy'
 
-const textos = copy.lumia.journal.pin.cuenta
+const textos = copy.diario.journal.pin.cuenta
 
 export default function CuentaParaPin({ onVincular }) {
   const [email, setEmail] = useState('')

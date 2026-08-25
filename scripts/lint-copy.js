@@ -31,7 +31,7 @@ const FORBIDDEN = [
 
 // ─── Voz de Respiración (SPEC_13 §7.1) ────────────────────────────────────────
 // El resto del léxico clínico **no puede revisarse sobre todo `src/`**, y no es
-// una concesión: `copy.lumia.journal` ofrece "Con ansiedad" como emoción del
+// una concesión: `copy.diario.journal` ofrece "Con ansiedad" como emoción del
 // catálogo de días difíciles (SPEC_07), y `TEMAS_DE_RENDIMIENTO` es maquinaria
 // de SPEC_05. Prohibir esas palabras en todo el árbol rompería el build por un
 // motivo equivocado — el mismo caso que "Seguro/Segura" con el PIN, que SPEC_07

@@ -169,7 +169,7 @@ export function algoQueReconoces(entrada) {
  *                   emoji: ?string, lineas: string[]}>}
  */
 export function resumenDeNoche(entrada, morning, genero) {
-  const textos = copy.lumia.diario.noche
+  const textos = copy.diario.noche
   const bloques = []
 
   if (hayReconocimiento(entrada)) {

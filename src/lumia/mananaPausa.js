@@ -21,7 +21,7 @@ import { copy } from '@copy'
 import { sumarDias } from './fechas.js'
 
 /** Las tres preguntas, en su orden de rotación. */
-export const BANCO = Object.freeze(copy.lumia.diario.manana.reflexion.banco)
+export const BANCO = Object.freeze(copy.diario.manana.reflexion.banco)
 
 export const IDS = Object.freeze(BANCO.map((pregunta) => pregunta.id))
 

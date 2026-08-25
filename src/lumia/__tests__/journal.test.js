@@ -4,7 +4,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { UID, resetLocalDB } from '@/lib/db/__tests__/helpers.js'
-import { lumia } from '@/lib/db'
+import { diario } from '@/lib/db'
 import {
   agrupar,
   buscar,
@@ -69,7 +69,7 @@ describe('editar no duplica', () => {
 
   it('conserva la fecha y las marcas de tiempo del modelo canónico', async () => {
     const entrada = await guardar(UID, { ...entradaNueva('2026-08-10'), text: 'Algo' })
-    const guardada = await lumia.getJournalEntry(UID, entrada.id)
+    const guardada = await diario.getJournalEntry(UID, entrada.id)
     expect(guardada.date).toBe('2026-08-10')
     expect(guardada.createdAt).toBeTruthy()
     expect(guardada.updatedAt).toBeTruthy()

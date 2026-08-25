@@ -50,7 +50,7 @@ export const FIELDS = Object.freeze({
   preferences: Object.freeze(['soundEnabled', 'reducedMotion']),
   onboarding: Object.freeze(['completedSteps', 'currentStep']),
 
-  // lumia/
+  // diario/
   journal: Object.freeze(['date', 'text', 'emotions', 'otherText', 'createdAt', 'updatedAt']),
   // La mañana de tres momentos (actualización del 23 ago). `granVision` y
   // `emotions` salieron de la lista con las preguntas que los escribían: los
@@ -105,18 +105,18 @@ export const FIELDS = Object.freeze({
 
 export const paths = Object.freeze({
   sharedDoc: (uid, doc) => `users/${uid}/shared/${doc}`,
-  lumiaDoc: (uid, doc) => `users/${uid}/lumia/${doc}`,
-  lumiaItem: (uid, collection, id) => `users/${uid}/lumia/${collection}/items/${id}`,
+  diarioDoc: (uid, doc) => `users/${uid}/diario/${doc}`,
+  diarioItem: (uid, collection, id) => `users/${uid}/diario/${collection}/items/${id}`,
 })
 
 /** Etiqueta de colección que agrupa los registros en el almacén local. */
 export const COLLECTIONS = Object.freeze({
   shared: 'shared',
-  journal: 'lumia/journal',
-  morningEntry: 'lumia/morningEntry',
-  nightRitual: 'lumia/nightRitual',
-  dayState: 'lumia/dayState',
-  lumiaDoc: 'lumia',
+  journal: 'diario/journal',
+  morningEntry: 'diario/morningEntry',
+  nightRitual: 'diario/nightRitual',
+  dayState: 'diario/dayState',
+  diarioDoc: 'diario',
 })
 
 // ─── Validadores genéricos ────────────────────────────────────────────────────
@@ -193,7 +193,7 @@ export function validatePreferences(preferences) {
 }
 
 export function validateJournalEntry(entry) {
-  assertFields(entry, FIELDS.journal, 'lumia/journal')
+  assertFields(entry, FIELDS.journal, 'diario/journal')
   if (entry.date !== undefined) assertDateKey(entry.date, 'journal.date')
   if (entry.emotions !== undefined && !Array.isArray(entry.emotions)) {
     throw new StrivoDataError(ERROR_CODES.FIELD_TYPE, 'journal.emotions: se esperaba un arreglo.')
@@ -202,7 +202,7 @@ export function validateJournalEntry(entry) {
 }
 
 export function validateDayState(dayState) {
-  assertFields(dayState, FIELDS.dayState, 'lumia/dayState')
+  assertFields(dayState, FIELDS.dayState, 'diario/dayState')
   if (dayState.mood !== undefined && dayState.mood !== null) {
     assertEnum(dayState.mood, MOODS, ERROR_CODES.MOOD_INVALID, 'dayState.mood')
   }

@@ -14,7 +14,7 @@ import { CampoTexto } from '../Campo'
 import { copy } from '@copy'
 import { MAX_REFLEXION } from '@/lumia/manana'
 
-const textos = copy.lumia.diario.manana.reflexion
+const textos = copy.diario.manana.reflexion
 
 export default function MomentoPausa({ pregunta, valor, onCambiar, onVolcar, onOmitir }) {
   return (

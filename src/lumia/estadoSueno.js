@@ -20,7 +20,7 @@
 import { copy } from '@copy'
 import { resolveGender } from '@copy/gender'
 
-const textos = copy.lumia.diario.noche.sueno
+const textos = copy.diario.noche.sueno
 
 export const OPCIONES = Object.freeze(textos.opciones)
 export const IDS = Object.freeze(OPCIONES.map((opcion) => opcion.id))

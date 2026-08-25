@@ -102,14 +102,14 @@ describe('la cabecera lleva la marca y sus cuatro secciones', () => {
     // espacio del otro y ya no hay otro. Lo que sobrevive de aquella regla es
     // que la cabecera es donde se aprende qué es esto, y ahora lo dice entero
     // con una palabra.
-    expect(nav).toMatch(/textos\.lumia\.cabecera/)
-    expect(copy.shared.navegacion.lumia.cabecera).toBe('Strivo')
+    expect(nav).toMatch(/textos\.diario\.cabecera/)
+    expect(copy.shared.navegacion.diario.cabecera).toBe('Strivo')
   })
 
   it('las secciones son cuatro y en su orden, que es una decisión', () => {
     // Respiración va entre Journal e Historial: las tres primeras son lo que se
     // hace ahora y el Historial es lo que ya pasó (24 ago).
-    expect(Object.keys(copy.shared.navegacion.lumia.secciones)).toEqual([
+    expect(Object.keys(copy.shared.navegacion.diario.secciones)).toEqual([
       'hoy',
       'journal',
       'respiracion',
@@ -120,7 +120,7 @@ describe('la cabecera lleva la marca y sus cuatro secciones', () => {
   })
 
   it('ningún rótulo se trunca: son de una palabra', () => {
-    Object.values(copy.shared.navegacion.lumia.secciones).forEach((rotulo) =>
+    Object.values(copy.shared.navegacion.diario.secciones).forEach((rotulo) =>
       expect(rotulo.split(' ')).toHaveLength(1),
     )
   })
@@ -130,7 +130,7 @@ describe('el vocabulario de la navegación (§8)', () => {
   it('no dice nada de construcción', () => {
     // Sobrevive intacta, y ahora vigila algo distinto: que el vocabulario del
     // alcance retirado no vuelva por la puerta de la navegación.
-    const rotulos = Object.values(copy.shared.navegacion.lumia.secciones).join(' ')
+    const rotulos = Object.values(copy.shared.navegacion.diario.secciones).join(' ')
     expect(rotulos).not.toMatch(/h[áa]bito|identidad|progreso|constancia/i)
   })
 })

@@ -19,7 +19,7 @@
 import { copy } from '@copy'
 import { resolveGender } from '@copy/gender'
 
-const textos = copy.lumia.diario.manana.emocionesHeredadas
+const textos = copy.diario.manana.emocionesHeredadas
 
 /** Orden fijo: por frecuencia esperada y equilibrio temático (§5.3). */
 export const CATALOGO = Object.freeze(textos.catalogo)

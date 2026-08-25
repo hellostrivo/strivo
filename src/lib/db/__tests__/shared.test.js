@@ -66,13 +66,13 @@ describe('criterio 6: el árbol de un usuario nuevo', () => {
     }
     expect(await readPath(paths.sharedDoc(UID, 'profile'))).toMatchObject({ name: 'Alejandra' })
 
-    // lumia/ nace vacío: no se inventa un día que nadie escribió
-    expect(await readPath(paths.lumiaDoc(UID, 'pinConfig'))).toBeNull()
+    // diario/ nace vacío: no se inventa un día que nadie escribió
+    expect(await readPath(paths.diarioDoc(UID, 'pinConfig'))).toBeNull()
 
     // Y no hay una tercera raíz. Era la que traía la identidad central y las 7
     // áreas del catálogo, y **con ella se va la única semilla que el árbol
     // pedía**: montar un usuario nuevo ya no exige contestar nada.
-    expect(Object.keys(ramas).sort()).toEqual(['lumia', 'shared'])
+    expect(Object.keys(ramas).sort()).toEqual(['diario', 'shared'])
   })
 
   // **Se elimina "no se monta sin identidad central (RN-DB4-09)".** La regla

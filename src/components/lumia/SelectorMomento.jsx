@@ -26,7 +26,7 @@
 import { clsx } from 'clsx'
 import { copy } from '@copy'
 
-const textos = copy.lumia.hoy.momento
+const textos = copy.diario.hoy.momento
 
 export const MOMENTOS = Object.freeze(['manana', 'noche'])
 

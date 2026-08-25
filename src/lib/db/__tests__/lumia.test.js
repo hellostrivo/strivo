@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import * as lumia from '../lumia.js'
+import * as diario from '../lumia.js'
 import { ERROR_CODES } from '../schema.js'
 import { listQueue, writePath } from '../local.js'
 import { UID, resetLocalDB } from './helpers.js'
@@ -11,7 +11,7 @@ beforeEach(resetLocalDB)
 
 describe('journal', () => {
   it('crea, lee y actualiza una entrada', async () => {
-    const entry = await lumia.createJournalEntry(UID, {
+    const entry = await diario.createJournalEntry(UID, {
       date: DATE,
       text: 'Hoy escribí sin pensarlo mucho.',
       emotions: ['calma'],
@@ -20,8 +20,8 @@ describe('journal', () => {
     expect(entry.id).toBeTruthy()
     expect(entry.createdAt).toBeTruthy()
 
-    await lumia.updateJournalEntry(UID, entry.id, { text: 'Corregido.' })
-    const stored = await lumia.getJournalEntry(UID, entry.id)
+    await diario.updateJournalEntry(UID, entry.id, { text: 'Corregido.' })
+    const stored = await diario.getJournalEntry(UID, entry.id)
 
     expect(stored.text).toBe('Corregido.')
     expect(stored.date).toBe(DATE)
@@ -29,36 +29,36 @@ describe('journal', () => {
   })
 
   it('lista por fecha', async () => {
-    await lumia.createJournalEntry(UID, { date: DATE, text: 'una' })
-    await lumia.createJournalEntry(UID, { date: DATE, text: 'otra' })
-    await lumia.createJournalEntry(UID, { date: '2026-08-11', text: 'de otro día' })
+    await diario.createJournalEntry(UID, { date: DATE, text: 'una' })
+    await diario.createJournalEntry(UID, { date: DATE, text: 'otra' })
+    await diario.createJournalEntry(UID, { date: '2026-08-11', text: 'de otro día' })
 
-    expect(await lumia.listJournalEntriesByDate(UID, DATE)).toHaveLength(2)
-    expect(await lumia.listJournalEntries(UID)).toHaveLength(3)
+    expect(await diario.listJournalEntriesByDate(UID, DATE)).toHaveLength(2)
+    expect(await diario.listJournalEntries(UID)).toHaveLength(3)
   })
 
   it('rechaza un campo fuera del modelo', async () => {
-    await expect(lumia.createJournalEntry(UID, { text: 'x', privada: true })).rejects.toMatchObject(
-      { code: ERROR_CODES.UNKNOWN_FIELD },
-    )
+    await expect(
+      diario.createJournalEntry(UID, { text: 'x', privada: true }),
+    ).rejects.toMatchObject({ code: ERROR_CODES.UNKNOWN_FIELD })
   })
 })
 
 describe('registros por fecha', () => {
   it('morningEntry y nightRitual son un registro por día', async () => {
-    await lumia.saveMorningEntry(UID, DATE, { action: 'Salir a caminar.' })
-    await lumia.saveNightRitual(UID, DATE, { reflection: 'Descansar también cuenta.' })
+    await diario.saveMorningEntry(UID, DATE, { action: 'Salir a caminar.' })
+    await diario.saveNightRitual(UID, DATE, { reflection: 'Descansar también cuenta.' })
 
-    expect((await lumia.getMorningEntry(UID, DATE)).action).toBe('Salir a caminar.')
-    expect((await lumia.getNightRitual(UID, DATE)).reflection).toBe('Descansar también cuenta.')
+    expect((await diario.getMorningEntry(UID, DATE)).action).toBe('Salir a caminar.')
+    expect((await diario.getNightRitual(UID, DATE)).reflection).toBe('Descansar también cuenta.')
   })
 
   it('el ritual de noche se guarda por partes sin perder lo anterior', async () => {
-    await lumia.saveNightRitual(UID, DATE, { reflection: 'Que se puede pedir ayuda' })
-    await lumia.saveNightRitual(UID, DATE, { recognized: ['El café de la mañana'] })
-    await lumia.saveNightRitual(UID, DATE, { closingFeeling: 'tranquilo' })
+    await diario.saveNightRitual(UID, DATE, { reflection: 'Que se puede pedir ayuda' })
+    await diario.saveNightRitual(UID, DATE, { recognized: ['El café de la mañana'] })
+    await diario.saveNightRitual(UID, DATE, { closingFeeling: 'tranquilo' })
 
-    const ritual = await lumia.getNightRitual(UID, DATE)
+    const ritual = await diario.getNightRitual(UID, DATE)
     expect(ritual.reflection).toBe('Que se puede pedir ayuda')
     expect(ritual.recognized).toEqual(['El café de la mañana'])
     expect(ritual.closingFeeling).toBe('tranquilo')
@@ -73,7 +73,7 @@ describe('registros por fecha', () => {
     // escritas los conservan y el Historial los lee; nadie los vuelve a
     // escribir, y un intento se rechaza como cualquier campo fuera de lista.
     for (const campo of ['gratitude', 'learning', 'sleepState', 'sleepStateOther']) {
-      await expect(lumia.saveNightRitual(UID, DATE, { [campo]: 'x' })).rejects.toMatchObject({
+      await expect(diario.saveNightRitual(UID, DATE, { [campo]: 'x' })).rejects.toMatchObject({
         code: 'UNKNOWN_FIELD',
       })
     }
@@ -82,22 +82,22 @@ describe('registros por fecha', () => {
   it('las noches guardadas se siguen leyendo enteras', async () => {
     // Escribir es lo que se cierra; leer, no. Un registro con los campos
     // viejos ya en el almacén se devuelve tal cual (§11).
-    await lumia.saveNightRitual(UID, DATE, { recognized: ['algo'] })
-    expect((await lumia.getNightRitual(UID, DATE)).recognized).toEqual(['algo'])
+    await diario.saveNightRitual(UID, DATE, { recognized: ['algo'] })
+    expect((await diario.getNightRitual(UID, DATE)).recognized).toEqual(['algo'])
   })
 
   it('todas las noches se pueden listar, para no repetir una pregunta', async () => {
-    await lumia.saveNightRitual(UID, '2026-07-20', { reflectionId: 'general' })
-    await lumia.saveNightRitual(UID, '2026-07-21', { reflectionId: 'memoria' })
-    const noches = await lumia.listNightRituals(UID)
+    await diario.saveNightRitual(UID, '2026-07-20', { reflectionId: 'general' })
+    await diario.saveNightRitual(UID, '2026-07-21', { reflectionId: 'memoria' })
+    const noches = await diario.listNightRituals(UID)
     expect(noches.map((noche) => noche.id).sort()).toEqual(['2026-07-20', '2026-07-21'])
   })
 
   it('el ritual de noche ya no admite newWins ni inheritedWins', async () => {
-    await expect(lumia.saveNightRitual(UID, DATE, { newWins: ['x'] })).rejects.toMatchObject({
+    await expect(diario.saveNightRitual(UID, DATE, { newWins: ['x'] })).rejects.toMatchObject({
       code: ERROR_CODES.UNKNOWN_FIELD,
     })
-    await expect(lumia.saveNightRitual(UID, DATE, { inheritedWins: [] })).rejects.toMatchObject({
+    await expect(diario.saveNightRitual(UID, DATE, { inheritedWins: [] })).rejects.toMatchObject({
       code: ERROR_CODES.UNKNOWN_FIELD,
     })
   })
@@ -108,12 +108,12 @@ describe('registros por fecha', () => {
   // la segunda partía de una copia vieja y borraba lo de la primera.
   it('dos escrituras simultáneas del mismo día no se pisan', async () => {
     await Promise.all([
-      lumia.saveMorningEntry(UID, DATE, { gratitude: ['El café'] }),
-      lumia.saveMorningEntry(UID, DATE, { feeling: 'calma' }),
-      lumia.saveMorningEntry(UID, DATE, { action: 'Salir a caminar.' }),
+      diario.saveMorningEntry(UID, DATE, { gratitude: ['El café'] }),
+      diario.saveMorningEntry(UID, DATE, { feeling: 'calma' }),
+      diario.saveMorningEntry(UID, DATE, { action: 'Salir a caminar.' }),
     ])
 
-    expect(await lumia.getMorningEntry(UID, DATE)).toEqual({
+    expect(await diario.getMorningEntry(UID, DATE)).toEqual({
       gratitude: ['El café'],
       feeling: 'calma',
       action: 'Salir a caminar.',
@@ -121,7 +121,7 @@ describe('registros por fecha', () => {
   })
 
   it('morningEntry solo admite los campos de su lista', async () => {
-    await expect(lumia.saveMorningEntry(UID, DATE, { smallAction: 'x' })).rejects.toMatchObject({
+    await expect(diario.saveMorningEntry(UID, DATE, { smallAction: 'x' })).rejects.toMatchObject({
       code: ERROR_CODES.UNKNOWN_FIELD,
     })
   })
@@ -131,7 +131,7 @@ describe('registros por fecha', () => {
   // se puede es volver a escribirlas, que es lo que las mantendría vivas.
   it('la mañana ya no admite emotions ni granVision', async () => {
     for (const campo of [{ emotions: ['en_paz'] }, { granVision: 'x' }]) {
-      await expect(lumia.saveMorningEntry(UID, DATE, campo)).rejects.toMatchObject({
+      await expect(diario.saveMorningEntry(UID, DATE, campo)).rejects.toMatchObject({
         code: ERROR_CODES.UNKNOWN_FIELD,
       })
     }
@@ -142,26 +142,28 @@ describe('registros por fecha', () => {
     // almacén antes de la actualización.
     await writePath({
       uid: UID,
-      path: `users/${UID}/lumia/morningEntry/items/${DATE}`,
-      collection: 'lumia/morningEntry',
+      path: `users/${UID}/diario/morningEntry/items/${DATE}`,
+      collection: 'diario/morningEntry',
       id: DATE,
       data: { emotions: ['en_paz'], granVision: 'Un día sin prisa.' },
     })
 
-    expect(await lumia.getMorningEntry(UID, DATE)).toEqual({
+    expect(await diario.getMorningEntry(UID, DATE)).toEqual({
       emotions: ['en_paz'],
       granVision: 'Un día sin prisa.',
     })
   })
 
   it('exige una fecha con forma YYYY-MM-DD', async () => {
-    await expect(lumia.saveMorningEntry(UID, '10-08-2026', { action: 'x' })).rejects.toMatchObject({
-      code: ERROR_CODES.DATE_INVALID,
-    })
+    await expect(diario.saveMorningEntry(UID, '10-08-2026', { action: 'x' })).rejects.toMatchObject(
+      {
+        code: ERROR_CODES.DATE_INVALID,
+      },
+    )
   })
 })
 
-// La colección `lumia/victories` se eliminó el 23 ago junto con el bloque de
+// La colección `diario/victories` se eliminó el 23 ago junto con el bloque de
 // victorias de la mañana y el checklist de la noche. Los registros ya escritos
 // se quedan inertes en el almacén: nada los lee y nada los borra.
 describe('victorias (retiradas)', () => {
@@ -174,20 +176,20 @@ describe('victorias (retiradas)', () => {
       'listVictoriesByDate',
       'deleteVictory',
     ]) {
-      expect(lumia[nombre]).toBeUndefined()
+      expect(diario[nombre]).toBeUndefined()
     }
   })
 })
 
 describe('dayState', () => {
   it('guarda el ánimo del día', async () => {
-    await lumia.saveDayState(UID, DATE, { mood: 'tranquilo' })
-    expect((await lumia.getDayState(UID, DATE)).mood).toBe('tranquilo')
-    expect(await lumia.listDayStates(UID)).toHaveLength(1)
+    await diario.saveDayState(UID, DATE, { mood: 'tranquilo' })
+    expect((await diario.getDayState(UID, DATE)).mood).toBe('tranquilo')
+    expect(await diario.listDayStates(UID)).toHaveLength(1)
   })
 
   it('la escala de ánimo es cerrada (§6.3.5)', async () => {
-    await expect(lumia.saveDayState(UID, DATE, { mood: 'bien' })).rejects.toMatchObject({
+    await expect(diario.saveDayState(UID, DATE, { mood: 'bien' })).rejects.toMatchObject({
       code: ERROR_CODES.MOOD_INVALID,
     })
   })
@@ -195,7 +197,7 @@ describe('dayState', () => {
 
 describe('pinConfig (RN-DB-04)', () => {
   it('se guarda en local y nunca se encola hacia la red', async () => {
-    await lumia.savePinConfig(UID, {
+    await diario.savePinConfig(UID, {
       salt: 'sal',
       hash: 'huella',
       iterations: 210000,
@@ -203,17 +205,17 @@ describe('pinConfig (RN-DB-04)', () => {
       enabled: true,
     })
 
-    expect((await lumia.getPinConfig(UID)).enabled).toBe(true)
+    expect((await diario.getPinConfig(UID)).enabled).toBe(true)
 
     const queue = await listQueue(UID)
     expect(queue.some((entry) => entry.path.includes('pinConfig'))).toBe(false)
   })
 
   it('quitarlo tampoco sale del dispositivo', async () => {
-    await lumia.savePinConfig(UID, { enabled: true })
-    await lumia.clearPinConfig(UID)
+    await diario.savePinConfig(UID, { enabled: true })
+    await diario.clearPinConfig(UID)
 
-    expect(await lumia.getPinConfig(UID)).toBeNull()
+    expect(await diario.getPinConfig(UID)).toBeNull()
     const queue = await listQueue(UID)
     expect(queue.some((entry) => entry.path.includes('pinConfig'))).toBe(false)
   })

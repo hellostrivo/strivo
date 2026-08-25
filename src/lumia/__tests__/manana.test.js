@@ -40,7 +40,7 @@ import { ANIMO, INTENCION, ID_OTRA, MAX_PALABRA_PROPIA } from '@/lumia/mananaEmo
 import { MAX_ANTERIORES, MAX_IDEAS, ideasAnteriores, ideasGenerales } from '@/lumia/mananaAcciones'
 import { BANCO, MAXIMO_EN_VENTANA, debeAparecer, siguientePregunta } from '@/lumia/mananaPausa'
 
-const textos = copy.lumia.diario.manana
+const textos = copy.diario.manana
 
 const codigoDe = (ruta) =>
   readFileSync(ruta, 'utf8')
@@ -542,7 +542,7 @@ describe('criterio 9 — tres momentos, no una lista de campos', () => {
 
   it('el punto de partida abre solo: una pregunta en toda la pantalla', () => {
     const animo = MOMENTO('MomentoAnimo')
-    expect(animo).toMatch(/copy\.lumia\.diario\.manana\.animo/)
+    expect(animo).toMatch(/copy\.diario\.manana\.animo/)
     expect(animo).toMatch(/<h2 [^>]*>\{textos\.titulo\}/)
     // Ni la intención ni la acción asoman por aquí: la pantalla es una sola
     // pregunta, que es lo que la vuelve la puerta del recorrido.
@@ -573,7 +573,7 @@ describe('criterio 9 — tres momentos, no una lista de campos', () => {
     expect(estaCerrada({})).toBe(false)
     const resumen = codigoDe('src/components/lumia/manana/ResumenManana.jsx')
     expect(resumen).not.toMatch(/hecho|completad|terminad/i)
-    expect(copy.lumia.diario.manana.resumen.editar).toBe('Cambiar algo')
+    expect(copy.diario.manana.resumen.editar).toBe('Cambiar algo')
   })
 })
 
@@ -624,7 +624,7 @@ describe('la consulta se ve igual que las preguntas, y en una sola pantalla', ()
       textos.accion.titulo,
       '¿Cómo quiero tratarme hoy?',
     ])
-    expect(copy.lumia.diario.manana.resumen).toEqual({ editar: 'Cambiar algo' })
+    expect(copy.diario.manana.resumen).toEqual({ editar: 'Cambiar algo' })
   })
 
   it('sigue el orden del recorrido y trae las respuestas resueltas', () => {
@@ -821,7 +821,7 @@ describe('criterio 10 — la noche y el resto de Lumia no se tocan', () => {
   })
 
   it('la ceremonia de la mañana sigue siendo la suya y no la de la noche', () => {
-    expect(copy.lumia.diario.noche.cierre.cta).toBe('Cerrar mi día')
+    expect(copy.diario.noche.cierre.cta).toBe('Cerrar mi día')
     expect(CONTENEDOR).toMatch(/<AperturaDelDia/)
     expect(CONTENEDOR).not.toMatch(/CierreDeLaNoche|CierreDelDia/)
   })

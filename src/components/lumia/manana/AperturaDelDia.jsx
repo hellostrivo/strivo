@@ -16,7 +16,7 @@ import { clsx } from 'clsx'
 import Button from '@components/ui/Button'
 import { copy } from '@copy'
 
-const textos = copy.lumia.diario.manana.cierre
+const textos = copy.diario.manana.cierre
 
 export default function AperturaDelDia({ lineas, onTerminar }) {
   return (

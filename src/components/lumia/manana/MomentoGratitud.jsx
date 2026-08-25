@@ -22,7 +22,7 @@ import { copy } from '@copy'
 import { LIMITES } from '@/lumia/filas'
 import { MAX_GRATITUD_LINEA } from '@/lumia/manana'
 
-const textos = copy.lumia.diario.manana.gratitud
+const textos = copy.diario.manana.gratitud
 
 export default function MomentoGratitud({ filas, onCambiar, onVolcar, onOmitir }) {
   const enBlanco = filas.every((fila) => String(fila.texto ?? '').trim() === '')
