@@ -214,15 +214,18 @@ describe('el subtítulo de una fila (§4.3)', () => {
 })
 
 describe('Respiración sigue sin conocer a nadie (RN-RE-DAT-09)', () => {
-  it('ningún archivo nuevo importa lumia/ ni formia/', () => {
+  // **Revisión del paso 8 (25 ago):** la regla no cambia y su lista pierde una
+  // entrada: queda un solo producto al que no se puede alcanzar. Mismo recorte
+  // que hizo `eslint.config.js` al pasar de tres partes a dos.
+  it('ningún archivo nuevo importa la capa del diario', () => {
     for (const ruta of NUEVOS) {
       const imports = codigoDe(ruta).match(/^\s*import[\s\S]*?from\s+'[^']+'/gm) ?? []
-      imports.forEach((linea) => expect(`${ruta}: ${linea}`).not.toMatch(/lumia|formia/i))
+      imports.forEach((linea) => expect(`${ruta}: ${linea}`).not.toMatch(/lumia/i))
     }
   })
 
   it('el contexto de audio compartido tampoco', () => {
     const codigo = codigoDe('src/lib/audio/contextoAudio.js')
-    expect(codigo).not.toMatch(/lumia|formia|breathing/i)
+    expect(codigo).not.toMatch(/lumia|breathing/i)
   })
 })

@@ -6,7 +6,14 @@
 // se fue con el acceso del Home —criterios 2, 3, 4, 5 y toda la familia
 // RN-RE-NAV-01..08c— está abajo, en su propio bloque, comprobado en negativo:
 // una prueba que falla si el tercer acceso reaparece sin que nadie lo decida.
-// Lo demás sigue vigente y sin tocar.
+//
+// **Revisión del paso 8 del plan de separación técnica (25 ago 2026).** Aquel
+// bloque leía `Home.jsx` para comprobar que el vestíbulo había vuelto a tener
+// dos accesos, y el vestíbulo entero se retiró en la tanda 1 de este mismo
+// paso: el archivo ya no existe y este no llegaba ni a cargar. Se quedan las
+// cuatro comprobaciones que no dependían de él. Cae con el vestíbulo el bloque
+// de "el Home es el único sitio que ve los dos espacios", y con la barra
+// inferior, las dos aserciones que colgaban de ella.
 //
 // Igual que en SPEC_08, 14 y 15: el entorno es `node`, sin DOM. Y buena parte de
 // lo que este spec pide es ausencia —ni barra de navegación, ni felicitación, ni
@@ -23,7 +30,6 @@ import { presetPrimeraVez, ID_POR_DEFECTO } from '../data/catalogoPatrones.js'
 import { ID_SILENCIO } from '../data/catalogoSonidos.js'
 import { preferenciasDeFabrica } from '../data/esquema.js'
 
-const HOME = 'src/pages/Home.jsx'
 const APP = 'src/App.jsx'
 const CONTENEDOR = 'src/breathing/Respiracion.jsx'
 const CONFIG = 'src/breathing/PantallaRespiracion.jsx'
@@ -56,35 +62,19 @@ function archivosDe(dir) {
   })
 }
 
-describe('el acceso del Home se retiró entero (24 ago)', () => {
-  const home = codigoDe(HOME)
+describe('el acceso del vestíbulo se retiró entero (24 ago)', () => {
   const app = codigoDe(APP)
 
-  it('el Home vuelve a tener dos accesos y solo dos', () => {
-    // Sustituye a los criterios 2, 3, 4 y 5 de SPEC_16, que medían la jerarquía
-    // de tres niveles de este vestíbulo. Ya no hay tercer nivel: Respiración es
-    // una sección de Lumia. Si el acceso vuelve, que sea porque alguien lo
-    // decidió y actualizó esta prueba, no porque se coló.
-    expect(home).not.toMatch(/AccesoRespiracion/)
-    expect(home).not.toMatch(/respiracion/i)
-    const espacios = home.match(/const espacios = \[[\s\S]*?\]/)[0]
-    expect(espacios.match(/id:/g)).toHaveLength(2)
-  })
-
-  it('las dos tarjetas de espacio quedaron intactas', () => {
-    // RN-RE-NAV-08b sobrevive a la mudanza: lo que se fue es el tercer acceso,
-    // no nada de los dos primeros.
-    expect(home).toMatch(/'lumia'/)
-    expect(home).toMatch(/'formia'/)
-    expect(home.indexOf("'lumia'")).toBeLessThan(home.indexOf("'formia'"))
-  })
-
-  it('la animación de bienvenida sigue sin tocarse (RN-RE-NAV-08)', () => {
-    expect(home).toMatch(/bienvenida-luz/)
-    expect(home).toMatch(/bienvenida-simbolo/)
-    expect(home).toMatch(/alto=\{72\}/)
-    expect(home).toMatch(/h-64 w-64/)
-  })
+  // **Se eliminan las tres pruebas que leían `Home.jsx`** —dos accesos y solo
+  // dos, las dos tarjetas intactas, la animación de bienvenida sin tocar—.
+  // Custodiaban que el tercer acceso no volviera a colarse **en el vestíbulo**,
+  // y el vestíbulo se fue entero al quedar un solo producto: sin dos espacios
+  // entre los que elegir no hay sala de espera que vigilar. RN-RE-NAV-08 y 08b
+  // se derogan con él, como ya lo estaban 01 a 08c desde el 24 ago.
+  //
+  // Lo que sigue vigente es todo lo que no dependía de aquella pantalla: que la
+  // pieza no exista, que no tenga copy, que no tenga ruta suelta y que su regla
+  // de CSS se fuera con ella.
 
   it('el componente del acceso ya no existe', () => {
     expect(existsSync('src/breathing/components/AccesoRespiracion.jsx')).toBe(false)
@@ -138,23 +128,35 @@ describe('las rutas (criterios 6, 7, 9)', () => {
     // Es lo que le permitió mudarse de espacio sin nombrar a ninguno. `base` y
     // `salida` los pone quien enruta, que es el único que sabe dónde vive.
     expect(app).toMatch(/base=\{RUTA_RESPIRACION\}/)
-    expect(app).toMatch(/salida=\{INICIO\.lumia\}/)
+    expect(app).toMatch(/salida=\{INICIO\}/)
     expect(contenedor).toMatch(/\$\{base\}\/sesion/)
   })
 
-  it('ahora sí es un espacio, y de ahí sale su cromo (24 ago)', () => {
-    // Antes `espacioDe` devolvía null para `/respiracion` y eso daba gratis
-    // tres reglas de SPEC_16: sin barra, sin umbral y con los neutros de
-    // Strivo. Al entrar a `/lumia/` las tres se invierten, **que es lo que se
-    // pidió**: la herramienta tiene que sentirse nativa de Lumia.
-    const funcion = app.match(/function espacioDe\(ruta\) \{[\s\S]*?\n\}/)[0]
-    expect(funcion).toMatch(/startsWith\('\/lumia'\)/)
-    expect(funcion).not.toMatch(/respiracion/)
+  it('su ruta cuelga de la misma raíz que el resto, y de ahí sale su cromo', () => {
+    // Antes `espacioDe` devolvía null para `/respiracion` y eso daba gratis tres
+    // reglas de SPEC_16: sin barra, sin umbral y con los neutros de Strivo. Al
+    // mudarse a `/lumia/` las tres se invirtieron, **que es lo que se pidió**: la
+    // herramienta tiene que sentirse nativa de su sección.
+    //
+    // **Revisión del paso 8 (25 ago):** `espacioDe()` se retiró con el vestíbulo
+    // —no queda entre qué decidir— y la comprobación pasa de la función a la
+    // ruta, que es de donde salía la respuesta. Su cromo es ahora el de la app.
+    expect(app).not.toMatch(/espacioDe/)
+    expect(app).toContain('path="/lumia/respiracion/*"')
+    expect(app).toMatch(/const RUTA_RESPIRACION = '\/lumia\/respiracion'/)
   })
 
-  it('la barra y el umbral siguen colgando de que haya espacio', () => {
-    expect(app).toMatch(/\{espacio && !hideNav && <BarraStrivo \/>\}/)
-    expect(app).toMatch(/if \(!espacio \|\| !puedeCruzarse\) return/)
+  it('el umbral lo cruza la app al abrirse, y esta sección no lo repite', () => {
+    // **Se elimina la mitad de este caso que hablaba de la barra inferior**: la
+    // barra se retiró con el vestíbulo y RN-RE-NAV-12 —dentro de Respiración no
+    // hay barra— se cumple ahora porque no la hay en ninguna parte.
+    //
+    // La otra mitad sobrevive y es la que importa (RN-RE-NAV-34): el umbral se
+    // cruza una vez por sesión al abrir la app, así que entrar aquí no interpone
+    // nada que no interpusiera ya el Journal.
+    expect(app).toMatch(/umbralPendiente\('lumia'\)/)
+    expect(app).toMatch(/cruzarUmbral\('lumia'\)/)
+    expect(codigoDe(CONTENEDOR)).not.toMatch(/umbral/i)
   })
 
   it('la sesión oculta el cromo, como el Journal al escribir (RN-RE-NAV-21)', () => {
@@ -182,7 +184,7 @@ describe('las rutas (criterios 6, 7, 9)', () => {
   it('ninguna pantalla de Respiración monta una barra (criterio 9)', () => {
     for (const ruta of [CONFIG, SESION, CONTENEDOR]) {
       expect(`${ruta}`).toBe(ruta)
-      expect(codigoDe(ruta)).not.toMatch(/BarraStrivo|NavLumia|NavFormia/)
+      expect(codigoDe(ruta)).not.toMatch(/BarraStrivo|NavLumia/)
     }
   })
 
@@ -449,25 +451,24 @@ describe('el cierre (criterios 27, 28, 29)', () => {
   })
 })
 
-describe('no hay puente con Lumia ni con Formia (criterios 35, 36, 37)', () => {
+describe('no hay puente con el diario (criterios 35, 36, 37)', () => {
   const DE_RESPIRACION = archivosDe('src/breathing').filter((r) => !r.includes('__tests__'))
 
-  it('ningún archivo de Respiración nombra a los espacios (criterio 37)', () => {
+  it('ningún archivo de Respiración nombra a la sección que lo monta (criterio 37)', () => {
+    // La lista de "no puede importar" pierde una entrada por el mismo recorte
+    // que hizo `eslint.config.js`: queda un solo producto al que no alcanzar.
     for (const ruta of DE_RESPIRACION) {
       const imports = codigoDe(ruta).match(/^\s*import[\s\S]*?from\s+'[^']+'/gm) ?? []
-      imports.forEach((linea) => expect(`${ruta}: ${linea}`).not.toMatch(/lumia|formia/i))
+      imports.forEach((linea) => expect(`${ruta}: ${linea}`).not.toMatch(/lumia/i))
     }
   })
 
-  it('ninguna pantalla de Lumia ni de Formia lee datos de respiración (criterio 35)', () => {
+  it('ninguna pantalla del diario lee datos de respiración (criterio 35)', () => {
     // RN-RE-NAV-38 y 39 — Ni favoritos en el Journal, ni sesiones en el
-    // Historial o en el Progreso. `breathing/` no cruza.
-    const ajenos = [
-      ...archivosDe('src/pages/lumia'),
-      ...archivosDe('src/pages/formia'),
-      ...archivosDe('src/components/lumia'),
-      ...archivosDe('src/components/formia'),
-    ].filter((r) => !r.includes('__tests__'))
+    // Historial. `breathing/` no cruza.
+    const ajenos = [...archivosDe('src/pages/lumia'), ...archivosDe('src/components/lumia')].filter(
+      (r) => !r.includes('__tests__'),
+    )
 
     for (const ruta of ajenos) {
       expect(`${ruta}`).toBe(ruta)
@@ -483,18 +484,12 @@ describe('no hay puente con Lumia ni con Formia (criterios 35, 36, 37)', () => {
     expect(hoy).not.toMatch(/breathing|\/respiracion/)
   })
 
-  it('el Home sigue siendo el único sitio que ve los dos espacios', () => {
-    // Los cruces se hacen por el vestíbulo y solo por el vestíbulo
-    // (RN-RE-NAV-37, extendiendo §C7.7.3). Respiración ya no está aquí: la
-    // nombra la navegación de Lumia, que es el espacio al que pertenece.
-    const home = codigoDe(HOME)
-    expect(home).toMatch(/lumia/)
-    expect(home).toMatch(/formia/)
-
-    const nav = codigoDe(NAV_LUMIA)
-    expect(nav).toMatch(/respiracion/)
-    expect(nav).not.toMatch(/formia/i)
-  })
+  // **Se elimina "el Home sigue siendo el único sitio que ve los dos
+  // espacios".** RN-RE-NAV-37 decía que los cruces se hacen por el vestíbulo y
+  // solo por el vestíbulo; sin dos espacios no hay cruce que encauzar, y sin
+  // vestíbulo no hay por dónde. Lo único que quedaba vivo de ese caso —que a
+  // Respiración la nombra la navegación de su sección— ya lo comprueba
+  // "apunta a la ruta que monta App", arriba.
 })
 
 describe('la elección se ve (24 ago)', () => {

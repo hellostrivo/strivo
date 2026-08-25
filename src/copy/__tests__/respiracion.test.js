@@ -165,10 +165,13 @@ describe('§3.6 — el léxico de siempre tampoco aparece', () => {
   })
 })
 
-describe('la voz es de Strivo madre, no de un espacio', () => {
-  it('no se nombra a Lumia ni a Formia', () => {
+describe('la voz es de Strivo madre, no de una sección', () => {
+  // **Revisión del paso 8 (25 ago):** la regla no cambia —el copy de Respiración
+  // no se apoya en la sección que la aloja, así que su voz sigue siendo la misma
+  // esté donde esté— y la lista pierde la entrada del alcance retirado.
+  it('no se nombra a la sección que la monta', () => {
     CADENAS.forEach(([, cadena]) => {
-      expect(cadena).not.toMatch(/\b(lumia|formia)\b/i)
+      expect(cadena).not.toMatch(/\blumia\b/i)
     })
   })
 

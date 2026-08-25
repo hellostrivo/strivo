@@ -187,28 +187,30 @@ describe('la fase se dice con palabra y con forma (criterio 21, RN-RE-VIS-17)', 
   })
 })
 
-describe('Respiración no conoce a Lumia ni a Formia (criterio 20b, RN-RE-VIS-00)', () => {
-  it('ningún archivo de breathing/ nombra un token de otro espacio', () => {
+// **Revisión del paso 8 (25 ago):** RN-RE-VIS-00 no cambia de fondo —nada de
+// `breathing/` puede nombrar un token de la sección que lo monta— y las tres
+// listas pierden la mitad que apuntaba al alcance retirado. Es el mismo recorte
+// que hizo `eslint.config.js` al pasar de tres partes a dos.
+describe('Respiración no conoce al diario (criterio 20b, RN-RE-VIS-00)', () => {
+  it('ningún archivo de breathing/ nombra un token de la sección que lo monta', () => {
     for (const ruta of TODO_BREATHING) {
       const contenido = readFileSync(ruta, 'utf8')
         .replace(/\/\*[\s\S]*?\*\//g, '')
         .replace(/^\s*\/\/.*$/gm, '')
       expect(`${ruta}`).toBe(ruta)
-      expect(contenido).not.toMatch(/--lumia-|--formia-|lumia-am-|lumia-pm-|formia-am-|formia-pm-/)
+      expect(contenido).not.toMatch(/--lumia-|lumia-am-|lumia-pm-/)
     }
   })
 
   it('la hoja de estilos tampoco', () => {
-    expect(readFileSync(CSS, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')).not.toMatch(
-      /--lumia-|--formia-/,
-    )
+    expect(readFileSync(CSS, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')).not.toMatch(/--lumia-/)
   })
 
   it('ni un import cruza la línea', () => {
     for (const ruta of TODO_BREATHING) {
       const imports = codigoDe(ruta).match(/^\s*import[\s\S]*?from\s+'[^']+'/gm) ?? []
       imports.forEach((linea) => {
-        expect(`${ruta}: ${linea}`).not.toMatch(/lumia|formia/i)
+        expect(`${ruta}: ${linea}`).not.toMatch(/lumia/i)
       })
     }
   })
@@ -280,26 +282,31 @@ describe('el color sale del espacio, no de Strivo (24 ago)', () => {
     expect(css).toMatch(/--respiracion-tinta/)
   })
 
-  it('globals define el valor por defecto y la variante de Lumia', () => {
+  it('globals define el valor por defecto y la variante del momento', () => {
+    // **Revisión del paso 8 (25 ago):** la regla de fondo no cambia —Respiración
+    // toma su paleta por defecto de la marca madre y la sobrescribe la sección
+    // que la monta—, pero el selector sí. Colgaba de `[data-space='lumia']`, un
+    // atributo que se retiró al quedar un solo producto, y ahora cuelga de
+    // `[data-moment]`, que es el que la app escribe de verdad.
     expect(globals).toMatch(/--respiracion-trazo: var\(--strivo-700\)/)
-    const deLumia = globals.match(
-      /\[data-space='lumia'\] \{\s*--respiracion-fase-inhalar[\s\S]*?\n\}/,
+    const delMomento = globals.match(
+      /\[data-moment\] \{\s*--respiracion-fase-inhalar[\s\S]*?\n\}/,
     )[0]
-    expect(deLumia).toMatch(/--respiracion-fase-inhalar/)
-    expect(deLumia).toMatch(/--respiracion-fase-sosten/)
-    expect(deLumia).toMatch(/--respiracion-fase-exhalar/)
-    expect(deLumia).toMatch(/--respiracion-fase-descanso/)
-    expect(deLumia).not.toMatch(/#[0-9a-fA-F]{6}/)
+    expect(delMomento).toMatch(/--respiracion-fase-inhalar/)
+    expect(delMomento).toMatch(/--respiracion-fase-sosten/)
+    expect(delMomento).toMatch(/--respiracion-fase-exhalar/)
+    expect(delMomento).toMatch(/--respiracion-fase-descanso/)
+    expect(delMomento).not.toMatch(/#[0-9a-fA-F]{6}/)
   })
 
   it('conserva el orden de luminancia de SPEC_14', () => {
     // Inhalar la más oscura, descanso la más clara. Esa rampa es lo que hace
     // que el cambio de fase se lea de reojo, y cambiar de paleta no la toca.
-    const deLumia = globals.match(
-      /\[data-space='lumia'\] \{\s*--respiracion-fase-inhalar[\s\S]*?\n\}/,
+    const delMomento = globals.match(
+      /\[data-moment\] \{\s*--respiracion-fase-inhalar[\s\S]*?\n\}/,
     )[0]
-    expect(deLumia).toMatch(/--respiracion-fase-inhalar: var\(--color-ink\)/)
-    expect(deLumia).toMatch(/--respiracion-fase-descanso: var\(--lumia-pm-400\)/)
+    expect(delMomento).toMatch(/--respiracion-fase-inhalar: var\(--color-ink\)/)
+    expect(delMomento).toMatch(/--respiracion-fase-descanso: var\(--lumia-pm-400\)/)
   })
 })
 

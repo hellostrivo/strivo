@@ -141,11 +141,14 @@ describe('criterio 19 — ni un string visible fuera de copy/', () => {
   })
 })
 
-describe('RN-RE-DAT-09 y §4.2 — Respiración no conoce ningún espacio', () => {
-  it.each(ARCHIVOS)('%s no importa lumia/ ni formia/', (ruta) => {
+describe('RN-RE-DAT-09 y §4.2 — Respiración no conoce al diario', () => {
+  // **Revisión del paso 8 (25 ago):** la regla no cambia y su lista pierde una
+  // entrada. Lo que sostiene RN-RE-DAT-09 sigue en pie por partida doble: aquí y
+  // en la regla de arquitectura de `eslint.config.js`.
+  it.each(ARCHIVOS)('%s no importa la capa del diario', (ruta) => {
     const codigo = soloCodigo(readFileSync(ruta, 'utf8'))
     const imports = codigo.match(/from\s+'[^']+'/g) ?? []
-    const cruces = imports.filter((linea) => /lumia|formia/i.test(linea))
+    const cruces = imports.filter((linea) => /lumia/i.test(linea))
     expect(cruces).toEqual([])
   })
 
