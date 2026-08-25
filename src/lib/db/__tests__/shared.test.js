@@ -1,3 +1,11 @@
+// src/lib/db/__tests__/shared.test.js
+// La rama `shared/` y el árbol de un usuario nuevo (SPEC_02, criterio 6).
+//
+// **Revisión del paso 8 del plan de separación técnica (25 ago 2026).** El
+// criterio 6 tenía dos casos y queda con uno. El árbol pierde una de sus tres
+// raíces, así que "coincide con §C5.2" pasa a comprobar dos; y "no se monta sin
+// identidad central" **se elimina** con la regla que custodiaba.
+
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import * as shared from '../shared.js'
@@ -47,8 +55,7 @@ describe('shared/', () => {
 
 describe('criterio 6: el árbol de un usuario nuevo', () => {
   it('coincide con §C5.2', async () => {
-    await initUserTree(UID, {
-      identityCentral: 'Alguien que crece',
+    const ramas = await initUserTree(UID, {
       profile: { name: 'Alejandra' },
       auth: { email: 'team@hellostrivo.com' },
     })
@@ -57,22 +64,20 @@ describe('criterio 6: el árbol de un usuario nuevo', () => {
     for (const doc of ['profile', 'auth', 'preferences', 'onboarding']) {
       expect(await readPath(paths.sharedDoc(UID, doc))).not.toBeNull()
     }
-
-    // formia/ con la identidad central y las 7 áreas del catálogo
-    const identity = await readPath(paths.formiaDoc(UID, 'identity'))
-    expect(identity.central).toBe('Alguien que crece')
-    expect(Object.keys(identity.areas)).toHaveLength(7)
-
-    const history = await readPath(paths.formiaDoc(UID, 'identityHistory'))
-    expect(history.versions).toHaveLength(1)
+    expect(await readPath(paths.sharedDoc(UID, 'profile'))).toMatchObject({ name: 'Alejandra' })
 
     // lumia/ nace vacío: no se inventa un día que nadie escribió
     expect(await readPath(paths.lumiaDoc(UID, 'pinConfig'))).toBeNull()
+
+    // Y no hay una tercera raíz. Era la que traía la identidad central y las 7
+    // áreas del catálogo, y **con ella se va la única semilla que el árbol
+    // pedía**: montar un usuario nuevo ya no exige contestar nada.
+    expect(Object.keys(ramas).sort()).toEqual(['lumia', 'shared'])
   })
 
-  it('no se monta sin identidad central (RN-DB4-09)', async () => {
-    await expect(initUserTree(UID, {})).rejects.toMatchObject({
-      code: ERROR_CODES.IDENTITY_CENTRAL_REQUIRED,
-    })
-  })
+  // **Se elimina "no se monta sin identidad central (RN-DB4-09)".** La regla
+  // murió con el modelo que la sostenía: no hay identidad central que exigir, el
+  // esquema ya no tiene ese código de error y `initUserTree` no rechaza nada. El
+  // árbol se monta siempre — que es, además, lo que hizo falta para que la app
+  // volviera a arrancar en el paso 2.
 })

@@ -1,6 +1,19 @@
+// src/lib/db/__tests__/sync.test.js
+// La cola de sincronización (RN-02, criterio 5 de SPEC_02).
+//
+// **Revisión del paso 8 del plan de separación técnica (25 ago 2026).** La regla
+// que custodia este archivo **no cambia**: se guarda en local al instante, la red
+// es asíncrona, y lo escrito sin red sale una sola vez al volver. Lo único que
+// cambia es el dato de partida — el caso 5 poblaba el árbol con una identidad y
+// un hábito marcado dos veces, y esa rama del árbol ya no existe.
+//
+// El dato nuevo conserva la forma del viejo, que es lo que hacía útil al caso:
+// dos escrituras sobre **la misma ruta** que tienen que colapsar en una sola
+// entrada de cola y en una sola escritura a Firestore.
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import * as formia from '../formia.js'
+import * as shared from '../shared.js'
 import * as lumia from '../lumia.js'
 import { listQueue } from '../local.js'
 import { cancelRetries, flush } from '../sync.js'
@@ -66,14 +79,17 @@ describe('criterio 5: sin red se guarda en local y se sincroniza al volver', () 
   it('la escritura persiste con la red caída y sale una sola vez al volver', async () => {
     conRed(false)
 
-    await formia.initFormia(UID, { identityCentral: 'Alguien que crece' })
-    const habit = await formia.createHabit(UID, { name: 'Caminar', identityRef: 'central' })
-    await formia.markHabit(UID, habit.id, '2026-08-10')
-    await formia.markHabit(UID, habit.id, '2026-08-10')
+    await shared.initShared(UID, { profile: { name: 'Alejandra' } })
+    await lumia.saveMorningEntry(UID, '2026-08-10', { feeling: 'calma' })
+    await lumia.saveMorningEntry(UID, '2026-08-10', { action: 'Salir a caminar.' })
 
-    // Lo escrito está a salvo aunque la red no exista.
-    expect(await formia.getHabit(UID, habit.id)).toBeTruthy()
-    expect(await formia.listHabitLogs(UID)).toHaveLength(1)
+    // Lo escrito está a salvo aunque la red no exista, y las dos escrituras
+    // parciales sobre el mismo día se han fundido en un solo registro.
+    expect((await shared.getProfile(UID)).name).toBe('Alejandra')
+    expect(await lumia.getMorningEntry(UID, '2026-08-10')).toMatchObject({
+      feeling: 'calma',
+      action: 'Salir a caminar.',
+    })
 
     const sinRed = await flush(UID)
     expect(sinRed).toMatchObject({ sent: 0, skipped: 'sin_red' })
@@ -89,10 +105,11 @@ describe('criterio 5: sin red se guarda en local y se sincroniza al volver', () 
     expect(conRedResult.pending).toBe(0)
     expect(await listQueue(UID)).toHaveLength(0)
 
-    // Nada duplicado: una escritura por ruta, y la fila de hábito marcado es una.
+    // Nada duplicado: una escritura por ruta, y la mañana del día 10 sale una
+    // sola vez pese a haberse escrito dos.
     const rutas = escrituras.map((escritura) => escritura.path)
     expect(new Set(rutas).size).toBe(rutas.length)
-    expect(rutas.filter((ruta) => ruta.includes('habitLogs'))).toHaveLength(1)
+    expect(rutas.filter((ruta) => ruta.includes('morningEntry'))).toHaveLength(1)
   })
 
   it('volver a vaciar la cola no reenvía lo que ya salió', async () => {
