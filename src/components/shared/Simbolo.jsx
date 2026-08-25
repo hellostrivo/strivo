@@ -17,13 +17,11 @@
 // **Strivo no es un espacio navegable** (§C0.2): su símbolo aparece donde el
 // manual lo indica —splash, ajustes— y nunca como destino de la barra.
 
-import formiaSimbolo from '@/assets/marca/formia_simbolo.svg'
 import lumiaSimbolo from '@/assets/marca/lumia_simbolo.svg'
 import strivoSimbolo from '@/assets/marca/strivo_simbolo.svg'
 
 const ARCHIVOS = Object.freeze({
   lumia: lumiaSimbolo,
-  formia: formiaSimbolo,
   strivo: strivoSimbolo,
 })
 

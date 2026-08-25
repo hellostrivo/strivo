@@ -30,7 +30,6 @@
 /* Paletas de marca por espacio y momento (manual §4). Se cargan siempre; el
    `data-space` de la raíz de cada espacio decide cuál se aplica. */
 @import './tokens-lumia.css';
-@import './tokens-formia.css';
 
 /* La capa visual de Respiración (SPEC_14). Se carga siempre, como las paletas:
    sus clases solo existen dentro de `src/breathing/`, así que no alcanzan a
