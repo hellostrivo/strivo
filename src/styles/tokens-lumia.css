@@ -14,7 +14,13 @@
  * producto: abrir a las 7:00 y a las 23:00 no se ve igual (§6.1, principio 2).
  */
 
-[data-space='lumia'] {
+/* **El atributo `data-space` se retiró al quedar un solo espacio** (25 ago).
+ * La paleta colgaba de él y, sin nadie que lo pusiera, estas ocho variables
+ * dejaban de existir: el degradado de Hoy, la tarjeta, el recuadro de la frase
+ * y las cuatro fases de Respiración quedaban sin color. Ahora los hexes van en
+ * la raíz —no hay entre qué elegir— y lo que sigue colgando de un atributo es
+ * el momento, que es lo único que cambia. */
+:root {
   --lumia-am-50: #F6F2E9;
   --lumia-am-100: #DCCFF1;
   --lumia-am-200: #E5C2DC;
@@ -24,13 +30,13 @@
   --lumia-pm-400: #8D82B6;
   --lumia-pm-500: #6C5AA7;
   --lumia-pm-700: #5A5568;
-
-  /* El primario de marca no cambia con el momento: es la firma de Lumia. */
-  --espacio-acento: var(--lumia-pm-500);
 }
 
-/* Claridad suave. */
-[data-space='lumia'][data-moment='manana'] {
+/* Claridad suave. El acento se repite en los dos momentos —no cambia con la
+ * hora, es la firma de la marca— porque los neutros de `globals.css` fijan el
+ * suyo en la raíz y solo una regla sobre el nodo del momento lo tapa. */
+[data-moment='manana'] {
+  --espacio-acento: var(--lumia-pm-500);
   --espacio-base: var(--lumia-am-50);
   --espacio-cabecera: var(--lumia-am-300);
   --espacio-borde: var(--lumia-pm-400);
@@ -39,7 +45,8 @@
 /* Introspección profunda. La cabecera se mantiene en el rango claro para que
  * el texto siga saliendo de los tokens AAA sobre claro: el tono nocturno de la
  * marca entra por el acento y por el degradado de Hoy, no por el cromo. */
-[data-space='lumia'][data-moment='noche'] {
+[data-moment='noche'] {
+  --espacio-acento: var(--lumia-pm-500);
   --espacio-base: var(--lumia-pm-50);
   --espacio-cabecera: var(--lumia-am-100);
   --espacio-borde: var(--lumia-pm-400);

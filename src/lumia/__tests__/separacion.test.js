@@ -1,9 +1,22 @@
 // src/lumia/__tests__/separacion.test.js
 // Los criterios de SPEC_06 que se comprueban leyendo el código, no ejecutándolo:
-// que en Lumia no haya hábitos, ni puente a Formia, ni copy con género fijo.
+// que en el diario no haya hábitos, ni puente al alcance retirado, ni copy con
+// género fijo.
 //
 // §C2.6, criterio 2 — "Una búsqueda de `Habit` o `HabitLog` en el árbol de
 // componentes del Diario no devuelve ninguna referencia".
+//
+// **Revisión del paso 8 del plan de separación técnica (25 ago 2026).** La
+// separación que custodia este archivo **cambia de forma, no de fondo**. Era
+// RN-DB4-01: dos productos que no se leen entre sí, comprobado importe a
+// importe. Con uno solo, la regla ya no puede decirse así —no hay a quién no
+// leer— y pasa a decirse en positivo: el árbol del retirado no existe, y ni una
+// referencia suya sobrevive en el que se queda.
+//
+// Las pruebas que nombraban el producto pausado **se eliminan y no se
+// reescriben con su nombre**: la comprobación final del plan (§6) es que ese
+// nombre no aparezca en `src/`, y un archivo de pruebas que lo deletrea la
+// rompería. Lo que las sustituye vigila lo mismo sin nombrarlo.
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'fs'
 import { join } from 'path'
@@ -45,27 +58,51 @@ function cadenasDe(nodo, ruta = 'copy.lumia') {
 
 const CADENAS = cadenasDe(copy.lumia)
 
-describe('Lumia no sabe nada de hábitos (RN-DB4-01, §C2.6)', () => {
+describe('el diario no sabe nada de hábitos (§C2.6, revisión 25 ago)', () => {
   it('hay archivos que revisar', () => {
     expect(ARCHIVOS.length).toBeGreaterThan(10)
   })
 
-  it('ningún archivo de Lumia importa formia', () => {
-    ARCHIVOS.forEach((ruta) => {
-      const imports = codigoDe(ruta).match(/^\s*import[\s\S]*?from\s+'[^']+'/gm) ?? []
-      imports.forEach((linea) => expect(`${ruta}: ${linea}`).not.toMatch(/formia/i))
-    })
+  it('hay un solo árbol de producto, y es este', () => {
+    // Sustituye a "ningún archivo importa el otro producto", que se comprobaba
+    // importe a importe en tres bloques distintos. Se dice en positivo y no
+    // nombrando al retirado: la comprobación final del plan es que su nombre no
+    // aparezca en `src/`, y una prueba que lo deletrea la rompería. Si el día de
+    // mañana aparece un segundo árbol de producto, esta lista se entera y quien
+    // lo añada tiene que volver a decidir cómo se separan.
+    // Solo carpetas: los `.jsx` sueltos de la raíz y la basura del sistema de
+    // archivos no son árboles de producto.
+    const carpetasDe = (dir) =>
+      readdirSync(dir)
+        .filter((n) => statSync(join(dir, n)).isDirectory())
+        .sort()
+
+    expect(carpetasDe('src')).toEqual([
+      'assets',
+      'breathing',
+      'components',
+      'content',
+      'copy',
+      'lib',
+      'lumia',
+      'pages',
+      'styles',
+      'tokens',
+    ])
+    expect(carpetasDe('src/pages')).toEqual(['lumia'])
+    expect(carpetasDe('src/components')).toEqual(['lumia', 'shared', 'ui'])
   })
 
   it('no aparece Habit ni HabitLog en el árbol del Diario', () => {
+    // La regla de §C2.6 sobrevive intacta y es la que más valor tiene ahora:
+    // vigila que el vocabulario del alcance pausado no vuelva a entrar aquí.
     ARCHIVOS.forEach((ruta) => {
       expect(`${ruta}: ${codigoDe(ruta)}`).not.toMatch(/\bHabit(Log)?\b/)
     })
   })
 
-  it('la pantalla Hoy no tiene ningún puente a Formia (§C7.7.3)', () => {
+  it('la pantalla Hoy no tiene ningún puente a otra sección que no exista', () => {
     const hoy = codigoDe('src/pages/lumia/Hoy.jsx')
-    expect(hoy).not.toMatch(/formia/i)
     expect(hoy).not.toMatch(/ritual de la mañana/i)
   })
 
@@ -99,13 +136,6 @@ describe('las superficies de SPEC_07 (§C7.7.1, §C7.7.2)', () => {
 
   it('existen todos los archivos que la spec nombra', () => {
     DE_SPEC_07.forEach((ruta) => expect(ARCHIVOS).toContain(ruta))
-  })
-
-  it('ninguno importa formia (SPEC_07, criterio 2)', () => {
-    DE_SPEC_07.forEach((ruta) => {
-      const imports = codigoDe(ruta).match(/^\s*import[\s\S]*?from\s+'[^']+'/gm) ?? []
-      imports.forEach((linea) => expect(`${ruta}: ${linea}`).not.toMatch(/formia/i))
-    })
   })
 
   it('la vista de día completo no nombra hábitos (SPEC_07, criterio 3)', () => {
@@ -148,10 +178,6 @@ describe('la intención del día se retiró entera (deroga SPEC_09)', () => {
 
   it('el héroe no pregunta nada: las preguntas son del recorrido', () => {
     expect(heroe).not.toMatch(/granVision|intencion|intention/i)
-  })
-
-  it('el héroe no importa formia', () => {
-    expect(heroe).not.toMatch(/formia/i)
   })
 })
 

@@ -5,6 +5,12 @@
 // la transición la acerca al wizard del Anexo E. Por eso la mitad de estas
 // pruebas no comprueban qué hace la pieza, sino qué **no** hace y qué no se le
 // ha añadido.
+//
+// **Revisión del paso 8 del plan de separación técnica (25 ago 2026).** El
+// umbral ya no distingue destino: se cruza una vez al abrir la app y otra vez
+// —la misma— al aparecer la sección Mañana. Con eso se deroga el bloque que
+// custodiaba la entrada al segundo producto, y el "uno por espacio" pasa a ser
+// "uno por sesión", que es lo que la regla decía de verdad (RN-LU-MAN-02).
 
 import { readFileSync } from 'fs'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -188,32 +194,44 @@ describe('la misma pieza en los dos sitios (RN-LU-MAN-01, criterio 1)', () => {
     expect(sospechosos).toEqual([])
   })
 
-  it('el componente es compartido de verdad: no conoce ningún espacio', () => {
+  it('el componente es compartido de verdad: no conoce la sección que lo monta', () => {
+    // Pierde una de sus tres mitades por el mismo motivo que la de
+    // `Respiracion.jsx`: solo queda un producto al que no puede alcanzar.
     const imports = codigoDe(COMPONENTE).match(/^\s*import[\s\S]*?from\s+'[^']+'/gm) ?? []
-    imports.forEach((linea) => expect(linea).not.toMatch(/lumia|formia|lib\/db/i))
+    imports.forEach((linea) => expect(linea).not.toMatch(/lumia|lib\/db/i))
   })
 })
 
-describe('un solo umbral por sesión y por espacio (nota de producto, 19 ago)', () => {
+describe('un solo umbral por sesión (nota de producto, 19 ago · revisada 25 ago)', () => {
   const UMBRAL = 'src/lib/umbralSesion.js'
 
   it('el contador vive fuera de las dos pantallas que lo consultan', () => {
     ;[APP, HOY].forEach((ruta) => {
       expect(codigoDe(ruta)).toMatch(/from '@lib\/umbralSesion'/)
-      // Ninguna de las dos guarda su propia cuenta: si lo hicieran, entrar por
-      // el Home y ver la mañana encadenaría dos umbrales seguidos.
+      // Ninguna de las dos guarda su propia cuenta: si lo hicieran, abrir la app
+      // y ver la mañana encadenaría dos umbrales seguidos.
       expect(codigoDe(ruta)).not.toMatch(/let umbralCruzado/)
     })
   })
 
-  it('entrar a Lumia lo consume, y la mañana ya no lo repite', async () => {
+  it('las dos lo consultan con la misma clave, o no se gastarían el mismo', () => {
+    // **Deroga** "uno por espacio": ya no hay un segundo espacio con su propio
+    // umbral. Lo que queda es lo que la regla protegía —abrir y ver la mañana
+    // enseguida no encadena dos umbrales (RN-LU-MAN-02)— y eso solo se cumple
+    // si los dos usos nombran la misma clave.
+    const claves = [APP, HOY].flatMap(
+      (ruta) => codigoDe(ruta).match(/(?:umbralPendiente|cruzarUmbral)\('(\w+)'\)/g) ?? [],
+    )
+    expect(claves.length).toBe(4)
+    expect(new Set(claves.map((c) => c.match(/'(\w+)'/)[1])).size).toBe(1)
+  })
+
+  it('abrir la app lo consume, y la mañana ya no lo repite', async () => {
     const { cruzarUmbral, olvidarUmbrales, umbralPendiente } = await import('@lib/umbralSesion')
     olvidarUmbrales()
     expect(umbralPendiente('lumia')).toBe(true)
     cruzarUmbral('lumia')
     expect(umbralPendiente('lumia')).toBe(false)
-    // El de Formia es suyo: entrar a Lumia no se lo gasta.
-    expect(umbralPendiente('formia')).toBe(true)
     olvidarUmbrales()
   })
 
@@ -222,24 +240,34 @@ describe('un solo umbral por sesión y por espacio (nota de producto, 19 ago)', 
   })
 })
 
-describe('la entrada a Formia es la misma pieza sin frase (placeholder)', () => {
-  it('el umbral de Formia no saca ninguna frase del repertorio', () => {
-    expect(codigoDe(APP)).toMatch(/conFrase=\{entrando === 'lumia'\}/)
+// **Se elimina el bloque de la entrada al segundo producto.** Custodiaba un
+// placeholder —la misma pieza sin frase, con otra paleta— y la regla que
+// vigilaba era que la frase de apertura pertenece a este producto y no se
+// presta. Sin un segundo destino, no hay a quién no prestársela.
+//
+// Lo que sí queda vivo de allí es el velo, que sigue teniendo que teñirse solo:
+// el componente es compartido y no puede nombrar una paleta.
+describe('el velo lo pone el tema, no el componente (SPEC_10)', () => {
+  const css = readFileSync('src/styles/globals.css', 'utf8')
+
+  it('el componente no nombra ni un color', () => {
+    expect(codigoDe(COMPONENTE)).not.toMatch(/#[0-9a-f]{3,8}/i)
+    expect(codigoDe(COMPONENTE)).toMatch(/velo-transicion/)
   })
 
-  it('lo único propio de Formia es la paleta, y sale de sus tokens', () => {
-    const css = readFileSync('src/styles/globals.css', 'utf8')
-    const bloque =
-      css.match(/\[data-space='formia'\] \{[^}]*--transicion-velo[\s\S]*?\n\}/)?.[0] ?? ''
-    expect(bloque).toMatch(/var\(--formia-am-50\)/)
-    expect(bloque).not.toMatch(/#[0-9a-f]{3,8}/i)
+  it('la variante nocturna existe y sale de la paleta del momento', () => {
+    const bloque = css.match(/\[data-moment='noche'\] \{[^}]*--transicion-velo[\s\S]*?\n\}/)?.[0]
+    expect(bloque).toBeTruthy()
+    expect(bloque).toMatch(/var\(--color-night\)/)
   })
 })
 
 describe('con reducir movimiento es inmediata (criterio 5)', () => {
   it('los dos usos consultan la preferencia antes de montarla', () => {
-    expect(codigoDe(APP)).toMatch(/!prefiereMenosMovimiento\(\)/)
-    expect(codigoDe(HOY)).toMatch(/!prefiereMenosMovimiento\(\)/)
+    // Cada uno la escribe en el sentido que le pide su guarda —`App` sale si la
+    // preferencia está puesta, `Hoy` entra si no lo está— y lo que se comprueba
+    // es que ninguno de los dos monta el umbral sin haber preguntado.
+    ;[APP, HOY].forEach((ruta) => expect(codigoDe(ruta)).toMatch(/prefiereMenosMovimiento\(\)/))
   })
 
   it('el componente expone la consulta en un solo sitio', () => {

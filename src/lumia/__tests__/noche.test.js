@@ -803,10 +803,14 @@ describe('criterio 13 — la mañana y el resto de Lumia no se tocan', () => {
     expect(existsSync('src/components/lumia/manana/AperturaDelDia.jsx')).toBe(true)
   })
 
-  it('ni el Journal ni Formia aparecen en ningún archivo de la noche', () => {
+  it('ni el Journal ni los hábitos aparecen en ningún archivo de la noche', () => {
+    // **Revisión del paso 8 (25 ago):** nombraba al producto pausado y ahora
+    // nombra su vocabulario —`habit`—, que es lo que de verdad no puede volver a
+    // entrar aquí. La regla no cambia; cambia cómo se comprueba, para que este
+    // archivo no deletree un nombre que ya no existe en `src/`.
     ;['noche', 'nocheEmociones', 'nocheReflexion'].forEach((nombre) =>
-      expect(codigoDe(`src/lumia/${nombre}.js`)).not.toMatch(/journal|formia/i),
+      expect(codigoDe(`src/lumia/${nombre}.js`)).not.toMatch(/journal|habit/i),
     )
-    expect(CONTENEDOR).not.toMatch(/journal|formia|habit/i)
+    expect(CONTENEDOR).not.toMatch(/journal|habit/i)
   })
 })

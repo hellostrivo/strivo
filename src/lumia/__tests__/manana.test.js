@@ -826,14 +826,19 @@ describe('criterio 10 — la noche y el resto de Lumia no se tocan', () => {
     expect(CONTENEDOR).not.toMatch(/CierreDeLaNoche|CierreDelDia/)
   })
 
-  it('ningún archivo de la mañana toca la noche ni el journal', () => {
+  it('ningún archivo de la mañana toca la noche, el journal ni los hábitos', () => {
     // `ChipsUnicos` salió de esta lista al subir un nivel: dejó de ser un
     // archivo de la mañana el día en que la noche también lo montó.
+    //
+    // **Revisión del paso 8 (25 ago):** la lista nombraba al producto pausado y
+    // ahora nombra su vocabulario —`habit`—, que es lo que de verdad no puede
+    // volver a entrar aquí. La regla no cambia; cambia cómo se comprueba, para
+    // que este archivo no deletree un nombre que ya no existe en `src/`.
     ;['MomentoAnimo', 'MomentoGratitud', 'MomentoIntencionAccion', 'MomentoPausa'].forEach(
       (nombre) => expect(MOMENTO(nombre)).not.toMatch(/noche|night|journal/i),
     )
     ;['manana', 'mananaAcciones', 'mananaPausa', 'mananaEmociones', 'seleccionUnica'].forEach(
-      (nombre) => expect(codigoDe(`src/lumia/${nombre}.js`)).not.toMatch(/night|journal|formia/i),
+      (nombre) => expect(codigoDe(`src/lumia/${nombre}.js`)).not.toMatch(/night|journal|habit/i),
     )
   })
 

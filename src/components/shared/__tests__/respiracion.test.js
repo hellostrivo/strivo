@@ -2,6 +2,12 @@
 // Los criterios de SPEC_08 que se comprueban leyendo el código, no
 // ejecutándolo: que la respiración no se abre sola, que no guarda nada y que el
 // componente compartido lo es de verdad.
+//
+// **Revisión del paso 8 del plan de separación técnica (25 ago 2026).** La regla
+// de RN-LU-RESP-02 sigue viva y pierde una de sus tres mitades: el componente
+// tenía que no conocer los dos productos ni la capa de datos, y ahora solo hay
+// un producto que no puede conocer. Es el mismo recorte que hizo la regla de
+// arquitectura de `eslint.config.js`, que pasó de tres partes a dos.
 
 import { readFileSync } from 'fs'
 import { describe, expect, it } from 'vitest'
@@ -22,11 +28,11 @@ function codigoDe(ruta) {
 }
 
 describe('un solo componente para los dos sitios (RN-LU-RESP-02)', () => {
-  it('no conoce Lumia, ni Formia, ni la capa de datos', () => {
+  it('no conoce la sección que lo monta, ni la capa de datos', () => {
     ;[COMPONENTE, RITMO, AUDIO].forEach((ruta) => {
       const imports = codigoDe(ruta).match(/^\s*import[\s\S]*?from\s+'[^']+'/gm) ?? []
       imports.forEach((linea) => {
-        expect(`${ruta}: ${linea}`).not.toMatch(/lumia|formia|lib\/db/i)
+        expect(`${ruta}: ${linea}`).not.toMatch(/lumia|lib\/db/i)
       })
     })
   })

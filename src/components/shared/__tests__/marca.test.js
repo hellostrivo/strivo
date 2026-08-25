@@ -5,6 +5,14 @@
 // sostener revisando el árbol entero, y es lo que hace la primera mitad de este
 // archivo. La segunda comprueba que los valores del manual llegaron intactos:
 // esta spec **aplica** una fuente única de color; no la reinterpreta.
+//
+// **Revisión del paso 8 del plan de separación técnica (25 ago 2026).** Este
+// archivo vigilaba cuatro paletas, tres símbolos y el cambio de paleta al saltar
+// de espacio. Con un solo producto quedan dos paletas y dos símbolos, y el
+// criterio 7 —"cambiar de espacio cambia la paleta"— se **deroga**: no hay
+// espacio que cambiar. Lo que ocupa su sitio es la regla que sí sigue viva y que
+// nadie custodiaba, la que el repliegue rompió sin que ninguna prueba lo dijera:
+// **la paleta tiene que llegar de verdad a la pantalla**.
 
 import { readFileSync, readdirSync, statSync } from 'fs'
 import { join } from 'path'
@@ -59,18 +67,15 @@ describe('ningún hex a mano en un componente (criterio 1)', () => {
 describe('los valores llegaron intactos del manual (criterios 3 y 4)', () => {
   const manual = readFileSync(MANUAL, 'utf8')
 
-  it('las cuatro paletas están completas y coinciden con §4.8', () => {
+  it('las dos paletas del momento están completas y coinciden con §4.8', () => {
+    // Eran cuatro —dos productos por dos momentos— y quedan dos. Los ocho hexes
+    // de Mañana y Noche no se han tocado: el repliegue quita un producto, no
+    // recalibra el color del que se queda.
     expect(tokens.brand.lumia.am).toEqual(
       expect.objectContaining({ 50: '#F6F2E9', 100: '#DCCFF1', 200: '#E5C2DC', 300: '#F6DDE8' }),
     )
     expect(tokens.brand.lumia.pm).toEqual(
       expect.objectContaining({ 50: '#F3EFEA', 400: '#8D82B6', 500: '#6C5AA7', 700: '#5A5568' }),
-    )
-    expect(tokens.brand.formia.am).toEqual(
-      expect.objectContaining({ 50: '#F7F2E9', 200: '#E8D9C4', 400: '#FFC29C', 500: '#E9A387' }),
-    )
-    expect(tokens.brand.formia.pm).toEqual(
-      expect.objectContaining({ 600: '#B45A2B', 700: '#8F4A2F', 800: '#5D4766', 900: '#1F1D22' }),
     )
   })
 
@@ -79,12 +84,10 @@ describe('los valores llegaron intactos del manual (criterios 3 y 4)', () => {
     expect(manual).toMatch(/`lumia-am-200`\s*\|\s*`#E5C2DC`/)
   })
 
-  it('`#5D4766` está en Formia·Noche y no se ha "corregido" (criterio 3)', () => {
-    // Manual §4.7 — Es el punto de convergencia cromática con Lumia al final del
-    // día. Alejarlo del morado sería deshacer una decisión de marca.
-    expect(tokens.brand.formia.pm[800]).toBe('#5D4766')
-    expect(readFileSync('src/styles/tokens-formia.css', 'utf8')).toContain('#5D4766')
-  })
+  // El criterio 3 vigilaba `#5D4766`, el punto de convergencia cromática entre
+  // los dos productos al final del día (manual §4.7). **Se elimina: la regla se
+  // deroga con la paleta que la contenía.** Con un solo producto no hay
+  // convergencia que proteger, y el hex ya no existe en ningún token.
 
   it('cada hex de los tokens de marca aparece literal en el manual', () => {
     const hexes = JSON.stringify(tokens.brand).match(/#[0-9A-F]{6}/g) ?? []
@@ -93,13 +96,23 @@ describe('los valores llegaron intactos del manual (criterios 3 y 4)', () => {
   })
 })
 
-describe('los tres símbolos (criterio 5)', () => {
+describe('los dos símbolos (criterio 5)', () => {
   const nombres = readdirSync(SIMBOLOS)
     .filter((n) => n.endsWith('.svg'))
     .sort()
 
-  it('están los tres', () => {
-    expect(nombres).toEqual(['formia_simbolo.svg', 'lumia_simbolo.svg', 'strivo_simbolo.svg'])
+  it('están los dos', () => {
+    // Eran tres. El del producto pausado se fue con sus archivos; el de la marca
+    // madre se queda porque es el símbolo de la app.
+    expect(nombres).toEqual(['lumia_simbolo.svg', 'strivo_simbolo.svg'])
+  })
+
+  it('el mapa de marcas del componente tiene exactamente esos dos', () => {
+    const mapa = codigoDe('src/components/shared/Simbolo.jsx').match(
+      /const ARCHIVOS = Object\.freeze\(\{([\s\S]*?)\}\)/,
+    )[1]
+    const marcas = (mapa.match(/^\s*(\w+):/gm) ?? []).map((l) => l.trim().replace(':', ''))
+    expect(marcas).toEqual(['lumia', 'strivo'])
   })
 
   it('comparten el mismo lienzo, que es lo que los hace comparables', () => {
@@ -122,7 +135,6 @@ describe('los tres símbolos (criterio 5)', () => {
   it('cada uno lleva su tono de firma, distinto del primario de su paleta', () => {
     // Manual §3.2 — No se fuerzan a coincidir: el símbolo tiene su propio tono.
     expect(readFileSync(join(SIMBOLOS, 'lumia_simbolo.svg'), 'utf8')).toContain('#7563A7')
-    expect(readFileSync(join(SIMBOLOS, 'formia_simbolo.svg'), 'utf8')).toContain('#D56732')
     expect(readFileSync(join(SIMBOLOS, 'strivo_simbolo.svg'), 'utf8')).toContain('#2B2730')
     expect(tokens.brand.simbolos.lumia).not.toBe(tokens.brand.lumia.pm[500])
   })
@@ -186,67 +198,75 @@ describe('la escala tipográfica escala (deuda heredada de SPEC_11)', () => {
 })
 
 // El criterio 9 de SPEC_12 decía "Strivo no es un espacio navegable" (§C0.2).
-// **Revisado el 19 ago 2026**: el Home de Strivo es el punto de entrada de la
-// app y sí es un destino. Lo que sigue en pie es que no es un *espacio*: no
-// tiene secciones, no lee datos y su paleta no cambia con la hora.
-describe('Strivo es el vestíbulo, no un tercer espacio (revisión de §C0.2)', () => {
-  it('el destino es la raíz, y no tiene secciones dentro', () => {
-    const app = codigoDe('src/App.jsx')
-    expect(app).toMatch(/path="\/" element=\{<Home/)
-    // Ni una ruta `/strivo/algo`: el vestíbulo no tiene dentro.
-    expect(app).not.toMatch(/\/strivo\//)
-  })
+// Se revisó el 19 ago —el vestíbulo era el punto de entrada y sí era un
+// destino— y el 25 ago se **deroga entero con el vestíbulo**: sin dos productos
+// entre los que elegir, la marca madre no tiene sala de espera que presidir.
+//
+// Lo que sobrevive de aquel bloque, y por eso se reescribe en vez de borrarse:
+// **su paleta neutra sigue existiendo y sigue sin cambiar con la hora** (§4.1).
+// Es el valor por defecto del cromo para lo que vive por encima de la sesión.
+describe('los neutros de la marca madre siguen siendo el suelo (§4.1)', () => {
+  const css = cssDe('src/styles/globals.css')
 
-  it('no lee datos de ninguno de los dos espacios (RN-DB4-01)', () => {
-    const home = codigoDe('src/pages/Home.jsx')
-    expect(home).not.toMatch(/lib\/db|useDiario|habitos|journal/i)
-    // Nombra los dos espacios porque vive por encima de ellos, y solo enruta.
-    expect(home).toMatch(/'lumia'/)
-    expect(home).toMatch(/'formia'/)
-  })
-
-  it('su paleta es la neutra conectora y no cambia con el momento (§4.1)', () => {
-    const css = cssDe('src/styles/globals.css')
+  it('son el valor por defecto del cromo, en la raíz', () => {
     expect(css).toMatch(/--espacio-base: var\(--strivo-50\)/)
-    expect(css).not.toMatch(/\[data-space='strivo'\]/)
   })
 
-  it('su símbolo solo se usa por encima de los dos espacios', () => {
+  it('no cambian con el momento: la marca madre no tiene amanecer', () => {
+    const raiz = css.slice(css.indexOf('--strivo-50:'))
+    expect(raiz.slice(0, raiz.indexOf('}'))).not.toMatch(/data-moment/)
+  })
+
+  it('su símbolo no preside ninguna pantalla: ya no hay vestíbulo', () => {
     const conStrivo = COMPONENTES.filter((ruta) => /marca="strivo"/.test(codigoDe(ruta)))
-    expect(conStrivo.sort()).toEqual([
-      'src/components/ArranqueProvisional.jsx',
-      'src/components/shared/BarraStrivo.jsx',
-      'src/pages/Home.jsx',
-    ])
+    expect(conStrivo).toEqual([])
   })
 })
 
-describe('cambiar de espacio cambia la paleta (criterio 7)', () => {
-  it('la paleta se elige con un atributo, no recargando', () => {
-    const app = codigoDe('src/App.jsx')
-    expect(app).toMatch(/data-space=\{espacio\}/)
+// **Deroga el criterio 7 de SPEC_12** ("cambiar de espacio cambia la paleta"):
+// no hay espacio que cambiar, y con él se retiró el atributo `data-space` del
+// que colgaba toda la paleta.
+//
+// Lo que ocupa su sitio es la mitad de aquella regla que sigue siendo cierta y
+// que nadie custodiaba: **el momento cambia la paleta, y la paleta llega a la
+// pantalla**. Se escribe porque el repliegue la rompió en silencio —los ocho
+// hexes seguían en su hoja, colgando de un atributo que ya no ponía nadie, y el
+// degradado de Hoy, la tarjeta, el recuadro de la frase y las cuatro fases de
+// Respiración se quedaron sin color con las 1250 pruebas en verde—.
+describe('la paleta llega a la pantalla (revisión del criterio 7)', () => {
+  const app = codigoDe('src/App.jsx')
+  const paleta = cssDe('src/styles/tokens-lumia.css')
+
+  it('el momento se elige con un atributo, no recargando', () => {
     expect(app).toMatch(/data-moment=\{momentoDe\(\)\}/)
   })
 
-  it('cada espacio tiene su hoja de tokens y ninguna nombra a la otra', () => {
-    const lumia = readFileSync('src/styles/tokens-lumia.css', 'utf8')
-    const formia = readFileSync('src/styles/tokens-formia.css', 'utf8')
-    expect(lumia).toMatch(/\[data-space='lumia'\]/)
-    expect(formia).toMatch(/\[data-space='formia'\]/)
-    expect(lumia).not.toMatch(/formia/i)
-    expect(formia.replace(/^\s*\*.*$/gm, '')).not.toMatch(/data-space='lumia'/)
+  it('ninguna variable de marca cuelga de un atributo que nadie pone', () => {
+    // La comprobación que faltaba: cada selector de la hoja de paleta tiene que
+    // ser la raíz o un atributo que la app escriba de verdad.
+    const puestos = new Set(app.match(/\bdata-[a-z]+(?==)/g) ?? [])
+    const selectores = paleta.match(/^\S[^{]*(?=\{)/gm) ?? []
+    expect(selectores.length).toBeGreaterThan(2)
+    selectores.forEach((selector) => {
+      const atributos = selector.match(/\[(data-[a-z]+)/g) ?? []
+      if (atributos.length === 0) return expect(selector.trim()).toBe(':root')
+      atributos.forEach((attr) => expect(puestos).toContain(attr.slice(1)))
+    })
   })
 
-  it('los cuatro momentos están definidos', () => {
-    const css = [
-      readFileSync('src/styles/tokens-lumia.css', 'utf8'),
-      readFileSync('src/styles/tokens-formia.css', 'utf8'),
-    ].join('\n')
-    ;['lumia', 'formia'].forEach((espacio) => {
-      ;['manana', 'noche'].forEach((momento) => {
-        expect(css).toContain(`[data-space='${espacio}'][data-moment='${momento}']`)
-      })
-    })
+  it('los dos momentos están definidos, y son dos', () => {
+    ;['manana', 'noche'].forEach((momento) =>
+      expect(paleta).toContain(`[data-moment='${momento}']`),
+    )
+    expect(paleta.match(/\[data-moment='/g)).toHaveLength(2)
+  })
+
+  it('la hoja de paleta no nombra ningún otro producto', () => {
+    // Era "ninguna nombra a la otra", con dos hojas. Con una sola, lo que queda
+    // por vigilar es que no reaparezca la que se fue.
+    expect(readdirSync('src/styles').filter((n) => n.startsWith('tokens-'))).toEqual([
+      'tokens-lumia.css',
+    ])
   })
 })
 

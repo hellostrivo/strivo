@@ -27,8 +27,8 @@
    de la frase del día. */
 @import '@fontsource-variable/inter/wght-italic.css';
 
-/* Paletas de marca por espacio y momento (manual §4). Se cargan siempre; el
-   `data-space` de la raíz de cada espacio decide cuál se aplica. */
+/* La paleta de marca y sus dos momentos (manual §4). Ya no hay entre qué
+   elegir: los hexes van en la raíz y `data-moment` decide el momento. */
 @import './tokens-lumia.css';
 
 /* La capa visual de Respiración (SPEC_14). Se carga siempre, como las paletas:
@@ -177,7 +177,7 @@
 
    El primario de Lumia (`lumia-pm-500`) cae en `exhalar` y no es casualidad: es
    la fase más larga de casi todos los patrones y la que la marca quiere firmar. */
-[data-space='lumia'] {
+[data-moment] {
   --respiracion-fase-inhalar: var(--color-ink);
   --respiracion-fase-sosten: var(--lumia-pm-700);
   --respiracion-fase-exhalar: var(--lumia-pm-500);
@@ -259,62 +259,29 @@
   --transicion-luz: radial-gradient(circle, rgba(232, 165, 74, .18) 0%, rgba(232, 165, 74, 0) 70%);
 }
 
-/* ─── La barra de Strivo dentro de Lumia ─────────────────────────────────────
-   Sobre la pantalla Hoy la barra iba en `espacio-cabecera` —un gris cálido fijo,
-   el mismo a cualquier hora— y se perdía: de día se confundía con la mañana
-   clara y de noche era una franja pálida que no pertenecía al degradado.
+/* ─── La cabecera de la sección en la Mañana ─────────────────────────────────
+   Sobre `lumia-am-300` —un rosa pálido— la franja se comía con la mañana clara,
+   así que toma el mismo contratono que el conmutador Mañana/Noche, que es la
+   otra pieza de cromo de esa pantalla. Las dos leen `--lumia-conmutador`, así
+   que no pueden separarse.
 
-   Ahora toma el mismo contratono que el conmutador Mañana/Noche, que es la otra
-   pieza de cromo de esa pantalla: oscura sobre la mañana clara, clara sobre la
-   noche. Las dos leen `--lumia-conmutador`, así que no pueden separarse.
-
-   Va aquí y no en props porque `BarraStrivo` es compartida y no puede conocer
-   Lumia: es la misma decisión que SPEC_10 tomó con el velo de `TransicionLuz`.
-   La barra solo declara su clase; el espacio en el que esté decide cómo se ve.
-
-   `--lumia-conmutador` solo existe bajo `[data-lumia]`, que hoy pone la raíz de
-   la app mientras Hoy está montada. En el Journal, en Respiración y en el
-   Historial no hay atributo, no hay regla, y la barra conserva su gris.
-*/
-[data-lumia] .barra-strivo {
-  background-color: var(--lumia-conmutador);
-  /* Sin línea superior: el conmutador tampoco la tiene, y lo que hace que la
-     barra se lea es el bloque de color entero, no su contorno. */
-  border-top-color: transparent;
-}
-
-/* El texto se invierte con la superficie, sin que la barra nombre un color
-   (RN-SURF-01). Es lo mismo que hace el conmutador declarando su `data-surface`,
-   escrito aquí porque la barra no sabe en qué momento está. Los dos pares ya los
-   mide `npm run lint:contraste`: 14,9:1 de día y 12,4:1 de noche. */
-[data-lumia='manana'] .barra-strivo {
-  --color-text:       var(--color-text-on-dark);
-  --color-text-soft:  var(--color-text-on-dark-soft);
-  --color-text-faint: var(--color-text-on-dark-faint);
-  --color-border:     var(--color-border-on-dark);
-}
-
-[data-lumia='noche'] .barra-strivo {
-  --color-text:       var(--color-text-on-light);
-  --color-text-soft:  var(--color-text-on-light-soft);
-  --color-text-faint: var(--color-text-on-light-faint);
-  --color-border:     var(--color-border-on-light);
-}
-
-/* La cabecera del espacio se viste igual que la barra en la sección Mañana, y
-   por el mismo motivo: sobre `lumia-am-300` —un rosa pálido— la franja se comía
-   con la mañana clara. Arriba y abajo pasan a ser el mismo bloque de color, con
-   el contenido de la pantalla entre los dos.
+   Va aquí y no en props porque `NavLumia` no nombra ni un color: pide
+   superficies por su papel (RN-SURF-01) y quien decide qué son es el tema. Es
+   la misma decisión que SPEC_10 tomó con el velo de `TransicionLuz`.
 
    **Solo en Mañana.** De noche la cabecera se queda en su rango claro
    (`lumia-am-100`), que es lo que decidió SPEC_12 para que el texto siga saliendo
-   de los tokens AAA sobre claro, y ahí no se pierde: la barra de abajo también es
-   la pieza clara. Este contratono resuelve la mañana, que era el caso roto.
+   de los tokens AAA sobre claro. Este contratono resuelve la mañana, que era el
+   caso roto.
 
-   Las tres secciones —Hoy, Journal, Historial— conservan forma, peso y borde. Lo
-   único que cambia es la superficie que tienen debajo, y con ella su tinta: son
-   texto sobre la cabecera, así que no podían quedarse literalmente iguales sin
-   volverse ilegibles.
+   `--lumia-conmutador` solo existe bajo `[data-lumia]`, que pone la raíz de la
+   app mientras Hoy está montada. En el Journal, en Respiración y en el Historial
+   no hay atributo, no hay regla, y la cabecera conserva su rango claro.
+
+   Las cuatro secciones conservan forma, peso y borde. Lo único que cambia es la
+   superficie que tienen debajo, y con ella su tinta: son texto sobre la
+   cabecera, así que no podían quedarse literalmente iguales sin volverse
+   ilegibles.
 */
 [data-lumia='manana'] .cabecera-espacio {
   background-color: var(--lumia-conmutador);
@@ -333,25 +300,15 @@
   --espacio-acento: var(--lumia-am-100);
 }
 
-/* La vela de Lumia sale del `.svg` en #7563A7 y sobre el contratono se queda en
-   3,33:1: pasa el umbral de no-texto, pero se apaga. En monocromo blanco da
-   17,06:1. Es la misma versión pendiente del manual §9 que usa el símbolo de
-   Strivo abajo, derivada del mismo modo y con la misma nota: **pendiente de
-   aprobación del diseñador**. De noche la cabecera es clara y no hace falta. */
+/* La vela sale del `.svg` en #7563A7 y sobre el contratono se queda en 3,33:1:
+   pasa el umbral de no-texto, pero se apaga. En monocromo blanco da 17,06:1. Es
+   la **versión monocromática** que el manual §9 tiene pendiente: "se puede
+   derivar de los SVG actuales cambiando el stroke a un solo valor, pero conviene
+   que el diseñador la apruebe". Está derivada aquí con un filtro y no como
+   archivo nuevo para que aprobarla —o sustituirla por la del diseñador— sea
+   borrar tres líneas. **Pendiente de esa aprobación.** De noche la cabecera es
+   clara y no hace falta. */
 [data-lumia='manana'] .cabecera-espacio img {
-  filter: brightness(0) invert(1);
-}
-
-/* El símbolo de Strivo lleva su color dentro del `.svg` (#2B2730) y sobre el
-   contratono de la mañana se queda en 1,17:1 — invisible. Este filtro lo deja
-   en blanco puro (17,06:1), que es la **versión monocromática** que el manual
-   §9 tiene pendiente: "se puede derivar de los SVG actuales cambiando el stroke
-   a un solo valor, pero conviene que el diseñador la apruebe". Está derivada
-   aquí y no en un archivo nuevo para que aprobarla —o sustituirla por la del
-   diseñador— sea borrar tres líneas. **Pendiente de esa aprobación.**
-
-   De noche no hace falta: el símbolo tal cual da 11,33:1 sobre `#F2DDE7`. */
-[data-lumia='manana'] .barra-strivo img {
   filter: brightness(0) invert(1);
 }
 
@@ -384,12 +341,11 @@
   --transicion-luz: radial-gradient(circle, rgba(232, 165, 74, .28) 0%, rgba(232, 165, 74, 0) 70%);
 }
 
-/* El umbral se monta ahora también en la raíz del espacio, al entrar desde el
-   Home, donde el tema que manda es `data-space` + `data-moment` y no el
-   `data-lumia` de la pantalla Hoy. De noche, sin esta regla, entrar a Lumia
-   daba un velo crema a las once: el mismo fogonazo que la variante de abajo
-   evita dentro de Hoy. */
-[data-space='lumia'][data-moment='noche'] {
+/* El umbral se monta también en la raíz de la app, donde el tema que manda es
+   `data-moment` —el reloj— y no el `data-lumia` de la pantalla Hoy. De noche,
+   sin esta regla, abrir la app daba un velo crema a las once: el mismo fogonazo
+   que la variante de abajo evita dentro de Hoy. */
+[data-moment='noche'] {
   --transicion-velo: var(--color-night);
   --transicion-luz: radial-gradient(circle, rgba(232, 165, 74, .18) 0%, rgba(232, 165, 74, 0) 70%);
 }
