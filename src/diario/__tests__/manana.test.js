@@ -52,6 +52,10 @@ const MOMENTO = (nombre) => codigoDe(`src/components/diario/manana/${nombre}.jsx
 // también la noche, y un componente que sirve a los dos recorridos no es de
 // ninguno de los dos.
 const COMPARTIDO = (nombre) => codigoDe(`src/components/diario/${nombre}`)
+// Lo que ya no es solo del diario. `Campo` y `pildora` subieron a
+// `components/shared/` en F-1B, cuando el onboarding pasó a montarlos: son
+// clases y un `input`, sin un import ni el nombre de una sección.
+const DE_TODOS = (nombre) => codigoDe(`src/components/shared/${nombre}`)
 const CONTENEDOR = codigoDe('src/components/diario/DiarioManana.jsx')
 
 // ─── Criterio 1 ───────────────────────────────────────────────────────────────
@@ -175,7 +179,7 @@ describe('criterio 2 — las dos preguntas emocionales son de selección única'
   it('lo elegido no se distingue solo por color (§10)', () => {
     // La forma de la píldora vive en `pildora.js`, que es de donde la toman el
     // recorrido y la consulta; el chip añade lo suyo de control que se toca.
-    const pildora = COMPARTIDO('pildora.js')
+    const pildora = DE_TODOS('pildora.js')
     expect(pildora).toMatch(/border-current/)
     expect(pildora).toMatch(/font-medium/)
     expect(pildora).toMatch(/shadow-elev-2/)
@@ -845,9 +849,13 @@ describe('criterio 10 — la noche y el resto del diario no se tocan', () => {
   it('lo que comparten los dos recorridos no conoce a ninguno de los dos', () => {
     // Subieron un nivel el 23 ago. Un componente compartido que alcanzara el
     // copy de un recorrido volvería a ser de ese recorrido, disfrazado.
-    ;['ChipsUnicos.jsx', 'Pasos.jsx', 'pildora.js'].forEach((nombre) =>
+    ;['ChipsUnicos.jsx', 'Pasos.jsx'].forEach((nombre) =>
       expect(`${nombre}: ${COMPARTIDO(nombre)}`).not.toMatch(/diario\.manana|diario\.noche/),
     )
+    // `pildora` subió otro nivel más y la regla que la vigila se endurece con
+    // ella: en `components/shared/` no puede nombrar **ninguna** sección, no
+    // solo estos dos recorridos.
+    expect(DE_TODOS('pildora.js')).not.toMatch(/copy\.diario|@\/diario|@components\/diario/)
     // `Pasos` recibe su copy por props, que es lo que le permite contar los
     // momentos de la mañana y los de la noche sin saber de cuál son.
     expect(COMPARTIDO('Pasos.jsx')).toMatch(/function IndicadorPasos\(\{ textos/)

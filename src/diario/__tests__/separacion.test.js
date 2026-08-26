@@ -77,6 +77,13 @@ describe('el diario no sabe nada de hábitos (§C2.6, revisión 25 ago)', () => 
         .filter((n) => statSync(join(dir, n)).isDirectory())
         .sort()
 
+    //
+    // **F-1B añade `onboarding`, y esta lista es donde se decidió.** No es un
+    // segundo producto: es cómo se entra al único que hay, una vez y antes de
+    // todo lo demás. Va fuera de `diario/` porque no es una de sus cuatro
+    // secciones —corre antes de la app y todo lo que escribe vive en
+    // `shared/`—, y `eslint.config.js` custodia esa frontera igual que las
+    // otras: no puede importar ni el diario ni Respiración.
     expect(carpetasDe('src')).toEqual([
       'assets',
       'breathing',
@@ -85,12 +92,15 @@ describe('el diario no sabe nada de hábitos (§C2.6, revisión 25 ago)', () => 
       'copy',
       'diario',
       'lib',
+      'onboarding',
       'pages',
       'styles',
       'tokens',
     ])
+    // El onboarding no añade página: no se enruta, se interpone. `App.jsx`
+    // monta uno u otro y no hay URL que lleve a él.
     expect(carpetasDe('src/pages')).toEqual(['diario'])
-    expect(carpetasDe('src/components')).toEqual(['diario', 'shared', 'ui'])
+    expect(carpetasDe('src/components')).toEqual(['diario', 'onboarding', 'shared', 'ui'])
   })
 
   it('no aparece Habit ni HabitLog en el árbol del Diario', () => {

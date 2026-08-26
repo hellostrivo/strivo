@@ -22,17 +22,12 @@ export default {
         clay:  '#C9836B',
         mist:  '#93A9C4',
 
-        // Áreas de identidad (cada área tiene su color)
-        area: {
-          salud:       '#7E9E86', // sage
-          trabajo:     '#93A9C4', // mist
-          relaciones:  '#C9836B', // clay
-          finanzas:    '#E5A25C', // amber
-          espiritual:  '#8B6BA8', // plum
-          personal:    '#D9CFC4',
-          creatividad: '#FFE4C4',
-          otra:        '#D9CFC4',
-        },
+        // Aquí vivían ocho tonos rotulados "Áreas de identidad", uno por área
+        // del modelo de identidad de tres niveles. Se retiran en F-1B: ese
+        // modelo se replegó con su alcance, la identidad central es hoy una
+        // frase que no se reparte, y ninguna clase del árbol los usaba. Era el
+        // último rastro de las áreas en los tokens, y un color con nombre de
+        // área es una invitación a que el concepto vuelva por donde salió.
 
         // Estados (NUNCA rojo puro para errores/vacíos)
         state: {

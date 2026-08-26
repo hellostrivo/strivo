@@ -11,7 +11,7 @@
 
 import { useState } from 'react'
 import Button from '@components/ui/Button'
-import { CampoLinea } from './Campo'
+import { CampoLinea } from '@components/shared/Campo'
 import { copy } from '@copy'
 
 const textos = copy.diario.journal.pin.cuenta

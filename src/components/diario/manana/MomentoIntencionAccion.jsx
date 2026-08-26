@@ -33,7 +33,7 @@
 
 import { clsx } from 'clsx'
 import ChipsUnicos from '../ChipsUnicos'
-import { CampoTexto } from '../Campo'
+import { CampoTexto } from '@components/shared/Campo'
 import { copy } from '@copy'
 import { MAX_ACCION } from '@/diario/manana'
 import { INTENCION } from '@/diario/mananaEmociones'

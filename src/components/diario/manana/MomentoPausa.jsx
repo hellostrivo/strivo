@@ -10,7 +10,7 @@
 // ninguna obligación de sonar optimista.
 
 import { clsx } from 'clsx'
-import { CampoTexto } from '../Campo'
+import { CampoTexto } from '@components/shared/Campo'
 import { copy } from '@copy'
 import { MAX_REFLEXION } from '@/diario/manana'
 

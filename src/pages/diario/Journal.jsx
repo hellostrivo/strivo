@@ -16,7 +16,7 @@
 import { useState } from 'react'
 import BloqueoPin from '@components/diario/BloqueoPin'
 import ChipsEmociones from '@components/diario/ChipsEmociones'
-import { CampoLinea, CampoTexto } from '@components/diario/Campo'
+import { CampoLinea, CampoTexto } from '@components/shared/Campo'
 import Button from '@components/ui/Button'
 import { copy, interpolate } from '@copy'
 import {

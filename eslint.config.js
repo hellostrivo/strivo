@@ -5,11 +5,12 @@
 // partes de la app deja de depender de que quien programa se acuerde. Un
 // import que cruce la línea rompe el lint, y el lint corre antes de cada commit.
 //
-// El mapa que custodia tiene dos partes y un territorio neutral:
+// El mapa que custodia tiene tres partes y un territorio neutral:
 //
 //   compartido   `components/shared/`   lo usan todas las secciones
 //   diario       `diario/`              Hoy, Journal, Respiración, Historial
 //   Respiración  `breathing/`           la herramienta
+//   onboarding   `onboarding/`          cómo se entra, una vez y antes de todo
 //   neutral      `lib/respiracion/`     el motor de ritmo, que no conoce a nadie
 //
 // Antes el mapa tenía tres partes, porque había dos espacios que no podían
@@ -49,6 +50,19 @@ const RN_RESPIRACION =
   'Lo que comparten es el motor de ritmo, y por eso vive en lib/respiracion/. ' +
   'Lo demás llega por props desde App.jsx.'
 
+// F-1B — El onboarding es un tercer territorio, y no una sección más. Corre
+// **antes** de la app, una sola vez, y todo lo que escribe vive en `shared/`:
+// nombre, género, identidad, horarios, preferencias y su propio expediente. No
+// tiene por qué leer el diario y no puede leer Respiración, así que la regla se
+// escribe entera en vez de dejarla a la memoria de quien programe.
+//
+// Es también lo que impide que se cuele aquí el modelo de identidad por áreas
+// del alcance retirado: no hay de dónde importarlo.
+const ONBOARDING =
+  'El onboarding corre antes de la app y solo escribe en shared/: no puede ' +
+  'depender de diario/ ni de breathing/. Lo que necesite de una sección, que ' +
+  'llegue por props desde App.jsx.'
+
 const COMPARTIDO =
   'Un componente de components/shared/ lo usan todas las secciones y el ' +
   'onboarding: no puede depender de diario/ ni de breathing/. Lo que necesite, ' +
@@ -61,6 +75,11 @@ const DIARIO_FILES = [
   'src/diario/**/*.{js,jsx}',
   'src/pages/diario/**/*.{js,jsx}',
   'src/components/diario/**/*.{js,jsx}',
+]
+
+const ONBOARDING_FILES = [
+  'src/onboarding/**/*.{js,jsx}',
+  'src/components/onboarding/**/*.{js,jsx}',
 ]
 
 const BREATHING_FILES = [
@@ -172,6 +191,23 @@ export default [
             { group: DIARIO_MODULES, message: COMPARTIDO },
             { group: BREATHING_MODULES, message: COMPARTIDO },
             { group: DB_ENTRYPOINT, importNames: ['diario'], message: COMPARTIDO },
+          ],
+        },
+      ],
+    },
+  },
+
+  // ─── El onboarding no es de ninguna sección ─────────────────────────────────
+  {
+    files: ONBOARDING_FILES,
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            { group: DIARIO_MODULES, message: ONBOARDING },
+            { group: BREATHING_MODULES, message: ONBOARDING },
+            { group: DB_ENTRYPOINT, importNames: ['diario'], message: ONBOARDING },
           ],
         },
       ],

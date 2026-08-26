@@ -30,6 +30,165 @@ export const copy = {
   // Aquí no hay una sola palabra de construcción: ni "hábito", ni "constancia",
   // ni "progreso", ni "ritual" referido a un checklist (§C2.6, criterio 3).
   diario: {
+    // ─── El onboarding (F-1B) ─────────────────────────────────────────────
+    // Ocho pasos y un sub-paso, una sola vez en la vida de la cuenta.
+    //
+    // **Vive dentro de `diario` y no en un namespace de primer nivel.** Strivo
+    // es una sola aplicación: un `copy.onboarding` por encima diría que hay
+    // algo antes del producto a lo que se entra, y no lo hay. Se entra a
+    // Strivo, y esto es cómo empieza.
+    //
+    // **La apertura de aquí no es el umbral de §C7.5.** Aquella es una frase
+    // del repertorio, una vez por sesión, y sigue viva en la Mañana. Esta es
+    // una palabra sola, una vez en la vida de la cuenta, antes de P1. No
+    // comparten repertorio ni namespace a propósito: si se mezclaran, ampliar
+    // uno cambiaría el otro sin que nadie se enterase.
+    //
+    // Nada de aquí bloquea: el nombre puede quedarse en blanco, el género se
+    // puede no contestar, los avisos y la cuenta se saltan con un enlace que
+    // dice "Ahora no". No hay ni un texto que llame incompleto a nada.
+    onboarding: {
+      // El indicador cuenta **pasos, no campos**, igual que el de la mañana
+      // cuenta momentos. El sub-paso del género no entra en la cuenta: no
+      // está en la ruta de todo el mundo y un total que cambia deja de
+      // orientar (la misma razón que RN-MAN-02).
+      nav: {
+        back: 'Atrás',
+        continue: 'Continuar',
+        progressTemplate: 'Paso {n} de {total}',
+      },
+
+      // Una palabra y nada más. Se salta tocando en cualquier sitio, como el
+      // umbral, y con "reducir movimiento" no se muestra (RN-VIS-05).
+      apertura: {
+        palabra: 'Respira.',
+        entrar: 'Entrar',
+      },
+
+      p1: {
+        subtitle: 'Tu lugar para volver a ti.',
+        support:
+          'Tres minutos para respirar, reconocer cómo fue tu día y seguir adelante con más calma.',
+        cta: 'Empezar',
+      },
+
+      // Se puede dejar en blanco, y el texto lo dice antes de que nadie se lo
+      // pregunte. Sin él, un campo vacío en la segunda pantalla se lee como
+      // un requisito.
+      p2: {
+        question: 'Solo tu nombre. Nada más.',
+        hint: 'Es para saludarte. Puedes dejarlo en blanco.',
+        label: 'Tu nombre',
+      },
+
+      // Sub-paso, no paso: para los pronombres del copy y para nada más.
+      // Las cuatro opciones se resuelven a los tres valores del modelo
+      // (`m`, `f`, `n`), que son los que sabe resolver `copy/gender.js`.
+      p2a: {
+        question: '¿Con qué género te identificas?',
+        hint: 'Solo lo usamos para hablarte como te corresponde.',
+        options: {
+          masculino: 'Masculino',
+          femenino: 'Femenino',
+          prefiero_no_contestar: 'Prefiero no contestar',
+          otro: 'Otro',
+        },
+      },
+
+      // Cinco motivos y una palabra propia. **Sin la opción de construir
+      // hábitos**: era del alcance retirado y no vuelve.
+      p3: {
+        question: '¿Qué te gustaría encontrar aquí?',
+        hint: 'Elige todo lo que resuene contigo. Puedes seleccionar varias opciones.',
+        options: {
+          paz: 'Terminar el día con más paz',
+          avance: 'Sentir que sí estoy avanzando',
+          escucha: 'Volver a escucharme',
+          sueno: 'Dormir con la mente más tranquila',
+          espacio: 'Tener un espacio solo para mí',
+          otro: 'Otro',
+        },
+        otherLabel: 'En tus palabras',
+        otherPlaceholder: '¿Qué buscas?',
+        otherCounterTemplate: '{n} de {max}',
+      },
+
+      // La identidad central. **No depende de ninguna área, en ningún punto**:
+      // el modelo de tres niveles del alcance retirado no vuelve, y el campo
+      // que la guarda no tiene con qué combinarse.
+      //
+      // Solo el primer chip lleva marca de género; los demás están redactados
+      // para no necesitarla. Una vez tocado, su texto es texto de la persona y
+      // no vuelve a pasar por el resolutor (RN-GEN-06).
+      p4: {
+        headline: 'La persona que quieres ser se construye un día a la vez.',
+        subhead:
+          'No busques la frase perfecta. Solo escribe algo que quieras recordar cuando abras Strivo.',
+        prefix: 'Soy alguien que...',
+        suggestionsLabel: 'Sugerencias',
+        chips: {
+          cuidado: { m: 'cuida de sí mismo.', f: 'cuida de sí misma.', n: 'se cuida.' },
+          paz: 'encuentra paz incluso en días difíciles.',
+          promesa: 'cumple lo que se promete.',
+          intencion: 'vive con intención.',
+          aprendizaje: 'aprende de cada experiencia.',
+          avances: 'celebra sus pequeños avances.',
+        },
+        chipOther: 'Otro',
+        closing:
+          'Esta frase será un recordatorio silencioso de la persona en la que quieres convertirte.',
+      },
+
+      p5: {
+        question: '¿Cómo son tus días?',
+        hint: 'Para acompañarte a tu ritmo, no al de la app. Lo cambias cuando quieras.',
+        wakeLabel: 'Me despierto a las',
+        sleepLabel: 'Me duermo a las',
+      },
+
+      // El aviso se pide, no se da por hecho. Las tres salidas —concedido,
+      // denegado, sin soporte— se cuentan sin culpar al dispositivo y sin
+      // pedir que se arregle nada.
+      p6: {
+        question: '¿Quieres que te avise?',
+        hint: 'Dos avisos al día, a las horas que elegiste. Nada más.',
+        previewTemplate: '{hora} · {texto}',
+        activate: 'Activar recordatorios',
+        skip: 'Ahora no',
+        granted: 'Listo. Te avisaremos a esas horas.',
+        denied: 'Tu dispositivo no dio permiso. Puedes activarlo después desde Ajustes.',
+        unsupported: 'Este dispositivo no tiene avisos. Strivo funciona igual.',
+      },
+
+      // La cuenta respalda; no es la puerta. Por eso "Ahora no" está a la
+      // vista y lo que sigue después dice que sin cuenta funciona todo.
+      p7: {
+        question: 'Tu historial, contigo.',
+        hint: 'Lo que escribes vive en tu dispositivo. La cuenta solo lo respalda y lo lleva contigo a donde vayas.',
+        google: 'Continuar con Google',
+        apple: 'Continuar con Apple',
+        email: 'Usar mi correo',
+        emailLabel: 'Tu correo',
+        passwordLabel: 'Una contraseña',
+        passwordHint: 'Ocho caracteres o más.',
+        create: 'Crear cuenta',
+        emailExists: 'Ya existe una cuenta con ese correo. Prueba con tu contraseña de siempre.',
+        skip: 'Ahora no',
+        ready: 'Tu cuenta está lista.',
+        skipNote: 'Sin cuenta también funciona todo. La puedes crear después.',
+      },
+
+      // El cierre lee la identidad si la hay y dice otra cosa si no la hay.
+      // **No arma ninguna frase con áreas**: `closingWithAreas`,
+      // `closingPlainWithAreas` y `areasJoin` no existen aquí y no van a
+      // existir.
+      p8: {
+        closingTemplate: 'Te estás convirtiendo en alguien que {identidad}.',
+        closingPlain: 'Aquí empieza tu espacio.',
+        nextTemplate: 'Nos vemos mañana a las {hora}.',
+        ctaLabel: 'Entrar a Strivo',
+      },
+    },
     hoy: {
       // §5.3, Bloque 1 — saludo por hora local, con el nombre si lo hay.
       saludo: {

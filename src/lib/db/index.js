@@ -20,7 +20,7 @@ export { ERROR_CODES, FIELDS, GENDERS, MOODS, StrivoDataError, paths } from './s
 
 export { DEFAULT_DIA_TERMINA_A, isDateKey, strivoDateKey, toDateKey } from './dates.js'
 
-export { closeLocalDB, getLocalDB, pendingCount } from './local.js'
+export { closeLocalDB, getLocalDB, mudarUid, pendingCount } from './local.js'
 export { flush, getPendingCount, listPending, startSync } from './sync.js'
 
 /**

@@ -25,7 +25,7 @@
 // está leyendo, y un hueco gris es un reproche con otra forma.
 
 import { clsx } from 'clsx'
-import { PILDORA, PILDORA_ELEGIDA } from '../pildora'
+import { PILDORA, PILDORA_ELEGIDA } from '@components/shared/pildora'
 import { copy } from '@copy'
 
 const textos = copy.diario.noche

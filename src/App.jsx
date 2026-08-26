@@ -25,9 +25,11 @@ import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { getTimeSlot } from '@lib/timeSlot'
 
 import ArranqueProvisional from '@/components/ArranqueProvisional'
+import Onboarding from '@components/onboarding/Onboarding'
 import TransicionLuz, { prefiereMenosMovimiento } from '@components/shared/TransicionLuz'
 import NavStrivo from '@components/diario/NavStrivo'
 import { cruzarUmbral, umbralPendiente } from '@lib/umbralSesion'
+import { shared } from '@/lib/db'
 
 import Respiracion from '@/breathing/Respiracion'
 import Hoy from '@/pages/diario/Hoy'
@@ -55,9 +57,64 @@ function momentoDe(franja = getTimeSlot()) {
 export default function App() {
   return (
     <HashRouter>
-      <ArranqueProvisional>{(uid) => <Secciones uid={uid} />}</ArranqueProvisional>
+      <ArranqueProvisional>
+        {(uid, cambiarUid) => <Entrada uid={uid} onUid={cambiarUid} />}
+      </ArranqueProvisional>
     </HashRouter>
   )
+}
+
+/**
+ * Por dónde se entra: el onboarding la primera vez, las cuatro secciones el
+ * resto de las veces.
+ *
+ * **Lo decide el árbol de datos, no una marca en el navegador** (F-1B). La
+ * respuesta la da `shared.onboardingPendiente`, que mira `completedAt` y solo
+ * eso: saltarse los ocho pasos también es haberlo hecho, así que contar pasos
+ * dejaría fuera a quien entró de largo. Un árbol de antes de que el onboarding
+ * existiera no trae esa marca y lo hace una vez, que es lo correcto: nunca lo
+ * vio.
+ *
+ * **Mientras se averigua no hay rueda que gire** (RN-EST-02): la pantalla
+ * espera en el fondo de la app, que es la forma final de lo que viene detrás.
+ *
+ * Al terminar el recorrido, el umbral de esta sesión se da por cruzado: la
+ * apertura del onboarding **fue** el umbral, y encadenar el video de marca
+ * detrás serían diez segundos de velo antes de la primera pantalla
+ * (RN-LU-MAN-02). El video se ve en la siguiente apertura de la app, ya con la
+ * casa montada detrás, que además es cuando significa algo.
+ */
+function Entrada({ uid, onUid }) {
+  const [pendiente, setPendiente] = useState(null)
+
+  useEffect(() => {
+    let vigente = true
+    shared
+      .onboardingPendiente(uid)
+      .then((respuesta) => vigente && setPendiente(respuesta))
+      .catch(() => vigente && setPendiente(false))
+    return () => {
+      vigente = false
+    }
+  }, [uid])
+
+  if (pendiente === null) return <div className="min-h-screen bg-paper" aria-busy="true" />
+
+  if (pendiente) {
+    return (
+      <Onboarding
+        uid={uid}
+        onUid={onUid}
+        onTerminado={(uidFinal) => {
+          cruzarUmbral('diario')
+          onUid(uidFinal)
+          setPendiente(false)
+        }}
+      />
+    )
+  }
+
+  return <Secciones uid={uid} />
 }
 
 function Secciones({ uid }) {

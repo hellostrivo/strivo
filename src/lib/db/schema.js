@@ -45,10 +45,43 @@ export const GENDERS = Object.freeze(['m', 'f', 'n'])
 
 export const FIELDS = Object.freeze({
   // shared/
-  profile: Object.freeze(['name', 'gender', 'diaTerminaA', 'wakeTime', 'sleepTime', 'createdAt']),
+  // `identidadCentral` la escribe P4 del onboarding y la lee su cierre (P8).
+  // Es una frase y nada más: **no se combina con nada**. El modelo de tres
+  // niveles del alcance retirado —áreas, identidad por área— no vuelve, y la
+  // forma de asegurarlo es que aquí no haya con qué combinarla.
+  profile: Object.freeze([
+    'name',
+    'gender',
+    'identidadCentral',
+    'diaTerminaA',
+    'wakeTime',
+    'sleepTime',
+    'createdAt',
+  ]),
   auth: Object.freeze(['uid', 'email', 'phone']),
-  preferences: Object.freeze(['soundEnabled', 'reducedMotion']),
-  onboarding: Object.freeze(['completedSteps', 'currentStep']),
+  // `remindersEnabled` es la respuesta de P6, y es distinta del permiso del
+  // navegador: conceder el permiso no es querer los avisos, y apagarlos
+  // después no tiene por qué exigir retirárselo al sistema.
+  preferences: Object.freeze(['soundEnabled', 'reducedMotion', 'remindersEnabled']),
+  // El expediente del onboarding. `completedSteps` y `currentStep` ya estaban:
+  // son por dónde va y qué quedó atrás, y hacen que abandonar a mitad —que
+  // RN-09 permite sin coste— retome donde estaba en vez de empezar de cero.
+  //
+  // `completedAt` es la **única** marca de que el onboarding terminó, igual que
+  // en la mañana y en la noche (RN-DB-09): no se deduce de cuántos pasos hay
+  // en `completedSteps`, porque saltarlos todos también es terminarlo.
+  //
+  // `motivos` y `motivoOtro` son la respuesta de P3. Se guardan aquí y no en el
+  // perfil porque es una respuesta que se da una vez y no vuelve a mutar: el
+  // perfil es lo que sigue siendo cierto cada día.
+  onboarding: Object.freeze([
+    'version',
+    'completedSteps',
+    'currentStep',
+    'completedAt',
+    'motivos',
+    'motivoOtro',
+  ]),
 
   // diario/
   journal: Object.freeze(['date', 'text', 'emotions', 'otherText', 'createdAt', 'updatedAt']),
@@ -185,6 +218,24 @@ export function validateProfile(profile) {
     assertEnum(profile.gender, GENDERS, ERROR_CODES.FIELD_TYPE, 'profile.gender')
   }
   return profile
+}
+
+export function validateOnboarding(onboarding) {
+  assertFields(onboarding, FIELDS.onboarding, 'shared/onboarding')
+  if (onboarding.completedSteps !== undefined && !Array.isArray(onboarding.completedSteps)) {
+    throw new StrivoDataError(
+      ERROR_CODES.FIELD_TYPE,
+      'onboarding.completedSteps: se esperaba un arreglo.',
+    )
+  }
+  // Los ids del catálogo **no se validan aquí a propósito**: el catálogo vive
+  // en `src/onboarding/motivos.js`, enlazado al copy, y repetirlo en el schema
+  // serían dos listas que envejecen por separado. Lo que sí es de esta capa es
+  // la forma: un arreglo, no una cadena con comas.
+  if (onboarding.motivos !== undefined && !Array.isArray(onboarding.motivos)) {
+    throw new StrivoDataError(ERROR_CODES.FIELD_TYPE, 'onboarding.motivos: se esperaba un arreglo.')
+  }
+  return onboarding
 }
 
 export function validatePreferences(preferences) {

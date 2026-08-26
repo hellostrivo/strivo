@@ -1,6 +1,6 @@
 # CLAUDE.md — Strivo
 
-**Última actualización:** 25 ago 2026 · **Estado:** una sola aplicación, cuatro secciones
+**Última actualización:** 25 ago 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
 **Blueprint (documento rector):** `/docs/blueprint/Strivo_Blueprint_de_Producto_v5_0_24-08-2026.md`
 **Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO.md`
 **Plan operativo del repliegue:** `/docs/Strivo_Plan_de_Separacion_Tecnica_v1_24-08-2026.md`
@@ -65,6 +65,10 @@ Las cuatro secciones viven en **la cabecera**, bajo el símbolo. No hay barra in
 | **RN-NAV-05** | Volver a una sección devuelve donde estabas, no a su raíz. Se olvida entre sesiones a propósito. |
 | **RN-NAV-06** | Ruta desconocida devuelve a `/hoy`, sin mensaje de error. |
 | **RN-NAV-07** | PWA estática con `HashRouter`. **Si alguien lo cambia a `BrowserRouter`, hay que añadir el `_redirects` de Netlify antes** o las rutas profundas darán 404. |
+
+**Antes de todo esto, una vez en la vida de la cuenta, está el onboarding**
+(`src/components/onboarding/`). No es una quinta sección y no tiene ruta: `App.jsx` pregunta al árbol
+de datos si queda pendiente y monta uno u otro. No lo alcanza ningún enlace y no se vuelve a ver.
 
 **El umbral de entrada** (§4.3): velo de luz, **una vez por sesión** (`src/lib/umbralSesion.js`). No
 es una secuencia: sin botón de avanzar, toda su superficie lo salta. Con `prefers-reduced-motion`
@@ -221,10 +225,16 @@ catálogo son decorativos y van ocultos al lector de pantalla.
 
 ```javascript
 shared/ {
-  profile:     { name, gender, diaTerminaA, wakeTime, sleepTime, createdAt },
+  // `identidadCentral` es una frase y nada más: no se combina con nada, y esa
+  // es la garantía de que el modelo de áreas no vuelve por la puerta de atrás.
+  profile:     { name, gender, identidadCentral, diaTerminaA,
+                 wakeTime, sleepTime, createdAt },
   auth:        { uid, email, phone },
-  preferences: { soundEnabled, reducedMotion },
-  onboarding:  { completedSteps, currentStep }
+  preferences: { soundEnabled, reducedMotion, remindersEnabled },
+  // `completedAt` es la única marca de que el onboarding terminó; `motivos` y
+  // `motivoOtro` son la respuesta de P3, que se da una vez y no vuelve a mutar.
+  onboarding:  { version, completedSteps, currentStep, completedAt,
+                 motivos[], motivoOtro }
 }
 
 diario/ {
@@ -259,7 +269,7 @@ breathing/ {
 | **RN-DB-06** | Se persisten identificadores, no etiquetas. |
 | **RN-DB-07** | Los límites de longitud son sugerencias, no validaciones. |
 | **RN-DB-08** | Fechas como `YYYY-MM-DD` en zona local. **Un día es el día de quien lo vivió.** |
-| **RN-DB-09** | La marca de cierre (`completedAt`) es lo único que determina si un recorrido está cerrado. No se infiere de cuántos campos hay escritos. |
+| **RN-DB-09** | La marca de cierre (`completedAt`) es lo único que determina si un recorrido está cerrado. No se infiere de cuántos campos hay escritos. **Vale también para el onboarding:** saltarse los ocho pasos es haberlo hecho. |
 | **RN-DB-10** | **Respiración no lee ni escribe en `diario/`, y `diario/` no lee `breathing/`.** Lo único que comparten es el motor de ritmo, que es lógica pura sin datos. Lo imponen `eslint.config.js` y una prueba, no una convención. |
 
 **Dos filosofías de validación, y la frontera es una carpeta.** En `src/lib/db/` los registros los
@@ -437,10 +447,12 @@ src/
 │   ├── respiracion/ motor de ritmo (lógica pura)
 │   └── audio/       síntesis
 ├── diario/          lógica de mañana, noche, journal, historial, PIN
+├── onboarding/      cómo se entra: pasos · catálogos · cuenta · estado
 ├── breathing/       la herramienta completa
 ├── components/
-│   ├── shared/      Simbolo · TransicionLuz · Respiracion (la breve de Hoy)
+│   ├── shared/      Simbolo · TransicionLuz · Campo · pildora · Respiracion
 │   ├── ui/          primitivas
+│   ├── onboarding/  las nueve pantallas y su contenedor
 │   └── diario/      NavStrivo · manana/ · noche/ · journal · historial
 └── pages/diario/    Hoy · Journal · Historial
 ```
@@ -453,6 +465,7 @@ src/
 | **RN-TEC-03** | Todo color sale de tokens. |
 | **RN-TEC-04** | **`breathing/` no importa nada de `diario/` y viceversa.** |
 | **RN-TEC-05** | **`components/shared/` no importa nada específico de una sección.** Lo que necesiten llega **por props**. |
+| **RN-TEC-06** | **`onboarding/` no importa `diario/` ni `breathing/`.** Corre antes de la app, una sola vez, y todo lo que escribe vive en `shared/`. No es una quinta sección: no se enruta, se interpone. |
 
 Esa última regla es la que da forma a media base de código: `TransicionLuz` recibe su tema desde
 `globals.css` y no por props de sección; `Respiracion` (la de la sección) recibe `base` y `salida`
@@ -467,7 +480,12 @@ el componente.**
 - `src/lib/umbralSesion.js` → el «ya se cruzó» del umbral, compartido por sus dos consumidores.
 - `src/diario/manana.js` → `resumenDeManana`: qué bloques hay, en qué orden y con qué título. El
   componente solo pinta.
-- `src/components/diario/pildora.js` → la forma de la píldora, compartida por los chips y la consulta.
+- `src/components/shared/pildora.js` → la forma de la píldora, compartida por los chips del día,
+  las pantallas de consulta y los del onboarding. **Subió de `diario/` a `shared/` en F-1B**, junto
+  con `Campo.jsx`, cuando el onboarding pasó a montarlos: ninguno de los dos importa nada ni nombra
+  una sección, que es lo que los hacía mudables.
+- `src/onboarding/pasos.js` → el orden del recorrido y qué cuenta en el indicador. Es el **único**
+  sitio que sabe que el género no gasta número.
 
 **Pila:** React + Vite (PWA) · IndexedDB local + Firestore para sync · Firebase Auth · Netlify con
 publicación automática · Vitest.
@@ -501,7 +519,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**48 archivos de prueba · 1.398 casos · los seis comandos en verde.**
+**55 archivos de prueba · 1.492 casos · los seis comandos en verde.**
 
 ### Marca: el logo oficial y el video de apertura (25 ago 2026)
 
@@ -534,6 +552,38 @@ Llegan dos materiales del diseñador y los dos sustituyen algo que ya existía:
 - **`docs/copy-library.md` sigue fechado en v3 del blueprint** y no se reeditó: no estaba en el
   inventario de §4.4 del plan. Conviene decidir si se actualiza o se retira, porque hoy es una
   segunda fuente de copy junto a `src/copy/`.
+
+### Fase F-1B — el onboarding, construido (25 ago 2026)
+
+**Nueve pantallas, ocho pasos, una sola vez.** Escrito desde cero contra v5.0; de
+`feat/onboarding-p1-p3c` no se portó ni una línea. El copy vive en `copy.diario.onboarding` y el
+recorrido en `src/onboarding/` + `src/components/onboarding/`.
+
+- **Se interpone, no se enruta.** `App.jsx` pregunta `shared.onboardingPendiente(uid)` —que mira
+  `completedAt` y solo eso— y monta el onboarding o las cuatro secciones. Saltarse los ocho pasos
+  también es haberlo hecho, así que contar `completedSteps` habría dejado fuera a quien entró de
+  largo. Un árbol de antes de que existiera no trae la marca y lo hace una vez: nunca lo vio.
+- **La apertura del onboarding hace de umbral de ese primer arranque.** `App` no monta el video de
+  marca mientras haya onboarding pendiente, y al terminar da el umbral por cruzado: dos velos de
+  cinco segundos seguidos son un peaje (RN-LU-MAN-02). El video se ve en la apertura siguiente.
+- **El género (P2A) es un sub-paso.** No entra en la cuenta del indicador y, mientras dura, el
+  indicador **no se pinta** —lo mismo que hace la mañana con su pausa opcional—. Sus cuatro opciones
+  se resuelven a los tres valores del modelo: «prefiero no contestar» y «otro» van las dos al neutro,
+  que es también lo que vale sin contestar.
+- **La identidad central (P4) no depende de áreas en ningún punto**, y hay tres pruebas que lo
+  vigilan: ni un archivo del onboarding las nombra, ni una cadena de su copy las menciona, y el
+  cierre no tiene una redacción con áreas que armar.
+- **P7 muda el árbol.** Hasta ahí se escribe bajo un uid local; al crear la cuenta, `mudarUid` renombra
+  `users/{local}/**` al uid de Firebase. Sin eso, las reglas de Firestore —que exigen que el segmento
+  de la ruta sea el uid autenticado— dejarían fuera de la nube todo lo escrito en los pasos previos.
+  **No sobrescribe nada**: si la cuenta ya tenía árbol, gana el suyo y lo de la sesión anónima se
+  queda donde está (RN-DB-04).
+- **Se guarda mientras se recorre**, no al final: los toques al momento, lo tecleado a los 800 ms.
+  Abandonar a mitad retoma en el paso donde estaba (RN-09).
+- **`colors.area` sale de `tailwind.config.js`.** Eran ocho tonos rotulados «Áreas de identidad», uno
+  por área del modelo de tres niveles. No los usaba ninguna clase del árbol y eran el último rastro
+  de las áreas en los tokens: un color con nombre de área es una invitación a que el concepto vuelva
+  por donde salió.
 
 ### Divergencias conocidas entre el blueprint y el código
 
@@ -574,9 +624,19 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
 - **Los catálogos emocionales nuevos y las ideas de acción están sin revisar editorialmente.** Las
   formas neutras se redactaron en implementación: «Pensando», «Con demasiado encima», «Con
   cansancio», «Con ligereza», «Con inquietud».
-- **No hay onboarding ni autenticación real.** `ArranqueProvisional` crea la sesión local y el árbol
-  de datos sin pedir nada. Es el primer bloque de F-1, y sus ocho pasos ya están decididos: ver
-  «Onboarding — pendiente para F-1» más abajo.
+- **Los avisos de P6 se piden, pero todavía no llegan.** El paso solicita el permiso del navegador y
+  guarda la preferencia en `preferences.remindersEnabled`; **la entrega a las horas elegidas no está
+  construida**. Una PWA estática no despierta sola: hace falta push —servidor que envíe y service
+  worker que reciba— y, en iOS, la app instalada en la pantalla de inicio. Decidido así al aprobar
+  F-1B. Mientras tanto, «Listo. Te avisaremos a esas horas» promete algo que aún no ocurre, y esa es
+  la razón de que esto esté anotado aquí y no dado por hecho.
+- **La autenticación de P7 no se ha probado contra un proyecto real.** El código está entero —Google,
+  Apple, correo, y la mudanza del árbol—, pero `src/lib/firebase.js` solo se inicializa si hay
+  credenciales y en el repo no hay `.env.local`. Sin ellas el paso se ofrece con lo que puede
+  cumplir y se salta con «Ahora no». Apple pide además una cuenta de desarrollador y un Service ID.
+- **`ArranqueProvisional` sigue siendo un andamio**, aunque ya no sea el único arranque: resuelve el
+  uid y monta el árbol, y el onboarding entra justo después. Sin autenticación real de por medio, el
+  uid sigue naciendo local.
 - **Los recorridos de validación manual siguen sin hacerse**, sobre todo los de Respiración: **las
   pruebas no oyen**. Hace falta escuchar cada sonido con audífonos y con la bocina del teléfono, y
   recorrer quince minutos con los ojos cerrados. **Un bug pasado es la prueba de lo que cuesta no
@@ -588,7 +648,7 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
 - **Con dos pestañas abiertas sobre el mismo día, la última escritura gana.** Sin bloqueo optimista.
   Es el comportamiento de todo el producto y está asumido.
 
-### Onboarding — pendiente para F-1 (decidido el 25 ago 2026)
+### Onboarding — cómo quedó (decidido y construido el 25 ago 2026)
 
 **Ocho pasos, escritos desde cero contra v5.0.** No se porta nada de `feat/onboarding-p1-p3c`: es una
 rama huérfana y arquitectónicamente incompatible —comparte con `strivo` solo el commit raíz— y su
@@ -621,7 +681,17 @@ superficie de Formia, también en `VistaManana.jsx`, `VistaNoche.jsx`, `animos.j
 El spec de F-1 tiene que dejar explícito que **la identidad central no depende de `areas` en ningún
 punto de la app** — ni en Diario, ni en Journal, ni en Historial.
 
-**`feat/onboarding-p1-p3c` queda sin integrar y sin borrar**, salvo decisión explícita.
+**`feat/onboarding-p1-p3c` queda sin integrar y sin borrar**, salvo decisión explícita. F-1B no la
+tocó: ni un archivo, ni un cherry-pick, ni una línea de copy.
+
+**Lo que quedó abierto del recorrido**, y conviene decidirlo antes de darlo por cerrado:
+
+- **La revisión editorial del copy no se ha hecho.** El texto de los ocho pasos viene del spec y pasa
+  §3.3 con prueba automática. Hay una frase que conviene mirar: «reconocer lo que **sí lograste**»
+  (P1). RN-NOC-03 eligió «reconocer» justamente para no exigir que algo haya salido bien, y §1.2 dice
+  que esto no es productividad; «lograste» reintroduce el logro en la primera frase que alguien lee.
+- **El recorrido no se ha probado en teléfono real**, como el resto del producto. La pregunta que
+  ninguna prueba contesta es si las nueve pantallas se sienten breves o se sienten un trámite.
 
 ---
 

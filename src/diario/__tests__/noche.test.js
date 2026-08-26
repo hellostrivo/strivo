@@ -422,7 +422,7 @@ describe('criterio 5 y 6 — la emoción de cierre, en selección única', () =>
   })
 
   it('lo elegido no se distingue solo por color (§12)', () => {
-    const pildora = codigoDe('src/components/diario/pildora.js')
+    const pildora = codigoDe('src/components/shared/pildora.js')
     expect(pildora).toMatch(/border-current/)
     expect(pildora).toMatch(/font-medium/)
     const chips = codigoDe('src/components/diario/ChipsUnicos.jsx')

@@ -18,7 +18,7 @@
 
 import { useState } from 'react'
 import { clsx } from 'clsx'
-import { CampoLinea } from './Campo'
+import { CampoLinea } from '@components/shared/Campo'
 import { copy } from '@copy'
 import {
   alSalirDeFila,

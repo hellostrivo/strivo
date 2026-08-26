@@ -1,6 +1,9 @@
 // src/components/ArranqueProvisional.jsx
 //
-// ⚠ PROVISIONAL — lo sustituye el onboarding, que todavía no está construido.
+// ⚠ PROVISIONAL en lo que queda de él: sigue siendo el andamio que resuelve un
+// uid y monta el árbol. Lo que sí existe ya —desde F-1B— es el onboarding, y se
+// interpone justo después de esto: `App.jsx` pregunta al árbol si queda
+// pendiente y decide qué montar.
 //
 // Antes se llamaba `SesionProvisional` y se montaba una vez por pestaña, lo que
 // lo hacía parecer parte de la navegación. SPEC_11 retiró los dos conmutadores
@@ -18,8 +21,14 @@
 // RN-DB4-08 se sigue cumpliendo, y por eso el árbol se crea sin pedir nada en
 // vez de inventarse un dato: `initShared` siembra el perfil con `name: null` y
 // los valores de fábrica de §C5.2, ninguno de los cuales dice nada sobre quien
-// abre la app. El nombre lo preguntará el onboarding real (P4), que es donde ya
-// vive su copy.
+// abre la app. El nombre lo pregunta el onboarding (P2), y el árbol recién
+// sembrado es exactamente lo que ese recorrido viene a rellenar.
+//
+// **El uid puede cambiar mientras la app está abierta.** Si el onboarding crea
+// una cuenta en P7, el árbol se muda al uid de Firebase y la sesión sigue con
+// el nuevo. Por eso el uid es estado y no una constante, y por eso quien lo
+// guarda en `localStorage` es este archivo y solo este: dos sitios escribiendo
+// esa clave son dos sesiones distintas al siguiente arranque.
 //
 // **Por qué no se retira:** sin él no hay uid ni preferencias, y la app no
 // arranca. Sigue siendo un andamio.
@@ -41,8 +50,15 @@ function uidLocal() {
 }
 
 export default function ArranqueProvisional({ children }) {
-  const [uid] = useState(uidLocal)
+  const [uid, setUid] = useState(uidLocal)
   const [listo, setListo] = useState(false)
+
+  /** La sesión pasa a otro uid: el de la cuenta que acaba de crearse. */
+  const cambiarUid = (nuevo) => {
+    if (!nuevo || nuevo === uid) return
+    localStorage.setItem(CLAVE_UID, nuevo)
+    setUid(nuevo)
+  }
 
   useEffect(() => {
     let vigente = true
@@ -70,5 +86,5 @@ export default function ArranqueProvisional({ children }) {
 
   if (!listo) return <div className="min-h-screen bg-paper" aria-busy="true" />
 
-  return children(uid)
+  return children(uid, cambiarUid)
 }

@@ -1,5 +1,12 @@
-// src/components/diario/pildora.js
+// src/components/shared/pildora.js
 // La píldora de emoción: su geometría y sus dos superficies, en un solo sitio.
+//
+// **Vive en `shared/` desde F-1B**, con el mismo criterio que `Campo.jsx`: son
+// clases y nada más, sin un import ni el nombre de una sección. Lo que la trajo
+// aquí es el onboarding, que pregunta con chips y tenía que preguntar con
+// **estos** chips: dos hogares para la misma forma serían dos formas al cabo de
+// un año, y lo que hace que consultar lo escrito se parezca a haberlo escrito
+// es precisamente que la forma sea una sola (RN-TEC-05).
 //
 // La usan pantallas que hacen cosas distintas con ella. En los recorridos de la
 // mañana y de la noche es un botón que se toca (`ChipsUnicos`); en las dos

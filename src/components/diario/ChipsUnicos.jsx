@@ -22,8 +22,8 @@
 
 import { useState } from 'react'
 import { clsx } from 'clsx'
-import { CampoLinea } from './Campo'
-import { PILDORA, PILDORA_ELEGIDA, PILDORA_LIBRE } from './pildora'
+import { CampoLinea } from '@components/shared/Campo'
+import { PILDORA, PILDORA_ELEGIDA, PILDORA_LIBRE } from '@components/shared/pildora'
 import { resolveGender } from '@copy/gender'
 import { ID_OTRA, MAX_PALABRA_PROPIA, etiquetaPropia } from '@/diario/seleccionUnica'
 

@@ -195,6 +195,76 @@ export async function deletePath({ uid, path, sync = true }) {
   if (sync) await enqueue({ uid, path, op: 'delete', data: null })
 }
 
+// ─── Mudanza de un árbol entero ───────────────────────────────────────────────
+
+/**
+ * Rutas que nunca salen del dispositivo (RN-DB-04). Al mudar el árbol no se
+ * reencolan: el PIN no se sincroniza antes de la mudanza y tampoco después.
+ * Se reconoce por la ruta y no importando `diario.js`, que este módulo no
+ * conoce y no debe conocer.
+ */
+const SIN_SINCRONIZAR = /\/diario\/pinConfig$/
+
+/**
+ * Mueve todo lo guardado de un uid a otro.
+ *
+ * Existe por el onboarding: hasta P7 se escribe bajo un uid local, y al crear
+ * la cuenta el árbol tiene que pasar a llamarse como el uid de Firebase. Sin
+ * esto, el nombre, el género y los horarios que alguien acaba de escribir se
+ * quedarían en un árbol que ya nadie lee, y las reglas de Firestore —que
+ * exigen que el segmento de la ruta sea el uid autenticado— no dejarían subir
+ * ni uno de los dos.
+ *
+ * **No sobrescribe nada** (RN-DB-04). Si la ruta de destino ya existe, gana lo
+ * que ya estaba allí y el registro de origen se queda donde está: un árbol con
+ * datos previos es alguien que ya usó esta cuenta, y lo suyo no lo pisa una
+ * sesión anónima. Lo que no se pudo mudar se cuenta y se devuelve, no se
+ * descarta en silencio.
+ *
+ * Lo mudado se **reencola entero**: son rutas que Firestore no ha visto nunca.
+ * Las entradas de la cola del uid viejo se retiran, porque apuntan a rutas que
+ * ninguna sesión autenticada podrá escribir.
+ *
+ * @param {string} desde
+ * @param {string} hacia
+ * @returns {Promise<{mudados: number, conservados: number}>}
+ */
+export async function mudarUid(desde, hacia) {
+  assertUid(desde)
+  assertUid(hacia)
+  if (desde === hacia) return { mudados: 0, conservados: 0 }
+
+  const db = await getLocalDB()
+  const origen = await db.getAllFromIndex(STORE_RECORDS, 'byUser', desde)
+  const prefijo = `users/${desde}/`
+
+  const tx = db.transaction(STORE_RECORDS, 'readwrite')
+  const store = tx.objectStore(STORE_RECORDS)
+  const mudadas = []
+  let conservados = 0
+
+  for (const fila of origen) {
+    if (!fila.path.startsWith(prefijo)) continue
+    const destino = `users/${hacia}/${fila.path.slice(prefijo.length)}`
+    if (await store.get(destino)) {
+      conservados += 1
+      continue
+    }
+    await store.put({ ...fila, path: destino, uid: hacia })
+    await store.delete(fila.path)
+    mudadas.push({ path: destino, data: fila.data })
+  }
+  await tx.done
+
+  for (const entrada of await listQueue(desde)) await dequeue(entrada.seq)
+  for (const fila of mudadas) {
+    if (SIN_SINCRONIZAR.test(fila.path)) continue
+    await enqueue({ uid: hacia, path: fila.path, op: 'put', data: fila.data })
+  }
+
+  return { mudados: mudadas.length, conservados }
+}
+
 // ─── Cola de sincronización ───────────────────────────────────────────────────
 // Una entrada por ruta: si la misma ruta se escribe cinco veces sin red, la
 // cola guarda el último estado, no cinco copias. Al volver la red se envía una

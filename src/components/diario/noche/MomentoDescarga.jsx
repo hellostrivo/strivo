@@ -21,7 +21,7 @@
 
 import { clsx } from 'clsx'
 import Button from '@components/ui/Button'
-import { CampoTexto } from '../Campo'
+import { CampoTexto } from '@components/shared/Campo'
 import { copy } from '@copy'
 import { MAX_DESCARGA } from '@/diario/noche'
 

@@ -13,6 +13,7 @@ import {
   assertFields,
   assertUid,
   paths,
+  validateOnboarding,
   validatePreferences,
   validateProfile,
 } from './schema.js'
@@ -99,14 +100,28 @@ export async function getOnboarding(uid) {
 
 export async function saveOnboarding(uid, onboarding) {
   assertUid(uid)
-  assertFields(onboarding, FIELDS.onboarding, 'shared/onboarding')
+  validateOnboarding(onboarding)
   return writePath({ ...docSpec(uid, 'onboarding'), data: onboarding })
 }
 
 export async function updateOnboarding(uid, patch) {
   assertUid(uid)
-  assertFields(patch, FIELDS.onboarding, 'shared/onboarding')
+  validateOnboarding(patch)
   return mergePath({ ...docSpec(uid, 'onboarding'), patch })
+}
+
+/**
+ * ¿Queda por hacer el onboarding de esta persona?
+ *
+ * Lo decide `completedAt` y **solo** `completedAt` (RN-DB-09): saltarse los
+ * ocho pasos también es terminarlo, así que contar `completedSteps` diría que
+ * no ha terminado alguien que ya entró. Un árbol sin la rama —el de quien
+ * instaló la app antes de que el onboarding existiera— cuenta como pendiente:
+ * la ausencia de marca no es una marca.
+ */
+export async function onboardingPendiente(uid) {
+  const onboarding = await getOnboarding(uid)
+  return !onboarding?.completedAt
 }
 
 // ─── Árbol de un usuario nuevo ────────────────────────────────────────────────
@@ -120,6 +135,9 @@ export async function initShared(uid, { profile, auth, preferences, onboarding }
   await saveProfile(uid, {
     name: null,
     gender: 'n',
+    // La escribe P4 del onboarding. Nace nula y no se inventa: un refugio no
+    // le pone palabras a nadie antes de que las diga (RN-DB4-08).
+    identidadCentral: null,
     diaTerminaA: DEFAULT_DIA_TERMINA_A,
     wakeTime: null,
     sleepTime: null,
@@ -132,7 +150,24 @@ export async function initShared(uid, { profile, auth, preferences, onboarding }
   // hace del sonido por defecto un riesgo de desinstalación inmediata. SPEC_02
   // sembraba `true` aquí, que es justo lo contrario; lo corrige SPEC_08, que es
   // la primera spec con sonido de verdad.
-  await savePreferences(uid, { soundEnabled: false, reducedMotion: false, ...preferences })
-  await saveOnboarding(uid, { completedSteps: [], currentStep: null, ...onboarding })
+  await savePreferences(uid, {
+    soundEnabled: false,
+    // Silencio y quietud por defecto, y también sin avisos: la app no pide
+    // sitio en la pantalla de nadie hasta que P6 lo pregunta.
+    reducedMotion: false,
+    remindersEnabled: false,
+    ...preferences,
+  })
+  // `completedAt: null` se siembra explícito porque es lo que mira el arranque
+  // para saber si hay que hacer el onboarding. `version` no se siembra: la
+  // escribe el onboarding al empezar, igual que la mañana escribe la suya.
+  await saveOnboarding(uid, {
+    completedSteps: [],
+    currentStep: null,
+    completedAt: null,
+    motivos: [],
+    motivoOtro: null,
+    ...onboarding,
+  })
   return SHARED_DOCS
 }

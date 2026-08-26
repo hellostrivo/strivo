@@ -231,10 +231,17 @@ describe('un solo umbral por sesión (nota de producto, 19 ago · revisada 25 ag
     // umbral. Lo que queda es lo que la regla protegía —abrir y ver la mañana
     // enseguida no encadena dos umbrales (RN-LU-MAN-02)— y eso solo se cumple
     // si los dos usos nombran la misma clave.
+    //
+    // **Son cinco desde F-1B, y la quinta es la que más importa.** Al terminar
+    // el onboarding, `App` da el umbral por cruzado: la palabra de apertura de
+    // ese recorrido **fue** el umbral de esta sesión, y montar detrás el video
+    // de marca serían diez segundos de velo antes de la primera pantalla —el
+    // peaje exacto que RN-LU-MAN-02 no quiere—. Cuenta con la misma clave que
+    // las otras cuatro, y por eso sigue valiendo la comprobación de abajo.
     const claves = [APP, HOY].flatMap(
       (ruta) => codigoDe(ruta).match(/(?:umbralPendiente|cruzarUmbral)\('(\w+)'\)/g) ?? [],
     )
-    expect(claves.length).toBe(4)
+    expect(claves.length).toBe(5)
     expect(new Set(claves.map((c) => c.match(/'(\w+)'/)[1])).size).toBe(1)
   })
 

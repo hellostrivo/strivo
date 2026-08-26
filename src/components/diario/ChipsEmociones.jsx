@@ -15,7 +15,7 @@
 // alguien que ha hecho algo mal por sentir una cosa más.
 
 import { clsx } from 'clsx'
-import { CampoLinea } from './Campo'
+import { CampoLinea } from '@components/shared/Campo'
 import { resolveGender } from '@copy/gender'
 
 /**
