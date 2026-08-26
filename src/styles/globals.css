@@ -438,6 +438,35 @@
   100% { opacity: 1; }
 }
 
+/* La salida del video de apertura (26 ago).
+
+   **Un video que se acaba y un velo que desaparece en el mismo fotograma es un
+   corte.** Hasta ahora `onEnded` desmontaba el umbral entero y la pantalla de
+   detrás aparecía de golpe. Estas dos curvas son la misma salida contada en dos
+   tiempos: primero se va el último fotograma sobre el velo —que es liso y del
+   mismo tono que el fondo del propio video—, y el velo se queda solo un
+   instante; después se retira el velo, y lo que aparece debajo es lo que ya
+   estaba montado.
+
+   El desvanecido del fotograma termina antes que su curva: el 25 % final es esa
+   pausa en la que solo se ve el velo. Va dentro de la misma animación y no en un
+   temporizador aparte porque es la misma espera, y dos relojes para un mismo
+   gesto se desincronizan en cuanto alguien toca uno.
+
+   Las dos duraciones se repiten en `TransicionLuz.jsx` —`DESPEDIDA` y
+   `RETIRADA`—, que es quien encadena los tiempos, y hay una prueba que compara
+   las dos parejas. */
+@keyframes transicion-salida-logo {
+  0%   { opacity: 1; }
+  75%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes transicion-salida-velo {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 /* Bienvenida del Home de Strivo. **Sin texto**: el símbolo aparece y respira una
    vez, y con él la luz que lo rodea. Dentro del rango de motion del proyecto
    (120–900 ms) y en el extremo lento, que es donde vive la marca madre.
@@ -573,6 +602,17 @@
     animation: transicion-entrada-video 480ms cubic-bezier(0.4, 0, 0.2, 1) both;
   }
 
+  /* Los dos tiempos de la salida. `forwards` en los dos: lo que se va no
+     vuelve, y sin él el fotograma reaparecería entero justo debajo del velo que
+     se está yendo. */
+  .transicion-salida-logo {
+    animation: transicion-salida-logo 840ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .transicion-salida-velo {
+    animation: transicion-salida-velo 560ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
   .bienvenida-simbolo {
     animation: bienvenida-simbolo 720ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
   }
@@ -601,6 +641,46 @@
   /* Safe area para barra de navegación inferior */
   .pb-safe { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
   .pt-safe { padding-top: max(16px, env(safe-area-inset-top)); }
+
+  /* Exactamente la pantalla, ni un píxel más (26 ago 2026).
+
+     `100vh` en un teléfono es la ventana **sin** la barra del navegador, así que
+     una pantalla que dice medir eso mide de más y empuja sus últimos elementos
+     por debajo del borde: en el onboarding eran "Atrás" y "Continuar", que hay
+     que ir a buscar con el dedo. `100dvh` es la ventana que de verdad se ve, y
+     se encoge y crece con la barra.
+
+     Las dos declaraciones y en este orden: la segunda la aplica quien la
+     entiende y la ignora quien no, que es el respaldo sin `@supports`. */
+  .alto-pantalla {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  /* El campo de hora de P5 (26 ago 2026).
+
+     Un `input[type="time"]` no es una caja de texto: el navegador le da un ancho
+     propio, calculado con su tipografía y sus separadores, y en un teléfono ese
+     ancho es mayor que el hueco que tiene. Como es un elemento flexible, su
+     `min-width: auto` le impide encoger, así que empujaba a su contenedor hacia
+     fuera y el bloque entero se iba a la derecha, con desplazamiento lateral de
+     regalo.
+
+     `appearance: none` le quita el atavío del sistema, `min-width: 0` le
+     devuelve el permiso de encoger, y el valor se alinea a la izquierda como el
+     de cualquier otro campo: en iOS se pinta dentro de su propia caja, que por
+     defecto lo lleva al otro lado. */
+  .campo-hora {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .campo-hora::-webkit-date-and-time-value {
+    text-align: left;
+    margin: 0;
+  }
 
   /* Tratamiento display para títulos emocionales.
      Ya no cambia de familia —hay una sola, Inter— sino de **peso y tracking**,

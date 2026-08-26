@@ -20,20 +20,30 @@ export default function Horarios({ textos, despertar, dormir, onDespertar, onDor
         <p className="text-base text-on-surface-soft">{textos.hint}</p>
       </div>
 
+      {/* Los dos campos ocupan el ancho de la columna y nada más.
+
+          `min-w-0` en cada renglón y `campo-hora` en cada campo son la misma
+          corrección vista desde los dos lados: un `input[type="time"]` trae un
+          ancho propio del navegador que en un teléfono es mayor que el hueco, y
+          al ser un elemento flexible no tiene permiso para encoger. Empujaba a
+          su contenedor hacia fuera, y con él el bloque entero hacia la derecha.
+          Lo que hace que se vean centrados es que quepan. */}
       <div className="flex flex-col gap-4">
-        <label className="flex flex-col gap-2">
+        <label className="flex min-w-0 flex-col gap-2">
           <span className="text-sm text-on-surface-soft">{textos.wakeLabel}</span>
           <CampoLinea
             type="time"
+            className="campo-hora"
             value={despertar}
             onChange={(evento) => onDespertar(evento.target.value)}
           />
         </label>
 
-        <label className="flex flex-col gap-2">
+        <label className="flex min-w-0 flex-col gap-2">
           <span className="text-sm text-on-surface-soft">{textos.sleepLabel}</span>
           <CampoLinea
             type="time"
+            className="campo-hora"
             value={dormir}
             onChange={(evento) => onDormir(evento.target.value)}
           />

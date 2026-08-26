@@ -454,6 +454,84 @@ describe('el video de apertura: se reproduce una vez y se va', () => {
   })
 })
 
+// ─────────────────────────────────────────────────────────────────────────────
+// La despedida del video (26 de agosto de 2026).
+//
+// Lo que se corrige es un corte: `onEnded` desmontaba el umbral entero, así que
+// la pantalla de detrás aparecía de golpe en el mismo fotograma en el que el
+// video dejaba de pintarse. Lo que **no** cambia es que esto siga sin ser una
+// secuencia, y de eso va la mitad de este bloque.
+describe('la salida del video se cuenta en dos tiempos, no en un corte', () => {
+  const componente = codigoDe(COMPONENTE)
+  const css = readFileSync('src/styles/globals.css', 'utf8')
+
+  it('primero se va el fotograma, y detrás de él se retira el velo', () => {
+    expect(componente).toMatch(/transicion-salida-logo/)
+    expect(componente).toMatch(/if \(fase === FASES\.salida\) velo = 'transicion-salida-velo'/)
+    expect(css).toMatch(/@keyframes transicion-salida-logo/)
+    expect(css).toMatch(/@keyframes transicion-salida-velo/)
+  })
+
+  it('entre los dos hay un instante de velo liso y nada más', () => {
+    // La pausa va dentro de la curva del fotograma —su tramo final ya está a
+    // cero— y no en un segundo temporizador: es la misma espera, y dos relojes
+    // para un mismo gesto se desincronizan en cuanto alguien toca uno.
+    const marco = css.match(/@keyframes transicion-salida-logo \{[\s\S]*?\n\}/)[0]
+    expect(marco).toMatch(/75%\s*\{\s*opacity: 0/)
+    expect(marco).toMatch(/100%\s*\{\s*opacity: 0/)
+  })
+
+  it('lo que se fue no vuelve mientras el velo se está yendo', () => {
+    // Sin `forwards` —y sin mantener la clase puesta en el último tiempo— el
+    // fotograma reaparecería entero justo debajo del velo que se retira.
+    const utilidades = css.match(/\.transicion-salida-(?:logo|velo) \{[^}]*\}/g)
+    expect(utilidades).toHaveLength(2)
+    utilidades.forEach((regla) => expect(regla).toMatch(/forwards/))
+    expect(componente).toMatch(/fase !== FASES\.video && 'transicion-salida-logo'/)
+  })
+
+  it('el reloj del componente y la curva del CSS dicen lo mismo', () => {
+    // Las dos cifras viven en dos archivos porque el encadenado es de JavaScript
+    // y la curva es de CSS. Si alguien cambia una y no la otra, el velo se
+    // retira antes o después de que la animación termine.
+    const deJs = (nombre) =>
+      Number(componente.match(new RegExp(`export const ${nombre} = (\\d+)`))[1])
+    const deCss = (clase) =>
+      Number(css.match(new RegExp(`\\.${clase} \\{\\s*animation: ${clase} (\\d+)ms`))[1])
+
+    expect(deJs('DESPEDIDA')).toBe(deCss('transicion-salida-logo'))
+    expect(deJs('RETIRADA')).toBe(deCss('transicion-salida-velo'))
+  })
+
+  it('las dos duran lo que el proyecto permite durar', () => {
+    // Entre 120 ms y 900 ms (manual §7): más lento de lo habitual, sin llegar a
+    // hacer esperar a nadie.
+    const cifras = [...componente.matchAll(/export const (?:DESPEDIDA|RETIRADA) = (\d+)/g)]
+    expect(cifras).toHaveLength(2)
+    cifras.forEach(([, valor]) => {
+      expect(Number(valor)).toBeGreaterThanOrEqual(120)
+      expect(Number(valor)).toBeLessThanOrEqual(900)
+    })
+  })
+
+  it('solo se despide el video que llegó a su final por su cuenta', () => {
+    // Un toque es alguien diciendo que ya, y a un video que no llegó a verse
+    // —autoplay bloqueado, error de reproducción— no hay nada que despedirle.
+    // Quién sabe cuál de los dos casos es: el propio nodo.
+    expect(componente).toMatch(/nodo && nodo\.ended && fase === FASES\.video/)
+    expect(componente).toMatch(/setTimeout\(terminar, DURACION\)/)
+    expect(componente).toMatch(/onError=\{terminar\}/)
+  })
+
+  it('sigue sin haber nada que tocar y nada que decidir (RN-LU-MAN-02)', () => {
+    // Tres tiempos no son tres pasos: nadie los avanza, ninguno pregunta nada y
+    // la superficie que lo salta entero sigue siendo una sola.
+    expect(componente.match(/<button/g) ?? []).toHaveLength(1)
+    expect(componente).toMatch(/onClick=\{terminar\}/)
+    expect(componente).not.toMatch(/<Button/)
+  })
+})
+
 describe('el video es la apertura de la app, y la frase sigue siendo la mañana', () => {
   it('abrir la app monta el umbral con video', () => {
     expect(codigoDe(APP)).toMatch(/<TransicionLuz conVideo/)

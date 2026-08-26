@@ -221,6 +221,80 @@ describe('el umbral de entrada es el de siempre, con el video de marca', () => {
   })
 })
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Que quepa en una pantalla (26 de agosto de 2026).
+//
+// El defecto era de teléfono y no se veía en un portátil: el marco decía medir
+// `min-h-screen` —el alto de la ventana **sin** la barra del navegador— y crecía
+// además con el contenido, así que "Atrás" y "Continuar" quedaban por debajo del
+// borde y había que ir a buscarlos con el dedo antes de poder seguir. Nueve
+// pantallas breves en las que hay que rebuscar el botón de seguir dejan de ser
+// breves.
+describe('el recorrido cabe en una pantalla', () => {
+  const contenedor = codigoDe('src/components/onboarding/Onboarding.jsx')
+  const css = readFileSync('src/styles/globals.css', 'utf8')
+
+  it('el marco mide la ventana que de verdad se ve, no el documento', () => {
+    expect(contenedor).toMatch(/alto-pantalla/)
+    expect(contenedor).not.toMatch(/min-h-screen/)
+    // `100vh` con `100dvh` detrás: lo segundo lo aplica quien lo entiende y lo
+    // ignora quien no, que es el respaldo sin `@supports`.
+    const regla = css.match(/\.alto-pantalla \{[\s\S]*?\n {2}\}/)[0]
+    expect(regla).toMatch(/height: 100vh/)
+    expect(regla).toMatch(/height: 100dvh/)
+  })
+
+  it('los dos controles de navegación no se van de la vista ni del área segura', () => {
+    // `shrink-0` para que la franja no ceda su alto cuando el paso es largo, y
+    // `pb-safe` para que en un teléfono sin marco "Continuar" no comparta sitio
+    // con la franja del gesto de inicio.
+    expect(contenedor).toMatch(/flex shrink-0 flex-wrap items-center gap-3 pt-5 pb-safe/)
+    expect(contenedor).toMatch(/<header className="shrink-0 pt-safe/)
+  })
+
+  it('lo único que se desplaza es el paso, y lo hace por dentro', () => {
+    // `min-h-0` es lo que se lo permite: sin él, un paso alto estira la columna
+    // en vez de desplazarse por dentro, y lo que se sale por abajo son los dos
+    // controles. Hoy solo lo necesita la identidad central, que es el más largo.
+    expect(contenedor).toMatch(/<main className="flex min-h-0 flex-1 flex-col overflow-y-auto">/)
+  })
+
+  it('y nada se sale a lo ancho', () => {
+    expect(contenedor).toMatch(/overflow-hidden/)
+  })
+
+  it('la bienvenida y el cierre se centran; los pasos con preguntas no', () => {
+    // Las dos pantallas que no piden nada. Un paso con preguntas centrado se
+    // movería de sitio al aparecer o desaparecer un campo, que es justo lo que
+    // no debe pasar mientras alguien contesta.
+    ;['Bienvenida', 'Cierre'].forEach((pantalla) =>
+      expect(codigoDe(`src/components/onboarding/${pantalla}.jsx`)).toMatch(
+        /flex flex-1 flex-col justify-center/,
+      ),
+    )
+    ;['Nombre', 'Genero', 'Motivo', 'Identidad', 'Horarios', 'Recordatorios', 'Cuenta'].forEach(
+      (pantalla) =>
+        expect(codigoDe(`src/components/onboarding/${pantalla}.jsx`)).not.toMatch(
+          /flex-1 flex-col justify-center/,
+        ),
+    )
+  })
+
+  it('el campo de hora puede encoger, así que el bloque de P5 no se va de lado', () => {
+    // Un `input[type="time"]` trae un ancho propio del navegador que en un
+    // teléfono es mayor que el hueco, y al ser un elemento flexible su
+    // `min-width: auto` le impide encoger: empujaba a su contenedor hacia fuera
+    // y con él el bloque entero hacia la derecha.
+    const horarios = codigoDe('src/components/onboarding/Horarios.jsx')
+    expect(horarios.match(/className="campo-hora"/g)).toHaveLength(2)
+    expect(horarios.match(/flex min-w-0 flex-col/g)).toHaveLength(2)
+
+    const regla = css.match(/\.campo-hora \{[\s\S]*?\n {2}\}/)[0]
+    expect(regla).toMatch(/min-width: 0/)
+    expect(regla).toMatch(/appearance: none/)
+  })
+})
+
 describe('los chips son los de la casa', () => {
   // Subieron a `components/shared/` el 26 de agosto, cuando el Perfil pasó a
   // preguntar el género y a ofrecer las mismas sugerencias de identidad: un

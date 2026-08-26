@@ -51,12 +51,39 @@
 // traga —si no arranca, ya hay red de seguridad—. **Sin `loop`**: se reproduce
 // una vez y se acabó. Y sin sonido, que es lo que la app es por defecto.
 //
+// ─── La despedida del video (26 de agosto de 2026) ──────────────────────────
+//
+// **Un video que se acaba y un velo que desaparece en el mismo fotograma es un
+// corte, no un umbral.** Hasta ahora `onEnded` desmontaba la pieza entera, así
+// que la primera pantalla de detrás aparecía de golpe en cuanto el último
+// fotograma dejaba de pintarse. Se sale igual, pero en tres tiempos y sin nada
+// que tocar:
+//
+// 1. El video llega a su final y se queda quieto en su último fotograma.
+// 2. Ese fotograma se desvanece sobre el velo —que es liso y del mismo tono que
+//    el fondo del propio video—, y el velo se queda solo un instante.
+// 3. El velo se retira, y lo que va apareciendo debajo es lo que ya estaba
+//    montado: la app, o el primer paso del recorrido de entrada.
+//
+// **No es una secuencia y no le añade nada a RN-LU-MAN-02**: no hay un segundo
+// fotograma que enseñar, no hay nada que decidir y no hay botón que buscar. Es
+// la misma salida de siempre, contada más despacio.
+//
+// **Solo se despide el video que llegó a su final por su cuenta**, y quien lo
+// sabe es el propio nodo (`ended`). Un toque, un error de reproducción o la red
+// de seguridad salen al instante: quien toca está diciendo que ya, y a un video
+// que no llegó a verse no hay nada que despedirle.
+//
+// La frase no pasa por aquí: se va con su propia curva —`transicion-entrada`
+// baja a cero al final de sus cinco segundos— y ese desvanecido ya existía.
+//
 // **Con `prefers-reduced-motion` no se reproduce**: en su sitio va el logo
 // quieto. En la práctica esa rama no se monta desde `App`, que con esa
 // preferencia entra directo a Hoy sin umbral (RN-VIS-05); está aquí porque la
 // pieza no debe depender de que quien la monte se acuerde de preguntar.
 
 import { useEffect, useRef, useState } from 'react'
+import { clsx } from 'clsx'
 import { copy } from '@copy'
 import { fraseDeApertura } from '@/content/frases-apertura'
 import Simbolo from '@components/shared/Simbolo'
@@ -64,6 +91,30 @@ import apertura from '@/assets/marca/strivo_apertura.mp4'
 
 /** §C7.5 — Duración calmada, la misma de P1. */
 export const DURACION = 5000
+
+/**
+ * Lo que tarda el último fotograma en irse y lo que tarda el velo en retirarse
+ * detrás de él (26 ago 2026). Dentro del rango de movimiento del proyecto
+ * —120 ms mínimo, 900 ms máximo— y en su mitad lenta, que es donde vive todo lo
+ * que abre y todo lo que cierra.
+ *
+ * **Las dos cifras se repiten en `globals.css`**, que es donde vive la curva, y
+ * hay una prueba que compara las dos parejas: si alguien cambia una y no la
+ * otra, el velo se retiraría antes o después de que la animación termine.
+ */
+export const DESPEDIDA = 840
+export const RETIRADA = 560
+
+/**
+ * Los tres tiempos de la salida con video. **No son estados de una secuencia**:
+ * nadie los avanza, no hay nada que responder en ninguno y el umbral se sigue
+ * saltando entero con un toque. Son la misma salida, contada despacio.
+ */
+const FASES = Object.freeze({
+  video: 'video',
+  despedida: 'despedida',
+  salida: 'salida',
+})
 
 /**
  * El logo quieto, cuando el video no se reproduce. **Medido contra la pantalla
@@ -92,17 +143,41 @@ export default function TransicionLuz({ onTerminar, conFrase = true, conVideo = 
     if (conFrase && !conVideo) return fraseDeApertura()
     return null
   })
+  // En qué tiempo de la salida está el umbral con video. Nace en el primero y
+  // solo avanza cuando el video llega a su final por su cuenta.
+  const [fase, setFase] = useState(FASES.video)
+
   const temporizador = useRef(null)
   const terminado = useRef(false)
   const reproductor = useRef(null)
+  const relevo = useRef(null)
 
-  // Salir es idempotente: el toque, el video y el temporizador llegan al mismo
+  // Irse es idempotente: el toque, el video y el temporizador llegan al mismo
   // sitio y el primero que llegue apaga a los otros.
-  const terminar = () => {
+  const salir = () => {
     if (terminado.current) return
     terminado.current = true
     clearTimeout(temporizador.current)
+    clearTimeout(relevo.current)
     onTerminar()
+  }
+
+  // La salida del umbral, y **la única puerta**: la tocan el toque, el final del
+  // video, el error de reproducción y la red de seguridad.
+  //
+  // Se despide despacio en un solo caso —el video llegó a su final por su
+  // cuenta, y quien lo sabe es el propio nodo—; en los demás se sale al
+  // instante. Un toque es alguien diciendo que ya, y a un video que no llegó a
+  // verse no hay nada que despedirle.
+  const terminar = () => {
+    if (terminado.current) return
+    clearTimeout(temporizador.current)
+    const nodo = reproductor.current
+    if (nodo && nodo.ended && fase === FASES.video) {
+      setFase(FASES.despedida)
+      return
+    }
+    salir()
   }
 
   // El video ya está en marcha: desde aquí manda él, y `onEnded` es quien
@@ -118,6 +193,20 @@ export default function TransicionLuz({ onTerminar, conFrase = true, conVideo = 
     // aquí reiniciaría la cuenta a mitad y dejaría a alguien esperando diez
     // segundos delante de un umbral de cinco.
   }, [])
+
+  // Los dos relevos de la despedida. Van con reloj y no con `animationend`
+  // porque el reloj es el mismo con o sin animación: con "reducir movimiento"
+  // las curvas duran 0,01 ms y aquí no se monta ningún video, así que este
+  // efecto no llega a correr.
+  useEffect(() => {
+    if (fase === FASES.despedida) {
+      relevo.current = setTimeout(() => setFase(FASES.salida), DESPEDIDA)
+    }
+    if (fase === FASES.salida) {
+      relevo.current = setTimeout(salir, RETIRADA)
+    }
+    return () => clearTimeout(relevo.current)
+  }, [fase])
 
   useEffect(() => {
     const nodo = reproductor.current
@@ -143,30 +232,49 @@ export default function TransicionLuz({ onTerminar, conFrase = true, conVideo = 
   // ni en el código, y hay una prueba que lo comprueba.
   let velo = 'transicion-entrada'
   if (videoEnMarcha) velo = ''
+  // Y en el último tiempo el velo se retira, que es lo que deja aparecer lo que
+  // ya estaba montado detrás. Va después de las dos de arriba porque manda
+  // sobre las dos: la frase no llega aquí y el video ya se fue.
+  if (fase === FASES.salida) velo = 'transicion-salida-velo'
 
   let contenido = null
   if (videoEnMarcha) {
     contenido = (
-      <video
-        ref={reproductor}
-        src={apertura}
-        autoPlay
-        muted
-        playsInline
-        preload="auto"
+      // **La despedida va en la capa, no en el `<video>`.** El fotograma ya
+      // tiene su propia curva de entrada, y dos animaciones en el mismo
+      // elemento se resuelven por el orden del CSS, que es de las cosas que
+      // envejecen mal. Una capa alrededor no tiene esa discusión.
+      <span
         aria-hidden="true"
-        onPlaying={sostener}
-        onEnded={terminar}
-        onError={terminar}
-        // **`object-contain` y no `object-cover`.** El video es vertical
-        // —1080×1920— y `cover` lo amplía hasta tapar el hueco: en una ventana
-        // de portátil de 1440×900 eso son 1440×2560, casi el triple de alto que
-        // la pantalla, con 1660 px recortados y todo lo de dentro enorme.
-        // `contain` hace lo contrario: mete el fotograma entero dentro de la
-        // pantalla, centrado y sin recortar, sea cual sea. Lo que sobra a los
-        // lados lo llena el velo, que ya está detrás.
-        className="transicion-entrada-video pointer-events-none absolute inset-0 h-full w-full object-contain"
-      />
+        className={clsx(
+          'pointer-events-none absolute inset-0',
+          // Desde que empieza a irse ya no vuelve: sin esto, al pasar al último
+          // tiempo la clase se retiraría, con ella la curva, y el fotograma
+          // reaparecería entero justo debajo del velo que se está yendo.
+          fase !== FASES.video && 'transicion-salida-logo',
+        )}
+      >
+        <video
+          ref={reproductor}
+          src={apertura}
+          autoPlay
+          muted
+          playsInline
+          preload="auto"
+          aria-hidden="true"
+          onPlaying={sostener}
+          onEnded={terminar}
+          onError={terminar}
+          // **`object-contain` y no `object-cover`.** El video es vertical
+          // —1080×1920— y `cover` lo amplía hasta tapar el hueco: en una ventana
+          // de portátil de 1440×900 eso son 1440×2560, casi el triple de alto que
+          // la pantalla, con 1660 px recortados y todo lo de dentro enorme.
+          // `contain` hace lo contrario: mete el fotograma entero dentro de la
+          // pantalla, centrado y sin recortar, sea cual sea. Lo que sobra a los
+          // lados lo llena el velo, que ya está detrás.
+          className="transicion-entrada-video pointer-events-none absolute inset-0 h-full w-full object-contain"
+        />
+      </span>
     )
   } else if (conVideo) {
     contenido = <Simbolo marca="strivo" alto={ALTO_LOGO} />

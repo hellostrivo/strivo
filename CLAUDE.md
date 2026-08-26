@@ -97,6 +97,20 @@ pantalla en blanco no es un umbral, es una espera con luz.
 | Al abrir la app (`App.jsx` y `Onboarding.jsx`, `conVideo`) | El video de apertura de la marca, 4 s, sin sonido y sin bucle | El propio video (`onEnded`); el temporizador de 5 s es la red de seguridad si el autoplay no arranca |
 | Al aparecer la Mañana (`Hoy.jsx`, por defecto) | Una frase del repertorio de apertura | El temporizador de 5 s |
 
+**Y el video no se va de golpe: se despide** (26 ago). Hasta ahora `onEnded`
+desmontaba el umbral entero, así que la pantalla de detrás aparecía en el mismo
+fotograma en el que el video dejaba de pintarse — un corte, no un umbral. Ahora
+la salida se cuenta en dos tiempos: el último fotograma se desvanece sobre el
+velo —liso y del mismo tono que el fondo del propio video—, el velo se queda
+solo un instante, y después se retira dejando aparecer lo que ya estaba montado
+detrás. **No es una secuencia y no le añade nada a RN-LU-MAN-02**: nadie avanza
+esos tiempos, no hay nada que decidir y toda la superficie lo sigue saltando
+entero. **Solo se despide el video que llegó a su final por su cuenta** —lo dice
+el propio nodo, `ended`—: un toque, un error o la red de seguridad salen al
+instante, porque un toque es alguien diciendo que ya. Las dos duraciones viven
+en `TransicionLuz.jsx` (`DESPEDIDA`, `RETIRADA`) y sus curvas en `globals.css`;
+hay una prueba que compara las dos parejas.
+
 El `<video>` va con **`muted`, `playsInline` y `autoPlay`** —los tres, o iOS no reproduce— y `muted`
 se repite sobre el nodo en un efecto, porque React no siempre lo escribe como atributo. **Nunca
 `loop`.** Con movimiento reducido el componente pondría el logo quieto en su lugar, pero esa rama no
@@ -652,6 +666,39 @@ regla se cambia, no se rodea. El blueprint §4 queda pendiente de esta revisión
 **Sin cambios en el modelo de datos.** Tu perfil escribe los cinco campos que ya escribía el
 onboarding, con la misma función (`onboarding/estado.js`), así que no hay un segundo sitio donde se
 decida cómo se guarda una respuesta.
+
+### La salida del umbral y el onboarding en una pantalla (26 ago 2026)
+
+Lo pidió el propietario del producto después de recorrerlo en un teléfono. Son
+tres cosas y ninguna cambia el modelo de datos ni el copy:
+
+- **La apertura sale despacio.** El video ya no corta: su último fotograma
+  —que es el logo sobre el crema de la marca— se desvanece sobre el velo, hay un
+  instante de pantalla lisa y el velo se retira dejando aparecer lo de detrás.
+  Alarga la apertura ~1,4 s. Está descrito arriba, en §2.
+- **El onboarding cabe en una pantalla.** El marco mide `100dvh` con `100vh` de
+  respaldo (`.alto-pantalla`) y se reparte en tres franjas: indicador arriba,
+  paso en medio, "Atrás" y "Continuar" abajo, dentro del área segura y siempre a
+  la vista. Antes la columna crecía con el contenido y en un teléfono había que
+  ir a buscar "Continuar" por debajo del borde. **Lo único que se desplaza es la
+  franja de en medio**, y hoy solo lo necesita la identidad central (P4), que es
+  el paso más largo. **La bienvenida y el cierre se centran verticalmente**: no
+  piden nada, y una frase sola pegada al techo se lee como el encabezado de un
+  formulario. Los pasos con preguntas no se centran — se moverían de sitio al
+  aparecer o desaparecer un campo.
+- **El bloque de horarios (P5) ya no se va de lado.** Un `input[type="time"]`
+  trae un ancho propio del navegador, mayor que el hueco de un teléfono, y su
+  `min-width: auto` de elemento flexible le impedía encoger: empujaba a su
+  contenedor y con él el bloque entero hacia la derecha. Lo corrige `.campo-hora`
+  —`appearance: none`, `min-width: 0` y el valor alineado a la izquierda, que en
+  iOS se pinta al otro lado— más `min-w-0` en cada renglón.
+
+**Lo que no se tocó, y conviene saber por qué:** el tono del velo de noche sigue
+siendo el índigo del momento y no el crema del video, así que a esa hora el
+fotograma se ve con bandas a los lados. Cambiarlo obligaría a que los dos
+instantes de arranque —resolver el uid, preguntar si queda onboarding— supieran
+si va a haber umbral, o meterían el fogonazo que hoy evitan. **Está sin decidir**,
+y es del propietario del producto.
 
 ### Divergencias conocidas entre el blueprint y el código
 

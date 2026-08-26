@@ -8,9 +8,13 @@
 
 import Button from '@components/ui/Button'
 
+// **Se centra en la pantalla, no se apoya en su techo.** Esta pantalla no pide
+// nada: son dos frases y una invitación a empezar, y pegadas al borde de arriba
+// se leen como el encabezado de un formulario que viene detrás. El hueco
+// entero se lo da el marco; lo que se decide aquí es qué hacer con él.
 export default function Bienvenida({ textos, onContinuar }) {
   return (
-    <section className="flex flex-col gap-6">
+    <section className="flex flex-1 flex-col justify-center gap-6">
       <div className="flex flex-col gap-3">
         <h1 className="font-display text-lg text-on-surface leading-snug">{textos.subtitle}</h1>
         <p className="text-base text-on-surface-soft leading-relaxed">{textos.support}</p>

@@ -20,7 +20,10 @@ export default function Cierre({ textos, identidad, despertar, onEntrar }) {
   const { frase, proxima } = cierreDe(textos, { identidad, despertar })
 
   return (
-    <section className="flex flex-col gap-6">
+    // Centrada en la pantalla, con la misma composición que la bienvenida: el
+    // recorrido abre y cierra igual, y lo que se lee al final no es el
+    // encabezado de nada.
+    <section className="flex flex-1 flex-col justify-center gap-6">
       <div className="flex flex-col gap-3">
         <h1 className="font-display text-lg text-on-surface leading-snug">{frase}</h1>
         {proxima && <p className="text-base text-on-surface-soft">{proxima}</p>}

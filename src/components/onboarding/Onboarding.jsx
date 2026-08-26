@@ -7,6 +7,24 @@
 //
 // ─── El marco ────────────────────────────────────────────────────────────────
 //
+// **Cabe en una pantalla, y esa es la forma** (26 ago 2026). El marco mide
+// exactamente la ventana —`alto-pantalla`, que es `100dvh` con respaldo— y se
+// reparte en tres franjas: el indicador arriba, el paso en medio y los dos
+// controles de navegación abajo, pegados al borde y por dentro del área segura
+// del dispositivo. Los controles no se van nunca de la vista: antes vivían al
+// final de una columna que crecía con el contenido, así que en un teléfono
+// "Continuar" quedaba por debajo del borde y había que ir a buscarlo.
+//
+// **Lo único que se desplaza es la franja de en medio**, y solo cuando el paso
+// no cabe —hoy la identidad central, que es el más largo—. Los demás caben
+// enteros, y un recorrido de entrada en el que hay que rebuscar el botón para
+// seguir no es un recorrido breve.
+//
+// **La bienvenida y el cierre se centran verticalmente**: no tienen nada que
+// rellenar, y una frase sola pegada al techo de la pantalla se lee como el
+// principio de un formulario. Lo pide cada una en su propia sección, que es
+// quien sabe lo que trae; el marco solo les da el hueco entero.
+//
 // El degradado es el de la app y lo elige el reloj. Aquí no hay conmutador de
 // Mañana/Noche —no hay un día que escribir todavía—, así que la única fuente
 // posible del momento es la hora, y el atributo que elige paleta toma el valor
@@ -210,13 +228,17 @@ export default function Onboarding({ uid, onUid, onTerminado }) {
     (paso === PASOS.cuenta && cuenta.listo)
 
   const marco = (contenido) => (
+    // `overflow-hidden` no es maquetación defensiva: el marco mide la ventana y
+    // nada de dentro tiene permiso para pasarse de ella, ni a lo alto ni a lo
+    // ancho. Un solo elemento que se salga convierte el recorrido en algo que
+    // se arrastra de lado.
     <div
       data-momento={momento}
       data-surface={superficie}
-      className={clsx('relative min-h-screen bg-strivo-base transicion-tema')}
+      className={clsx('relative alto-pantalla overflow-hidden bg-strivo-base transicion-tema')}
     >
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 bg-strivo" />
-      <div className="relative mx-auto flex min-h-screen w-full max-w-lg flex-col gap-8 px-5 py-10 text-on-surface">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-strivo" />
+      <div className="relative mx-auto flex h-full w-full max-w-lg flex-col px-5 text-on-surface">
         {contenido}
       </div>
 
@@ -224,15 +246,28 @@ export default function Onboarding({ uid, onUid, onTerminado }) {
     </div>
   )
 
-  if (cargando || !paso) return marco(<div className="min-h-screen" aria-busy="true" />)
+  if (cargando || !paso) return marco(<div className="flex-1" aria-busy="true" />)
 
   return marco(
     <>
-      <Progreso textos={textos.nav} paso={paso} />
+      {/* Arriba, por dentro del área segura: en un teléfono con muesca, el
+          indicador iría justo debajo de ella. En el sub-paso no se pinta nada y
+          la franja se queda con su margen, que es lo que evita que el paso de
+          debajo dé un salto al entrar y al salir de él. */}
+      <header className="shrink-0 pt-safe pb-4">
+        <Progreso textos={textos.nav} paso={paso} />
+      </header>
 
-      <main className="flex-1">{pantallas[paso]()}</main>
+      {/* La única franja que se desplaza, y solo si el paso no cabe.
+          `min-h-0` es lo que se lo permite: sin él, un hijo alto estira la
+          columna en vez de desplazarse por dentro, y lo que se sale por abajo
+          son los dos controles. */}
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">{pantallas[paso]()}</main>
 
-      <div className="flex flex-wrap items-center gap-3">
+      {/* Abajo y siempre a la vista, por dentro del área segura del
+          dispositivo: en un teléfono sin marco, `pb-safe` es lo que separa
+          "Continuar" de la franja del gesto de inicio. */}
+      <div className="flex shrink-0 flex-wrap items-center gap-3 pt-5 pb-safe">
         {hayContinuar && (
           <Button variant="surface" onClick={acciones.avanzar}>
             {textos.nav.continue}
