@@ -34,6 +34,11 @@ const COMPONENTE = 'src/components/shared/TransicionLuz.jsx'
 const REPERTORIO = 'src/content/frases-apertura.js'
 const APP = 'src/App.jsx'
 const HOY = 'src/pages/diario/Hoy.jsx'
+// El tercer sitio que lo monta, desde F-1B: el onboarding abre con el mismo
+// umbral que cualquier otra apertura de la app. No es una variante suya —no
+// existe tal cosa—, es esta misma pieza montada antes de que haya secciones.
+const ONBOARDING = 'src/components/onboarding/Onboarding.jsx'
+const MONTAN = [APP, HOY, ONBOARDING]
 
 function codigoDe(ruta) {
   return readFileSync(ruta, 'utf8')
@@ -178,13 +183,12 @@ describe('no dispara la respiración (RN-LU-MAN-03, criterio 4)', () => {
   })
 })
 
-describe('la misma pieza en los dos sitios (RN-LU-MAN-01, criterio 1)', () => {
-  it('la entrada a la app y la entrada a la mañana importan el mismo componente', () => {
+describe('la misma pieza en los tres sitios (RN-LU-MAN-01, criterio 1)', () => {
+  it('la app, la mañana y el onboarding importan el mismo componente', () => {
     // El alias da igual —`@/components` y `@components` resuelven al mismo
-    // sitio—; lo que importa es que los dos importen el mismo módulo.
+    // sitio—; lo que importa es que los tres importen el mismo módulo.
     const mismoModulo = /import TransicionLuz.*from '@\/?components\/shared\/TransicionLuz'/
-    expect(codigoDe(APP)).toMatch(mismoModulo)
-    expect(codigoDe(HOY)).toMatch(mismoModulo)
+    MONTAN.forEach((ruta) => expect(codigoDe(ruta)).toMatch(mismoModulo))
   })
 
   it('no hay una segunda variante en ningún sitio', () => {
@@ -218,7 +222,7 @@ describe('un solo umbral por sesión (nota de producto, 19 ago · revisada 25 ag
   const UMBRAL = 'src/lib/umbralSesion.js'
 
   it('el contador vive fuera de las dos pantallas que lo consultan', () => {
-    ;[APP, HOY].forEach((ruta) => {
+    MONTAN.forEach((ruta) => {
       expect(codigoDe(ruta)).toMatch(/from '@lib\/umbralSesion'/)
       // Ninguna de las dos guarda su propia cuenta: si lo hicieran, abrir la app
       // y ver la mañana encadenaría dos umbrales seguidos.
@@ -232,16 +236,15 @@ describe('un solo umbral por sesión (nota de producto, 19 ago · revisada 25 ag
     // enseguida no encadena dos umbrales (RN-LU-MAN-02)— y eso solo se cumple
     // si los dos usos nombran la misma clave.
     //
-    // **Son cinco desde F-1B, y la quinta es la que más importa.** Al terminar
-    // el onboarding, `App` da el umbral por cruzado: la palabra de apertura de
-    // ese recorrido **fue** el umbral de esta sesión, y montar detrás el video
-    // de marca serían diez segundos de velo antes de la primera pantalla —el
-    // peaje exacto que RN-LU-MAN-02 no quiere—. Cuenta con la misma clave que
-    // las otras cuatro, y por eso sigue valiendo la comprobación de abajo.
-    const claves = [APP, HOY].flatMap(
+    // **Son seis desde F-1B: tres sitios que preguntan y gastan el mismo
+    // contador.** El del onboarding es el que más se nota, porque es el que
+    // evita el encadenamiento: si el video se ve al empezar el recorrido, al
+    // terminarlo las secciones se montan con el contador ya gastado y no lo
+    // repiten. Sin regla nueva y sin nada que `App` tenga que dar por hecho.
+    const claves = MONTAN.flatMap(
       (ruta) => codigoDe(ruta).match(/(?:umbralPendiente|cruzarUmbral)\('(\w+)'\)/g) ?? [],
     )
-    expect(claves.length).toBe(5)
+    expect(claves.length).toBe(6)
     expect(new Set(claves.map((c) => c.match(/'(\w+)'/)[1])).size).toBe(1)
   })
 
@@ -286,7 +289,7 @@ describe('con reducir movimiento es inmediata (criterio 5)', () => {
     // Cada uno la escribe en el sentido que le pide su guarda —`App` sale si la
     // preferencia está puesta, `Hoy` entra si no lo está— y lo que se comprueba
     // es que ninguno de los dos monta el umbral sin haber preguntado.
-    ;[APP, HOY].forEach((ruta) => expect(codigoDe(ruta)).toMatch(/prefiereMenosMovimiento\(\)/))
+    MONTAN.forEach((ruta) => expect(codigoDe(ruta)).toMatch(/prefiereMenosMovimiento\(\)/))
   })
 
   it('el componente expone la consulta en un solo sitio', () => {
@@ -300,9 +303,13 @@ describe('con reducir movimiento es inmediata (criterio 5)', () => {
   // quien pidió justo lo contrario. Entrar sigue siendo inmediato.
   it('con la preferencia puesta no se monta ningún umbral, tampoco el del video', () => {
     const app = codigoDe(APP)
-    expect(app).toMatch(/if \(prefiereMenosMovimiento\(\)[\s\S]*?\) return/)
-    // La guarda va antes de encender el umbral, no después.
-    expect(app.indexOf('prefiereMenosMovimiento()')).toBeLessThan(app.indexOf('setEntrando(true)'))
+    // **La guarda es el propio valor inicial del estado** (26 ago): el umbral
+    // nace decidido y no hay forma de encenderlo sin haber preguntado. Antes la
+    // guarda vivía en un efecto, que corre después del primer pintado — un
+    // fotograma en el que la pantalla de detrás asomaba antes del video.
+    expect(app).toMatch(/function hayUmbral\(\)[\s\S]*?prefiereMenosMovimiento\(\)/)
+    expect(app).toMatch(/useState\(hayUmbral\)/)
+    expect(app).not.toMatch(/setEntrando\(true\)/)
   })
 })
 
@@ -424,6 +431,18 @@ describe('el video de apertura: se reproduce una vez y se va', () => {
     expect(componente).toMatch(/onClick=\{terminar\}/)
   })
 
+  it('el velo tapa desde el primer fotograma: lo que entra despacio es el video', () => {
+    // La curva se aplicaba al velo entero, así que durante sus 480 ms el velo
+    // era semitransparente y dejaba ver justo lo que el umbral viene a tapar.
+    // Ahora va sobre el `<video>`; el velo es opaco por `.velo-transicion` y no
+    // lleva animación ninguna. Un umbral que enseña lo que tapa no tapa nada.
+    expect(video).toMatch(/transicion-entrada-video/)
+    const asignacion = componente.match(/if \(videoEnMarcha\) velo = '([^']*)'/)
+    expect(asignacion[1]).toBe('')
+    const css = readFileSync('src/styles/globals.css', 'utf8')
+    expect(css).toMatch(/\.transicion-entrada-video \{\s*animation: transicion-entrada-video/)
+  })
+
   it('el velo del video entra y se queda: no se desvanece a mitad de fotograma', () => {
     // Con la curva de la frase —que baja a opacidad 0 al 78 % de cinco
     // segundos— el video se vería apagarse antes de acabar. Quien decide cuándo
@@ -439,6 +458,13 @@ describe('el video es la apertura de la app, y la frase sigue siendo la mañana'
   it('abrir la app monta el umbral con video', () => {
     expect(codigoDe(APP)).toMatch(/<TransicionLuz conVideo/)
     expect(codigoDe(APP)).not.toMatch(/conFrase/)
+  })
+
+  it('la primera apertura de todas también, aunque lleve al onboarding', () => {
+    // Abrir la app por primera vez sigue siendo abrir la app: lo que cambia
+    // detrás del velo es qué hay montado, no qué se ve mientras dura.
+    expect(codigoDe(ONBOARDING)).toMatch(/<TransicionLuz conVideo/)
+    expect(codigoDe(ONBOARDING)).not.toMatch(/conFrase/)
   })
 
   it('la mañana lo monta con frase, que es el valor por defecto', () => {

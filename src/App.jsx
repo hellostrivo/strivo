@@ -22,7 +22,7 @@
 
 import { useEffect, useState } from 'react'
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { getTimeSlot } from '@lib/timeSlot'
+import { momentoDe } from '@lib/timeSlot'
 
 import ArranqueProvisional from '@/components/ArranqueProvisional'
 import Onboarding from '@components/onboarding/Onboarding'
@@ -36,23 +36,28 @@ import Hoy from '@/pages/diario/Hoy'
 import Journal from '@/pages/diario/Journal'
 import Historial from '@/pages/diario/Historial'
 
+/**
+ * ¿Toca umbral en esta sesión?
+ *
+ * Es una **lectura pura**: pregunta y no gasta nada, así que puede correr al
+ * construir el estado. Gastar el contador sí es un efecto, y va aparte.
+ */
+function hayUmbral() {
+  return !prefiereMenosMovimiento() && umbralPendiente('diario')
+}
+
 /** La raíz: por dónde se entra a la app. */
 const INICIO = '/hoy'
 
 /** La sección de Respiración. La conoce quien enruta, no ella. */
 const RUTA_RESPIRACION = '/respiracion'
 
-/**
- * El momento que viste el cromo (manual §4.1).
- *
- * Lo decide el reloj, y es la firma visual del producto: abrir a las 7:00 y a
- * las 23:00 no se ve igual (§6.1, principio 2). No choca con RN-HOY-05, que
- * habla del **tema de la pantalla Hoy** —ese lo manda su conmutador y sigue
- * mandándolo—: esto viste el cromo, que es otra superficie.
- */
-function momentoDe(franja = getTimeSlot()) {
-  return franja === 'amanecer' || franja === 'dia' ? 'manana' : 'noche'
-}
+// El momento que viste el cromo (manual §4.1) lo decide el reloj, y es la firma
+// visual del producto: abrir a las 7:00 y a las 23:00 no se ve igual (§6.1,
+// principio 2). La regla vive en `lib/timeSlot` porque el onboarding la
+// necesita igual. No choca con RN-HOY-05, que habla del **tema de la pantalla
+// Hoy** —ese lo manda su conmutador y sigue mandándolo—: esto viste el cromo,
+// que es otra superficie.
 
 export default function App() {
   return (
@@ -78,11 +83,11 @@ export default function App() {
  * **Mientras se averigua no hay rueda que gire** (RN-EST-02): la pantalla
  * espera en el fondo de la app, que es la forma final de lo que viene detrás.
  *
- * Al terminar el recorrido, el umbral de esta sesión se da por cruzado: la
- * apertura del onboarding **fue** el umbral, y encadenar el video de marca
- * detrás serían diez segundos de velo antes de la primera pantalla
- * (RN-LU-MAN-02). El video se ve en la siguiente apertura de la app, ya con la
- * casa montada detrás, que además es cuando significa algo.
+ * **Aquí no hay nada que decidir sobre el umbral.** El onboarding monta el
+ * mismo que las secciones, con el mismo contador de sesión, así que si el video
+ * se vio al empezar el recorrido no vuelve a salir al terminarlo: el contador
+ * ya está gastado (RN-LU-MAN-02). Es el motivo de que ese contador viva en
+ * `lib/umbralSesion` y no dentro de ninguna pantalla.
  */
 function Entrada({ uid, onUid }) {
   const [pendiente, setPendiente] = useState(null)
@@ -98,7 +103,16 @@ function Entrada({ uid, onUid }) {
     }
   }, [uid])
 
-  if (pendiente === null) return <div className="min-h-screen bg-paper" aria-busy="true" />
+  // **Lo que se ve mientras se averigua es el tono del velo, no el papel de la
+  // app** (26 ago). Detrás de esto viene el umbral, así que pintar crema aquí
+  // metía un fotograma claro delante de un velo nocturno: un fogonazo a las
+  // once. Es también lo que RN-EST-02 pide —la forma final, o nada— porque la
+  // forma final de este instante es el velo.
+  if (pendiente === null) {
+    return (
+      <div data-moment={momentoDe()} className="velo-transicion min-h-screen" aria-busy="true" />
+    )
+  }
 
   if (pendiente) {
     return (
@@ -106,7 +120,6 @@ function Entrada({ uid, onUid }) {
         uid={uid}
         onUid={onUid}
         onTerminado={(uidFinal) => {
-          cruzarUmbral('diario')
           onUid(uidFinal)
           setPendiente(false)
         }}
@@ -124,7 +137,13 @@ function Secciones({ uid }) {
 
   // §C7.5 — El umbral de entrada. `true` mientras se cruza. Con "reducir
   // movimiento" no se muestra: entrar es inmediato.
-  const [entrando, setEntrando] = useState(false)
+  //
+  // **Se decide al construir el estado y no en un efecto** (26 ago). Un efecto
+  // corre después del primer pintado, así que el umbral llegaba un fotograma
+  // tarde y ese fotograma era la pantalla de detrás asomando antes de que
+  // empezara el video. Nace decidido; lo que queda para el efecto es gastar el
+  // contador, que es lo único que cambia algo fuera de aquí.
+  const [entrando, setEntrando] = useState(hayUmbral)
 
   // La sección que muestra Hoy, o `null` fuera de ella. No es un segundo origen
   // del tema —lo sigue eligiendo el conmutador (RN-HOY-05)—: es el eco que
@@ -141,10 +160,8 @@ function Secciones({ uid }) {
    * y 02). Navegar entre secciones no lo vuelve a disparar.
    */
   useEffect(() => {
-    if (prefiereMenosMovimiento() || !umbralPendiente('diario')) return
-    cruzarUmbral('diario')
-    setEntrando(true)
-  }, [])
+    if (entrando) cruzarUmbral('diario')
+  }, [entrando])
 
   return (
     // `data-moment` lo decide el reloj y elige la paleta; `data-surface` sigue

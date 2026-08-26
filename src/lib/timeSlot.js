@@ -58,6 +58,23 @@ export function getTimeSlot(horaDespertar = '07:00', horaDormir = '23:00', diaTe
 }
 
 /**
+ * El momento que viste una pantalla cuando lo decide el reloj.
+ *
+ * Es la traducción de las cinco franjas a las dos paletas de marca, y vive aquí
+ * porque la hacían dos pantallas por su cuenta —`App` para el cromo y el
+ * onboarding para su fondo— y dos copias de la misma regla envejecen distinto.
+ *
+ * No es lo mismo que el conmutador de Hoy: aquel lo decide quien mira, y esa
+ * pantalla sigue mandando sobre lo suyo (RN-HOY-05).
+ *
+ * @returns {'manana'|'noche'}
+ */
+export function momentoDe(franja = getTimeSlot()) {
+  if (franja === 'amanecer' || franja === 'dia') return 'manana'
+  return 'noche'
+}
+
+/**
  * ¿El Ritual de Mañana está en ventana horaria válida?
  * (04:00–11:30, §5.5)
  */

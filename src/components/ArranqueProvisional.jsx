@@ -37,6 +37,7 @@
 
 import { useEffect, useState } from 'react'
 import { initUserTree, shared } from '@/lib/db'
+import { momentoDe } from '@lib/timeSlot'
 
 const CLAVE_UID = 'strivo.uid.local'
 
@@ -84,7 +85,14 @@ export default function ArranqueProvisional({ children }) {
     }
   }, [uid])
 
-  if (!listo) return <div className="min-h-screen bg-paper" aria-busy="true" />
+  // El tono del velo y no el papel de la app: lo primero que se ve al abrir es
+  // el umbral, y un fotograma crema delante de un velo nocturno es un fogonazo
+  // a las once de la noche.
+  if (!listo) {
+    return (
+      <div data-moment={momentoDe()} className="velo-transicion min-h-screen" aria-busy="true" />
+    )
+  }
 
   return children(uid, cambiarUid)
 }

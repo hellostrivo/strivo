@@ -46,7 +46,6 @@ describe('el árbol del onboarding', () => {
     expect(ARCHIVOS.length).toBeGreaterThan(10)
     ;[
       'Onboarding',
-      'Apertura',
       'Progreso',
       'Bienvenida',
       'Nombre',
@@ -181,28 +180,44 @@ describe('el indicador cuenta ocho y el sub-paso no se pinta', () => {
   })
 })
 
-describe('la apertura es un umbral, no una pantalla', () => {
-  it('no tiene botón de avanzar: toda su superficie la salta', () => {
-    const apertura = codigoDe('src/components/onboarding/Apertura.jsx')
-    expect(apertura).toMatch(/aria-label=\{textos\.entrar\}/)
-    expect(apertura).toMatch(/onClick=\{terminar\}/)
-    // Ni pasos, ni preguntas, ni una segunda cosa que decidir.
-    expect(apertura).not.toMatch(/useState|<input|<form/)
+describe('el umbral de entrada es el de siempre, con el video de marca', () => {
+  const contenedor = codigoDe('src/components/onboarding/Onboarding.jsx')
+
+  it('monta la misma pieza que la app, y con el mismo contenido dentro', () => {
+    // Abrir la app es abrir la app, también la primera vez. No hay una
+    // apertura propia del onboarding, así que no hay una segunda variante del
+    // umbral que mantener (RN-LU-MAN-01).
+    expect(contenedor).toMatch(/import TransicionLuz.*from '@components\/shared\/TransicionLuz'/)
+    expect(contenedor).toMatch(/<TransicionLuz conVideo/)
   })
 
-  it('no es `TransicionLuz` ni le añade contenido', () => {
-    // Aquel umbral tiene prohibido crecer: cada contenido nuevo lo acerca al
-    // wizard derogado. Esto comparte el aspecto por CSS, no por componente.
-    const apertura = codigoDe('src/components/onboarding/Apertura.jsx')
-    expect(apertura).not.toMatch(/TransicionLuz/)
-    expect(apertura).toMatch(/velo-transicion/)
+  it('no queda ni el componente propio ni su copy', () => {
+    expect(existsSync('src/components/onboarding/Apertura.jsx')).toBe(false)
+    expect(copy.diario.onboarding.apertura).toBeUndefined()
+    // Y el umbral sigue sin saber que el onboarding existe: quien lo monta lo
+    // conoce a él, no al revés.
     expect(codigoDe('src/components/shared/TransicionLuz.jsx')).not.toMatch(/onboarding/i)
   })
 
-  it('con movimiento reducido no se monta, y quien retoma tampoco la ve', () => {
-    const contenedor = codigoDe('src/components/onboarding/Onboarding.jsx')
-    expect(contenedor).toMatch(/prefiereMenosMovimiento\(\)/)
-    expect(contenedor).toMatch(/paso === PASOS\.bienvenida && !prefiereMenosMovimiento\(\)/)
+  it('comparte el contador de sesión, y por eso no se encadena con el de después', () => {
+    // Si el video se ve al empezar el recorrido, al terminarlo el contador ya
+    // está gastado y las secciones no lo repiten. Sin regla nueva: es el mismo
+    // contador (RN-LU-MAN-02).
+    expect(contenedor).toMatch(/umbralPendiente\('diario'\)/)
+    expect(contenedor).toMatch(/cruzarUmbral\('diario'\)/)
+    expect(codigoDe('src/App.jsx')).not.toMatch(/onTerminado=\{[\s\S]{0,200}cruzarUmbral/)
+  })
+
+  it('con movimiento reducido no se monta (RN-VIS-05)', () => {
+    expect(contenedor).toMatch(/function hayUmbral\(\)[\s\S]*?prefiereMenosMovimiento\(\)/)
+    expect(contenedor).toMatch(/useState\(hayUmbral\)/)
+  })
+
+  it('nace decidido, no un fotograma después', () => {
+    // Puesto en un efecto, el umbral llegaba después del primer pintado y ese
+    // fotograma era el primer paso asomando antes de que empezara el video.
+    expect(contenedor).not.toMatch(/setEntrando\(true\)/)
+    expect(contenedor).toMatch(/useState\(hayUmbral\)/)
   })
 })
 
@@ -227,20 +242,42 @@ describe('los chips son los de la casa', () => {
 
 describe('el onboarding se interpone una sola vez', () => {
   const app = codigoDe('src/App.jsx')
+  const contenedorDelRecorrido = codigoDe('src/components/onboarding/Onboarding.jsx')
 
   it('lo decide el árbol de datos, no una marca del navegador', () => {
     expect(app).toMatch(/onboardingPendiente\(uid\)/)
     expect(app).not.toMatch(/localStorage/)
   })
 
-  it('al terminar, el umbral de esta sesión se da por cruzado', () => {
-    // La apertura del onboarding **fue** el umbral: encadenar detrás el video
-    // de marca serían diez segundos de velo antes de la primera pantalla.
-    expect(app).toMatch(/onTerminado=\{[\s\S]{0,200}cruzarUmbral\('diario'\)/)
+  it('al terminar entrega el uid definitivo, que puede no ser con el que empezó', () => {
+    // Si en P7 se creó una cuenta, el árbol se mudó y la sesión sigue con el
+    // uid nuevo: el que llega aquí es ese.
+    expect(app).toMatch(/onTerminado=\{\(uidFinal\) => \{[\s\S]{0,120}onUid\(uidFinal\)/)
   })
 
   it('mientras se averigua no gira ninguna rueda (RN-EST-02)', () => {
     expect(app).toMatch(/pendiente === null/)
     expect(app).not.toMatch(/animate-spin|Spinner/)
+  })
+
+  it('lo que se ve antes del umbral es el tono del velo, no el papel de la app', () => {
+    // Los dos instantes de arranque —resolver el uid y preguntar si queda
+    // onboarding— tienen detrás el umbral, así que pintar crema metía un
+    // fotograma claro delante de un velo nocturno: un fogonazo a las once.
+    // RN-EST-02 pide la forma final o nada, y la forma final de ese instante
+    // es el velo.
+    const arranque = codigoDe('src/components/ArranqueProvisional.jsx')
+    ;[app, arranque].forEach((codigo) => {
+      expect(codigo).toMatch(/velo-transicion/)
+      expect(codigo).not.toMatch(/bg-paper/)
+    })
+  })
+
+  it('la regla del momento por reloj vive en un solo sitio', () => {
+    // La escribían `App` y el onboarding por su cuenta. Dos copias de la misma
+    // regla envejecen distinto, así que se mudó a `lib/timeSlot`.
+    expect(contenedorDelRecorrido).toMatch(/import \{ momentoDe \} from '@lib\/timeSlot'/)
+    expect(contenedorDelRecorrido).not.toMatch(/function momentoDe/)
+    expect(app).not.toMatch(/function momentoDe/)
   })
 })

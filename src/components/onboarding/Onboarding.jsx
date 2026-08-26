@@ -18,11 +18,20 @@
 //
 // ─── La apertura ─────────────────────────────────────────────────────────────
 //
-// La palabra de apertura hace de umbral de este primer arranque, y por eso
-// `App` no monta el suyo mientras el onboarding esté pendiente: dos velos de
-// cinco segundos seguidos son un peaje, no un umbral (RN-LU-MAN-02). Con
-// "reducir movimiento" no se muestra ninguna de las dos (RN-VIS-05), y quien
-// retoma el recorrido a medias tampoco la ve: ya entró una vez.
+// **Abrir la app es abrir la app, también la primera vez.** El umbral de aquí
+// es el mismo `TransicionLuz` con el video de marca que se ve en cualquier otra
+// apertura: la misma pieza, el mismo contenido y el mismo contador de sesión
+// (`lib/umbralSesion`). Aquí no hay una apertura propia del onboarding, y por
+// eso tampoco hay una segunda variante que mantener.
+//
+// Que comparta el contador es lo que resuelve el encadenamiento sin ninguna
+// regla nueva: si el video se ve al empezar el recorrido, cuando termine y se
+// monten las secciones el umbral ya está gastado y no vuelve a salir. Dos velos
+// de cinco segundos seguidos serían un peaje, no un umbral (RN-LU-MAN-02).
+//
+// Va dentro del marco y sobre lo que ya está montado, igual que en `App`:
+// cuando la luz se va, lo de detrás ya está ahí. Con "reducir movimiento" no se
+// monta (RN-VIS-05).
 //
 // ─── Nada bloquea ────────────────────────────────────────────────────────────
 //
@@ -34,11 +43,11 @@
 import { useEffect, useState } from 'react'
 import { clsx } from 'clsx'
 import { copy } from '@copy'
-import { getTimeSlot } from '@lib/timeSlot'
+import { momentoDe } from '@lib/timeSlot'
 import Button from '@components/ui/Button'
-import { prefiereMenosMovimiento } from '@components/shared/TransicionLuz'
+import TransicionLuz, { prefiereMenosMovimiento } from '@components/shared/TransicionLuz'
+import { cruzarUmbral, umbralPendiente } from '@lib/umbralSesion'
 
-import Apertura from './Apertura'
 import Progreso from './Progreso'
 import Bienvenida from './Bienvenida'
 import Nombre from './Nombre'
@@ -62,24 +71,30 @@ const textos = copy.diario.onboarding
 /** Los pasos cuyo avance es un "Continuar" y nada más. */
 const CON_CONTINUAR = [PASOS.nombre, PASOS.genero, PASOS.motivo, PASOS.identidad, PASOS.horarios]
 
-/** El momento que viste la pantalla. Lo decide el reloj, como el cromo de la app. */
-function momentoDe(franja = getTimeSlot()) {
-  return franja === 'amanecer' || franja === 'dia' ? 'manana' : 'noche'
+/**
+ * ¿Toca umbral en esta sesión?
+ *
+ * Es una **lectura pura**: pregunta y no gasta nada, así que puede correr al
+ * construir el estado. Gastar el contador sí es un efecto, y va aparte.
+ */
+function hayUmbral() {
+  return !prefiereMenosMovimiento() && umbralPendiente('diario')
 }
 
 export default function Onboarding({ uid, onUid, onTerminado }) {
   const { respuestas, paso, cargando, genero, acciones } = useOnboarding(uid, { onUid })
 
-  // La apertura solo la ve quien empieza por el principio. Se decide una vez,
-  // al saber por dónde va el recorrido, y no se vuelve a preguntar.
-  const [apertura, setApertura] = useState(null)
+  // El umbral de entrada, una vez por sesión y compartido con el resto de la
+  // app. No espera a que cargue el recorrido —para eso es un velo— y **nace
+  // decidido**: puesto en un efecto llegaba un fotograma tarde, y ese fotograma
+  // era el primer paso asomando antes de que empezara el video.
+  const [entrando, setEntrando] = useState(hayUmbral)
   const [avisos, setAvisos] = useState(null)
   const [cuenta, setCuenta] = useState({ listo: false, motivo: null })
 
   useEffect(() => {
-    if (cargando || apertura !== null) return
-    setApertura(paso === PASOS.bienvenida && !prefiereMenosMovimiento())
-  }, [apertura, cargando, paso])
+    if (entrando) cruzarUmbral('diario')
+  }, [entrando])
 
   const momento = momentoDe()
   const superficie = momento === 'noche' ? 'dark' : 'light'
@@ -204,6 +219,8 @@ export default function Onboarding({ uid, onUid, onTerminado }) {
       <div className="relative mx-auto flex min-h-screen w-full max-w-lg flex-col gap-8 px-5 py-10 text-on-surface">
         {contenido}
       </div>
+
+      {entrando && <TransicionLuz conVideo onTerminar={() => setEntrando(false)} />}
     </div>
   )
 
@@ -211,8 +228,6 @@ export default function Onboarding({ uid, onUid, onTerminado }) {
 
   return marco(
     <>
-      {apertura && <Apertura textos={textos.apertura} onTerminar={() => setApertura(false)} />}
-
       <Progreso textos={textos.nav} paso={paso} />
 
       <main className="flex-1">{pantallas[paso]()}</main>

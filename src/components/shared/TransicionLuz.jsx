@@ -132,8 +132,17 @@ export default function TransicionLuz({ onTerminar, conFrase = true, conVideo = 
 
   const videoEnMarcha = conVideo && !quieto
 
+  // **El velo del video no se anima: es opaco desde el primer fotograma.** El
+  // de la frase sí entra y sale con el reloj, porque ahí el velo se lava por
+  // encima de una pantalla en la que ya se está. Al abrir la app no: lo que hay
+  // detrás todavía no es de nadie y no debe verse ni un instante, así que lo que
+  // aparece despacio es el fotograma —`transicion-entrada-video` va sobre el
+  // `<video>`— y no la superficie que lo sostiene.
+  //
+  // Sin ternario a propósito: este archivo no admite un signo de interrogación
+  // ni en el código, y hay una prueba que lo comprueba.
   let velo = 'transicion-entrada'
-  if (videoEnMarcha) velo = 'transicion-entrada-video'
+  if (videoEnMarcha) velo = ''
 
   let contenido = null
   if (videoEnMarcha) {
@@ -156,7 +165,7 @@ export default function TransicionLuz({ onTerminar, conFrase = true, conVideo = 
         // `contain` hace lo contrario: mete el fotograma entero dentro de la
         // pantalla, centrado y sin recortar, sea cual sea. Lo que sobra a los
         // lados lo llena el velo, que ya está detrás.
-        className="pointer-events-none absolute inset-0 h-full w-full object-contain"
+        className="transicion-entrada-video pointer-events-none absolute inset-0 h-full w-full object-contain"
       />
     )
   } else if (conVideo) {

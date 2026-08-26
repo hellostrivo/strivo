@@ -38,11 +38,11 @@ export const copy = {
     // algo antes del producto a lo que se entra, y no lo hay. Se entra a
     // Strivo, y esto es cómo empieza.
     //
-    // **La apertura de aquí no es el umbral de §C7.5.** Aquella es una frase
-    // del repertorio, una vez por sesión, y sigue viva en la Mañana. Esta es
-    // una palabra sola, una vez en la vida de la cuenta, antes de P1. No
-    // comparten repertorio ni namespace a propósito: si se mezclaran, ampliar
-    // uno cambiaría el otro sin que nadie se enterase.
+    // **El umbral de entrada no está aquí, y es a propósito.** El onboarding
+    // abre con el mismo velo que cualquier otra apertura de la app —el video de
+    // marca de §C7.5— y ese no lleva copy: no dice nada. Lo único que se oye al
+    // saltarlo es `copy.shared.transicion.saltar`, que es de la pieza y no de
+    // quien la monta.
     //
     // Nada de aquí bloquea: el nombre puede quedarse en blanco, el género se
     // puede no contestar, los avisos y la cuenta se saltan con un enlace que
@@ -58,12 +58,12 @@ export const copy = {
         progressTemplate: 'Paso {n} de {total}',
       },
 
-      // Una palabra y nada más. Se salta tocando en cualquier sitio, como el
-      // umbral, y con "reducir movimiento" no se muestra (RN-VIS-05).
-      apertura: {
-        palabra: 'Respira.',
-        entrar: 'Entrar',
-      },
+      // Aquí vivía una palabra propia de apertura, "Respira.", con su propio
+      // velo de cinco segundos. Se retira: el umbral del onboarding es el mismo
+      // de cualquier otra apertura de la app —el video de marca— y montarlo no
+      // necesita copy, porque no dice nada. La etiqueta que oye un lector de
+      // pantalla al saltarlo sigue siendo `copy.shared.transicion.saltar`, que
+      // es de la pieza y no de quien la monta.
 
       p1: {
         subtitle: 'Tu lugar para volver a ti.',

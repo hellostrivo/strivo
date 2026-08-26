@@ -69,6 +69,8 @@ Las cuatro secciones viven en **la cabecera**, bajo el símbolo. No hay barra in
 **Antes de todo esto, una vez en la vida de la cuenta, está el onboarding**
 (`src/components/onboarding/`). No es una quinta sección y no tiene ruta: `App.jsx` pregunta al árbol
 de datos si queda pendiente y monta uno u otro. No lo alcanza ningún enlace y no se vuelve a ver.
+**Abre con el mismo umbral que cualquier otra apertura** —el video de marca— y con el mismo contador
+de sesión: no tiene una apertura propia, así que no hay una segunda variante que mantener.
 
 **El umbral de entrada** (§4.3): velo de luz, **una vez por sesión** (`src/lib/umbralSesion.js`). No
 es una secuencia: sin botón de avanzar, toda su superficie lo salta. Con `prefers-reduced-motion`
@@ -80,13 +82,24 @@ pantalla en blanco no es un umbral, es una espera con luz.
 
 | Dónde | Qué lleva dentro | Quién decide que se acabó |
 |---|---|---|
-| Al abrir la app (`App.jsx`, `conVideo`) | El video de apertura de la marca, 4 s, sin sonido y sin bucle | El propio video (`onEnded`); el temporizador de 5 s es la red de seguridad si el autoplay no arranca |
+| Al abrir la app (`App.jsx` y `Onboarding.jsx`, `conVideo`) | El video de apertura de la marca, 4 s, sin sonido y sin bucle | El propio video (`onEnded`); el temporizador de 5 s es la red de seguridad si el autoplay no arranca |
 | Al aparecer la Mañana (`Hoy.jsx`, por defecto) | Una frase del repertorio de apertura | El temporizador de 5 s |
 
 El `<video>` va con **`muted`, `playsInline` y `autoPlay`** —los tres, o iOS no reproduce— y `muted`
 se repite sobre el nodo en un efecto, porque React no siempre lo escribe como atributo. **Nunca
 `loop`.** Con movimiento reducido el componente pondría el logo quieto en su lugar, pero esa rama no
 llega a montarse: `App` entra directo a Hoy (RN-VIS-05).
+
+**El velo tapa desde el primer fotograma, y lo que entra despacio es el video** (26 ago). La curva de
+entrada iba sobre el velo entero, así que durante sus 480 ms era semitransparente y dejaba ver justo
+la pantalla que el umbral viene a cubrir: al abrir la app con onboarding pendiente, un destello del
+primer paso antes de que empezara el logo. **Un umbral que enseña lo que tapa no está tapando nada.**
+Por el mismo motivo, quien lo monta **lo decide al construir su estado y no en un efecto**: un efecto
+corre después del primer pintado, y ese fotograma asomaba igual. Y por el mismo motivo los dos
+instantes de arranque —resolver el uid, preguntar si queda onboarding— se pintan con el tono del velo
+y no con el papel de la app: detrás de ellos viene el umbral, y un fotograma crema delante de un velo
+nocturno es un fogonazo a las once. La regla del momento por reloj vive en `lib/timeSlot`
+(`momentoDe`), que es de donde la toman `App` y el onboarding.
 
 **Y se encaja entero: `object-contain`, nunca `object-cover`** (RN-VIS-06). El archivo es vertical
 (1080×1920) y la pantalla no siempre lo es. Con `cover` —que amplía hasta cubrir— una ventana de
@@ -563,9 +576,12 @@ recorrido en `src/onboarding/` + `src/components/onboarding/`.
   `completedAt` y solo eso— y monta el onboarding o las cuatro secciones. Saltarse los ocho pasos
   también es haberlo hecho, así que contar `completedSteps` habría dejado fuera a quien entró de
   largo. Un árbol de antes de que existiera no trae la marca y lo hace una vez: nunca lo vio.
-- **La apertura del onboarding hace de umbral de ese primer arranque.** `App` no monta el video de
-  marca mientras haya onboarding pendiente, y al terminar da el umbral por cruzado: dos velos de
-  cinco segundos seguidos son un peaje (RN-LU-MAN-02). El video se ve en la apertura siguiente.
+- **Abre con el video de marca, como cualquier otra apertura de la app.** Es la misma
+  `TransicionLuz` con `conVideo` y el mismo contador de `lib/umbralSesion`, y de ahí sale gratis lo
+  que antes había que decidir: si el velo se ve al empezar el recorrido, al terminarlo las secciones
+  se montan con el contador gastado y no lo repiten. Dos velos seguidos serían un peaje
+  (RN-LU-MAN-02). Hubo una apertura propia —una palabra, «Respira.»— y se retiró el 25 de agosto con
+  su copy: abrir la app es abrir la app, también la primera vez.
 - **El género (P2A) es un sub-paso.** No entra en la cuenta del indicador y, mientras dura, el
   indicador **no se pinta** —lo mismo que hace la mañana con su pausa opcional—. Sus cuatro opciones
   se resuelven a los tres valores del modelo: «prefiero no contestar» y «otro» van las dos al neutro,
