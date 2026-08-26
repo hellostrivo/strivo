@@ -13,7 +13,7 @@
 // llevan las dos al neutro, que es también lo que vale si se pasa de largo
 // (RN-GEN-05). Cuál de las dos se tocó vive en la pantalla y no en el modelo.
 
-import { ListaDeChips } from './Chips'
+import { ListaDeChips } from '@components/shared/Chips'
 import { OPCIONES } from '@/onboarding/genero'
 
 export default function Genero({ textos, valor, onCambiar }) {

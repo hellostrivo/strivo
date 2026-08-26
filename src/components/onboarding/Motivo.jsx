@@ -13,7 +13,7 @@
 // sugerencia y el texto se recorta sin avisos ni bordes rojos (RN-DB-07).
 
 import { CampoLinea } from '@components/shared/Campo'
-import { ListaDeChips } from './Chips'
+import { ListaDeChips } from '@components/shared/Chips'
 import { interpolate } from '@copy'
 import { ID_OTRO, MAX_OTRO, OPCIONES, recortarOtro } from '@/onboarding/motivos'
 

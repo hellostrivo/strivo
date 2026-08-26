@@ -233,6 +233,15 @@ const PARES = [
   // espacio, y el cuerpo se lee encima.
   ['Respiración · cuerpo sobre tarjeta de bloque', TEXTO.onLight, sobre(TEXTO.blanco, 0.72, MARCA.strivoAm50), CUERPO],
   ['Respiración · secundario sobre tarjeta de bloque', TEXTO.onLightSoft, sobre(TEXTO.blanco, 0.72, MARCA.strivoAm50), CUERPO],
+
+  // ── Tu perfil (26 ago) ──────────────────────────────────────────────────────
+  // La pantalla se pinta sobre la base del cromo —`strivo-50`, como el Journal y
+  // el Historial— y cada bloque va en una tarjeta `bg-raised`, que es blanco al
+  // 72 % encima. Es la única superficie nueva de esta pantalla: los rótulos de
+  // la barra de abajo comparten tokens con la cabecera y ya están medidos arriba,
+  // tanto en su rango claro como en el contratono de la Mañana.
+  ['Perfil · cuerpo sobre tarjeta de bloque', TEXTO.onLight, sobre(TEXTO.blanco, 0.72, MARCA.strivo50), CUERPO],
+  ['Perfil · secundario sobre tarjeta de bloque', TEXTO.onLightSoft, sobre(TEXTO.blanco, 0.72, MARCA.strivo50), CUERPO],
 ]
 
 /**

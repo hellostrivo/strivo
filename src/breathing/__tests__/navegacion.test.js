@@ -110,10 +110,14 @@ describe('el acceso del vestíbulo se retiró entero (24 ago)', () => {
 describe('la pestaña de la cabecera (24 ago)', () => {
   const nav = codigoDe(NAV_SECCIONES)
 
-  it('Respiración va entre Journal e Historial', () => {
+  it('Respiración va detrás de Journal, y ya no tiene Historial detrás', () => {
+    // **Revisión del 26 de agosto de 2026.** El Historial bajó a la barra
+    // inferior, así que Respiración queda la última de la cabecera — y eso ya
+    // no la mete en el pasado, que era todo el motivo de ponerla en medio: en
+    // la cabecera solo queda lo que se hace ahora.
     const secciones = nav.match(/const SECCIONES = \[[\s\S]*?\]/)[0]
     expect(secciones.indexOf("'journal'")).toBeLessThan(secciones.indexOf("'respiracion'"))
-    expect(secciones.indexOf("'respiracion'")).toBeLessThan(secciones.indexOf("'historial'"))
+    expect(secciones).not.toContain("'historial'")
   })
 
   it('apunta a la ruta que monta App', () => {
@@ -121,9 +125,9 @@ describe('la pestaña de la cabecera (24 ago)', () => {
     expect(codigoDe(APP)).toContain('path="/respiracion/*"')
   })
 
-  it('las cuatro secciones tienen rótulo', () => {
+  it('los cinco destinos tienen rótulo, aquí arriba y abajo', () => {
     const secciones = copy.shared.navegacion.diario.secciones
-    expect(Object.keys(secciones)).toEqual(['hoy', 'journal', 'respiracion', 'historial'])
+    expect(Object.keys(secciones)).toEqual(['hoy', 'journal', 'respiracion', 'historial', 'perfil'])
     Object.values(secciones).forEach((rotulo) => expect(rotulo.length).toBeGreaterThan(0))
   })
 })

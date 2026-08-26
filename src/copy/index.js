@@ -1116,6 +1116,56 @@ export const copy = {
         vacio: 'Este día no tiene nada escrito. También estuviste.',
       },
     },
+    // ─── Tu perfil (26 ago 2026) ──────────────────────────────────────────────
+    // La gestión de la cuenta: lo que la app sabe de ti y que puedes cambiar
+    // cuando quieras.
+    //
+    // **Es una pantalla de bloques y esa es su forma, no su maquetación.** Las
+    // fases siguientes traen plan de pago y suscripción, y la manera de que eso
+    // entre sin rehacer nada es que cada bloque sea una entrada de una lista
+    // (`src/perfil/bloques.js`) con su propio texto aquí.
+    //
+    // **No anuncia lo que todavía no existe.** No hay bloque de "próximamente",
+    // no hay ajuste apagado con una etiqueta que lo explique. Una pantalla que
+    // promete lo que no puede cumplir es lo contrario de un refugio.
+    //
+    // **Los catálogos no se repiten aquí.** El de género y el de sugerencias de
+    // identidad viven en el onboarding, que es donde se preguntan por primera
+    // vez, y esta pantalla los lee de allí: dos copias del mismo catálogo se
+    // separan en cuanto alguien edite una. Si aparece un tercer consumidor,
+    // toca mudarlos a un nodo propio.
+    perfil: {
+      titulo: 'Tu perfil',
+      lead: 'Lo que la app sabe de ti. Se cambia cuando quieras y no hay nada que guardar.',
+
+      nombre: {
+        titulo: 'Cómo te llamas',
+        hint: 'Es para saludarte. Puedes dejarlo en blanco.',
+        label: 'Tu nombre',
+      },
+
+      genero: {
+        titulo: 'Cómo hablarte',
+        hint: 'Solo lo usamos para hablarte como te corresponde.',
+      },
+
+      horarios: {
+        titulo: 'Cómo son tus días',
+        hint: 'Para acompañarte a tu ritmo, no al de la app.',
+        wakeLabel: 'Me despierto a las',
+        sleepLabel: 'Me duermo a las',
+      },
+
+      // La misma pregunta de la pantalla 4 de 8 del onboarding, con la misma
+      // frase delante y el mismo catálogo de sugerencias detrás.
+      identidad: {
+        titulo: 'La persona que quieres ser',
+        hint: 'No busques la frase perfecta. Algo que quieras recordar cuando abras Strivo.',
+        prefix: 'Soy alguien que...',
+        suggestionsLabel: 'Sugerencias',
+        chipOther: 'Otro',
+      },
+    },
   },
 
   // ─── Compartido entre los dos espacios ────────────────────────────────────
@@ -1152,9 +1202,11 @@ export const copy = {
     // distinguía. Con un solo producto no hay de qué distinguirlo: la cabecera
     // dice **Strivo** y nada más. El descriptor se retira entero.
     navegacion: {
-      // La barra ya no salta entre espacios: devuelve al Home. Para cambiar de
-      // espacio se pasa por Strivo (revisión de SPEC_11, 19 ago 2026).
-      barraLabel: 'Strivo',
+      // **La barra inferior vuelve el 26 de agosto de 2026**, y no es la de
+      // antes: aquella saltaba entre espacios y devolvía a un vestíbulo que ya
+      // no existe. Esta lleva a dos destinos y nada más —lo que ya pasó y tú—,
+      // así que su etiqueta los nombra en vez de nombrar la marca.
+      barraLabel: 'Historial y perfil',
       seccionesLabel: 'Secciones',
       volver: 'Strivo',
       volverLabel: 'Volver a Strivo',
@@ -1162,15 +1214,17 @@ export const copy = {
       diario: {
         pestana: 'Strivo',
         cabecera: 'Strivo',
-        // Respiración va entre Journal e Historial, y ese sitio es la decisión:
-        // las tres primeras son lo que se hace hoy —el día, lo que se escribe,
-        // el aire— y el Historial es lo que ya pasó. Dejarla al final la habría
-        // metido en el pasado.
+        // **Cinco destinos repartidos en dos barras (26 ago 2026).** Arriba lo
+        // que se hace ahora —el día, lo que se escribe, el aire—; abajo lo que
+        // ya pasó y tú. El razonamiento del orden no cambia, se cumple mejor:
+        // el Historial ya no tiene que ir "al final" de una lista de cosas que
+        // se hacen hoy, porque no está en ella.
         secciones: {
           hoy: 'Hoy',
           journal: 'Journal',
           respiracion: 'Respiración',
           historial: 'Historial',
+          perfil: 'Tu perfil',
         },
       },
     },

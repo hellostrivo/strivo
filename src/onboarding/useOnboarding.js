@@ -17,28 +17,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { shared } from '@/lib/db'
 import { adoptarArbol } from './cuenta.js'
-import { generoDe } from './genero.js'
+import { generoDe, opcionDe } from './genero.js'
 import { anterior, retomarEn, siguiente } from './pasos.js'
 import { expedienteDe, motivoDesde, perfilDesde, RESPUESTAS_INICIALES } from './estado.js'
 import { quedanActivados } from './recordatorios.js'
 
 /** §5.6 — El mismo retraso que el resto del producto: 800 ms sin teclear. */
 export const RETRASO_AUTOGUARDADO = 800
-
-/**
- * De vuelta del perfil a la opción que se tocó en P2A.
- *
- * El neutro vuelve como "sin contestar" y no como una de sus dos opciones: es
- * lo que vale sin haber contestado (RN-GEN-05), así que elegir por alguien cuál
- * de las dos fue sería inventarle una respuesta. Solo pasa al reabrir la app a
- * mitad del recorrido; dentro de la misma sesión, "Atrás" devuelve el chip tal
- * como se tocó.
- */
-function opcionDeGenero(gender) {
-  if (gender === 'm') return 'masculino'
-  if (gender === 'f') return 'femenino'
-  return null
-}
 
 export function useOnboarding(uid, { onUid } = {}) {
   const [respuestas, setRespuestas] = useState(RESPUESTAS_INICIALES)
@@ -110,7 +95,7 @@ export function useOnboarding(uid, { onUid } = {}) {
       setRespuestas((previas) => ({
         ...previas,
         nombre: perfil?.name ?? previas.nombre,
-        genero: opcionDeGenero(perfil?.gender),
+        genero: opcionDe(perfil?.gender),
         identidad: perfil?.identidadCentral ?? previas.identidad,
         despertar: perfil?.wakeTime ?? previas.despertar,
         dormir: perfil?.sleepTime ?? previas.dormir,

@@ -41,25 +41,37 @@ esfuerzo**. Ninguna pieza de copy explica su origen ni lo usa como llamada a la 
 
 ---
 
-## 2. Navegación (cuatro secciones, y solo cuatro)
+## 2. Navegación (cinco destinos, repartidos en dos barras)
 
 ```
 Strivo
-├── Umbral de entrada  (luz + frase, una vez por sesión)
-├── /hoy               pantalla raíz
-│   ├── Mañana         → 3 momentos → cierre → consulta
-│   └── Noche          → 3 momentos → cierre → consulta
-├── /journal           escritura libre, protegible con PIN
-├── /respiracion       configuración → sesión → cierre
-└── /historial         calendario → día completo
+├── Umbral de entrada  (video de marca, una vez por sesión)
+│
+├── cabecera — lo que se hace ahora
+│   ├── /hoy           pantalla raíz
+│   │   ├── Mañana     → 3 momentos → cierre → consulta
+│   │   └── Noche      → 3 momentos → cierre → consulta
+│   ├── /journal       escritura libre, protegible con PIN
+│   └── /respiracion   configuración → sesión → cierre
+│
+└── barra inferior — lo que ya pasó, y tú
+    ├── /historial     calendario → día completo
+    └── /perfil        nombre · género · horarios · identidad central
 ```
 
-Las cuatro secciones viven en **la cabecera**, bajo el símbolo. No hay barra inferior.
+**El reparto es la decisión, no la maquetación** (26 ago 2026). Arriba, bajo el símbolo, lo que se
+hace ahora: el día, lo que se escribe, el aire. Abajo, lo que ya pasó y tú. **Las dos barras
+acompañan a todas las pantallas**: con la de abajo solo en Hoy, llegar al Historial desde el Journal
+costaría dos toques donde antes costaba uno.
+
+**Esto deroga «no hay barra inferior».** La barra derogada el 25 de agosto era otra cosa: navegación
+de nivel superior que devolvía al vestíbulo, sobre una app que no tiene niveles. Esta no lleva a
+ningún sitio por encima del producto; lleva a dos destinos que ya estaban dentro de él.
 
 | Regla | Enunciado |
 |---|---|
-| **RN-NAV-01** | Cuatro secciones y solo cuatro. Una quinta exige revisar el capítulo 4, no basta con añadirla. |
-| **RN-NAV-02** | Orden fijo: **Hoy · Journal · Respiración · Historial**. Las tres primeras son lo que se hace ahora; el Historial es lo que ya pasó. Poner Respiración al final la metería en el pasado. |
+| **RN-NAV-01** | **Cinco destinos: tres arriba, dos abajo.** Un sexto exige revisar el capítulo 4, no basta con añadirlo — la puerta sigue cerrada, solo se movió una vez y a la vista. El blueprint §4 está pendiente de esta revisión. |
+| **RN-NAV-02** | Orden fijo. Arriba **Hoy · Journal · Respiración**; abajo **Historial · Tu perfil**. El razonamiento no cambió, se cumple mejor: el Historial ya no tiene que encajar al final de una lista de cosas que se hacen hoy, porque no está en ella. |
 | **RN-NAV-03** | Profundidad máxima de tres toques desde cualquier punto. |
 | **RN-NAV-04** | La navegación se oculta durante la escritura activa y las secuencias de cierre. Son estados de flujo, no de navegación. |
 | **RN-NAV-05** | Volver a una sección devuelve donde estabas, no a su raíz. Se olvida entre sesiones a propósito. |
@@ -226,7 +238,7 @@ catálogo son decorativos y van ocultos al lector de pantalla.
 | **RN-07** | Ningún dato identificable ni contenido escrito sale en analítica. |
 | **RN-08** | Lo escrito debe ser exportable. |
 | **RN-09** | Toda pantalla es abandonable sin coste y sin confirmación. |
-| **RN-10** | Cuatro secciones máximo; tres toques de profundidad máxima. |
+| **RN-10** | Cinco destinos máximo —tres en la cabecera, dos en la barra de abajo—; tres toques de profundidad máxima. |
 
 **Verifica estas antes de cada feature: si viola una regla, no entra.**
 
@@ -461,11 +473,13 @@ src/
 │   └── audio/       síntesis
 ├── diario/          lógica de mañana, noche, journal, historial, PIN
 ├── onboarding/      cómo se entra: pasos · catálogos · cuenta · estado
+├── perfil/          bloques de Tu perfil y su estado
 ├── breathing/       la herramienta completa
 ├── components/
-│   ├── shared/      Simbolo · TransicionLuz · Campo · pildora · Respiracion
+│   ├── shared/      Simbolo · TransicionLuz · Campo · Chips · pildora · BarraInferior
 │   ├── ui/          primitivas
 │   ├── onboarding/  las nueve pantallas y su contenedor
+│   ├── perfil/      la pantalla de cuenta y su marco de bloque
 │   └── diario/      NavStrivo · manana/ · noche/ · journal · historial
 └── pages/diario/    Hoy · Journal · Historial
 ```
@@ -478,7 +492,8 @@ src/
 | **RN-TEC-03** | Todo color sale de tokens. |
 | **RN-TEC-04** | **`breathing/` no importa nada de `diario/` y viceversa.** |
 | **RN-TEC-05** | **`components/shared/` no importa nada específico de una sección.** Lo que necesiten llega **por props**. |
-| **RN-TEC-06** | **`onboarding/` no importa `diario/` ni `breathing/`.** Corre antes de la app, una sola vez, y todo lo que escribe vive en `shared/`. No es una quinta sección: no se enruta, se interpone. |
+| **RN-TEC-06** | **`onboarding/` no importa `diario/` ni `breathing/`.** Corre antes de la app, una sola vez, y todo lo que escribe vive en `shared/`. No se enruta: se interpone. |
+| **RN-TEC-07** | **`perfil/` tampoco.** Es gestión de cuenta, no una sección del refugio: lo único que toca es `shared/profile`. Sí lee los catálogos del onboarding —género e identidad—, y eso es deliberado: son campos del perfil, no pasos de un recorrido, y dos copias del mismo catálogo se separan en cuanto alguien edite una. |
 
 Esa última regla es la que da forma a media base de código: `TransicionLuz` recibe su tema desde
 `globals.css` y no por props de sección; `Respiracion` (la de la sección) recibe `base` y `salida`
@@ -499,6 +514,11 @@ el componente.**
   una sección, que es lo que los hacía mudables.
 - `src/onboarding/pasos.js` → el orden del recorrido y qué cuenta en el indicador. Es el **único**
   sitio que sabe que el género no gasta número.
+- `src/onboarding/genero.js` → las cuatro opciones, los tres valores del modelo y el camino de
+  vuelta (`opcionDe`). Lo leen el onboarding y Tu perfil.
+- `src/perfil/bloques.js` → qué bloques tiene Tu perfil y en qué orden. Añadir uno es un
+  identificador aquí, un texto en el copy y un componente; hay una prueba que falla si falta alguno
+  de los tres.
 
 **Pila:** React + Vite (PWA) · IndexedDB local + Firestore para sync · Firebase Auth · Netlify con
 publicación automática · Vitest.
@@ -601,6 +621,38 @@ recorrido en `src/onboarding/` + `src/components/onboarding/`.
   de las áreas en los tokens: un color con nombre de área es una invitación a que el concepto vuelva
   por donde salió.
 
+### Tu perfil y la barra inferior (26 ago 2026)
+
+**Cinco destinos repartidos en dos barras.** Lo pidió el propietario del producto y **deroga cuatro
+reglas de navegación a la vista**, que es lo que RN-NAV-01 exigía antes de añadir una quinta: la
+regla se cambia, no se rodea. El blueprint §4 queda pendiente de esta revisión.
+
+- **Arriba lo que se hace ahora, abajo lo que ya pasó y tú.** El Historial baja de la cabecera a la
+  barra inferior, con Tu perfil al lado. El razonamiento del orden no se rompe, se cumple mejor: el
+  Historial ya no tiene que encajar al final de una lista de cosas que se hacen hoy.
+- **Las dos barras acompañan a todas las pantallas**, y las dos se ocultan juntas durante la
+  escritura y las secuencias de cierre (RN-NAV-04). Con la de abajo solo en Hoy, llegar al Historial
+  desde el Journal costaría dos toques donde antes costaba uno.
+- **El Historial no cambió por dentro.** Sigue siendo el mismo calendario y la misma vista de día.
+- **Tu perfil es una pila de bloques, y esa es su forma.** Hoy hay cuatro —nombre, género, horarios e
+  identidad central— y la lista de cuáles existen vive en `src/perfil/bloques.js`. Añadir el plan de
+  pago de una fase posterior es **un identificador allí, un texto en el copy y un componente**; hay
+  una prueba que falla si falta cualquiera de los tres. **No hay bloques de "próximamente"**: una
+  pantalla que promete lo que no puede cumplir es lo contrario de un refugio.
+- **Las tres preguntas del onboarding se vuelven a hacer con su mismo catálogo**, leído de
+  `onboarding/`. Son campos de `shared/profile`, no pasos de un recorrido. Si aparece un tercer
+  consumidor, esos módulos piden un hogar neutral.
+- **`.cabecera-espacio` pasa a llamarse `.cromo-espacio`.** Es la clase que viste de contratono en la
+  Mañana, y ahora viste dos piezas: la cabecera y la barra. Una clase que dijera "cabecera" en la
+  barra de abajo es de las que llevan a duplicar la regla en vez de reutilizarla.
+- **`Chips.jsx` sube a `components/shared/`**, con el mismo criterio que `Campo.jsx` y `pildora.js` en
+  F-1B: el Perfil pregunta el género y ofrece las mismas sugerencias, y tenía que hacerlo con **estos**
+  chips.
+
+**Sin cambios en el modelo de datos.** Tu perfil escribe los cinco campos que ya escribía el
+onboarding, con la misma función (`onboarding/estado.js`), así que no hay un segundo sitio donde se
+decida cómo se guarda una respuesta.
+
 ### Divergencias conocidas entre el blueprint y el código
 
 Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos manda**:
@@ -611,9 +663,13 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
 - **`dayState` existe en la capa de datos y nadie la escribe.** `saveDayState` y sus rutas siguen ahí,
   pero el ánimo es una vista derivada (RN-DB-05) y ninguna pantalla lo persiste. Es código muerto a
   la espera de decisión.
-- **Copy sin consumidores:** `shared.home`, `navegacion.volver`, `navegacion.barraLabel` (murieron con
-  el vestíbulo y la barra inferior) e `insights`, `profile`, `paywall`, `notifications`,
-  `difficultDay`, `return`, `days` (restos anteriores). Retirarlos es limpieza, no riesgo.
+- **Copy sin consumidores:** `shared.home` y `navegacion.volver` (murieron con el vestíbulo) e
+  `insights`, `difficultDay`, `return`, `days` (restos anteriores). Retirarlos es limpieza, no
+  riesgo. **Tres salieron de esta lista:** `notifications` lo consume la vista previa de P6, y
+  `navegacion.barraLabel` volvió con la barra inferior, con otro valor —ya no dice "Strivo", nombra
+  los dos destinos que lleva—. `profile` y `paywall` siguen huérfanos y **conviene no retirarlos**:
+  son el texto que espera el bloque de plan y suscripción de Tu perfil. Cuando llegue, hay que
+  decidir si se mudan a `copy.diario.perfil` o si se quedan donde están.
   **El bloque `onboarding` ya se retiró** (25 ago 2026): era el del commit raíz —`p1`, `p2`, `p3`,
   `p3b`, `p3c`, `p4`, `p5`, `p11`—, anterior incluso al onboarding de `feat/onboarding-p1-p3c`, y
   arrastraba copy de áreas que este producto ya no tiene.

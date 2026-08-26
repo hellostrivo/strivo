@@ -1,7 +1,14 @@
 // src/components/diario/NavStrivo.jsx
-// La navegación de la app: cabecera de marca y sus cuatro secciones.
+// La cabecera de la app: la marca y lo que se hace ahora.
 //
-// **Hoy · Journal · Respiración · Historial.**
+// **Hoy · Journal · Respiración.**
+//
+// **El Historial baja a la barra inferior el 26 de agosto de 2026**, con el
+// Perfil al lado (`components/shared/BarraInferior.jsx`). El reparto conserva
+// el razonamiento del orden en vez de romperlo: aquí arriba queda lo que se
+// hace ahora —el día, lo que se escribe, el aire— y abajo lo que ya pasó y tú.
+// El Historial dejaba de encajar al final de una lista de cosas que se hacen
+// hoy, y ahora no tiene que encajar en ella.
 //
 // **Renombrada el 25 de agosto de 2026** (paso 9 del plan de separación, §8).
 // Se llamaba por el espacio al que servía, cuando había dos; con un solo
@@ -41,19 +48,16 @@ const textos = copy.shared.navegacion
 /** El alto del logo en la cabecera. La palabra pide 56 px para leerse. */
 const ALTO_LOGO = 56
 
-// **Respiración entra entre Journal e Historial (24 ago).** Deja de ser la
+// **Respiración entró como sección el 24 de agosto.** Deja de ser la
 // herramienta transversal que colgaba del Home de Strivo y pasa a ser una
-// una sección más: el mismo componente, el mismo estado, la misma sesión, con
-// el cromo y la paleta del espacio. Lo pidió el propietario del producto.
+// sección más: el mismo componente, el mismo estado, la misma sesión, con el
+// cromo y la paleta del espacio. Lo pidió el propietario del producto.
 //
-// El orden no es alfabético ni histórico: Hoy, Journal y Respiración son lo que
-// se hace ahora —el día, lo que se escribe, el aire— y el Historial es lo que ya
-// pasó. Dejarla al final la habría metido en el pasado.
+// Las tres son lo que se hace ahora: el día, lo que se escribe, el aire.
 const SECCIONES = [
   { id: 'hoy', ruta: '/hoy' },
   { id: 'journal', ruta: '/journal' },
   { id: 'respiracion', ruta: '/respiracion' },
-  { id: 'historial', ruta: '/historial' },
 ]
 
 export default function NavStrivo() {
@@ -62,11 +66,11 @@ export default function NavStrivo() {
     // `fixed` que cubre la ventana entera, y sin esto la cabecera queda debajo
     // —presente en el DOM, invisible en pantalla—. Por debajo de la barra de
     // espacios (z-40) y de las secuencias de cierre (z-50), que sí mandan.
-    // `cabecera-espacio` no pinta nada por sí sola: es el asidero para que el
+    // `cromo-espacio` no pinta nada por sí sola: es el asidero para que el
     // momento de Hoy pueda vestirla desde `globals.css`, igual que a la barra de
     // abajo. En la mañana las dos van en el contratono del conmutador; en el
     // Journal y en el Historial, donde no hay momento, manda lo de siempre.
-    <header className="cabecera-espacio relative z-30 flex flex-col gap-3 border-b border-espacio bg-espacio-cabecera px-5 pb-3 pt-safe transicion-tema">
+    <header className="cromo-espacio relative z-30 flex flex-col gap-3 border-b border-espacio bg-espacio-cabecera px-5 pb-3 pt-safe transicion-tema">
       {/* El logo **es** el nombre: no lleva rótulo al lado. `titulo` le da el
           nombre accesible, así que quien no lo ve sigue oyendo "Strivo" una
           vez, ni ninguna ni dos. */}

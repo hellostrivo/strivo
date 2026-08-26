@@ -44,6 +44,22 @@ export function generoDe(opcion) {
 }
 
 /**
+ * El camino de vuelta: del valor guardado a la opción que se ve marcada.
+ *
+ * **El neutro vuelve como "sin contestar"** y no como una de sus dos opciones.
+ * Es lo que vale sin haber contestado (RN-GEN-05), así que elegir por alguien
+ * cuál de las dos fue sería inventarle una respuesta que no dio.
+ *
+ * Lo usan los dos sitios que preguntan esto: el onboarding al retomar un
+ * recorrido a medias y el Perfil cada vez que se abre.
+ */
+export function opcionDe(gender) {
+  if (gender === 'm') return 'masculino'
+  if (gender === 'f') return 'femenino'
+  return null
+}
+
+/**
  * Tocar una opción. Selección única, y tocar la elegida la suelta: es la forma
  * de dejar la pregunta en blanco sin tener que buscar un botón que lo diga.
  */

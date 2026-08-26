@@ -222,20 +222,23 @@ describe('el umbral de entrada es el de siempre, con el video de marca', () => {
 })
 
 describe('los chips son los de la casa', () => {
+  // Subieron a `components/shared/` el 26 de agosto, cuando el Perfil pasó a
+  // preguntar el género y a ofrecer las mismas sugerencias de identidad: un
+  // componente que sirve a dos secciones no es de ninguna de las dos.
   it('la forma sale del sitio compartido, no de una copia', () => {
-    const chips = codigoDe('src/components/onboarding/Chips.jsx')
+    const chips = codigoDe('src/components/shared/Chips.jsx')
     expect(chips).toMatch(/from '@components\/shared\/pildora'/)
     expect(chips).toMatch(/PILDORA_ELEGIDA/)
   })
 
   it('se sueltan tocándolos, así que se anuncian como tal y no como radios', () => {
-    const chips = codigoDe('src/components/onboarding/Chips.jsx')
+    const chips = codigoDe('src/components/shared/Chips.jsx')
     expect(chips).toMatch(/aria-pressed=/)
     expect(chips).not.toMatch(/type="radio"|role="radio"/)
   })
 
   it('lo elegido no se distingue solo por color (§10)', () => {
-    expect(codigoDe('src/components/onboarding/Chips.jsx')).toMatch(/MARCA/)
+    expect(codigoDe('src/components/shared/Chips.jsx')).toMatch(/MARCA/)
     expect(codigoDe('src/components/shared/pildora.js')).toMatch(/border-current/)
   })
 })

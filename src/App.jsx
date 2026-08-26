@@ -10,6 +10,12 @@
 // Con ellos se va `espacioDe()`, que decidía a qué espacio pertenecía una ruta,
 // y el atributo `data-space` que vestía el cromo según esa respuesta.
 //
+// **Cinco destinos repartidos en dos barras (26 ago 2026).** La cabecera lleva
+// lo que se hace ahora —Hoy, Journal, Respiración— y la barra de abajo lo que ya
+// pasó y tú —Historial, Tu perfil—. Las dos acompañan a todas las pantallas: con
+// la de abajo solo en Hoy, llegar al Historial desde el Journal costaría dos
+// toques donde antes costaba uno.
+//
 // **La profundidad se cuenta desde la raíz** (§4.3.2, regla 1): ningún destino
 // pasa de tres toques.
 //
@@ -21,6 +27,7 @@
 // devolvería un 404. El hash no depende de configuración que esta spec no toca.
 
 import { useEffect, useState } from 'react'
+import { clsx } from 'clsx'
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { momentoDe } from '@lib/timeSlot'
 
@@ -28,11 +35,13 @@ import ArranqueProvisional from '@/components/ArranqueProvisional'
 import Onboarding from '@components/onboarding/Onboarding'
 import TransicionLuz, { prefiereMenosMovimiento } from '@components/shared/TransicionLuz'
 import NavStrivo from '@components/diario/NavStrivo'
+import BarraInferior from '@components/shared/BarraInferior'
 import { cruzarUmbral, umbralPendiente } from '@lib/umbralSesion'
 import { shared } from '@/lib/db'
 
 import Respiracion from '@/breathing/Respiracion'
 import Hoy from '@/pages/diario/Hoy'
+import Perfil from '@components/perfil/Perfil'
 import Journal from '@/pages/diario/Journal'
 import Historial from '@/pages/diario/Historial'
 
@@ -181,7 +190,11 @@ function Secciones({ uid }) {
     >
       {!hideNav && <NavStrivo />}
 
-      <main className="flex-1">
+      {/* El hueco de la barra de abajo, que va fija: sin él, el último bloque
+          de cualquier pantalla queda debajo de ella. Se retira con la barra
+          durante la escritura y las secuencias de cierre, porque entonces no
+          hay nada que esquivar (RN-NAV-04). */}
+      <main className={clsx('flex-1', !hideNav && 'pb-24')}>
         <Routes>
           <Route path="/" element={<Navigate to={INICIO} replace />} />
 
@@ -210,6 +223,11 @@ function Secciones({ uid }) {
 
           <Route path="/historial" element={<Historial uid={uid} />} />
 
+          {/* Tu perfil: la gestión de la cuenta. No es una sección del diario
+              —no escribe en `diario/`, solo en `shared/profile`— y por eso su
+              componente no vive con las otras. */}
+          <Route path="/perfil" element={<Perfil uid={uid} />} />
+
           {/* Cualquier ruta desconocida vuelve a Hoy. */}
           <Route path="*" element={<Navigate to={INICIO} replace />} />
         </Routes>
@@ -228,6 +246,11 @@ function Secciones({ uid }) {
 
           Con "reducir movimiento" no se monta ninguno de los dos, aquí ni en
           Hoy: entrar es inmediato y sin velo (RN-VIS-05). */}
+      {/* Va después de `main` y no dentro: es cromo, como la cabecera, y las
+          dos se van juntas cuando la pantalla pide flujo en vez de navegación
+          (RN-NAV-04). */}
+      {!hideNav && <BarraInferior />}
+
       {entrando && <TransicionLuz conVideo onTerminar={() => setEntrando(false)} />}
     </div>
   )

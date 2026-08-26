@@ -259,7 +259,13 @@
   --transicion-luz: radial-gradient(circle, rgba(232, 165, 74, .18) 0%, rgba(232, 165, 74, 0) 70%);
 }
 
-/* ─── La cabecera de la sección en la Mañana ─────────────────────────────────
+/* ─── El cromo de la sección en la Mañana ────────────────────────────────────
+   **Se llamaba `.cabecera-espacio` hasta el 26 de agosto.** Dejó de ser exacto
+   cuando la barra inferior volvió con el Historial y el Perfil: es la misma
+   decisión de contratono para las dos piezas de cromo, arriba y abajo, y una
+   clase que dice "cabecera" en la barra de abajo es de las que llevan a que
+   alguien duplique la regla en lugar de reutilizarla.
+
    Sobre `strivo-am-300` —un rosa pálido— la franja se comía con la mañana clara,
    así que toma el mismo contratono que el conmutador Mañana/Noche, que es la
    otra pieza de cromo de esa pantalla. Las dos leen `--strivo-conmutador`, así
@@ -283,7 +289,7 @@
    cabecera, así que no podían quedarse literalmente iguales sin volverse
    ilegibles.
 */
-[data-momento='manana'] .cabecera-espacio {
+[data-momento='manana'] .cromo-espacio {
   background-color: var(--strivo-conmutador);
   /* Igual que abajo: lo que separa la franja es el bloque de color entero, no
      una línea. Contra la mañana clara el borde ya no tiene nada que hacer. */
@@ -311,7 +317,7 @@
    La regla es la misma que llevaba la vela, y el problema también: aquella se
    quedaba en 3,33:1 —pasaba el umbral de no-texto, pero se apagaba— y esta ni
    eso. De noche la cabecera es clara y el símbolo se pinta tal cual: 9,92:1. */
-[data-momento='manana'] .cabecera-espacio img {
+[data-momento='manana'] .cromo-espacio img {
   filter: brightness(0) invert(1);
 }
 

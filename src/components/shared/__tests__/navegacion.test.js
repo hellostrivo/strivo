@@ -7,10 +7,16 @@
 // inferior que devolvía a él, y la ausencia de enlaces cruzados entre los dos
 // espacios —que era la mitad del archivo y ya no tiene entre qué cruzar—.
 //
-// Lo que sobrevive, y es lo que vigila ahora: la app abre en Hoy, la cabecera
-// lleva sus cuatro secciones, ningún destino pasa de tres toques, la navegación
-// no dice ni una palabra del alcance retirado, y el momento lo sigue mandando el
-// conmutador de Hoy y nadie más.
+// Lo que sobrevive, y es lo que vigila ahora: la app abre en Hoy, ningún destino
+// pasa de tres toques, la navegación no dice ni una palabra del alcance
+// retirado, y el momento lo sigue mandando el conmutador de Hoy y nadie más.
+//
+// **Revisión del 26 de agosto de 2026: la barra inferior vuelve.** No es la que
+// se derogó —aquella era navegación de nivel superior y devolvía al vestíbulo—:
+// esta reparte cinco destinos en dos barras, arriba lo que se hace ahora y abajo
+// lo que ya pasó y tú. Las reglas que cambian con ella están anotadas caso por
+// caso, y RN-NAV-01 se reescribe en CLAUDE.md porque el Perfil es un quinto
+// destino y la regla pedía revisarla antes de añadirlo.
 
 import { readFileSync, readdirSync, statSync, existsSync } from 'fs'
 import { join } from 'path'
@@ -20,6 +26,7 @@ import { copy } from '@copy'
 
 const APP = 'src/App.jsx'
 const NAV = 'src/components/diario/NavStrivo.jsx'
+const BARRA = 'src/components/shared/BarraInferior.jsx'
 const HOY = 'src/pages/diario/Hoy.jsx'
 const CSS = 'src/styles/globals.css'
 
@@ -60,9 +67,9 @@ describe('la app abre en su primera sección (revisión 25 ago)', () => {
     expect(app).toMatch(/path="\*" element=\{<Navigate to=\{INICIO\} replace/)
   })
 
-  it('las cuatro secciones tienen ruta, y no hay una quinta', () => {
+  it('los cinco destinos tienen ruta, y no hay un sexto', () => {
     const rutas = (app.match(/<Route\s+path="([^"]+)"/g) ?? []).map((r) => r.match(/"([^"]+)"/)[1])
-    expect(rutas).toEqual(['/', '/hoy', '/journal', '/respiracion/*', '/historial', '*'])
+    expect(rutas).toEqual(['/', '/hoy', '/journal', '/respiracion/*', '/historial', '/perfil', '*'])
   })
 })
 
@@ -94,7 +101,7 @@ describe('lo que sostenía el vestíbulo se retiró entero', () => {
   })
 })
 
-describe('la cabecera lleva la marca y sus cuatro secciones', () => {
+describe('la cabecera lleva la marca y lo que se hace ahora', () => {
   const nav = codigoDe(NAV)
 
   it('la marca va arriba, y es solo el nombre (renombrado del 25 ago)', () => {
@@ -106,22 +113,29 @@ describe('la cabecera lleva la marca y sus cuatro secciones', () => {
     expect(copy.shared.navegacion.diario.cabecera).toBe('Strivo')
   })
 
-  it('las secciones son cuatro y en su orden, que es una decisión', () => {
-    // Respiración va entre Journal e Historial: las tres primeras son lo que se
-    // hace ahora y el Historial es lo que ya pasó (24 ago).
+  it('los cinco destinos están, repartidos en dos barras', () => {
+    // El reparto es la decisión: arriba lo que se hace ahora —el día, lo que se
+    // escribe, el aire—, abajo lo que ya pasó y tú.
     expect(Object.keys(copy.shared.navegacion.diario.secciones)).toEqual([
       'hoy',
       'journal',
       'respiracion',
       'historial',
+      'perfil',
     ])
-    const enLaNav = (nav.match(/id: '(\w+)'/g) ?? []).map((r) => r.match(/'(\w+)'/)[1])
-    expect(enLaNav).toEqual(['hoy', 'journal', 'respiracion', 'historial'])
+    const arriba = (nav.match(/id: '(\w+)'/g) ?? []).map((r) => r.match(/'(\w+)'/)[1])
+    const abajo = (codigoDe(BARRA).match(/id: '(\w+)'/g) ?? []).map((r) => r.match(/'(\w+)'/)[1])
+    expect(arriba).toEqual(['hoy', 'journal', 'respiracion'])
+    expect(abajo).toEqual(['historial', 'perfil'])
   })
 
-  it('ningún rótulo se trunca: son de una palabra', () => {
-    Object.values(copy.shared.navegacion.diario.secciones).forEach((rotulo) =>
-      expect(rotulo.split(' ')).toHaveLength(1),
+  it('ningún rótulo de la cabecera se trunca: son de una palabra', () => {
+    // La regla es de la cabecera, donde los rótulos comparten una fila con el
+    // logo. La barra de abajo lleva dos y tiene sitio de sobra: "Tu perfil"
+    // cabe entero, y así es como se llama esa sección.
+    const secciones = copy.shared.navegacion.diario.secciones
+    ;['hoy', 'journal', 'respiracion'].forEach((id) =>
+      expect(secciones[id].split(' ')).toHaveLength(1),
     )
   })
 })
@@ -151,8 +165,14 @@ describe('profundidad máxima de tres toques (§4.3.2, regla 1)', () => {
     CAMINOS.forEach((camino) => expect(camino.toques).toBeLessThanOrEqual(3))
   })
 
-  it('la cabecera pone las cuatro secciones a un toque desde cualquier otra', () => {
-    expect(codigoDe(NAV).match(/ruta: '\/\w+'/g) ?? []).toHaveLength(4)
+  it('los cinco destinos están a un toque desde cualquier pantalla', () => {
+    // Las dos barras acompañan a todas las pantallas. Con la de abajo solo en
+    // Hoy, llegar al Historial desde el Journal costaría dos toques.
+    expect(codigoDe(NAV).match(/ruta: '\/\w+'/g) ?? []).toHaveLength(3)
+    expect(codigoDe(BARRA).match(/ruta: '\/\w+'/g) ?? []).toHaveLength(2)
+    const app = codigoDe(APP)
+    expect(app).toMatch(/\{!hideNav && <NavStrivo \/>\}/)
+    expect(app).toMatch(/\{!hideNav && <BarraInferior \/>\}/)
   })
 })
 
@@ -208,26 +228,26 @@ describe('la cabecera se viste del momento de Hoy (21 ago)', () => {
   const css = readFileSync(CSS, 'utf8')
 
   it('la cabecera no nombra ni un color: solo declara su clase', () => {
-    expect(nav).toMatch(/cabecera-espacio/)
+    expect(nav).toMatch(/cromo-espacio/)
     expect(nav).not.toMatch(/#[0-9a-fA-F]{3,8}/)
     expect(nav).toMatch(/bg-espacio-cabecera/)
   })
 
   it('toma el mismo token que el conmutador, así que no pueden separarse', () => {
     expect(css).toMatch(
-      /\[data-momento='manana'\] \.cabecera-espacio \{[^}]*var\(--strivo-conmutador\)/,
+      /\[data-momento='manana'\] \.cromo-espacio \{[^}]*var\(--strivo-conmutador\)/,
     )
     expect(codigoDe('src/components/diario/SelectorMomento.jsx')).toMatch(/bg-strivo-conmutador/)
     // Un color copiado a mano sería otro color el día que el conmutador cambie.
-    const regla = css.slice(css.indexOf("[data-momento='manana'] .cabecera-espacio"))
+    const regla = css.slice(css.indexOf("[data-momento='manana'] .cromo-espacio"))
     expect(regla.slice(0, regla.indexOf('}'))).not.toMatch(/#[0-9a-fA-F]{3,8}/)
   })
 
   it('solo en Mañana: de noche la cabecera conserva su rango claro (SPEC_12)', () => {
-    expect(css).not.toMatch(/\[data-momento='noche'\] \.cabecera-espacio/)
+    expect(css).not.toMatch(/\[data-momento='noche'\] \.cromo-espacio/)
   })
 
-  it('las cuatro secciones conservan forma, peso y borde', () => {
+  it('las secciones conservan forma, peso y borde', () => {
     // "Quedan iguales" es sobre su diseño: lo que cambia es la superficie que
     // tienen debajo. Si se quedaran literalmente iguales serían ilegibles.
     expect(nav).toMatch(/rounded-full border px-4 py-2/)
@@ -238,13 +258,13 @@ describe('la cabecera se viste del momento de Hoy (21 ago)', () => {
   it('el borde de la sección activa sube a un tono que sí se ve', () => {
     // `strivo-pm-500` sobre el contratono da 2,97:1 — por debajo del 3:1 de
     // WCAG 1.4.11 para un indicador. El lavanda de la misma paleta, 11,57:1.
-    const regla = css.slice(css.indexOf("[data-momento='manana'] .cabecera-espacio"))
+    const regla = css.slice(css.indexOf("[data-momento='manana'] .cromo-espacio"))
     expect(regla.slice(0, regla.indexOf('}'))).toMatch(/--espacio-acento:\s*var\(--strivo-am-100\)/)
   })
 
   it('la vela va en monocromo, y solo sobre el contratono', () => {
-    expect(css).toMatch(/\[data-momento='manana'\] \.cabecera-espacio img/)
-    expect(css).not.toMatch(/\[data-momento='noche'\] \.cabecera-espacio img/)
+    expect(css).toMatch(/\[data-momento='manana'\] \.cromo-espacio img/)
+    expect(css).not.toMatch(/\[data-momento='noche'\] \.cromo-espacio img/)
   })
 })
 

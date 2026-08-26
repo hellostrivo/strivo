@@ -1,5 +1,11 @@
-// src/components/onboarding/Chips.jsx
-// Los chips del onboarding: la misma píldora del resto de la app.
+// src/components/shared/Chips.jsx
+// Chips de opción: la misma píldora del resto de la app.
+//
+// **Vive en `shared/` desde el 26 de agosto**, con el mismo criterio que
+// `Campo.jsx` y `pildora.js`: no importa nada de ninguna sección, no conoce
+// ningún catálogo y recibe sus opciones ya construidas. Lo que lo trajo aquí es
+// el Perfil, que pregunta el género y ofrece las mismas sugerencias de
+// identidad que el onboarding — y tenía que preguntarlo con **estos** chips.
 //
 // La forma sale de `components/shared/pildora.js`, que es de donde la toman
 // también los catálogos del día y las pantallas de consulta. No es un detalle

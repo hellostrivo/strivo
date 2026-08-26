@@ -94,13 +94,18 @@ describe('el diario no sabe nada de hábitos (§C2.6, revisión 25 ago)', () => 
       'lib',
       'onboarding',
       'pages',
+      'perfil',
       'styles',
       'tokens',
     ])
     // El onboarding no añade página: no se enruta, se interpone. `App.jsx`
     // monta uno u otro y no hay URL que lleve a él.
     expect(carpetasDe('src/pages')).toEqual(['diario'])
-    expect(carpetasDe('src/components')).toEqual(['diario', 'onboarding', 'shared', 'ui'])
+    // **`perfil` se suma el 26 de agosto de 2026**, con la barra inferior. Es
+    // gestión de cuenta, no una quinta sección del refugio: no escribe en
+    // `diario/` y lo único que toca es `shared/profile`. Va fuera del árbol del
+    // diario por eso, y no porque sea un producto aparte.
+    expect(carpetasDe('src/components')).toEqual(['diario', 'onboarding', 'perfil', 'shared', 'ui'])
   })
 
   it('no aparece Habit ni HabitLog en el árbol del Diario', () => {

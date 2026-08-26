@@ -19,7 +19,7 @@
 
 import { useRef } from 'react'
 import { CampoTexto } from '@components/shared/Campo'
-import { ListaDeChips } from './Chips'
+import { ListaDeChips } from '@components/shared/Chips'
 import { chipsDe, recortar } from '@/onboarding/identidad'
 
 export default function Identidad({ textos, valor, genero, onCambiar }) {

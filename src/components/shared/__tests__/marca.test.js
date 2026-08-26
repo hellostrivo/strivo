@@ -253,8 +253,8 @@ describe('el logo de la app (criterio 5, revisado 25 ago)', () => {
     // Donde el fondo es claro va tal cual y no hay regla: la cabecera de la
     // noche (9,84:1) y el velo crema del umbral (13,70:1).
     const css = cssDe('src/styles/globals.css')
-    expect(css).toMatch(/\[data-momento='manana'\] \.cabecera-espacio img/)
-    expect(css).not.toMatch(/\[data-momento='noche'\] \.cabecera-espacio img/)
+    expect(css).toMatch(/\[data-momento='manana'\] \.cromo-espacio img/)
+    expect(css).not.toMatch(/\[data-momento='noche'\] \.cromo-espacio img/)
     expect(css).toMatch(/\[data-moment='noche'\] \.velo-transicion img/)
     expect(css).not.toMatch(/\[data-moment='manana'\] \.velo-transicion img/)
   })
