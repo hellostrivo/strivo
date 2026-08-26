@@ -4,7 +4,14 @@
 
 import { describe, expect, it } from 'vitest'
 
-import { FRASES, TEMAS, diasSinRepetir, fraseDelDia } from '@/content/frases-del-dia'
+import {
+  FRASES,
+  TEMAS,
+  TIPOS,
+  diasSinRepetir,
+  fraseDelDia,
+  revisablesDe,
+} from '@/content/frases-del-dia'
 import { sumarDias } from '../fechas.js'
 
 describe('frases del día', () => {
@@ -40,9 +47,47 @@ describe('frases del día', () => {
     FRASES.forEach((frase) => expect(TEMAS).toContain(frase.tema))
   })
 
+  it('etiqueta cada frase con un tipo del catálogo', () => {
+    FRASES.forEach((frase) => expect(TIPOS).toContain(frase.tipo))
+  })
+
+  it('ninguna frase se queda sin atribución', () => {
+    // Una entrada sin atribuir es una cita que se lee como voz de Strivo, o una
+    // versión propia que se lee como cita. El campo no es decorativo.
+    const sinAtribuir = FRASES.filter(
+      (frase) => typeof frase.atribucion !== 'string' || frase.atribucion.trim() === '',
+    ).map((frase) => frase.id)
+    expect(sinAtribuir).toEqual([])
+  })
+
+  it('no pone dos temas iguales seguidos', () => {
+    // `fraseDelDia` recorre el array por índice de día, así que dos entradas
+    // consecutivas del mismo tema son dos días seguidos del mismo tema. El
+    // intercalado del repertorio es lo que lo evita, y esto lo vigila.
+    const repetidos = FRASES.slice(1)
+      .map((frase, i) => (frase.tema === FRASES[i].tema ? `${FRASES[i].id}→${frase.id}` : null))
+      .filter(Boolean)
+    expect(repetidos).toEqual([])
+  })
+
   it('no usa léxico prohibido ni exclamaciones (§3.6)', () => {
+    // **Se revisa lo revisable, no todo.** El texto de una cita es de una obra
+    // en dominio público: corregirlo para que pase el léxico la dejaría de ser
+    // una cita. Qué se exige de cada entrada lo decide `revisablesDe`, que vive
+    // junto a los datos y lo comparte con `scripts/lint-copy.js`.
     const prohibido = /fallaste|incumpliste|abandonaste|racha|deber[íi]as?|tendr[íi]as?|tarea|[¡!]/i
-    FRASES.forEach((frase) => expect(frase.texto).not.toMatch(prohibido))
+    const infractoras = FRASES.filter((frase) =>
+      revisablesDe(frase).some((cadena) => prohibido.test(cadena)),
+    ).map((frase) => `${frase.id} (${frase.tipo})`)
+    expect(infractoras).toEqual([])
+  })
+
+  it('exime el texto de una cita, nunca su atribución ni una original', () => {
+    const cita = FRASES.find((frase) => frase.tipo === 'cita')
+    const original = FRASES.find((frase) => frase.tipo === 'original')
+    expect(revisablesDe(cita)).toEqual([cita.atribucion])
+    expect(revisablesDe(original)).toEqual([original.texto, original.atribucion])
+    expect(revisablesDe(undefined)).toEqual([])
   })
 
   it('no lleva marca de género: ninguna frase necesita el helper', () => {

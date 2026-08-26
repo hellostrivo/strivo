@@ -209,7 +209,22 @@ export const copy = {
       // Hoy, así que no hay nada que anunciar ni que dar por terminado.
       // RN-HOY-03 se cumple sin decir nada — lo escrito está a la vista.
 
-      frase: { label: 'Frase de hoy' },
+      // La frase del día y quién la firma.
+      //
+      // **Las comillas son copy, no maquetación.** Marcan la diferencia entre
+      // reproducir a alguien y hablar por él: una cita va entrecomillada porque
+      // es palabra de otro, y una versión propia va sin comillas porque Strivo
+      // sí la firma. Son las mismas «» con las que se presenta la palabra
+      // propia en el resto del producto — dos convenciones de comillas serían
+      // dos maneras de citar en la misma app.
+      //
+      // `atribucionLabel` no se ve: nombra la línea de abajo para quien la
+      // escucha, donde el cambio de cuerpo y de cursiva no se percibe.
+      frase: {
+        label: 'Frase de hoy',
+        citaTemplate: '«{texto}»',
+        atribucionLabel: 'Atribución',
+      },
     },
 
     // El día que se escribe en Hoy: las dos secciones y lo que las enmarca.

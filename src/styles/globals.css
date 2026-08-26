@@ -259,6 +259,20 @@
   --transicion-luz: radial-gradient(circle, rgba(232, 165, 74, .18) 0%, rgba(232, 165, 74, 0) 70%);
 }
 
+/* La atribución de la frase del día, de noche.
+   El secundario de una superficie oscura (`#B4ACC6`) llega a AAA sobre el
+   degradado —8,2:1— y se queda en 5,0:1 sobre el recuadro de la frase, que es
+   más claro que el fondo contra el que se eligió. La atribución es texto de
+   cuerpo a 14 px, así que su umbral sigue siendo 7:1 y ahí no llega.
+   No se arregla en el componente, que no sabe qué hora es: lo arregla la
+   superficie que sí lo sabe, subiendo su propio secundario al lavanda claro de
+   la paleta (7,4:1). El componente sigue pidiendo `text-on-surface-soft` por el
+   papel que cumple (RN-VIS-02). De día no hace falta: el secundario oscuro da
+   7,4:1 sobre el rosa. */
+[data-momento='noche'] .bg-strivo-frase {
+  --color-text-soft: var(--strivo-am-100);
+}
+
 /* ─── El cromo de la sección en la Mañana ────────────────────────────────────
    **Se llamaba `.cabecera-espacio` hasta el 26 de agosto.** Dejó de ser exacto
    cuando la barra inferior volvió con el Historial y el Perfil: es la misma

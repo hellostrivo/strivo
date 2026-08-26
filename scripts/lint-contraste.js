@@ -140,7 +140,7 @@ const PARES = [
   ['Mañana · cuerpo sobre tarjeta de respiración', TEXTO.onLight, sobre('#FFFFFF', 0.72, MARCA.strivoAm100), CUERPO],
   // El recuadro de la frase del día: el secundario de la paleta en sólido.
   ['Mañana · frase sobre su recuadro', TEXTO.onLight, MARCA.strivoAm200, CUERPO],
-  ['Mañana · secundario sobre el recuadro de la frase', TEXTO.onLightSoft, MARCA.strivoAm200, CUERPO],
+  ['Mañana · atribución sobre el recuadro de la frase', TEXTO.onLightSoft, MARCA.strivoAm200, CUERPO],
   ['Mañana · borde del recuadro de la frase', MARCA.strivoPm400, MARCA.strivoAm200, SEPARADOR],
 
   // ── Noche ───────────────────────────────────────────────────────────
@@ -166,6 +166,11 @@ const PARES = [
   // el degradado, medido en su parada más clara, que es el peor caso.
   ['Noche · frase sobre su recuadro', TEXTO.onDark, sobre(MARCA.strivoPm400, 0.2, '#2C2350'), CUERPO],
   ['Noche · borde del recuadro de la frase', sobre(MARCA.strivoAm100, 0.3, sobre(MARCA.strivoPm400, 0.2, '#2C2350')), sobre(MARCA.strivoPm400, 0.2, '#2C2350'), SEPARADOR],
+  // La atribución de la cita, debajo de la frase. De noche NO usa el secundario
+  // de serie: sobre este recuadro se queda en 5,0:1 y es texto de cuerpo, así
+  // que la superficie sube su propio secundario al lavanda claro. Lo que se
+  // mide aquí es el color que se pinta de verdad.
+  ['Noche · atribución sobre el recuadro de la frase', MARCA.strivoAm100, sobre(MARCA.strivoPm400, 0.2, '#2C2350'), CUERPO],
 
   // ── El umbral de entrada (25 ago) ───────────────────────────────────────────
   // Con "reducir movimiento" el umbral pone el logo quieto donde iría el video.

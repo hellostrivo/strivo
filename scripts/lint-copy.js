@@ -59,6 +59,19 @@ const CLINICO = [
   { pattern: /\belle\b/i,            reason: 'Neutro por redacción, no con "elle" (SPEC_13 §7.1)' },
 ]
 
+// ─── Archivos que se revisan por entrada, no por línea ────────────────────────
+// El repertorio de frases del día son datos, no prosa: la mitad de sus entradas
+// son citas textuales en dominio público. Reescribir a Bécquer para que pase el
+// léxico lo dejaría de ser una cita, así que su texto se exime **por tipo** —lo
+// decide `revisablesDe`, que vive junto a los datos— y no relajando ninguna
+// regla para el resto de `src/`.
+//
+// Es el mismo movimiento que `checkRespiracion` hace unas líneas más abajo:
+// donde una comprobación por línea sería aproximada, se recorre el módulo ya
+// construido y se revisa lo que toca. La prosa del archivo —sus comentarios—
+// sigue revisándose línea a línea: lo que escribimos nosotros no se exime.
+const POR_ENTRADA = new Set(['src/content/frases-del-dia.js'])
+
 // Extensiones a revisar (excluye assets, binarios, etc.)
 const EXTENSIONS = ['.js', '.jsx', '.ts', '.tsx', '.json', '.md']
 
@@ -70,11 +83,22 @@ const EXCLUDE_DIRS = ['node_modules', 'dist', '.git', 'scripts', '__tests__']
 
 let issues = 0
 
+function esComentario(linea) {
+  const limpia = linea.trimStart()
+  return limpia.startsWith('//') || limpia.startsWith('/*') || limpia.startsWith('*')
+}
+
 function checkFile(filePath) {
   const content = readFileSync(filePath, 'utf8')
   const lines   = content.split('\n')
+  const soloProsa = POR_ENTRADA.has(filePath)
 
   lines.forEach((line, i) => {
+    // En los archivos que se revisan por entrada, aquí solo pasa la prosa. Los
+    // datos los revisa `checkFrases`, que sabe distinguir una cita de una
+    // original; esta pasada no lo sabría sin adivinar a qué entrada pertenece
+    // cada línea.
+    if (soloProsa && !esComentario(line)) return
     FORBIDDEN.forEach(({ pattern, reason }) => {
       if (pattern.test(line)) {
         console.error(`❌ [strivo-voice] ${filePath}:${i + 1}`)
@@ -117,6 +141,28 @@ function checkRespiracion(nodo, ruta) {
   Object.entries(nodo).forEach(([clave, valor]) => checkRespiracion(valor, `${ruta}.${clave}`))
 }
 
+/**
+ * El repertorio del día, entrada por entrada. Qué se revisa de cada una lo
+ * decide `revisablesDe` en `src/content/frases-del-dia.js`, que es el único
+ * sitio donde vive esa regla.
+ */
+function checkFrases(frases, revisablesDe) {
+  frases.forEach((frase) => {
+    revisablesDe(frase).forEach((cadena) => {
+      FORBIDDEN.forEach(({ pattern, reason }) => {
+        if (pattern.test(cadena)) {
+          console.error(`❌ [strivo-voice] frases-del-dia · ${frase.id} (${frase.tipo})`)
+          console.error(`   Cadena: ${cadena.replace(/\n/g, ' / ')}`)
+          console.error(`   Razón: ${reason}`)
+          console.error()
+          issues++
+          pattern.lastIndex = 0  // reset regex global
+        }
+      })
+    })
+  })
+}
+
 console.log('🔍 strivo-voice: verificando léxico prohibido en src/...\n')
 walkDir('./src')
 
@@ -127,6 +173,9 @@ if (copy.respiracion === undefined) {
 } else {
   checkRespiracion(copy.respiracion, 'respiracion')
 }
+
+const { FRASES, revisablesDe } = await import('../src/content/frases-del-dia.js')
+checkFrases(FRASES, revisablesDe)
 
 if (issues === 0) {
   console.log('✅ strivo-voice: léxico limpio. Todo en orden.\n')

@@ -29,6 +29,26 @@
 // suelto que el del resto de la pantalla: lo que se lee despacio se compone
 // despacio.
 //
+// **Quién lo dijo va debajo, siempre.** El repertorio tiene dos tipos de
+// entrada y la diferencia no es de catálogo, es de quién habla: una cita
+// reproduce a alguien —y va entrecomillada, con las mismas «» que la palabra
+// propia en el resto del producto— y una versión propia la firma Strivo, así
+// que va sin comillas. Las comillas salen del copy y no del JSX: son la marca
+// de estar citando, no un adorno de maquetación.
+//
+// **La atribución es una segunda voz, no una segunda línea del mismo texto.**
+// Baja un escalón de cuerpo, suelta la cursiva y pide el color secundario de la
+// superficie. No baja de ahí: a 14 px el umbral que le toca sigue siendo AAA, y
+// con el secundario tal como viene de serie el recuadro teñido de la noche se
+// quedaba en 5,0:1. Eso se resuelve donde se conoce esa superficie —el CSS del
+// sitio, que ahí sube el secundario al lavanda claro—, y no aquí: este archivo
+// sigue sin nombrar un color ni saber a qué hora se pinta (RN-VIS-02).
+//
+// **Los versos se respetan.** Un tercio del repertorio son citas en verso y
+// llevan sus saltos de línea escritos. `whitespace-pre-line` los pinta y sigue
+// dejando que cada verso largo pase de renglón cuando no cabe: el alternativo
+// —`pre`— habría sacado el texto por el costado en un teléfono estrecho.
+//
 // **El cuerpo es de 16 px, no de 20.** Lo que la distingue son el recuadro, el
 // tinte y la cursiva, no el tamaño: con esos tres encima, 20 px la convertían
 // en el titular de la pantalla y el saludo dejaba de serlo. Es el escalón que
@@ -36,20 +56,30 @@
 // coincide en cuerpo con la tarjeta de respiración y se separa de ella por
 // todo lo demás.
 
-import { copy } from '@copy'
+import { copy, interpolate } from '@copy'
 
 export default function FraseDelDia({ frase }) {
   if (!frase) return null
 
+  const textos = copy.diario.hoy.frase
+  const esCita = frase.tipo === 'cita'
+
   return (
     <figure
+      aria-label={textos.label}
       className="rounded-lg border border-strivo-frase bg-strivo-frase
                  px-6 py-6 shadow-elev-2 transicion-tema"
     >
-      <figcaption className="sr-only">{copy.diario.hoy.frase.label}</figcaption>
-      <blockquote className="font-display text-base italic leading-relaxed text-on-surface">
-        {frase.texto}
+      <blockquote
+        className="whitespace-pre-line font-display text-base italic
+                   leading-relaxed text-on-surface"
+      >
+        {esCita ? interpolate(textos.citaTemplate, { texto: frase.texto }) : frase.texto}
       </blockquote>
+      <figcaption className="mt-3 text-sm not-italic text-on-surface-soft">
+        <span className="sr-only">{textos.atribucionLabel}</span>
+        {frase.atribucion}
+      </figcaption>
     </figure>
   )
 }

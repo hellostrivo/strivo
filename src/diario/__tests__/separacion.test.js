@@ -416,6 +416,44 @@ describe('el Diario se escribe en Hoy, sin paso intermedio', () => {
     expect(css).toMatch(/\[data-momento='noche'\][\s\S]*?--strivo-frase:/)
   })
 
+  it('entrecomilla las citas, firma las dos y respeta los versos', () => {
+    // El repertorio tiene dos tipos de entrada y la diferencia no es de
+    // catálogo, es de quién habla: una cita reproduce a alguien —y va
+    // entrecomillada— y una versión propia la firma Strivo, así que va sin
+    // comillas. La atribución va debajo en las dos.
+    const frase = codigoDe('src/components/diario/FraseDelDia.jsx')
+    const marcado = frase.slice(frase.indexOf('return ('))
+    expect(frase).toMatch(/tipo === 'cita'/)
+    expect(marcado).toMatch(/citaTemplate/)
+    expect(marcado).toMatch(/frase\.atribucion/)
+    // Las comillas son copy, no maquetación: no hay ni una en el marcado, y son
+    // las mismas con las que se presenta la palabra propia en todo el producto.
+    expect(marcado).not.toMatch(/[«»“”]/)
+    expect(copy.diario.hoy.frase.citaTemplate).toBe('«{texto}»')
+    // La atribución es una segunda voz: baja de cuerpo, suelta la cursiva y
+    // pide el secundario de la superficie.
+    expect(marcado).toMatch(
+      /<figcaption[\s\S]*?text-sm[\s\S]*?not-italic[\s\S]*?text-on-surface-soft/,
+    )
+    // Un tercio del repertorio son citas en verso, con sus saltos escritos.
+    // `pre-line` los pinta y deja que un verso largo pase de renglón; `pre` lo
+    // habría sacado por el costado en un teléfono estrecho.
+    expect(marcado).toMatch(/whitespace-pre-line/)
+    expect(marcado).not.toMatch(/whitespace-pre(?!-line)|overflow-x/)
+  })
+
+  it('la atribución llega a AAA de noche sin que el componente sepa la hora', () => {
+    // El secundario de una superficie oscura se queda en 5,0:1 sobre el
+    // recuadro teñido de la frase, y la atribución es texto de cuerpo. Lo
+    // arregla la superficie que conoce esa hora, no el componente (RN-VIS-02).
+    const frase = codigoDe('src/components/diario/FraseDelDia.jsx')
+    expect(frase).toMatch(/text-on-surface-soft/)
+    const css = readFileSync('src/styles/globals.css', 'utf8')
+    expect(css).toMatch(
+      /\[data-momento='noche'\]\s+\.bg-strivo-frase\s*\{[\s\S]*?--color-text-soft:/,
+    )
+  })
+
   it('la tarjeta no nombra ni un color ni conoce el momento (RN-SURF-01)', () => {
     // La mañana y la noche se resuelven solas por los tokens de superficie del
     // tema que tenga encima. Una rama por momento serían dos que envejecen
