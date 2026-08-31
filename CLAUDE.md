@@ -277,10 +277,11 @@ shared/ {
 }
 
 diario/ {
-  // La mañana de tres momentos. `emotions` y `granVision` son de la versión
-  // anterior: se leen, no se escriben.
+  // La mañana de tres momentos. `emotions`, `granVision` y —desde el 30 ago
+  // 2026— `feeling` e `intention` son de versiones anteriores: se leen, no se
+  // escriben. Los dos últimos guardaban un id suelto donde ahora hay lista.
   morningEntry/{fecha}: { version, updatedAt, completedAt, skipped,
-                          feeling, feelingOther, intention, intentionOther,
+                          feelings[], feelingOther, intentions[], intentionOther,
                           gratitude[], action, reflectionId, reflection },
 
   // La noche de tres momentos. `gratitude`, `learning`, `sleepState` y
@@ -328,9 +329,9 @@ pantalla**.
 ### Mañana
 
 ```
-1 de 3  ·  ¿Cómo me siento esta mañana?           (única, 11 + Algo más)
-2 de 3  ·  ¿Qué agradezco hoy?                    (1 a 3, uno al abrir)
-3 de 3  ·  ¿Cómo me gustaría sentirme…?           (única, 9 + Algo más)
+1 de 3  ·  ¿Cómo me siento esta mañana?           (hasta 3, de 11 + Algo más)
+2 de 3  ·  ¿Qué agradezco hoy?                    (1 a 10, uno al abrir)
+3 de 3  ·  ¿Cómo me gustaría sentirme…?           (hasta 3, de 9 + Algo más)
            ¿Qué puedo hacer hoy…?                 (texto libre + ideas)
    +    ·  Si quieres, una última pausa           (opcional, algunos días)
    →       Tu intención · Tu paso · «Comenzar mi día»
@@ -345,8 +346,21 @@ pantalla**.
   producto donde se restringe: una intención de estar triste no es una intención.
 - **La diferencia entre punto de partida e intención no se mide** (RN-MAN-13). Empezar cansado y
   querer estar en calma **no es un problema a resolver**: es lo que la pregunta esperaba.
-- **La gratitud abre con un solo campo** (RN-MAN-07): varios campos vacíos se leen como huecos por
-  rellenar, y esto no es un formulario.
+- **Las dos preguntas emocionales admiten hasta tres** (30 ago 2026). Nadie amanece sintiendo una
+  sola cosa, y obligar a elegir cuál de dos es la verdadera es pedirle a alguien que se resuma antes
+  de empezar el día. **Al llegar a tres, la cuarta no entra hasta soltar alguna** —lo decidió el
+  propietario del producto sobre la alternativa del Journal, que deja entrar la cuarta soltando la
+  más antigua—: aquí las tres son la respuesta, y quitarle a alguien algo que dijo de sí mismo para
+  hacer sitio es peor que no añadir lo cuarto. **No es un bloqueo de los que §14 prohíbe**: nada
+  impide avanzar, ningún chip se apaga y la pregunta se puede dejar en blanco entera. Lo único que
+  no crece es el tope, y se dice en voz baja cuando se toca la cuarta.
+- **Las ideas de la acción siguen a la primera intención**, no a las tres: son ideas para empezar, no
+  una lista que se reparta. Se elige la primera **porque se eligió primero, no porque sea la mejor**.
+- **La gratitud abre con un solo campo y llega hasta diez** (RN-MAN-07, ampliada el 30 ago 2026):
+  varios campos vacíos se leen como huecos por rellenar, y esto no es un formulario. Diez es sitio
+  de sobra, no una meta: **no se anuncia por adelantado y no hay «3 de 10» en ninguna parte**, porque
+  contar lo que queda lo convertiría en un objetivo. Al llegar se dice una vez y la lista deja de
+  crecer.
 - **Las ideas de apoyo abren una pregunta y nunca rellenan el campo** (RN-MAN-08), a los 5 s sin
   escribir **en el renglón enfocado**. Dos «Ahora no» y se callan por la sesión.
 - **Tocar una idea de acción NO la guarda todavía:** es una propuesta de la app hasta que se
@@ -355,7 +369,7 @@ pantalla**.
 ### Noche
 
 ```
-1 de 3  ·  ¿Qué quiero reconocer de hoy?          (lista de 1 a 3, uno al abrir)
+1 de 3  ·  La pregunta del día, según el ánimo    (lista de 1 a 3, uno al abrir)
 2 de 3  ·  Una reflexión breve                    (rotativa, o ligada a la mañana)
 3 de 3  ·  ¿Cómo me siento al cerrar el día?      (única, 12 + Algo más)
    +    ·  ¿Hay algo que quieras dejar aquí?      (por la emoción, o a mano)
@@ -369,6 +383,29 @@ pantalla**.
 - **La noche no evalúa el día** (RN-NOC-01): no compara la mañana con la noche y **no cuenta nada de
   lo escrito**. «Hoy encontraste 2 cosas que agradecer» es un balance, y los balances están
   prohibidos.
+- **La pregunta que abre la noche se dice en el tono del día** (RN-NOC-14, 30 ago 2026), y es la
+  única del producto que cambia de redacción. Tres grupos —sereno, neutro, cuidado— y **quince
+  preguntas que rotan por fecha**. A quien cierra el día cansado, inquieto, frustrado, triste o con
+  demasiado encima **no se le pide que encuentre algo bueno**: se le pregunta qué quiere reconocer,
+  que admite haber atravesado el día y no exige nada más. Solo el grupo sereno pregunta por algo
+  bueno, y solo porque la persona acaba de decir que cierra el día en paz.
+  - **Es lista cerrada, no un análisis** (RN-06), igual que la descarga: se mira el id del catálogo
+    y jamás una palabra escrita. **La palabra propia va al neutro** (RN-NOC-10), y también lo que no
+    se pueda clasificar: entre decir de más y decir de menos sobre el estado de alguien, se dice de
+    menos.
+  - **Una difícil manda sobre las demás.** Nunca una pregunta de gratitud sobre un día que alguien
+    acaba de nombrar difícil, ni aunque haya nombrado también algo sereno.
+  - **La rotación se deriva de la fecha y no se guarda.** Congelarla al mostrarse —como hace la
+    reflexión— la dejaría clavada en el grupo equivocado en cuanto alguien cambiara su emoción, que
+    es justo lo que tiene que poder pasar. Derivarla da las tres cosas: estable dentro de la noche,
+    distinta a la siguiente, y al día se actualiza al instante. **Y no pide un campo nuevo.**
+  - **Cambiar el ánimo cambia la pregunta y las ideas, nunca lo escrito.** Las filas viven en el
+    estado del recorrido; esto solo decide qué se lee encima de ellas.
+  - **Con ideas de apoyo, y son las de la pregunta visible.** Mismo componente, misma espera de 5 s
+    en el renglón enfocado, mismos dos «Ahora no» que en la gratitud de la mañana, y **nunca
+    rellenan el campo**. Las tenía prohibidas cuando la pregunta traía su abanico en el texto de
+    apoyo; ahora que se estrecha para acompañar, las ideas la acompañan a ella.
+  - **Las quince hablan en primera persona** (§12), como el resto de preguntas de la noche.
 - **La intención entra como pregunta, jamás como examen** (RN-NOC-05): se pregunta qué se notó, nunca
   si se cumplió.
 - **La descarga se ofrece sola tras cuatro emociones concretas** —inquietud, frustración, tristeza,
@@ -381,8 +418,11 @@ pantalla**.
 
 ### Ambos
 
-- **Selección única en las tres preguntas emocionales.** Se suelta tocando el chip otra vez, y esa es
-  la forma de omitir. Por eso son botones con `aria-pressed` y **no radios**: un radio no se
+- **Hasta tres en la mañana, una en la noche**, y la asimetría es la decisión: de la emoción de
+  cierre sale el punto de ánimo del calendario, que es de cinco estados y no sabría qué hacer con
+  tres. Con una sola, tocar otra **cambia la respuesta** en vez de alcanzar un tope: exigir soltar
+  antes de elegir sería pedir dos toques para corregirse. Se suelta tocando el chip otra vez, y esa
+  es la forma de omitir. Por eso son botones con `aria-pressed` y **no radios**: un radio no se
   deselecciona, y anunciarlo así sería mentir al lector de pantalla. **«Algo más» es la excepción**:
   tocarlo cuando ya está elegido **reabre el campo**, y quitarlo tiene su propio control — editar y
   borrar no pueden ser el mismo gesto cuando hay texto de por medio.
@@ -521,7 +561,15 @@ el componente.**
 - `src/lib/respiracion/` → el motor de ritmo. `ritmoRespiracion.js` es un envoltorio de compatibilidad.
 - `src/lib/umbralSesion.js` → el «ya se cruzó» del umbral, compartido por sus dos consumidores.
 - `src/diario/manana.js` → `resumenDeManana`: qué bloques hay, en qué orden y con qué título. El
-  componente solo pinta.
+  componente solo pinta. También `animosDeManana` e `intencionesDeManana`, que son el **único** sitio
+  que sabe que una mañana de agosto guardó un id suelto donde ahora hay lista.
+- `src/diario/seleccionEmociones.js` → la mecánica de los tres catálogos emocionales del día.
+  **Cuántas respuestas admite cada pregunta lo declara quien crea la selección**, no la mecánica ni
+  la pantalla: un tope escrito en dos sitios se separa en cuanto alguien cambia uno. Se llamaba
+  `seleccionUnica.js` y dejó de ser cierto el 30 de agosto de 2026.
+- `src/diario/nocheReconocimiento.js` → los tres grupos de ánimo, qué emoción cae en cuál y qué
+  pregunta toca hoy. Lo leen el recorrido de la noche y su pantalla de consulta, que así repite la
+  pregunta que se contestó sin necesidad de guardarla.
 - `src/components/shared/pildora.js` → la forma de la píldora, compartida por los chips del día,
   las pantallas de consulta y los del onboarding. **Subió de `diario/` a `shared/` en F-1B**, junto
   con `Campo.jsx`, cuando el onboarding pasó a montarlos: ninguno de los dos importa nada ni nombra
@@ -566,7 +614,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**55 archivos de prueba · 1.492 casos · los seis comandos en verde.**
+**58 archivos de prueba · 1.578 casos · los seis comandos en verde.**
 
 ### Marca: el logo oficial y el video de apertura (25 ago 2026)
 
@@ -699,6 +747,70 @@ fotograma se ve con bandas a los lados. Cambiarlo obligaría a que los dos
 instantes de arranque —resolver el uid, preguntar si queda onboarding— supieran
 si va a haber umbral, o meterían el fogonazo que hoy evitan. **Está sin decidir**,
 y es del propietario del producto.
+
+### Los rituales admiten más de una respuesta, y la noche pregunta según el día (30 ago 2026)
+
+Lo pidió el propietario del producto. Son tres cambios y **el modelo de datos se amplía sin tocar
+nada de lo ya escrito** (RN-DB-04):
+
+- **Las dos preguntas emocionales de la mañana admiten hasta tres.** `feeling` e `intention` salen de
+  la lista de escritura y entran `feelings` e `intentions`; las mañanas de agosto siguen trayendo su
+  campo en singular y se releen igual. Al llegar a tres, **la cuarta no entra hasta soltar alguna**:
+  se preguntó explícitamente y se decidió así sobre la alternativa del Journal. El razonamiento largo
+  vive en `seleccionEmociones.js`, que es donde está la regla.
+- **La gratitud llega hasta diez.** Un número en `filas.js` y la frase del tope —«Diez cosas. Nada
+  mal.»— que ya estaba escrita para una lista de diez y por fin la tiene. Sigue abriendo con un campo.
+- **La pregunta que abre la noche se dice en el tono del día.** Descrita arriba, en §7. Es la primera
+  vez que una pregunta principal cambia de redacción, y **no deroga RN-VOZ-03**: esa regla protege
+  las preguntas que ordenan cada recorrido, que siguen llegando siempre igual. Lo que cambia aquí es
+  el tono de una sola, por lo que la persona acaba de decir de sí misma.
+
+**Las quince preguntas se escribieron en primera persona.** Llegaron en segunda —«¿Qué quieres
+reconocer de este día?»— y §12 pide que todas las preguntas de la noche hablen en primera. Las ideas
+de apoyo sí tutean, como las de la mañana: ahí sí es la app la que ofrece algo.
+
+**Nada de esto se ha visto en un teléfono todavía**, como el resto del producto. La pregunta que
+ninguna prueba contesta es si tres píldoras elegidas y una lista de diez siguen cabiendo en un
+recorrido de uno o dos minutos.
+
+### Primera persona en toda pregunta, y una noche sin ecos (30 ago 2026)
+
+Auditoría de las 67 cadenas con interrogación del copy, a petición del propietario del producto. La
+línea que se aplicó es una que ya existía en el código: **lo que se pinta como encabezado de la
+pregunta (`h1`/`h2`) va en primera persona; lo que va en la franja de apoyo —el `lead` gris, las
+ideas bajo el renglón enfocado— puede tutear.** Es la app la que ofrece algo ahí.
+
+De 35 encabezados que son pregunta, 33 cumplían. **Los dos que no estaban en los rituales, y los dos
+se corrigieron:**
+
+- `noche.descarga.titulo` → «¿Hay algo de mi día que quiera dejar aquí?»
+- `noche.reflexion.manana` → «Esta mañana elegí {emocion} como intención. ¿Qué noté en mí?»
+
+**El onboarding y Tu perfil se quedan en segunda persona**, decidido explícitamente: son gestión de
+cuenta, no recorrido. Son nueve encabezados —`p2a`, `p3`, `p3.otherPlaceholder`, `p5`, `p6` y los
+cuatro rótulos de los bloques del perfil— y **no son un descuido**: si alguien los «arregla», los
+está cambiando en contra de una decisión tomada.
+
+**Y ninguna pregunta repite lo que ya se pregunta esa misma noche.** Una noche enseña hasta cuatro
+—reconocimiento, reflexión, emoción y descarga—. El banco de la reflexión y la descarga llevan meses
+estables, así que **fijan el vocabulario y el reconocimiento es el que se aparta**: quedan fuera de
+sus quince preguntas «me dejó», «me llevo», «aprendí sobre mí», «recordar», «guardar», «ocupó
+espacio», «soltar», «dejar» y la apertura «¿Hay algo que quiera…», que es de la descarga. Siete
+redacciones se movieron por esto, y cuatro ideas de apoyo que decían casi literalmente el encabezado
+que tenían encima.
+
+**Lo que hacía falta arreglar de verdad era la vigilancia.** La regla estaba enumerada, no
+comprobada: dos pruebas con listas escritas a mano, y la de la noche no incluía esas dos preguntas.
+Por eso llevaban en segunda persona desde el 23 de agosto con la suite entera en verde — no fallaron,
+es que nadie las metió en la lista. Ahora la lista las incluye y hay dos guardas más: ninguna pregunta
+del reconocimiento puede usar el vocabulario ya ocupado, y ninguna idea de apoyo puede repetir el
+encabezado de su pantalla. **Las guardas se comprobaron contra las redacciones viejas antes de darlas
+por buenas**: la primera versión dejaba escapar tres de los cuatro choques, que es exactamente el
+modo en que una prueba así no sirve para nada.
+
+**Sigue sin haber una comprobación transversal** que recorra el copy entero y exija primera persona a
+todo encabezado nuevo, con su lista de exenciones. Es lo que evitaría que esto vuelva a pasar en una
+pantalla que aún no existe, y está sin hacer.
 
 ### Divergencias conocidas entre el blueprint y el código
 

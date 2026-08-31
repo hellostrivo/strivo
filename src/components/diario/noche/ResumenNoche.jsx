@@ -14,8 +14,12 @@
 //
 // La emoción vuelve en su píldora, con su emoji: se eligió tocando una y se
 // relee en una. La forma sale de `pildora.js`, el mismo sitio del que la toma
-// `ChipsUnicos`. Aquí es un `<span>` y no un botón — parecerse a un control sin
-// serlo es aceptable cuando toda la pantalla es de consulta.
+// `ChipsCatalogo`. Aquí es un `<span>` y no un botón — parecerse a un control
+// sin serlo es aceptable cuando toda la pantalla es de consulta.
+//
+// **La noche trae una sola ficha y la mañana hasta tres**, y aun así las dos
+// pantallas pintan `fichas`: una forma de bloque para las dos consultas, no dos
+// que se parezcan. Que aquí siempre venga una es del catálogo de la noche.
 //
 // A la respuesta escrita a mano no se le pone emoji: sale su palabra entre
 // comillas y la píldora se pinta igual.
@@ -32,12 +36,12 @@ const textos = copy.diario.noche
 
 function Respuesta({ bloque }) {
   if (bloque.forma === 'chip') {
-    return (
-      <span className={clsx(PILDORA, PILDORA_ELEGIDA)}>
-        {bloque.emoji && <span aria-hidden="true">{bloque.emoji}</span>}
-        <span>{bloque.lineas[0]}</span>
+    return bloque.fichas.map((ficha) => (
+      <span key={ficha.texto} className={clsx(PILDORA, PILDORA_ELEGIDA)}>
+        {ficha.emoji && <span aria-hidden="true">{ficha.emoji}</span>}
+        <span>{ficha.texto}</span>
       </span>
-    )
+    ))
   }
 
   return bloque.lineas.map((linea, indice) => (
@@ -57,7 +61,12 @@ export default function ResumenNoche({ bloques, onEditar }) {
       {bloques.map((bloque) => (
         <section key={bloque.id} className="flex flex-col gap-3">
           <h2 className="font-display text-md text-on-surface">{bloque.titulo}</h2>
-          <div className="flex flex-col items-start gap-1">
+          <div
+            className={clsx(
+              'flex items-start',
+              bloque.forma === 'chip' ? 'flex-wrap gap-2' : 'flex-col gap-1',
+            )}
+          >
             <Respuesta bloque={bloque} />
           </div>
         </section>

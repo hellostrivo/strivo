@@ -5,10 +5,11 @@
 // que era del alcance retirado y no vuelve: un motivo que este producto no
 // puede atender no es un motivo, es una promesa.
 //
-// Es de **selección múltiple**, al revés que las tres preguntas emocionales del
-// día: aquellas piden nombrar un estado —uno— y esta pregunta por lo que se
-// busca, que rara vez es una sola cosa. Por eso no reutiliza `seleccionUnica`:
-// son dos reglas de selección distintas, no dos copias de la misma.
+// Es de **selección múltiple y sin tope**, que es lo que la separa de las tres
+// preguntas emocionales del día: aquellas admiten un número corto de estados
+// —una la noche, hasta tres la mañana— y esta pregunta por lo que se busca, que
+// rara vez es una sola cosa y no tiene por qué caber en tres. Por eso no
+// reutiliza `seleccionEmociones`: son dos reglas distintas, no dos copias.
 //
 // **No hay tope de cuántos se eligen.** Un máximo aquí sería pedirle a alguien
 // que priorice lo que vino a buscar antes de haber entrado.
@@ -62,7 +63,7 @@ export function alternar(seleccion, id) {
  * Lo que de verdad se guarda.
  *
  * Si se tocó "Otro" y no se escribió nada, la opción se descarta: no se guarda
- * un motivo vacío. Es la misma regla que `seleccionUnica.paraGuardar` aplica a
+ * un motivo vacío. Es la misma regla que `seleccionEmociones.paraGuardar` aplica a
  * la palabra propia de las emociones.
  *
  * @returns {{motivos: string[], motivoOtro: ?string}}

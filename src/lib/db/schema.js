@@ -90,14 +90,25 @@ export const FIELDS = Object.freeze({
   // días ya guardados los conservan y el Historial los sigue leyendo, pero
   // nadie vuelve a escribirlos. Un intento lanza UNKNOWN_FIELD, que es lo
   // correcto: en `lib/db/` los registros los escribe el código.
+  //
+  // `feeling` e `intention` salieron por lo mismo el 30 de agosto de 2026,
+  // cuando las dos preguntas emocionales pasaron a admitir hasta tres
+  // respuestas: donde había un id ahora hay una lista, `feelings` e
+  // `intentions`. **Las mañanas ya escritas no se tocan** (RN-DB-04): siguen
+  // trayendo su campo en singular y `manana.js` lo sigue leyendo, así que un
+  // día de agosto se relee igual que se escribió. Lo que no vuelve a ocurrir es
+  // que alguien escriba ahí.
+  //
+  // `feelingOther` e `intentionOther` **se quedan en singular y siguen
+  // escribiéndose**: "Algo más" es uno por pregunta, no uno por selección.
   morningEntry: Object.freeze([
     'version',
     'updatedAt',
     'completedAt',
     'skipped',
-    'feeling',
+    'feelings',
     'feelingOther',
-    'intention',
+    'intentions',
     'intentionOther',
     'gratitude',
     'action',

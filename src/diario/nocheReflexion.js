@@ -33,6 +33,9 @@ import { sumarDias } from './fechas.js'
 // De la mañana entra **una** cosa: cómo se lee la intención que se eligió. §6
 // lo pide expresamente y no abre la puerta a nada más.
 import { ID_OTRA, INTENCION, recortarPropia } from './mananaEmociones.js'
+// Y cómo se leen las intenciones de una mañana guardada, que desde el 30 de
+// agosto de 2026 son hasta tres y pueden venir en cualquiera de las dos formas.
+import { intencionesDeManana } from './manana.js'
 
 const textos = copy.diario.noche.reflexion
 
@@ -71,8 +74,14 @@ export function preguntaPorId(id) {
  * sobre una palabra que no es suya.
  */
 export function intencionDeLaManana(morning, genero) {
-  if (morning?.intention === ID_OTRA) return recortarPropia(morning.intentionOther).trim()
-  return INTENCION.etiquetaDe(morning?.intention, genero)
+  // **La primera de las tres**, si esa mañana eligió varias. La frase nombra
+  // una intención en singular —"elegiste {emocion} como intención"— y meterle
+  // las tres la convertiría en un repaso de la mañana, que es justo lo que §6
+  // no quiere. Se elige la primera porque se eligió primero, no porque sea la
+  // más importante: la app no ordena por importancia lo que alguien nombró.
+  const [primera = null] = intencionesDeManana(morning)
+  if (primera === ID_OTRA) return recortarPropia(morning?.intentionOther).trim()
+  return INTENCION.etiquetaDe(primera, genero)
 }
 
 /**
@@ -82,7 +91,7 @@ export function intencionDeLaManana(morning, genero) {
  * intención no se haya omitido. Una mañana a medias no presta nada.
  */
 export function mananaOfreceIntencion(morning) {
-  return Boolean(morning?.completedAt) && Boolean(morning?.intention)
+  return Boolean(morning?.completedAt) && intencionesDeManana(morning).length > 0
 }
 
 /** Las noches ya escritas que traen pregunta, de la más reciente hacia atrás. */

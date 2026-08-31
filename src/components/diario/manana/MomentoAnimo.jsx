@@ -9,12 +9,16 @@
 // agobio y tristeza, y ninguno lleva tratamiento de advertencia: la pregunta es
 // qué hay, no qué convendría que hubiera.
 //
+// **Y caben hasta tres a la vez** (27 ago 2026). Amanecer cansado y a la vez con
+// ganas no es una contradicción que haya que resolver antes de seguir: es lo
+// más corriente que hay. Cuántas admite lo dice el catálogo, no esta pantalla.
+//
 // La pregunta de la intención **ya no está aquí**. Se mudó a la pantalla 3,
 // junto a la acción, porque "¿Qué puedo hacer hoy para acercarme a **esa
 // sensación**?" es un pronombre sin antecedente si la sensación se eligió dos
 // pantallas atrás.
 
-import ChipsUnicos from '../ChipsUnicos'
+import ChipsCatalogo from '../ChipsCatalogo'
 import { copy } from '@copy'
 import { ANIMO } from '@/diario/mananaEmociones'
 
@@ -27,14 +31,16 @@ export default function MomentoAnimo({ valores, genero, onCambiar }) {
         <h2 className="font-display text-md text-on-surface">{textos.titulo}</h2>
         <p className="text-sm text-on-surface-soft">{textos.lead}</p>
       </div>
-      <ChipsUnicos
+      <ChipsCatalogo
         catalogo={ANIMO.CATALOGO}
-        seleccion={valores.animo}
+        alternar={ANIMO.alternarVarias}
+        seleccion={valores.animos}
         genero={genero}
         etiqueta={textos.titulo}
         textosOtra={textos.otra}
+        avisoTexto={textos.max}
         valorPropio={valores.animoPropio}
-        onSeleccionar={(id) => onCambiar({ animo: id })}
+        onSeleccionar={(animos) => onCambiar({ animos })}
         onValorPropio={(texto) => onCambiar({ animoPropio: texto })}
       />
     </section>

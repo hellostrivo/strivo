@@ -28,6 +28,7 @@
 
 import { copy } from '@copy'
 import { CIERRE, animoDeEmocion } from './nocheEmociones.js'
+import { reconocimientoDeLaNoche } from './nocheReconocimiento.js'
 import { animoDerivado } from './estadoSueno.js'
 import { preguntaGuardada } from './nocheReflexion.js'
 
@@ -160,24 +161,33 @@ export function algoQueReconoces(entrada) {
  *
  * La reflexión trae **la pregunta que salió esa noche** —rota, así que sin
  * `reflectionId` no se sabría cuál se contestó— y la reconstruye con la
- * intención de esa misma mañana cuando fue la ligada a ella.
+ * intención de esa misma mañana cuando fue la ligada a ella. El reconocimiento
+ * hace lo mismo por otro camino: la suya se deriva de la emoción de cierre y de
+ * la fecha, que están las dos guardadas, así que no hace falta un campo más
+ * para poder releerla tal como se preguntó.
  *
  * **Lo que quedó en blanco no aparece.** Sin marcador de ausencia y sin "sin
  * responder": una noche a medias se lee entera, no incompleta.
  *
  * @returns {Array<{id: string, titulo: string, forma: 'chip'|'texto',
- *                   emoji: ?string, lineas: string[]}>}
+ *                   fichas: Array<{texto: string, emoji: ?string}>,
+ *                   lineas: string[]}>}
  */
-export function resumenDeNoche(entrada, morning, genero) {
+export function resumenDeNoche(entrada, morning, genero, fecha) {
   const textos = copy.diario.noche
   const bloques = []
 
   if (hayReconocimiento(entrada)) {
     bloques.push({
       id: PREGUNTAS.reconocimiento,
-      titulo: textos.reconocimiento.titulo,
+      // La pregunta que se contestó, no una genérica: se rehace con la emoción
+      // que quedó guardada y con la fecha de la noche, que son las dos cosas de
+      // las que salió. Sin fecha sale la primera de su grupo — que se relea
+      // ligeramente distinta es preferible a rotularla con una etiqueta que
+      // nadie llegó a leer.
+      titulo: reconocimientoDeLaNoche(entrada.closingFeeling, fecha).titulo,
       forma: 'texto',
-      emoji: null,
+      fichas: [],
       lineas: entrada.recognized
         .map((linea) => String(linea ?? '').trim())
         .filter((linea) => linea !== ''),
@@ -190,7 +200,7 @@ export function resumenDeNoche(entrada, morning, genero) {
       id: PREGUNTAS.reflexion,
       titulo: pregunta.titulo,
       forma: 'texto',
-      emoji: null,
+      fichas: [],
       lineas: [String(entrada.reflection).trim()],
     })
   }
@@ -201,8 +211,10 @@ export function resumenDeNoche(entrada, morning, genero) {
       id: PREGUNTAS.emocion,
       titulo: textos.emocion.titulo,
       forma: 'chip',
-      emoji: CIERRE.emojiDe(entrada.closingFeeling),
-      lineas: [emocion],
+      // Una sola ficha: la noche guarda una emoción. La forma del bloque es la
+      // misma que la de la mañana, que trae hasta tres.
+      fichas: [{ texto: emocion, emoji: CIERRE.emojiDe(entrada.closingFeeling) }],
+      lineas: [],
     })
   }
 
@@ -211,7 +223,7 @@ export function resumenDeNoche(entrada, morning, genero) {
       id: PREGUNTAS.descarga,
       titulo: textos.descarga.titulo,
       forma: 'texto',
-      emoji: null,
+      fichas: [],
       lineas: [String(entrada.release).trim()],
     })
   }

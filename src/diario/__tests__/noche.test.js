@@ -61,6 +61,14 @@ import {
   reflexionDeLaNoche,
   siguienteDelBanco,
 } from '@/diario/nocheReflexion'
+import {
+  GRUPOS,
+  GRUPO_POR_DEFECTO,
+  grupoDeCierre,
+  indiceDelDia,
+  preguntasDe,
+  reconocimientoDeLaNoche,
+} from '@/diario/nocheReconocimiento'
 
 const textos = copy.diario.noche
 
@@ -73,6 +81,8 @@ const MOMENTO = (nombre) => codigoDe(`src/components/diario/noche/${nombre}.jsx`
 const CONTENEDOR = codigoDe('src/components/diario/DiarioNoche.jsx')
 
 const HOY = '2026-08-23'
+/** Una fecha cuya rotación deja la primera pregunta de cada grupo... la neutra. */
+const FECHA = '2026-08-23'
 /** Una noche del historial: fecha, qué pregunta salió y de dónde. */
 const noche = (id, reflectionId, reflectionSource = FUENTES.rotativa) => ({
   id,
@@ -82,7 +92,10 @@ const noche = (id, reflectionId, reflectionSource = FUENTES.rotativa) => ({
 /** Una mañana cerrada con intención, que es lo que §6 pide para vincular. */
 const mananaCon = (intention, intentionOther = null) => ({
   completedAt: `${HOY}T08:00:00+02:00`,
-  intention,
+  // La mañana guarda hasta tres desde el 30 de agosto de 2026, y de ellas la
+  // noche toma **una**: la primera. Aquí se pasa una sola, que es el caso que
+  // §6 describe.
+  intentions: intention ? [intention] : [],
   intentionOther,
 })
 
@@ -90,8 +103,15 @@ const mananaCon = (intention, intentionOther = null) => ({
 
 describe('criterio 1 — el reconocimiento sustituye a la pregunta de gratitud', () => {
   it('la pregunta y su texto de apoyo se leen con su redacción exacta', () => {
-    expect(textos.reconocimiento.titulo).toBe('¿Qué quiero reconocer de hoy?')
-    expect(textos.reconocimiento.lead).toBe(
+    // Desde el 30 de agosto de 2026 la pregunta se dice en el tono del día, así
+    // que ya no hay **una** redacción: hay tres grupos. La neutra es la que
+    // llega cuando no se sabe nada —y así se entra al recorrido, porque la
+    // emoción se elige dos momentos después—, y conserva la redacción y el
+    // texto de apoyo de siempre.
+    const neutra = reconocimientoDeLaNoche(null, FECHA)
+    expect(neutra.grupo).toBe(GRUPOS.neutro)
+    expect(neutra.titulo).toBe('¿Qué quiero reconocer de este día?')
+    expect(neutra.lead).toBe(
       'Puede ser algo que disfrutaste, intentaste, enfrentaste o resolviste.',
     )
     expect(textos.reconocimiento.placeholder).toBe('Algo que hice, sentí o atravesé…')
@@ -108,24 +128,201 @@ describe('criterio 1 — el reconocimiento sustituye a la pregunta de gratitud',
   })
 
   it('la redacción no pide que el día haya sido bueno ni exige una cantidad', () => {
-    const bloque = `${textos.reconocimiento.titulo} ${textos.reconocimiento.lead} ${textos.reconocimiento.placeholder}`
-    ;[/tres cosas/i, /positiv/i, /bueno/i, /al menos/i, /escribe /i].forEach((patron) =>
-      expect(bloque).not.toMatch(patron),
-    )
+    // Solo el grupo sereno puede preguntar por algo bueno, y solo porque la
+    // persona acaba de decir que cierra el día en paz. Los otros dos no lo
+    // hacen nunca: pedirle a quien llega cansado que encuentre lo bueno de su
+    // día es exigirle que esté bien.
+    ;[GRUPOS.neutro, GRUPOS.cuidado].forEach((grupo) => {
+      const bloque = `${preguntasDe(grupo).join(' ')} ${textos.reconocimiento.grupos[grupo].lead}`
+      ;[/tres cosas/i, /positiv/i, /bueno/i, /al menos/i, /escribe /i, /agradec/i].forEach(
+        (patron) => expect(bloque).not.toMatch(patron),
+      )
+    })
+    expect(textos.reconocimiento.placeholder).not.toMatch(/tres cosas|positiv|bueno|al menos/i)
   })
 
   it('todas las preguntas hablan en primera persona (§12)', () => {
     const enPrimera = /\bme\b|\bmi\b|\bm[ií]|quiero|necesito|aprend/i
     const enSegunda = /\bt[uúe]\b|\btus\b|\bpiensa\b|\bescribe\b/i
     const titulos = [
-      textos.reconocimiento.titulo,
+      // Las quince del reconocimiento, no solo la que salga hoy: la regla es de
+      // todas las preguntas de la noche, y una sola en segunda persona se
+      // colaría el día que le tocara rotar.
+      ...Object.values(GRUPOS).flatMap((grupo) => preguntasDe(grupo)),
       textos.emocion.titulo,
       ...BANCO.map((pregunta) => pregunta.titulo),
+      // Las dos que faltaban, y por las que esto se revisó (30 ago 2026):
+      // llevaban en segunda persona desde el 23 de agosto con la suite en
+      // verde, porque esta lista se escribe a mano y nadie las metió. Toda
+      // pregunta que se conteste escribiendo va aquí — la descarga se contesta
+      // escribiendo y la ligada a la mañana también.
+      textos.descarga.titulo,
+      textos.reflexion.manana.tituloTemplate,
     ]
     titulos.forEach((titulo) => {
       expect(titulo).toMatch(enPrimera)
       expect(titulo).not.toMatch(enSegunda)
     })
+  })
+})
+
+// ─── La pregunta se dice en el tono del día (30 ago 2026) ────────────────────
+
+describe('la pregunta del reconocimiento acompaña el ánimo, y no lo interpreta', () => {
+  it('las doce emociones del catálogo caen en un grupo, y solo en uno', () => {
+    // Lista cerrada y explícita (RN-06): se mira el id, jamás lo que alguien
+    // escribió. Las cinco de cuidado son las cuatro que ya abren la tarjeta de
+    // descarga más el cansancio, que no pide soltar nada pero tampoco está para
+    // buscarle el lado bueno al día.
+    const porGrupo = (grupo) => CIERRE.IDS.filter((id) => grupoDeCierre(id) === grupo)
+
+    expect(porGrupo(GRUPOS.sereno)).toEqual([
+      'en_paz',
+      'tranquilo',
+      'agradecido',
+      'orgulloso',
+      'aliviado',
+    ])
+    expect(porGrupo(GRUPOS.neutro)).toEqual(['pensativo', 'neutral'])
+    expect(porGrupo(GRUPOS.cuidado)).toEqual([
+      'cansado',
+      'inquieto',
+      'frustrado',
+      'triste',
+      'abrumado',
+    ])
+    // Ni una se queda fuera, y ninguna está en dos sitios.
+    expect(porGrupo(GRUPOS.sereno).length + porGrupo(GRUPOS.neutro).length).toBe(7)
+    expect(CIERRE.IDS).toHaveLength(12)
+  })
+
+  it('sin emoción elegida se pregunta en neutro: así se entra al recorrido', () => {
+    // La pregunta es el primer momento y la emoción se elige en el tercero, así
+    // que la primera vez que se lee no se sabe nada del día. No se da por hecho
+    // que fue bueno ni que fue malo.
+    expect(GRUPO_POR_DEFECTO).toBe(GRUPOS.neutro)
+    expect(grupoDeCierre(null)).toBe(GRUPOS.neutro)
+    expect(grupoDeCierre([])).toBe(GRUPOS.neutro)
+  })
+
+  it('la palabra propia no se clasifica: se pregunta en neutro', () => {
+    // Colocar en una escala una palabra que alguien acaba de nombrar sería
+    // exactamente el diagnóstico que §9 prohíbe (RN-NOC-10).
+    expect(grupoDeCierre(ID_OTRA)).toBe(GRUPOS.neutro)
+    expect(grupoDeCierre('una_de_otra_version')).toBe(GRUPOS.neutro)
+  })
+
+  it('con varias elegidas, una difícil manda sobre todas las demás', () => {
+    // Nunca una pregunta de gratitud sobre un día que alguien acaba de nombrar
+    // difícil, ni aunque haya nombrado también algo sereno.
+    expect(grupoDeCierre(['en_paz', 'triste'])).toBe(GRUPOS.cuidado)
+    expect(grupoDeCierre(['agradecido', 'cansado'])).toBe(GRUPOS.cuidado)
+    // Y solo se pregunta por algo bueno cuando **todas** son serenas.
+    expect(grupoDeCierre(['en_paz', 'agradecido'])).toBe(GRUPOS.sereno)
+    expect(grupoDeCierre(['en_paz', 'pensativo'])).toBe(GRUPOS.neutro)
+    expect(grupoDeCierre(['en_paz', ID_OTRA])).toBe(GRUPOS.neutro)
+  })
+
+  it('a quien cierra el día en difícil no se le pide encontrar algo bueno', () => {
+    const dificil = reconocimientoDeLaNoche('triste', FECHA)
+    expect(dificil.grupo).toBe(GRUPOS.cuidado)
+    expect(dificil.titulo).not.toMatch(/bueno|agradec|disfrut|positiv/i)
+    expect(dificil.lead).toBe('No hace falta que haya sido un buen día.')
+  })
+
+  it('rota por fecha: la misma toda la noche, distinta a la siguiente', () => {
+    // Se deriva y no se guarda, a propósito: congelarla al mostrarse —como hace
+    // la reflexión— la dejaría clavada en el grupo equivocado en cuanto alguien
+    // cambiara su emoción de cierre, que es justo lo que tiene que poder pasar.
+    expect(reconocimientoDeLaNoche('triste', FECHA).titulo).toBe(
+      reconocimientoDeLaNoche('triste', FECHA).titulo,
+    )
+    expect(reconocimientoDeLaNoche('triste', '2026-08-21').titulo).not.toBe(
+      reconocimientoDeLaNoche('triste', '2026-08-22').titulo,
+    )
+  })
+
+  it('recorre el grupo entero antes de repetir ninguna', () => {
+    const cuantas = preguntasDe(GRUPOS.cuidado).length
+    const dias = ['2026-08-20', '2026-08-21', '2026-08-22', '2026-08-23', '2026-08-24']
+    const salidas = dias.map((dia) => reconocimientoDeLaNoche('cansado', dia).titulo)
+    expect(new Set(salidas).size).toBe(cuantas)
+    // Y a la vuelta empieza otra vez por donde empezó.
+    expect(reconocimientoDeLaNoche('cansado', '2026-08-25').titulo).toBe(salidas[0])
+  })
+
+  it('sin fecha legible sale la primera del grupo, no se rompe nada', () => {
+    expect(indiceDelDia(null, 5)).toBe(0)
+    expect(indiceDelDia('no es una fecha', 5)).toBe(0)
+    expect(indiceDelDia(FECHA, 0)).toBe(0)
+    expect(reconocimientoDeLaNoche('triste', null).titulo).toBe(preguntasDe(GRUPOS.cuidado)[0])
+  })
+
+  it('cambiar la emoción cambia la pregunta y las ideas, y nada más', () => {
+    // Lo escrito no se toca: este módulo devuelve texto y las filas viven en el
+    // estado del recorrido. Aquí se comprueba lo que sí cambia.
+    const antes = reconocimientoDeLaNoche('en_paz', FECHA)
+    const despues = reconocimientoDeLaNoche('triste', FECHA)
+    expect(despues.titulo).not.toBe(antes.titulo)
+    expect(despues.sugerencias).not.toBe(antes.sugerencias)
+    // Y la pregunta se arma con la emoción de pantalla, no con la guardada.
+    expect(CONTENEDOR).toMatch(/reconocimientoDeLaNoche\(valores\.emocion, estado\.fecha\)/)
+    expect(CONTENEDOR).not.toMatch(/reconocimientoDeLaNoche\(night/)
+  })
+
+  it('ninguna repite lo que ya se pregunta esa misma noche', () => {
+    // Una noche enseña hasta cuatro preguntas: esta, la reflexión, la emoción y
+    // la descarga. El banco de la reflexión y la descarga llevan meses estables,
+    // así que fijan el vocabulario y el reconocimiento se aparta.
+    //
+    // Se comparan los verbos que hacen la pregunta, no las palabras sueltas:
+    // "hoy" y "día" están en casi todas y no hacen que dos sean la misma.
+    const YA_OCUPADOS = [
+      /me dej[óo]/i, // "¿Qué me dejó el día de hoy?"
+      /me llevo/i, //   ...y decirlo al revés es decir lo mismo
+      /aprend[íi]/i, // "¿Qué aprendí hoy sobre mí?"
+      /recordar/i, // "¿Qué quiero recordar de este día?"
+      /guardar/i, //    ...y "guardar" es "recordar" con otra palabra
+      /ocup[óo]/i, // "¿Qué ocupó más espacio en mí hoy?"
+      /soltar/i, // "¿Qué necesito soltar por hoy?"
+      /dejar/i, // la descarga: "¿Hay algo de mi día que quiera dejar aquí?"
+      /¿hay algo que quier/i, //  ...y su forma de abrir, que es lo que se
+      //                            reconoce antes de leerla entera
+    ]
+
+    Object.values(GRUPOS)
+      .flatMap((grupo) => preguntasDe(grupo))
+      .forEach((pregunta) => YA_OCUPADOS.forEach((patron) => expect(pregunta).not.toMatch(patron)))
+  })
+
+  it('las ideas de apoyo no repiten el encabezado que tienen encima', () => {
+    // Son texto de apoyo y tutean, que es lo correcto ahí. Lo que no pueden es
+    // decir lo mismo que la pregunta de arriba: dos veces lo mismo en una
+    // pantalla se lee como un fallo, no como una ayuda.
+    const nucleo = (texto) =>
+      texto
+        .toLocaleLowerCase('es')
+        .replace(/[¿?.,]/g, '')
+        .split(/\s+/)
+        .filter((palabra) => palabra.length > 3 && !['hoy', 'día', 'algo'].includes(palabra))
+        .join(' ')
+
+    Object.values(GRUPOS).forEach((grupo) => {
+      const encabezados = preguntasDe(grupo).map(nucleo)
+      textos.reconocimiento.grupos[grupo].sugerencias.opciones.forEach((opcion) => {
+        const idea = nucleo(opcion.pregunta)
+        encabezados.forEach((encabezado) => expect(idea).not.toBe(encabezado))
+      })
+    })
+  })
+
+  it('la consulta repite la pregunta que se contestó, no una genérica', () => {
+    // Se rehace con la emoción guardada y la fecha, que están las dos en el
+    // registro: no hace falta un campo más para poder releerla (RN-MAN-21).
+    const escrita = { recognized: ['seguí adelante'], closingFeeling: 'triste' }
+    const [bloque] = resumenDeNoche(escrita, null, 'f', FECHA)
+    expect(bloque.titulo).toBe(reconocimientoDeLaNoche('triste', FECHA).titulo)
+    expect(bloque.titulo).not.toBe(reconocimientoDeLaNoche('en_paz', FECHA).titulo)
   })
 })
 
@@ -176,8 +373,29 @@ describe('criterio 2 — el reconocimiento admite hasta tres elementos', () => {
     expect(MOMENTO('MomentoReconocimiento')).toMatch(/maxLength=\{MAX_RECONOCIMIENTO_LINEA\}/)
   })
 
-  it('el bloque no ofrece ideas: la pregunta ya trae su propio abanico', () => {
-    expect(MOMENTO('MomentoReconocimiento')).not.toMatch(/CampoGratitud|sugerencias/)
+  it('el bloque ofrece ideas, y son las de la pregunta que está en pantalla', () => {
+    // No las tenía: la pregunta traía su propio abanico en el texto de apoyo y
+    // una lista genérica encima habría sido decirle a alguien de qué tiene que
+    // hablar su día. Ahora que la pregunta se estrecha para acompañar, las
+    // ideas la acompañan a ella. Es el mismo componente de la mañana, con su
+    // misma espera y sus mismos dos "Ahora no".
+    const bloque = MOMENTO('MomentoReconocimiento')
+    expect(bloque).toMatch(/import CampoGratitud from/)
+    expect(bloque).toMatch(/sugerencias=\{pregunta\.sugerencias\}/)
+    // Y nunca escriben por nadie: eso lo garantiza `CampoGratitud`, que abre
+    // una pregunta detonante y no toca el campo.
+    expect(bloque).not.toMatch(/onCambiar\(.*opcion|setTexto|value=\{opcion/)
+  })
+
+  it('cada grupo trae sus propias ideas, no unas generales', () => {
+    const opcionesDe = (grupo) =>
+      textos.reconocimiento.grupos[grupo].sugerencias.opciones.map((o) => o.id)
+    const [sereno, neutro, cuidado] = [GRUPOS.sereno, GRUPOS.neutro, GRUPOS.cuidado].map(opcionesDe)
+    expect(sereno).not.toEqual(neutro)
+    expect(neutro).not.toEqual(cuidado)
+    // A quien llega cansado no se le sugiere buscar lo bueno del día.
+    const texto = JSON.stringify(textos.reconocimiento.grupos[GRUPOS.cuidado].sugerencias)
+    expect(texto).not.toMatch(/bueno|disfrut|agradec|amable/i)
   })
 })
 
@@ -262,7 +480,7 @@ describe('criterio 3 — la reflexión rota, y rota de forma predecible', () => 
         mananaCon('presente'),
         'f',
       ).titulo,
-    ).toBe('Esta mañana elegiste Presente como intención. ¿Qué notaste al respecto?')
+    ).toBe('Esta mañana elegí Presente como intención. ¿Qué noté en mí?')
     expect(preguntaGuardada(null, null, 'n')).toBe(null)
     // Sin intención en esa mañana no se inventa una frase a medias.
     expect(
@@ -281,7 +499,7 @@ describe('criterio 3 — la reflexión rota, y rota de forma predecible', () => 
 describe('criterio 4 — la conexión con la mañana, como mucho dos veces por semana', () => {
   it('nombra la intención y pregunta qué se notó, nunca si se cumplió', () => {
     expect(textos.reflexion.manana.tituloTemplate).toBe(
-      'Esta mañana elegiste {emocion} como intención. ¿Qué notaste al respecto?',
+      'Esta mañana elegí {emocion} como intención. ¿Qué noté en mí?',
     )
     expect(textos.reflexion.manana.lead).toBe(
       'No importa si el día resultó distinto a lo que esperabas.',
@@ -296,9 +514,7 @@ describe('criterio 4 — la conexión con la mañana, como mucho dos veces por s
     const elegida = reflexionDeLaNoche([], HOY, mananaCon('calma'), 'n')
     expect(elegida.fuente).toBe(FUENTES.manana)
     expect(elegida.id).toBe(ID_MANANA)
-    expect(elegida.titulo).toBe(
-      'Esta mañana elegiste En calma como intención. ¿Qué notaste al respecto?',
-    )
+    expect(elegida.titulo).toBe('Esta mañana elegí En calma como intención. ¿Qué noté en mí?')
   })
 
   it('no aparece si la mañana quedó a medias o sin intención', () => {
@@ -345,7 +561,7 @@ describe('criterio 4 — la conexión con la mañana, como mucho dos veces por s
       'con menos prisa',
     )
     expect(reflexionDeLaNoche([], HOY, mananaCon(ID_OTRA, 'con menos prisa'), 'f').titulo).toBe(
-      'Esta mañana elegiste con menos prisa como intención. ¿Qué notaste al respecto?',
+      'Esta mañana elegí con menos prisa como intención. ¿Qué noté en mí?',
     )
   })
 
@@ -399,8 +615,15 @@ describe('criterio 5 y 6 — la emoción de cierre, en selección única', () =>
     CIERRE.CATALOGO.forEach((opcion) =>
       expect(Object.keys(opcion).sort()).toEqual(['emoji', 'id', 'label']),
     )
-    const chips = codigoDe('src/components/diario/ChipsUnicos.jsx')
-    expect(chips).not.toMatch(/dificil|alerta|aviso|rojo|red-/i)
+    const chips = codigoDe('src/components/diario/ChipsCatalogo.jsx')
+    expect(chips).not.toMatch(/dificil|alerta|rojo|red-|warning/i)
+    // Y no hay ninguna rama por emoción: el componente no nombra ni un id del
+    // catálogo salvo el de la palabra propia, que no es una emoción. La única
+    // frase que puede aparecer —el aviso del tope de la mañana— es de cuántas
+    // caben, no de cuál se eligió: llega entera desde fuera y no se toca aquí.
+    CIERRE.IDS.forEach((id) => expect(chips).not.toMatch(new RegExp(`'${id}'`)))
+    expect(chips).toMatch(/avisoTexto/)
+    expect(chips).not.toMatch(/avisoTexto[\s\S]{0,80}(dificil|triste|inquieto)/i)
     // Sobre el bloque de la emoción, no sobre todo el copy: "una preocupación"
     // es una de las cosas que §4 ofrece nombrar en la reflexión.
     expect(JSON.stringify(textos.emocion)).not.toMatch(/cuidado|preocupa|alarma|problema/i)
@@ -416,7 +639,7 @@ describe('criterio 5 y 6 — la emoción de cierre, en selección única', () =>
   it('se anuncia como algo que se puede soltar, no como un radio', () => {
     // Un radio no se deselecciona; este chip sí, y decir lo contrario sería
     // mentirle a quien usa un lector de pantalla.
-    const chips = codigoDe('src/components/diario/ChipsUnicos.jsx')
+    const chips = codigoDe('src/components/diario/ChipsCatalogo.jsx')
     expect(chips).toMatch(/aria-pressed=/)
     expect(chips).not.toMatch(/type="radio"|role="radio"/)
   })
@@ -425,7 +648,7 @@ describe('criterio 5 y 6 — la emoción de cierre, en selección única', () =>
     const pildora = codigoDe('src/components/shared/pildora.js')
     expect(pildora).toMatch(/border-current/)
     expect(pildora).toMatch(/font-medium/)
-    const chips = codigoDe('src/components/diario/ChipsUnicos.jsx')
+    const chips = codigoDe('src/components/diario/ChipsCatalogo.jsx')
     expect(chips).toMatch(/MARCA/)
   })
 
@@ -460,7 +683,7 @@ describe('criterio 7 — "Algo más" se crea, se elige, se edita y se quita', ()
   })
 
   it('el componente ofrece confirmar, editar y quitar', () => {
-    const chips = codigoDe('src/components/diario/ChipsUnicos.jsx')
+    const chips = codigoDe('src/components/diario/ChipsCatalogo.jsx')
     expect(chips).toMatch(/onKeyDown/)
     expect(chips).toMatch(/textosOtra\.confirmar/)
     expect(chips).toMatch(/textosOtra\.quitar/)
@@ -480,7 +703,7 @@ describe('criterio 7 — "Algo más" se crea, se elige, se edita y se quita', ()
 
 describe('criterio 8 — la descarga aparece cuando corresponde, o cuando se pide', () => {
   it('su copy es el de §8, con sus dos salidas', () => {
-    expect(textos.descarga.titulo).toBe('¿Hay algo que quieras dejar aquí por hoy?')
+    expect(textos.descarga.titulo).toBe('¿Hay algo de mi día que quiera dejar aquí?')
     expect(textos.descarga.lead).toBe('No necesitas resolverlo ahora.')
     expect(textos.descarga.opcional).toBe('Opcional')
     expect(textos.descarga.omitir).toBe('Ahora no')

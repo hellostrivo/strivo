@@ -46,8 +46,10 @@ import { LIMITES, desdeTextos, filasIniciales, textosDe } from '@/diario/filas'
 import {
   MOMENTOS,
   VERSION,
+  animosDeManana,
   camposOmitidos,
   estaCerrada,
+  intencionesDeManana,
   lineasDeCierre,
   marcaLocal,
   resumenDeManana,
@@ -63,9 +65,12 @@ const PASO_PAUSA = MOMENTOS.length
 const PASOS = copy.diario.manana.pasos
 
 const VALORES_VACIOS = Object.freeze({
-  animo: null,
+  // Las dos preguntas emocionales admiten hasta tres respuestas desde el 30 de
+  // agosto de 2026, así que aquí viven listas y no ids sueltos. Cuántas caben
+  // no se decide en esta pantalla: lo dice el catálogo.
+  animos: [],
   animoPropio: '',
-  intencion: null,
+  intenciones: [],
   intencionPropia: '',
   accion: '',
   reflexion: '',
@@ -85,9 +90,11 @@ export default function DiarioManana({ estado, acciones }) {
   // de ahí manda lo que se está escribiendo y el guardado va detrás.
   useEffect(() => {
     setValores({
-      animo: morning?.feeling ?? null,
+      // `animosDeManana` lee las dos formas: la lista de hoy y el id suelto de
+      // las mañanas de agosto, que no se migran (RN-DB-04).
+      animos: animosDeManana(morning),
       animoPropio: morning?.feelingOther ?? '',
-      intencion: morning?.intention ?? null,
+      intenciones: intencionesDeManana(morning),
       intencionPropia: morning?.intentionOther ?? '',
       accion: morning?.action ?? '',
       reflexion: morning?.reflection ?? '',
@@ -120,12 +127,15 @@ export default function DiarioManana({ estado, acciones }) {
     const siguientes = { ...valores, ...patch }
     setValores(siguientes)
 
-    const animo = ANIMO.paraGuardar(siguientes.animo, siguientes.animoPropio)
-    const intencion = INTENCION.paraGuardar(siguientes.intencion, siguientes.intencionPropia)
+    const animo = ANIMO.paraGuardarVarias(siguientes.animos, siguientes.animoPropio)
+    const intencion = INTENCION.paraGuardarVarias(
+      siguientes.intenciones,
+      siguientes.intencionPropia,
+    )
     const registro = {
-      feeling: animo.valor,
+      feelings: animo.valores,
       feelingOther: animo.otro,
-      intention: intencion.valor,
+      intentions: intencion.valores,
       intentionOther: intencion.otro,
     }
 
@@ -160,13 +170,13 @@ export default function DiarioManana({ estado, acciones }) {
 
   /** Lo que hay ahora mismo, mezclando lo guardado con lo que está en pantalla. */
   const entradaActual = () => {
-    const animo = ANIMO.paraGuardar(valores.animo, valores.animoPropio)
-    const intencion = INTENCION.paraGuardar(valores.intencion, valores.intencionPropia)
+    const animo = ANIMO.paraGuardarVarias(valores.animos, valores.animoPropio)
+    const intencion = INTENCION.paraGuardarVarias(valores.intenciones, valores.intencionPropia)
     return {
       ...morning,
-      feeling: animo.valor,
+      feelings: animo.valores,
       feelingOther: animo.otro,
-      intention: intencion.valor,
+      intentions: intencion.valores,
       intentionOther: intencion.otro,
       gratitude: textosDe(gratitud),
       action: valores.accion,
@@ -221,7 +231,12 @@ export default function DiarioManana({ estado, acciones }) {
     )
   }
 
-  const anteriores = ideasAnteriores(estado.recientes, valores.intencion, estado.fecha)
+  // Las ideas de abajo siguen **la primera** intención elegida, no las tres:
+  // son ideas para empezar, no una lista que se reparta entre ellas. Se elige
+  // la primera porque se eligió primero, no porque sea la más importante — la
+  // app no ordena por importancia lo que alguien nombró.
+  const [primeraIntencion = null] = valores.intenciones
+  const anteriores = ideasAnteriores(estado.recientes, primeraIntencion, estado.fecha)
   const enPausa = paso === PASO_PAUSA
   const esUltimo = enPausa || (paso === MOMENTOS.length - 1 && !conPausa)
 
@@ -247,7 +262,7 @@ export default function DiarioManana({ estado, acciones }) {
           valores={valores}
           genero={estado.genero}
           anteriores={anteriores}
-          generales={ideasGenerales(valores.intencion, anteriores)}
+          generales={ideasGenerales(primeraIntencion, anteriores)}
           onCambiar={cambiarEmocion}
           onCambiarAccion={cambiarAccion}
           onElegirIdea={elegirIdea}

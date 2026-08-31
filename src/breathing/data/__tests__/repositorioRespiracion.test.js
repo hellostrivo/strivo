@@ -283,7 +283,7 @@ describe('criterio 16 — nada de lo que ya había se toca', () => {
     await diario.saveMorningEntry(UID, '2026-08-20', {
       action: 'Salir a caminar',
       gratitude: ['el café'],
-      feeling: 'calma',
+      feelings: ['calma'],
     })
     const entrada = await diario.createJournalEntry(UID, {
       date: '2026-08-20',

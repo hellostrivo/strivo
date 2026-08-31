@@ -32,7 +32,7 @@ import { diaVacio } from '@/diario/historial'
 import { etiquetasDe as etiquetasDeEmocion } from '@/diario/emocionesJournal'
 import { etiquetasDe as etiquetasDeSueno } from '@/diario/estadoSueno'
 import { etiquetaDe as etiquetaHeredada } from '@/diario/emociones'
-import { etiquetaDeAnimo, etiquetaDeIntencion, hayAlgoEscrito } from '@/diario/manana'
+import { fichasDeAnimo, fichasDeIntencion, hayAlgoEscrito } from '@/diario/manana'
 import {
   etiquetaDeEmocion,
   hayAlgoEscrito as hayAlgoDeNoche,
@@ -72,8 +72,10 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
   const { morning, night, journal } = dia
   const vacio = diaVacio(dia)
 
-  const animo = etiquetaDeAnimo(morning, genero)
-  const intencion = etiquetaDeIntencion(morning, genero)
+  // Hasta tres en cada una desde el 30 de agosto de 2026, y se leen todas: la
+  // vista de un día es lo que se escribió ese día, no una muestra.
+  const animo = fichasDeAnimo(morning, genero).map((ficha) => ficha.texto)
+  const intencion = fichasDeIntencion(morning, genero).map((ficha) => ficha.texto)
   const accion = String(morning?.action ?? '').trim()
   const pausa = String(morning?.reflection ?? '').trim()
   const granVision = String(morning?.granVision ?? '').trim()
@@ -102,15 +104,15 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
         <div className="flex flex-col gap-4 rounded-md border border-on-surface bg-strivo-campo p-4">
           <h2 className="font-display text-md text-on-surface">{textos.manana}</h2>
 
-          {animo !== '' && (
+          {animo.length > 0 && (
             <Bloque titulo={textos.animo}>
-              <p className="text-base text-on-surface">{animo}</p>
+              <p className="text-base text-on-surface">{animo.join(' · ')}</p>
             </Bloque>
           )}
 
-          {intencion !== '' && (
+          {intencion.length > 0 && (
             <Bloque titulo={textos.intencion}>
-              <p className="text-base text-on-surface">{intencion}</p>
+              <p className="text-base text-on-surface">{intencion.join(' · ')}</p>
             </Bloque>
           )}
 

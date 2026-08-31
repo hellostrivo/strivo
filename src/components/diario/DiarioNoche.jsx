@@ -53,6 +53,7 @@ import {
   resumenDeNoche,
 } from '@/diario/noche'
 import { CIERRE, ofreceDescarga } from '@/diario/nocheEmociones'
+import { reconocimientoDeLaNoche } from '@/diario/nocheReconocimiento'
 import { puedeOfrecerDescarga, reflexionDeLaNoche } from '@/diario/nocheReflexion'
 
 const textos = copy.diario.noche
@@ -109,6 +110,18 @@ export default function DiarioNoche({ estado, acciones }) {
     marco.current?.scrollIntoView({ block: 'start', behavior: 'auto' })
   }, [paso, vista])
 
+  /**
+   * La pregunta del primer momento, hecha con la emoción que hay **en
+   * pantalla** y no con la guardada: cambiarla en el tercer momento y volver
+   * atrás tiene que devolver la pregunta nueva. No se congela y no hace falta
+   * que se congele — se deriva de la fecha, así que dentro de la noche no se
+   * mueve sola (`nocheReconocimiento.js`).
+   *
+   * Lo escrito **no se toca**: las filas viven en `reconocido` y esto solo
+   * decide qué se lee encima de ellas.
+   */
+  const reconocimiento = reconocimientoDeLaNoche(valores.emocion, estado.fecha)
+
   const pregunta = reflexionDeLaNoche(
     estado.noches,
     estado.fecha,
@@ -162,10 +175,13 @@ export default function DiarioNoche({ estado, acciones }) {
    * Tocar un chip es un toque y se guarda ya. Escribir la palabra propia es
    * escribir, y espera como todo lo demás.
    */
-  const cambiarEmocion = (id, tecleando = false) => {
+  const cambiarEmocion = (valor, tecleando = false) => {
+    // La lista con la que trabajan los chips la resuelve el propio catálogo y
+    // llega ya resuelta: aquí entra la emoción elegida —una, o ninguna— porque
+    // es una y solo una lo que la noche guarda (27 ago 2026).
     const siguientes = {
       ...valores,
-      ...(tecleando ? { emocionPropia: id } : { emocion: CIERRE.alternar(valores.emocion, id) }),
+      ...(tecleando ? { emocionPropia: valor } : { emocion: valor }),
     }
     setValores(siguientes)
 
@@ -229,7 +245,7 @@ export default function DiarioNoche({ estado, acciones }) {
     return (
       <div ref={marco}>
         <ResumenNoche
-          bloques={resumenDeNoche(night, estado.morning, estado.genero)}
+          bloques={resumenDeNoche(night, estado.morning, estado.genero, estado.fecha)}
           onEditar={() => {
             setPaso(0)
             setVista('recorrido')
@@ -257,6 +273,7 @@ export default function DiarioNoche({ estado, acciones }) {
 
       {paso === 0 && (
         <MomentoReconocimiento
+          pregunta={reconocimiento}
           filas={reconocido}
           onCambiar={cambiarReconocido}
           onVolcar={acciones.volcar}

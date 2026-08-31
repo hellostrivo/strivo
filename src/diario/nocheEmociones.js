@@ -12,18 +12,25 @@
 // que hubiera.
 //
 // La mecánica —alternar, palabra propia, etiqueta de lo guardado— es la de
-// `seleccionUnica.js`, la misma que usan las dos preguntas emocionales de la
-// mañana. Lo que no se comparte es el vocabulario: son tres catálogos distintos
-// y ninguno se puede sustituir por otro.
+// `seleccionEmociones.js`, la misma que usan las dos preguntas emocionales de
+// la mañana. Lo que no se comparte es el vocabulario —son tres catálogos
+// distintos y ninguno se puede sustituir por otro— ni cuántas respuestas admite
+// cada una: la mañana admite hasta tres desde el 27 de agosto de 2026 y esta
+// sigue admitiendo una, que es de donde sale el punto de ánimo del calendario.
 //
 // RN-GEN-04 — Se persiste el `id`. La etiqueta se resuelve al pintar, así que
 // cambiar el género del perfil reescribe también las noches ya guardadas. La
 // palabra propia **no** pasa por el helper de género (RN-GEN-06).
 
 import { copy } from '@copy'
-import { crearSeleccion } from './seleccionUnica.js'
+import { crearSeleccion } from './seleccionEmociones.js'
 
-export { ID_OTRA, MAX_PALABRA_PROPIA, etiquetaPropia, recortarPropia } from './seleccionUnica.js'
+export {
+  ID_OTRA,
+  MAX_PALABRA_PROPIA,
+  etiquetaPropia,
+  recortarPropia,
+} from './seleccionEmociones.js'
 
 const textos = copy.diario.noche.emocion
 

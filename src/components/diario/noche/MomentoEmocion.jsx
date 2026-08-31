@@ -6,6 +6,13 @@
 // y con dos respuestas la pregunta deja de tener una. Tocar el chip elegido lo
 // suelta — que es cómo se deja la pregunta en blanco sin tener que borrar nada.
 //
+// **Sigue siendo una aunque la mañana pase a tres** (27 ago 2026), y la asimetría
+// es la decisión: de esta respuesta sale el punto de ánimo del calendario, que
+// es de cinco estados y no sabría qué hacer con tres a la vez. Los chips son los
+// mismos —`ChipsCatalogo`— y lo que cambia es la regla que se les pasa, que es
+// del catálogo. Aquí se convierte en su borde: la lista que devuelven tiene una
+// o ninguna, y lo que se guarda es esa.
+//
 // **Las emociones difíciles tienen exactamente la misma jerarquía que las
 // agradables** (§7): mismo tamaño, mismo borde, misma píldora, mismo orden de
 // lectura. Ni rojo, ni aviso, ni una línea que sugiera que hay una respuesta
@@ -18,7 +25,7 @@
 // Es voluntario, es discreto y no es un paso del recorrido.
 
 import { clsx } from 'clsx'
-import ChipsUnicos from '../ChipsUnicos'
+import ChipsCatalogo from '../ChipsCatalogo'
 import { copy } from '@copy'
 import { CIERRE } from '@/diario/nocheEmociones'
 
@@ -39,14 +46,15 @@ export default function MomentoEmocion({
         <p className="text-sm text-on-surface-soft">{textos.emocion.lead}</p>
       </div>
 
-      <ChipsUnicos
+      <ChipsCatalogo
         catalogo={CIERRE.CATALOGO}
-        seleccion={valores.emocion}
+        alternar={CIERRE.alternarVarias}
+        seleccion={valores.emocion ? [valores.emocion] : []}
         genero={genero}
         etiqueta={textos.emocion.titulo}
         textosOtra={textos.emocion.otra}
         valorPropio={valores.emocionPropia}
-        onSeleccionar={onCambiar}
+        onSeleccionar={(elegidas) => onCambiar(elegidas[0] ?? null)}
         onValorPropio={onValorPropio}
       />
 

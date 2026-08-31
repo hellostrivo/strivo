@@ -1,10 +1,15 @@
 // src/components/diario/manana/MomentoGratitud.jsx
 // Momento 2 — gratitud.
 //
-// **Abre con un solo campo.** Tres campos vacíos a la vez se leen como tres
-// huecos por rellenar, y esto no es un formulario: el segundo y el tercero los
-// pide quien escribe, tocando "Añadir otro". Hasta tres, cada uno guardado
-// aparte, y ninguno obligatorio.
+// **Abre con un solo campo.** Varios campos vacíos a la vez se leen como huecos
+// por rellenar, y esto no es un formulario: el segundo y los que sigan los pide
+// quien escribe, tocando "Añadir otro". Cada uno se guarda aparte, todos se
+// pueden cambiar o quitar, y ninguno es obligatorio.
+//
+// **Hasta diez desde el 30 de agosto de 2026.** No es una meta y no se anuncia
+// por adelantado: no hay "1 de 10" en ningún sitio, porque contar lo que queda
+// convertiría en un objetivo lo que es sitio de sobra. Al llegar a diez se dice
+// una vez, en voz baja, y la lista deja de crecer.
 //
 // **Las ideas de apoyo se conservan tal cual estaban.** Se ofrecen bajo el
 // renglón enfocado tras cinco segundos sin escribir en él, nunca rellenan el
@@ -44,7 +49,6 @@ export default function MomentoGratitud({ filas, onCambiar, onVolcar, onOmitir }
         placeholder={textos.placeholder}
         maxLength={MAX_GRATITUD_LINEA}
         textoAnadir={textos.anadir}
-        textoTope={null}
       />
 
       {/* Solo con todo en blanco: si ya hay algo escrito, "omitir" sonaría a

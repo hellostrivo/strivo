@@ -165,12 +165,23 @@ describe('el repertorio de ideas no se toca: esto era del disparador', () => {
     expect(codigoDe(CAMPO)).not.toMatch(/onCambiar\([^)]*opcion/)
   })
 
-  it('el reconocimiento de la noche no ofrece ideas, y no es un olvido', () => {
-    // La pregunta ya trae su propio abanico en el texto de apoyo; una lista de
-    // sugerencias encima sería decirle a alguien de qué tiene que hablar su día.
-    expect(copy.diario.noche.reconocimiento.sugerencias).toBeUndefined()
-    expect(codigoDe('src/components/diario/noche/MomentoReconocimiento.jsx')).not.toMatch(
-      /CampoGratitud|sugerencias/,
-    )
+  it('el reconocimiento de la noche ofrece las ideas de su pregunta (30 ago 2026)', () => {
+    // No las tenía: la pregunta traía su propio abanico en el texto de apoyo y
+    // una lista genérica encima habría sido decirle a alguien de qué tiene que
+    // hablar su día. Desde que la pregunta se estrecha para acompañar el ánimo
+    // del día, las ideas la acompañan a ella y cambian con ella.
+    //
+    // **Es el mismo mecanismo, no uno parecido**: el mismo componente, la misma
+    // espera de cinco segundos en el renglón enfocado y los mismos dos "Ahora
+    // no". Y las ideas siguen sin escribir nada.
+    expect(copy.diario.noche.reconocimiento.grupos).toBeDefined()
+    const bloque = codigoDe('src/components/diario/noche/MomentoReconocimiento.jsx')
+    expect(bloque).toMatch(/import CampoGratitud from/)
+    expect(bloque).toMatch(/sugerencias=\{pregunta\.sugerencias\}/)
+
+    Object.values(copy.diario.noche.reconocimiento.grupos).forEach(({ sugerencias }) => {
+      expect(sugerencias.descartar).toBe('Ahora no')
+      sugerencias.opciones.forEach((opcion) => expect(opcion.pregunta).toMatch(/\?$/))
+    })
   })
 })

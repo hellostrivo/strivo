@@ -69,12 +69,32 @@ export { marcaLocal } from './fechas.js'
 
 // ─── Lectura de una mañana guardada ──────────────────────────────────────────
 
+/**
+ * Las emociones del punto de partida de una mañana guardada, en el orden en que
+ * se eligieron.
+ *
+ * **Lee las dos formas** (RN-DB-04). Desde el 30 de agosto de 2026 la pregunta
+ * admite hasta tres y se guarda en `feelings`; las mañanas anteriores guardaron
+ * un solo id en `feeling` y se siguen leyendo tal cual, sin migrarlas ni
+ * reescribirlas. Nadie vuelve a escribir el campo en singular.
+ */
+export function animosDeManana(entrada) {
+  if (Array.isArray(entrada?.feelings)) return entrada.feelings
+  return entrada?.feeling ? [entrada.feeling] : []
+}
+
+/** Las intenciones de una mañana guardada. Lee las dos formas, como la de arriba. */
+export function intencionesDeManana(entrada) {
+  if (Array.isArray(entrada?.intentions)) return entrada.intentions
+  return entrada?.intention ? [entrada.intention] : []
+}
+
 export function hayAnimo(entrada) {
-  return Boolean(entrada?.feeling)
+  return animosDeManana(entrada).length > 0
 }
 
 export function hayIntencion(entrada) {
-  return Boolean(entrada?.intention)
+  return intencionesDeManana(entrada).length > 0
 }
 
 export function hayGratitud(entrada) {
@@ -140,10 +160,12 @@ export function lineasDeCierre(entrada, genero) {
   const textos = copy.diario.manana.cierre
   const lineas = []
 
-  const intencion = INTENCION.etiquetaDeRespuesta(
-    entrada?.intention,
-    entrada?.intentionOther,
-    genero,
+  // Con más de una intención se enumeran en la misma línea, con su conjunción
+  // y sin numerarlas: son una sola respuesta dicha con tres palabras, no una
+  // lista de tres cosas por hacer. Los dos separadores son copy (RN-VOZ-01).
+  const intencion = enumerar(
+    fichasDeIntencion(entrada, genero).map((ficha) => ficha.texto),
+    textos,
   )
   if (intencion !== '') {
     lineas.push(interpolate(textos.intencionTemplate, { intencion }))
@@ -156,14 +178,38 @@ export function lineasDeCierre(entrada, genero) {
   return lineas
 }
 
-/** Cómo se lee el punto de partida de una mañana guardada. */
-export function etiquetaDeAnimo(entrada, genero) {
-  return ANIMO.etiquetaDeRespuesta(entrada?.feeling, entrada?.feelingOther, genero)
+/**
+ * Cómo se lee el punto de partida de una mañana guardada: una ficha por
+ * emoción, `{ texto, emoji }`, en el orden en que se eligieron.
+ *
+ * El emoji es `null` en la palabra propia y no es un hueco que rellenar: §3
+ * prohíbe asignarle uno.
+ */
+export function fichasDeAnimo(entrada, genero) {
+  return ANIMO.fichasDeRespuesta(animosDeManana(entrada), entrada?.feelingOther, genero)
 }
 
-/** Cómo se lee la intención de una mañana guardada. */
-export function etiquetaDeIntencion(entrada, genero) {
-  return INTENCION.etiquetaDeRespuesta(entrada?.intention, entrada?.intentionOther, genero)
+/** Cómo se lee la intención de una mañana guardada. Mismas fichas. */
+export function fichasDeIntencion(entrada, genero) {
+  return INTENCION.fichasDeRespuesta(intencionesDeManana(entrada), entrada?.intentionOther, genero)
+}
+
+/**
+ * Varias respuestas en una sola frase: "en calma, con foco y con ligereza".
+ *
+ * Vive aquí porque la usan el cierre y cualquiera que necesite decirlas
+ * seguidas; los dos separadores salen del copy, que es donde vive todo lo que
+ * se lee.
+ */
+function enumerar(textosDeRespuesta, textosDeCierre) {
+  const partes = textosDeRespuesta.filter((texto) => texto !== '')
+  if (partes.length === 0) return ''
+  if (partes.length === 1) return partes[0]
+  return (
+    partes.slice(0, -1).join(textosDeCierre.listaSeparador) +
+    textosDeCierre.listaUnion +
+    partes[partes.length - 1]
+  )
 }
 
 // ─── La pantalla de consulta ──────────────────────────────────────────────────
@@ -177,11 +223,12 @@ export function etiquetaDeIntencion(entrada, genero) {
  * que hace que la pantalla se vea igual que las del recorrido, que es de donde
  * viene lo que muestra.
  *
- * **Las dos respuestas emocionales vuelven en `forma: 'chip'`, con su emoji.**
- * Se eligieron tocando una píldora y se releen en una píldora: la respuesta se
- * reconoce porque tiene el aspecto que tenía al elegirla. El emoji es `null`
- * cuando la respuesta se escribió a mano —§3 prohíbe asignarle uno—, y la
- * píldora se pinta igual, solo que con la palabra entre comillas.
+ * **Las dos respuestas emocionales vuelven en `forma: 'chip'`, en `fichas`.**
+ * Se eligieron tocando píldoras y se releen en píldoras —hasta tres, en el
+ * orden en que se eligieron—: la respuesta se reconoce porque tiene el aspecto
+ * que tenía al elegirla. El emoji de una ficha es `null` cuando la respuesta se
+ * escribió a mano —§3 prohíbe asignarle uno—, y la píldora se pinta igual, solo
+ * que con la palabra entre comillas.
  *
  * **Lo que quedó en blanco no aparece.** Sin marcador de ausencia, sin hueco
  * gris y sin "sin responder": una mañana a medias se lee entera, no incompleta.
@@ -190,20 +237,21 @@ export function etiquetaDeIntencion(entrada, genero) {
  * —son tres y rotan, así que sin `reflectionId` no se sabría cuál se contestó.
  *
  * @returns {Array<{id: string, titulo: string, forma: 'chip'|'texto',
- *                   emoji: ?string, lineas: string[]}>}
+ *                   fichas: Array<{texto: string, emoji: ?string}>,
+ *                   lineas: string[]}>}
  */
 export function resumenDeManana(entrada, genero) {
   const textos = copy.diario.manana
   const bloques = []
 
-  const animo = etiquetaDeAnimo(entrada, genero)
-  if (animo !== '') {
+  const animo = fichasDeAnimo(entrada, genero)
+  if (animo.length > 0) {
     bloques.push({
       id: PREGUNTAS.animo,
       titulo: textos.animo.titulo,
       forma: 'chip',
-      emoji: ANIMO.emojiDe(entrada.feeling),
-      lineas: [animo],
+      fichas: animo,
+      lineas: [],
     })
   }
 
@@ -215,19 +263,19 @@ export function resumenDeManana(entrada, genero) {
       id: PREGUNTAS.gratitud,
       titulo: textos.gratitud.titulo,
       forma: 'texto',
-      emoji: null,
+      fichas: [],
       lineas: gracias,
     })
   }
 
-  const intencion = etiquetaDeIntencion(entrada, genero)
-  if (intencion !== '') {
+  const intencion = fichasDeIntencion(entrada, genero)
+  if (intencion.length > 0) {
     bloques.push({
       id: PREGUNTAS.intencion,
       titulo: textos.intencion.titulo,
       forma: 'chip',
-      emoji: INTENCION.emojiDe(entrada.intention),
-      lineas: [intencion],
+      fichas: intencion,
+      lineas: [],
     })
   }
 
@@ -236,7 +284,7 @@ export function resumenDeManana(entrada, genero) {
       id: PREGUNTAS.accion,
       titulo: textos.accion.titulo,
       forma: 'texto',
-      emoji: null,
+      fichas: [],
       lineas: [String(entrada.action).trim()],
     })
   }
@@ -247,7 +295,7 @@ export function resumenDeManana(entrada, genero) {
       id: PREGUNTAS.pausa,
       titulo: pregunta.titulo,
       forma: 'texto',
-      emoji: null,
+      fichas: [],
       lineas: [String(entrada.reflection).trim()],
     })
   }

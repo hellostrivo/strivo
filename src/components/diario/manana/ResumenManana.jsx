@@ -9,10 +9,11 @@
 // pregunta delante, volver a leerlo es volver a lo que se preguntó.
 //
 // **Las dos respuestas emocionales vuelven en su píldora, con su emoji.** Se
-// eligieron tocando una y se releen en una: la respuesta se reconoce porque
-// tiene el aspecto que tenía al elegirla, y la pantalla deja de ser una lista de
-// texto. La forma sale de `pildora.js`, el mismo sitio del que la toma
-// `ChipsUnicos` — dos copias de la misma píldora acabarían separándose.
+// eligieron tocando píldoras y se releen en píldoras —hasta tres, desde el 30
+// de agosto de 2026—: la respuesta se reconoce porque tiene el aspecto que
+// tenía al elegirla, y la pantalla deja de ser una lista de texto. La forma sale
+// de `pildora.js`, el mismo sitio del que la toma `ChipsCatalogo` — dos copias
+// de la misma píldora acabarían separándose.
 //
 // La píldora de aquí **no es un botón**: es un `<span>`. Parecerse a un control
 // sin serlo es aceptable cuando toda la pantalla es de consulta; darle
@@ -44,12 +45,14 @@ const textos = copy.diario.manana
 
 function Respuesta({ bloque }) {
   if (bloque.forma === 'chip') {
-    return (
-      <span className={clsx(PILDORA, PILDORA_ELEGIDA)}>
-        {bloque.emoji && <span aria-hidden="true">{bloque.emoji}</span>}
-        <span>{bloque.lineas[0]}</span>
+    // Hasta tres píldoras, en el orden en que se eligieron y todas iguales: sin
+    // numerarlas y sin destacar la primera. La respuesta se relee como se dio.
+    return bloque.fichas.map((ficha) => (
+      <span key={ficha.texto} className={clsx(PILDORA, PILDORA_ELEGIDA)}>
+        {ficha.emoji && <span aria-hidden="true">{ficha.emoji}</span>}
+        <span>{ficha.texto}</span>
       </span>
-    )
+    ))
   }
 
   return bloque.lineas.map((linea, indice) => (
@@ -69,9 +72,17 @@ export default function ResumenManana({ bloques, onEditar }) {
       {bloques.map((bloque) => (
         <section key={bloque.id} className="flex flex-col gap-3">
           <h2 className="font-display text-md text-on-surface">{bloque.titulo}</h2>
-          {/* La píldora no se estira: `items-start` la deja del ancho de su
-              contenido, como en el recorrido. */}
-          <div className="flex flex-col items-start gap-1">
+          {/* Las píldoras no se estiran: `items-start` las deja del ancho de su
+              contenido, como en el recorrido, y varias se reparten en filas
+              igual que los chips que se tocaron para elegirlas. Lo escrito, en
+              cambio, va una línea debajo de otra: son respuestas distintas, no
+              una frase partida. */}
+          <div
+            className={clsx(
+              'flex items-start',
+              bloque.forma === 'chip' ? 'flex-wrap gap-2' : 'flex-col gap-1',
+            )}
+          >
             <Respuesta bloque={bloque} />
           </div>
         </section>

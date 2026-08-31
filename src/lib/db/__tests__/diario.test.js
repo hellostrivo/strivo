@@ -109,13 +109,13 @@ describe('registros por fecha', () => {
   it('dos escrituras simultáneas del mismo día no se pisan', async () => {
     await Promise.all([
       diario.saveMorningEntry(UID, DATE, { gratitude: ['El café'] }),
-      diario.saveMorningEntry(UID, DATE, { feeling: 'calma' }),
+      diario.saveMorningEntry(UID, DATE, { feelings: ['calma'] }),
       diario.saveMorningEntry(UID, DATE, { action: 'Salir a caminar.' }),
     ])
 
     expect(await diario.getMorningEntry(UID, DATE)).toEqual({
       gratitude: ['El café'],
-      feeling: 'calma',
+      feelings: ['calma'],
       action: 'Salir a caminar.',
     })
   })

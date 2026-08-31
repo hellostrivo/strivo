@@ -280,11 +280,16 @@ export const copy = {
       },
 
       // ─── Momento 1A — punto de partida ───────────────────────────────────
-      // Selección única: se nombra un estado, no se hace un inventario.
-      // Aquí sí caben las emociones difíciles, porque la pregunta es qué hay.
+      // Hasta tres, desde el 30 de agosto de 2026: nadie amanece sintiendo una
+      // sola cosa, y elegir cuál de dos es la verdadera es resumirse antes de
+      // empezar el día. Aquí sí caben las emociones difíciles, porque la
+      // pregunta es qué hay.
       animo: {
         titulo: '¿Cómo me siento esta mañana?',
-        lead: 'Elige lo que más se acerque a cómo estás.',
+        lead: 'Elige hasta tres, las que más se acerquen a cómo estás.',
+        // Solo aparece si se toca una cuarta, y solo entonces. Dice qué pasa,
+        // no qué se hizo mal: no hay nada que corregir en sentir una cosa más.
+        max: 'Caben tres a la vez. Suelta alguna si quieres cambiarla.',
         // Palabra propia: hasta 30 caracteres, sin emoji automático y
         // siempre editable. No pasa por el helper de género (RN-GEN-06).
         otra: {
@@ -342,7 +347,8 @@ export const copy = {
       // distancia entre 1A y 1B no se mide, no se nombra y no se colorea.
       intencion: {
         titulo: '¿Cómo me gustaría sentirme durante el día de hoy?',
-        lead: 'Elige una intención para acompañar tu día.',
+        lead: 'Elige hasta tres intenciones para acompañar tu día.',
+        max: 'Caben tres a la vez. Suelta alguna si quieres cambiarla.',
         otra: {
           chip: '＋ Algo más',
           label: 'Cómo me gustaría sentirme, en mis palabras',
@@ -527,6 +533,11 @@ export const copy = {
       cierre: {
         intencionTemplate: 'Tu intención para hoy: {intencion}',
         accionTemplate: 'Un paso que puedes dar: {accion}',
+        // Con dos o tres intenciones se dicen seguidas, como se dicen en voz
+        // alta: "en calma, con foco y con ligereza". Sin viñetas y sin
+        // numerarlas — son una respuesta, no una lista de cosas por hacer.
+        listaSeparador: ', ',
+        listaUnion: ' y ',
         vacio: 'Tu día puede comenzar desde donde estás.',
         cta: 'Comenzar mi día',
       },
@@ -638,13 +649,179 @@ export const copy = {
       // a propósito: no pide que el día haya sido bueno, ni que lo escrito
       // suene positivo. Abre con **un** campo; el segundo lo pide quien
       // escribe.
+      //
+      // **La pregunta cambia con cómo se cerró el día** (30 ago 2026), y es la
+      // única del recorrido que lo hace. A quien llega cansado, triste o con
+      // demasiado encima no se le pide que encuentre algo bueno: se le pregunta
+      // qué quiere reconocer, que admite haber atravesado el día y nada más.
+      // Los tres grupos y cuándo sale cada uno viven en
+      // `src/diario/nocheReconocimiento.js`; aquí solo está lo que se lee.
+      //
+      // **Esto no deroga RN-VOZ-03.** Esa regla protege las preguntas que
+      // ordenan cada recorrido —cómo me siento, cómo me gustaría sentirme, cómo
+      // cierro el día—, que siguen llegando con la misma redacción siempre. Lo
+      // que cambia aquí es el tono de una sola pregunta, y cambia por lo que la
+      // persona acaba de decir de sí misma: no se cuenta nada, no se compara
+      // con ninguna otra noche y no se deduce de nada que no haya dicho ella.
       reconocimiento: {
-        titulo: '¿Qué quiero reconocer de hoy?',
-        lead: 'Puede ser algo que disfrutaste, intentaste, enfrentaste o resolviste.',
         placeholder: 'Algo que hice, sentí o atravesé…',
         anadir: 'Añadir otro',
         // Salida discreta, sin nada que reprochar al volver mañana.
         omitir: 'Omitir por hoy',
+
+        // Los tres grupos. Cada uno trae sus preguntas —rotan por fecha, así
+        // que no llega la misma dos noches seguidas— y sus ideas de apoyo, que
+        // son las de esa pregunta y no unas generales.
+        //
+        // **Las quince hablan en primera persona**, como las demás preguntas de
+        // la noche (§12): son lo que alguien se pregunta a sí mismo, no lo que
+        // la app le pregunta. Las ideas de apoyo sí tutean, igual que las de la
+        // gratitud de la mañana — ahí sí es la app la que ofrece algo.
+        //
+        // **Y ninguna repite lo que ya se pregunta esa misma noche** (30 ago
+        // 2026). Una noche enseña hasta cuatro preguntas —esta, la reflexión,
+        // la emoción y la descarga—, y el banco de la reflexión y la descarga
+        // llevan meses estables: son ellos los que fijan el vocabulario y estas
+        // las que se apartan. Lo que no vuelve a aparecer aquí: "me dejó",
+        // "aprendí sobre mí", "recordar", "ocupó espacio", "soltar" y "dejar
+        // aquí". Las ideas de apoyo tampoco repiten el encabezado que tienen
+        // encima: decir dos veces lo mismo en una pantalla se lee como un fallo.
+        //
+        // **Las ideas nunca rellenan el campo.** Tocar una abre otra pregunta y
+        // ahí acaba, igual que en la gratitud de la mañana: la app no escribe
+        // por nadie.
+        grupos: {
+          // Se cerró el día en paz, tranquilo, agradecido, orgulloso o
+          // aliviado. Solo aquí se puede preguntar por algo bueno sin que la
+          // pregunta le lleve la contraria a lo que la persona acaba de decir.
+          sereno: {
+            lead: 'Algo que disfrutaste, que te gustó o que quieres guardar.',
+            preguntas: [
+              '¿Hubo algo bueno o amable en mi día de hoy?',
+              '¿Qué momento de hoy quiero reconocer?',
+              '¿Qué pequeño detalle hizo mi día un poco mejor?',
+              '¿Qué agradezco, valoro o rescato de mi día?',
+              // Era "¿Qué me llevo de hoy…", que es lo mismo que pregunta
+              // "¿Qué me dejó el día de hoy?" dos momentos después.
+              '¿Qué me alegró hoy?',
+            ],
+            sugerencias: {
+              titulo: '¿Te ayudo con una idea?',
+              descartar: 'Ahora no',
+              opciones: [
+                {
+                  id: 'gesto',
+                  label: 'un gesto amable',
+                  pregunta: '¿Qué gesto amable recibiste o diste hoy?',
+                },
+                {
+                  id: 'disfrute',
+                  label: 'algo que disfrutaste',
+                  pregunta: '¿Qué momento de hoy disfrutaste?',
+                },
+                {
+                  id: 'salio_bien',
+                  label: 'algo que salió bien',
+                  pregunta: '¿Qué salió bien hoy, aunque fuera pequeño?',
+                },
+                {
+                  id: 'compania',
+                  label: 'una persona o un lugar',
+                  pregunta: '¿Qué persona o qué lugar te hizo bien hoy?',
+                },
+              ],
+            },
+          },
+
+          // Pensativo, neutral, la palabra propia, o nada elegido todavía —que
+          // es como se entra al recorrido, porque esta pregunta va antes que la
+          // emoción. Preguntas abiertas, sin dar por hecho que el día fue bueno
+          // ni que fue malo.
+          neutro: {
+            lead: 'Puede ser algo que disfrutaste, intentaste, enfrentaste o resolviste.',
+            preguntas: [
+              // La más ancha abre la rotación: es la redacción de siempre y la
+              // que se lee al entrar al recorrido, cuando aún no se sabe nada
+              // del día.
+              '¿Qué quiero reconocer de este día?',
+              // "Guardar" y "recordar" son lo mismo dicho de dos maneras, y
+              // "recordar" es del banco de la reflexión.
+              '¿Qué momento de hoy se me quedó?',
+              // Sin el "¿Hay algo que quiera…", que ahora es de la descarga.
+              '¿Qué de hoy quiero nombrar antes de cerrarlo?',
+              '¿Qué parte de mi día quiero mirar una vez más?',
+            ],
+            sugerencias: {
+              titulo: '¿Te ayudo con una idea?',
+              descartar: 'Ahora no',
+              opciones: [
+                {
+                  id: 'momento',
+                  label: 'un momento del día',
+                  pregunta: '¿Qué momento del día te viene ahora a la cabeza?',
+                },
+                {
+                  id: 'contar',
+                  label: 'algo que contar',
+                  pregunta: '¿Qué le contarías a alguien de tu día?',
+                },
+                {
+                  id: 'sencillo',
+                  label: 'algo sencillo',
+                  pregunta: '¿Qué cosa sencilla de hoy quieres guardar?',
+                },
+                {
+                  id: 'atravesado',
+                  label: 'algo que atravesaste',
+                  pregunta: '¿Qué atravesaste hoy?',
+                },
+              ],
+            },
+          },
+
+          // Cansado, inquieto, frustrado, triste o con demasiado encima. Aquí
+          // no se pide nada bueno, ni una lección, ni una vuelta positiva:
+          // haber llegado hasta el final del día ya es algo que reconocer.
+          cuidado: {
+            lead: 'No hace falta que haya sido un buen día.',
+            preguntas: [
+              '¿Qué quiero reconocer de mí hoy?',
+              '¿Qué pude sostener hoy, aunque me costara?',
+              // "Dejar" es de la descarga, que en este grupo se abre sola: la
+              // misma pregunta dos veces en una noche es lo que hay que evitar.
+              '¿Qué me tocó atravesar hoy?',
+              '¿Qué me reconozco de este día, tal como fue?',
+              // Sin la estructura "¿Hay algo que quiera…" de la descarga.
+              'Llego al final de mi día. ¿Qué quiero decirme antes de descansar?',
+            ],
+            sugerencias: {
+              titulo: '¿Te ayudo con una idea?',
+              descartar: 'Ahora no',
+              opciones: [
+                {
+                  id: 'sostuviste',
+                  label: 'algo que sostuviste',
+                  pregunta: '¿De qué te hiciste cargo hoy?',
+                },
+                {
+                  id: 'como_pudiste',
+                  label: 'algo que hiciste como pudiste',
+                  pregunta: '¿Qué hiciste hoy lo mejor que pudiste?',
+                },
+                {
+                  id: 'palabra',
+                  label: 'una palabra para hoy',
+                  pregunta: '¿Con qué palabra llegas a esta noche?',
+                },
+                {
+                  id: 'seguiste',
+                  label: 'algo que seguiste haciendo',
+                  pregunta: '¿Qué no dejaste de hacer hoy?',
+                },
+              ],
+            },
+          },
+        },
       },
 
       // ─── Momento 2 — reflexión rotativa (§4, §5, §6) ─────────────────────
@@ -686,8 +863,9 @@ export const copy = {
         // que se eligió por la mañana y pregunta qué se notó; **nunca** si se
         // cumplió, y nunca convierte la respuesta en una medida.
         manana: {
-          tituloTemplate:
-            'Esta mañana elegiste {emocion} como intención. ¿Qué notaste al respecto?',
+          // También en primera, y por lo mismo. Sigue preguntando qué se notó
+          // y **nunca** si se cumplió (RN-NOC-05).
+          tituloTemplate: 'Esta mañana elegí {emocion} como intención. ¿Qué noté en mí?',
           lead: 'No importa si el día resultó distinto a lo que esperabas.',
         },
       },
@@ -773,7 +951,10 @@ export const copy = {
         // un diagnóstico.
         abrir: 'Necesito soltar algo antes de cerrar',
         opcional: 'Opcional',
-        titulo: '¿Hay algo que quieras dejar aquí por hoy?',
+        // Primera persona, como todas las preguntas que alguien contesta
+        // (§12). Estaba en segunda desde el 23 de agosto y la prueba que
+        // vigila la regla no la miraba: recorría una lista escrita a mano.
+        titulo: '¿Hay algo de mi día que quiera dejar aquí?',
         lead: 'No necesitas resolverlo ahora.',
         placeholder: 'Lo que quieras dejar aquí',
         omitir: 'Ahora no',

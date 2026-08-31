@@ -13,6 +13,10 @@
 // la calma sin cambiar de pantalla, y eso convierte las dos preguntas en un
 // gesto en vez de en dos.
 //
+// **Hasta tres intenciones** (27 ago 2026), como en la pregunta de arriba. Las
+// ideas de abajo siguen las de la primera que se eligió: son ideas para
+// empezar, no una lista que se reparte entre las tres.
+//
 // **La intención es una intención, no una meta.** No se mide contra el punto de
 // partida de la pantalla 1: ni puntuación, ni brecha, ni color de alerta, ni una
 // línea que sugiera que hay algo que mejorar. Empezar cansado y querer estar en
@@ -32,7 +36,7 @@
 // nunca aparece nada escrito en otra superficie.
 
 import { clsx } from 'clsx'
-import ChipsUnicos from '../ChipsUnicos'
+import ChipsCatalogo from '../ChipsCatalogo'
 import { CampoTexto } from '@components/shared/Campo'
 import { copy } from '@copy'
 import { MAX_ACCION } from '@/diario/manana'
@@ -82,14 +86,16 @@ export default function MomentoIntencionAccion({
           <h2 className="font-display text-md text-on-surface">{textos.intencion.titulo}</h2>
           <p className="text-sm text-on-surface-soft">{textos.intencion.lead}</p>
         </div>
-        <ChipsUnicos
+        <ChipsCatalogo
           catalogo={INTENCION.CATALOGO}
-          seleccion={valores.intencion}
+          alternar={INTENCION.alternarVarias}
+          seleccion={valores.intenciones}
           genero={genero}
           etiqueta={textos.intencion.titulo}
           textosOtra={textos.intencion.otra}
+          avisoTexto={textos.intencion.max}
           valorPropio={valores.intencionPropia}
-          onSeleccionar={(id) => onCambiar({ intencion: id })}
+          onSeleccionar={(intenciones) => onCambiar({ intenciones })}
           onValorPropio={(texto) => onCambiar({ intencionPropia: texto })}
         />
       </section>

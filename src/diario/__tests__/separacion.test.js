@@ -184,10 +184,12 @@ describe('la intención del día se retiró entera (deroga SPEC_09)', () => {
   it('la intención emocional de la mañana no es aquella intención', () => {
     // La actualización del 23 ago trae una "intención" que es una **emoción**
     // elegida de un catálogo, no el texto libre de SPEC_09. Se guarda en
-    // `intention`, dentro de `morningEntry`, y no resucita ni la colección
-    // `dailyIntention` ni el campo `intentionText`, que es lo que comprueban
-    // las dos pruebas de arriba.
-    expect(FIELDS.morningEntry).toContain('intention')
+    // `intentions` —desde el 30 de agosto de 2026 son hasta tres— dentro de
+    // `morningEntry`, y no resucita ni la colección `dailyIntention` ni el
+    // campo `intentionText`, que es lo que comprueban las dos pruebas de
+    // arriba. Que ahora sea una lista no la acerca ni un paso a aquella: son
+    // ids de un catálogo cerrado, no texto que alguien escriba.
+    expect(FIELDS.morningEntry).toContain('intentions')
     expect(FIELDS.morningEntry).not.toContain('intentionText')
   })
 

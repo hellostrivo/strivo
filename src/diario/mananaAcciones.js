@@ -21,7 +21,11 @@
 //     borrar entera.
 
 import { copy } from '@copy'
-import { ID_OTRA } from './seleccionUnica.js'
+import { ID_OTRA } from './seleccionEmociones.js'
+// De una mañana guardada entra **una** cosa: qué intenciones traía. Se lee con
+// su función y no con `dia.intentions` a pelo, porque las mañanas de agosto
+// guardaron un id suelto y esa regla vive en un solo sitio.
+import { intencionesDeManana } from './manana.js'
 import { sumarDias } from './fechas.js'
 
 const textos = copy.diario.manana.accion
@@ -59,19 +63,24 @@ export function ideasAnteriores(recientes, intencion, hoy) {
   const desde = sumarDias(hoy, -DIAS_VENTANA_ANTERIORES)
 
   const vistas = new Set()
-  return (Array.isArray(recientes) ? recientes : [])
-    .filter((dia) => dia?.id && dia.id < hoy && dia.id >= desde)
-    .filter((dia) => dia.intention === intencion)
-    .sort((a, b) => String(b.id).localeCompare(String(a.id)))
-    .map((dia) => String(dia.action ?? '').trim())
-    .filter((accion) => accion !== '')
-    .filter((accion) => {
-      const k = clave(accion)
-      if (vistas.has(k)) return false
-      vistas.add(k)
-      return true
-    })
-    .slice(0, MAX_ANTERIORES)
+  return (
+    (Array.isArray(recientes) ? recientes : [])
+      .filter((dia) => dia?.id && dia.id < hoy && dia.id >= desde)
+      // Basta con que ese día llevara esta intención entre las suyas: desde que
+      // caben tres, exigir que fuera la única dejaría fuera lo que se escribió
+      // justamente para ella.
+      .filter((dia) => intencionesDeManana(dia).includes(intencion))
+      .sort((a, b) => String(b.id).localeCompare(String(a.id)))
+      .map((dia) => String(dia.action ?? '').trim())
+      .filter((accion) => accion !== '')
+      .filter((accion) => {
+        const k = clave(accion)
+        if (vistas.has(k)) return false
+        vistas.add(k)
+        return true
+      })
+      .slice(0, MAX_ANTERIORES)
+  )
 }
 
 /**

@@ -18,11 +18,18 @@
 /**
  * Mínimos y máximos por lista.
  *
- * Las dos listas del producto abren con **un** campo y llegan hasta tres: la
- * gratitud de la mañana (§5.3, B2) y el reconocimiento de la noche (§3 de la
- * actualización del 23 ago). Varios campos vacíos a la vez se leen como huecos
- * por rellenar, y esto no es un formulario: el segundo lo pide quien escribe,
- * tocando "Añadir otro".
+ * Las dos listas del producto abren con **un** campo: la gratitud de la mañana
+ * (§5.3, B2) y el reconocimiento de la noche (§3 de la actualización del 23
+ * ago). Varios campos vacíos a la vez se leen como huecos por rellenar, y esto
+ * no es un formulario: el segundo lo pide quien escribe, tocando "Añadir otro".
+ *
+ * **La gratitud llega hasta diez desde el 30 de agosto de 2026** y el
+ * reconocimiento sigue en tres. Diez no es una meta ni algo que haya que
+ * alcanzar —abrir sigue costando un campo, y cerrar con ese campo vacío sigue
+ * siendo cerrar—: es sitio para quien una mañana tiene mucho que agradecer y a
+ * la tercera línea se quedaba sin dónde ponerlo. El tope se dice una sola vez
+ * al llegar, con la frase que ya estaba escrita para una lista de diez, y no se
+ * anuncia por adelantado: contar lo que queda sería convertirlo en un objetivo.
  *
  * `crecerSola` era lo que separaba a la gratitud de la noche —tres renglones de
  * salida, uno nuevo en cuanto se escribía en el último— y esa lista se retiró
@@ -30,7 +37,7 @@
  * `FilasDinamicas` y no de ninguna lista en concreto; hoy no la usa nadie.
  */
 export const LIMITES = Object.freeze({
-  gratitudManana: Object.freeze({ min: 1, max: 3, crecerSola: false }),
+  gratitudManana: Object.freeze({ min: 1, max: 10, crecerSola: false }),
   reconocimiento: Object.freeze({ min: 1, max: 3, crecerSola: false }),
 })
 

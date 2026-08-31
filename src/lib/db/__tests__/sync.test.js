@@ -80,14 +80,14 @@ describe('criterio 5: sin red se guarda en local y se sincroniza al volver', () 
     conRed(false)
 
     await shared.initShared(UID, { profile: { name: 'Alejandra' } })
-    await diario.saveMorningEntry(UID, '2026-08-10', { feeling: 'calma' })
+    await diario.saveMorningEntry(UID, '2026-08-10', { feelings: ['calma'] })
     await diario.saveMorningEntry(UID, '2026-08-10', { action: 'Salir a caminar.' })
 
     // Lo escrito está a salvo aunque la red no exista, y las dos escrituras
     // parciales sobre el mismo día se han fundido en un solo registro.
     expect((await shared.getProfile(UID)).name).toBe('Alejandra')
     expect(await diario.getMorningEntry(UID, '2026-08-10')).toMatchObject({
-      feeling: 'calma',
+      feelings: ['calma'],
       action: 'Salir a caminar.',
     })
 

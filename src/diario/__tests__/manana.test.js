@@ -27,11 +27,13 @@ import {
   MOMENTOS,
   PREGUNTAS,
   VERSION,
+  animosDeManana,
   camposOmitidos,
   estaCerrada,
-  etiquetaDeAnimo,
-  etiquetaDeIntencion,
+  fichasDeAnimo,
+  fichasDeIntencion,
   hayAlgoEscrito,
+  intencionesDeManana,
   lineasDeCierre,
   marcaLocal,
   resumenDeManana,
@@ -48,7 +50,7 @@ const codigoDe = (ruta) =>
     .replace(/^\s*\/\/.*$/gm, '')
 
 const MOMENTO = (nombre) => codigoDe(`src/components/diario/manana/${nombre}.jsx`)
-// `ChipsUnicos`, `Pasos` y `pildora` subieron un nivel el 23 ago: los monta
+// `ChipsCatalogo`, `Pasos` y `pildora` subieron un nivel el 23 ago: los monta
 // también la noche, y un componente que sirve a los dos recorridos no es de
 // ninguno de los dos.
 const COMPARTIDO = (nombre) => codigoDe(`src/components/diario/${nombre}`)
@@ -63,10 +65,10 @@ const CONTENEDOR = codigoDe('src/components/diario/DiarioManana.jsx')
 describe('criterio 1 — las preguntas se leen con su redacción exacta', () => {
   it('los cuatro títulos y sus textos de apoyo', () => {
     expect(textos.animo.titulo).toBe('¿Cómo me siento esta mañana?')
-    expect(textos.animo.lead).toBe('Elige lo que más se acerque a cómo estás.')
+    expect(textos.animo.lead).toBe('Elige hasta tres, las que más se acerquen a cómo estás.')
 
     expect(textos.intencion.titulo).toBe('¿Cómo me gustaría sentirme durante el día de hoy?')
-    expect(textos.intencion.lead).toBe('Elige una intención para acompañar tu día.')
+    expect(textos.intencion.lead).toBe('Elige hasta tres intenciones para acompañar tu día.')
 
     expect(textos.gratitud.titulo).toBe('¿Qué agradezco hoy?')
     expect(textos.gratitud.lead).toBe('Puede ser algo pequeño.')
@@ -117,7 +119,7 @@ describe('criterio 1 — las preguntas se leen con su redacción exacta', () => 
 
 // ─── Criterio 2 ───────────────────────────────────────────────────────────────
 
-describe('criterio 2 — las dos preguntas emocionales son de selección única', () => {
+describe('criterio 2 — las dos preguntas emocionales admiten hasta tres', () => {
   it('los catálogos son los que pide la actualización, en su orden', () => {
     expect(ANIMO.CATALOGO.map((o) => o.id)).toEqual([
       'calma',
@@ -148,15 +150,52 @@ describe('criterio 2 — las dos preguntas emocionales son de selección única'
     )
   })
 
-  it('elegir una sustituye a la anterior; nunca hay dos a la vez', () => {
-    expect(ANIMO.alternar(null, 'calma')).toBe('calma')
-    expect(ANIMO.alternar('calma', 'triste')).toBe('triste')
-    expect(INTENCION.alternar('ligero', 'presente')).toBe('presente')
+  it('caben tres a la vez, en el orden en que se eligieron (30 ago 2026)', () => {
+    expect(ANIMO.MAXIMO).toBe(3)
+    expect(INTENCION.MAXIMO).toBe(3)
+
+    const una = ANIMO.alternarVarias([], 'calma')
+    expect(una).toEqual({ seleccion: ['calma'], topeAlcanzado: false })
+    // Amanecer en calma y a la vez cansado no es una contradicción que haya
+    // que resolver antes de seguir: es lo más corriente que hay.
+    expect(ANIMO.alternarVarias(una.seleccion, 'cansado').seleccion).toEqual(['calma', 'cansado'])
   })
 
   it('tocar la que ya estaba elegida la suelta: así se deja en blanco', () => {
-    expect(ANIMO.alternar('calma', 'calma')).toBeNull()
-    expect(INTENCION.alternar('calma', 'calma')).toBeNull()
+    expect(ANIMO.alternarVarias(['calma', 'triste'], 'calma').seleccion).toEqual(['triste'])
+    expect(ANIMO.alternarVarias(['calma'], 'calma').seleccion).toEqual([])
+    expect(INTENCION.alternarVarias(['calma'], 'calma').seleccion).toEqual([])
+  })
+
+  it('con tres elegidas la cuarta no entra, y ninguna de las tres se cae', () => {
+    // Decisión del propietario del producto (30 ago 2026) sobre la alternativa
+    // de dejarla entrar soltando la más antigua, que es lo que hace el Journal:
+    // aquí las tres son la respuesta, y quitarle a alguien algo que dijo de sí
+    // mismo para hacer sitio es peor que no añadir lo cuarto.
+    const tres = ['calma', 'energia', 'cansado']
+    expect(ANIMO.alternarVarias(tres, 'triste')).toEqual({
+      seleccion: tres,
+      topeAlcanzado: true,
+    })
+    // Y soltando una vuelve a caber, sin tener que empezar de cero.
+    const dos = ANIMO.alternarVarias(tres, 'energia').seleccion
+    expect(ANIMO.alternarVarias(dos, 'triste').seleccion).toEqual(['calma', 'cansado', 'triste'])
+  })
+
+  it('nada de esto bloquea: se sigue pudiendo dejar la pregunta en blanco', () => {
+    // El tope es lo único que no crece. No hay control que se deshabilite, no
+    // hay nada en rojo y no hay recorrido que se pare (§14).
+    const chips = COMPARTIDO('ChipsCatalogo.jsx')
+    expect(chips).not.toMatch(/disabled|aria-invalid|required/)
+    expect(ANIMO.paraGuardarVarias([], '')).toEqual({ valores: [], otro: null })
+  })
+
+  it('el aviso del tope dice qué pasa, no qué se hizo mal', () => {
+    ;[textos.animo.max, textos.intencion.max].forEach((aviso) => {
+      expect(aviso).toBe('Caben tres a la vez. Suelta alguna si quieres cambiarla.')
+      expect(aviso).not.toMatch(/no puedes|máximo|límite|error|solo puedes/i)
+      expect(aviso).not.toMatch(/!/)
+    })
   })
 
   it('el punto de partida sí admite emociones difíciles; la intención no', () => {
@@ -184,7 +223,7 @@ describe('criterio 2 — las dos preguntas emocionales son de selección única'
     expect(pildora).toMatch(/font-medium/)
     expect(pildora).toMatch(/shadow-elev-2/)
 
-    const chips = COMPARTIDO('ChipsUnicos.jsx')
+    const chips = COMPARTIDO('ChipsCatalogo.jsx')
     expect(chips).toMatch(/aria-pressed=/)
     expect(chips).toMatch(/PILDORA_ELEGIDA/)
     expect(chips).toMatch(/MARCA/)
@@ -219,11 +258,11 @@ describe('criterio 3 — "Algo más" se crea, se elige, se edita y se quita', ()
 
   it('no se le asigna ningún emoji', () => {
     expect(textos.animo.otra.chip).not.toMatch(/[\u{1F300}-\u{1FAFF}]/u)
-    expect(COMPARTIDO('ChipsUnicos.jsx')).not.toMatch(/otra[\s\S]{0,40}emoji/)
+    expect(COMPARTIDO('ChipsCatalogo.jsx')).not.toMatch(/otra[\s\S]{0,40}emoji/)
   })
 
   it('el componente ofrece confirmar, editar y quitar', () => {
-    const chips = COMPARTIDO('ChipsUnicos.jsx')
+    const chips = COMPARTIDO('ChipsCatalogo.jsx')
     expect(chips).toMatch(/onKeyDown/)
     expect(chips).toMatch(/textosOtra\.confirmar/)
     expect(chips).toMatch(/textosOtra\.quitar/)
@@ -235,10 +274,21 @@ describe('criterio 3 — "Algo más" se crea, se elige, se edita y se quita', ()
 
 // ─── Criterio 4 ───────────────────────────────────────────────────────────────
 
-describe('criterio 4 — la gratitud admite hasta tres elementos independientes', () => {
-  it('abre con un solo campo, no con tres huecos por rellenar', () => {
-    expect(LIMITES.gratitudManana).toEqual({ min: 1, max: 3, crecerSola: false })
+describe('criterio 4 — la gratitud admite hasta diez elementos independientes', () => {
+  it('abre con un solo campo, no con diez huecos por rellenar', () => {
+    // Diez desde el 30 de agosto de 2026, y **sigue abriendo con uno**: el tope
+    // es sitio de sobra para quien tiene mucho que agradecer, no una meta. Un
+    // campo por delante y los demás los pide quien escribe.
+    expect(LIMITES.gratitudManana).toEqual({ min: 1, max: 10, crecerSola: false })
     expect(filasIniciales([], LIMITES.gratitudManana)).toHaveLength(1)
+  })
+
+  it('no se cuenta lo que falta por rellenar en ningún sitio', () => {
+    // "3 de 10" convertiría en un objetivo lo que es espacio disponible, y §14
+    // dice que nada se mide.
+    const bloque = MOMENTO('MomentoGratitud') + COMPARTIDO('CampoGratitud.jsx')
+    expect(bloque).not.toMatch(/de 10|\/ 10|restantes|te quedan/i)
+    expect(JSON.stringify(textos.gratitud)).not.toMatch(/\bdiez\b|10/i)
   })
 
   it('escribir en el único campo no abre otro por su cuenta', () => {
@@ -251,9 +301,18 @@ describe('criterio 4 — la gratitud admite hasta tres elementos independientes'
     expect(puedeAnadir([{ id: null, texto: 'el café' }], LIMITES.gratitudManana)).toBe(true)
   })
 
-  it('deja de ofrecerse en el tercero', () => {
-    const tres = ['el café', 'la ducha', 'el silencio'].map((texto) => ({ id: null, texto }))
-    expect(puedeAnadir(tres, LIMITES.gratitudManana)).toBe(false)
+  it('deja de ofrecerse en el décimo, no antes', () => {
+    const filasCon = (cuantas) =>
+      Array.from({ length: cuantas }, (_, i) => ({ id: null, texto: `cosa ${i + 1}` }))
+    expect(puedeAnadir(filasCon(3), LIMITES.gratitudManana)).toBe(true)
+    expect(puedeAnadir(filasCon(9), LIMITES.gratitudManana)).toBe(true)
+    expect(puedeAnadir(filasCon(10), LIMITES.gratitudManana)).toBe(false)
+  })
+
+  it('al llegar a diez se dice una vez, y sin reproche', () => {
+    // La frase ya estaba escrita para una lista de diez y por fin la tiene.
+    expect(copy.diario.filas.tope).toBe('Diez cosas. Nada mal.')
+    expect(MOMENTO('MomentoGratitud')).not.toMatch(/textoTope=\{null\}/)
   })
 
   it('vaciar el último campo lo retira y "Añadir otro" vuelve a ofrecerse', () => {
@@ -560,8 +619,11 @@ describe('criterio 9 — tres momentos, no una lista de campos', () => {
     const juntas = MOMENTO('MomentoIntencionAccion')
     expect(juntas.indexOf('intencion.titulo')).toBeLessThan(juntas.indexOf('accion.titulo'))
     expect(CONTENEDOR.match(/<MomentoIntencionAccion/g)).toHaveLength(1)
-    // Las ideas se recalculan con la intención que está justo encima.
-    expect(CONTENEDOR).toMatch(/generales=\{ideasGenerales\(valores\.intencion, anteriores\)\}/)
+    // Las ideas se recalculan con la intención que está justo encima. Desde
+    // que caben tres, siguen a **la primera** que se eligió: son ideas para
+    // empezar, no una lista que se reparta entre las tres.
+    expect(CONTENEDOR).toMatch(/generales=\{ideasGenerales\(primeraIntencion, anteriores\)\}/)
+    expect(CONTENEDOR).toMatch(/const \[primeraIntencion = null\] = valores\.intenciones/)
   })
 
   it('el recorrido son cuatro pantallas y cada una es su archivo', () => {
@@ -585,9 +647,9 @@ describe('criterio 9 — tres momentos, no una lista de campos', () => {
 
 describe('la consulta se ve igual que las preguntas, y en una sola pantalla', () => {
   const escrita = {
-    feeling: 'cansado',
+    feelings: ['cansado'],
     gratitude: ['el café', 'la ducha'],
-    intention: 'calma',
+    intentions: ['calma'],
     action: 'Salir a caminar',
     reflectionId: 'tratarme',
     reflection: 'Ir despacio',
@@ -597,26 +659,50 @@ describe('la consulta se ve igual que las preguntas, y en una sola pantalla', ()
     const bloques = resumenDeManana(escrita, 'f')
     const porId = (id) => bloques.find((bloque) => bloque.id === id)
 
-    expect(porId(PREGUNTAS.animo)).toMatchObject({ forma: 'chip', emoji: '😴' })
-    expect(porId(PREGUNTAS.intencion)).toMatchObject({ forma: 'chip', emoji: '😌' })
+    expect(porId(PREGUNTAS.animo)).toMatchObject({
+      forma: 'chip',
+      fichas: [{ texto: 'Cansada', emoji: '😴' }],
+    })
+    expect(porId(PREGUNTAS.intencion)).toMatchObject({
+      forma: 'chip',
+      fichas: [{ texto: 'En calma', emoji: '😌' }],
+    })
     // El emoji es el mismo que se vio al elegir: sale del catálogo, no de aquí.
-    expect(porId(PREGUNTAS.animo).emoji).toBe(ANIMO.emojiDe('cansado'))
-    expect(porId(PREGUNTAS.intencion).emoji).toBe(INTENCION.emojiDe('calma'))
+    expect(porId(PREGUNTAS.animo).fichas[0].emoji).toBe(ANIMO.emojiDe('cansado'))
+    expect(porId(PREGUNTAS.intencion).fichas[0].emoji).toBe(INTENCION.emojiDe('calma'))
+  })
+
+  it('las tres vuelven, en el orden en que se eligieron', () => {
+    // Hasta tres desde el 30 de agosto de 2026, y se releen todas: sin
+    // numerarlas, sin destacar la primera y sin "y 2 más".
+    const varias = { feelings: ['cansado', 'inquieto', 'calma'] }
+    expect(resumenDeManana(varias, 'f')[0].fichas.map((f) => f.texto)).toEqual([
+      'Cansada',
+      'Inquieta',
+      'En calma',
+    ])
   })
 
   it('lo demás es texto: la píldora es de las emociones, no del bloque', () => {
     resumenDeManana(escrita, 'f')
       .filter((bloque) => ![PREGUNTAS.animo, PREGUNTAS.intencion].includes(bloque.id))
-      .forEach((bloque) => expect(bloque).toMatchObject({ forma: 'texto', emoji: null }))
+      .forEach((bloque) => expect(bloque).toMatchObject({ forma: 'texto', fichas: [] }))
   })
 
   it('a la respuesta escrita a mano no se le asigna emoji (§3)', () => {
-    const propia = { feeling: ID_OTRA, feelingOther: 'medio dormido' }
+    const propia = { feelings: [ID_OTRA], feelingOther: 'medio dormido' }
     expect(resumenDeManana(propia, 'n')[0]).toMatchObject({
       forma: 'chip',
-      emoji: null,
-      lineas: ['«medio dormido»'],
+      fichas: [{ texto: '«medio dormido»', emoji: null }],
     })
+  })
+
+  it('la palabra propia convive con las del catálogo, y sigue sin emoji', () => {
+    const mezcla = { feelings: ['cansado', ID_OTRA], feelingOther: 'medio dormido' }
+    expect(resumenDeManana(mezcla, 'f')[0].fichas).toEqual([
+      { texto: 'Cansada', emoji: '😴' },
+      { texto: '«medio dormido»', emoji: null },
+    ])
   })
 
   it('cada bloque trae la pregunta, no una etiqueta resumida', () => {
@@ -633,7 +719,11 @@ describe('la consulta se ve igual que las preguntas, y en una sola pantalla', ()
 
   it('sigue el orden del recorrido y trae las respuestas resueltas', () => {
     const bloques = resumenDeManana(escrita, 'f')
-    expect(bloques.map((b) => b.lineas)).toEqual([
+    // Las emocionales van en `fichas` y lo escrito en `lineas`: una forma de
+    // bloque para las dos, no dos que se parezcan.
+    expect(
+      bloques.map((b) => (b.forma === 'chip' ? b.fichas.map((f) => f.texto) : b.lineas)),
+    ).toEqual([
       ['Cansada'],
       ['el café', 'la ducha'],
       ['En calma'],
@@ -643,7 +733,9 @@ describe('la consulta se ve igual que las preguntas, y en una sola pantalla', ()
   })
 
   it('lo que quedó en blanco no aparece: no hay marcador de ausencia', () => {
-    expect(resumenDeManana({ feeling: 'calma' }, 'n').map((b) => b.id)).toEqual([PREGUNTAS.animo])
+    expect(resumenDeManana({ feelings: ['calma'] }, 'n').map((b) => b.id)).toEqual([
+      PREGUNTAS.animo,
+    ])
     expect(resumenDeManana({}, 'n')).toEqual([])
     expect(resumenDeManana(null, 'n')).toEqual([])
   })
@@ -681,7 +773,7 @@ describe('la consulta se ve igual que las preguntas, y en una sola pantalla', ()
     )
     expect(respuesta).not.toMatch(/<button|onClick|aria-pressed|tabIndex/)
     // Y el emoji no se le lee a nadie: la etiqueta ya dice la emoción.
-    expect(respuesta).toMatch(/aria-hidden="true">\{bloque\.emoji\}/)
+    expect(respuesta).toMatch(/aria-hidden="true">\{ficha\.emoji\}/)
   })
 })
 
@@ -694,15 +786,30 @@ describe('§9 — el registro guarda lo que la actualización pide', () => {
       'updatedAt',
       'completedAt',
       'skipped',
-      'feeling',
+      'feelings',
       'feelingOther',
-      'intention',
+      'intentions',
       'intentionOther',
       'gratitude',
       'action',
       'reflectionId',
       'reflection',
     ].forEach((campo) => expect(FIELDS.morningEntry).toContain(campo))
+  })
+
+  it('los campos en singular ya no se escriben, pero se siguen leyendo', () => {
+    // RN-DB-04 — nada de lo ya escrito se sobrescribe ni desaparece. Las
+    // mañanas de agosto guardaron un id suelto y se releen tal cual; lo que no
+    // vuelve a ocurrir es que alguien escriba ahí.
+    expect(FIELDS.morningEntry).not.toContain('feeling')
+    expect(FIELDS.morningEntry).not.toContain('intention')
+    expect(animosDeManana({ feeling: 'cansado' })).toEqual(['cansado'])
+    expect(intencionesDeManana({ intention: 'calma' })).toEqual(['calma'])
+    expect(resumenDeManana({ feeling: 'cansado' }, 'f')[0].fichas).toEqual([
+      { texto: 'Cansada', emoji: '😴' },
+    ])
+    // Y la lista manda cuando está: un día no trae las dos formas a la vez.
+    expect(animosDeManana({ feelings: ['calma'], feeling: 'triste' })).toEqual(['calma'])
   })
 
   it('la marca de tiempo es local y conserva su desfase', () => {
@@ -743,7 +850,7 @@ describe('§9 — el registro guarda lo que la actualización pide', () => {
 
 describe('§8 — el cierre devuelve lo propio, sin celebrar nada', () => {
   const entrada = {
-    intention: 'calma',
+    intentions: ['calma'],
     action: '  Salir a caminar antes de comer  ',
   }
 
@@ -755,15 +862,26 @@ describe('§8 — el cierre devuelve lo propio, sin celebrar nada', () => {
   })
 
   it('con solo una de las dos, sale una sola línea', () => {
-    expect(lineasDeCierre({ intention: 'presente' }, 'n')).toHaveLength(1)
+    expect(lineasDeCierre({ intentions: ['presente'] }, 'n')).toHaveLength(1)
     expect(lineasDeCierre({ action: 'Beber agua' }, 'n')).toEqual([
       'Un paso que puedes dar: Beber agua',
     ])
   })
 
   it('la intención propia se devuelve tal como se escribió', () => {
-    expect(lineasDeCierre({ intention: ID_OTRA, intentionOther: 'sin prisa' }, 'm')).toEqual([
+    expect(lineasDeCierre({ intentions: [ID_OTRA], intentionOther: 'sin prisa' }, 'm')).toEqual([
       'Tu intención para hoy: «sin prisa»',
+    ])
+  })
+
+  it('con varias intenciones se dicen seguidas, en una sola línea', () => {
+    // Son una respuesta dicha con tres palabras, no una lista de cosas por
+    // hacer: sin viñetas, sin numerarlas y sin contarlas.
+    expect(lineasDeCierre({ intentions: ['calma', 'presente'] }, 'n')).toEqual([
+      'Tu intención para hoy: En calma y Presente',
+    ])
+    expect(lineasDeCierre({ intentions: ['calma', 'presente', 'ligero'] }, 'n')).toEqual([
+      'Tu intención para hoy: En calma, Presente y Con ligereza',
     ])
   })
 
@@ -777,20 +895,30 @@ describe('§8 — el cierre devuelve lo propio, sin celebrar nada', () => {
 // ─── Género ───────────────────────────────────────────────────────────────────
 
 describe('§3 — los adjetivos siguen al género del perfil', () => {
+  const animoDe = (entrada, genero) => fichasDeAnimo(entrada, genero).map((f) => f.texto)
+
   it('las tres formas, y la neutra sin marca', () => {
-    expect(etiquetaDeAnimo({ feeling: 'cansado' }, 'm')).toBe('Cansado')
-    expect(etiquetaDeAnimo({ feeling: 'cansado' }, 'f')).toBe('Cansada')
-    expect(etiquetaDeAnimo({ feeling: 'cansado' }, 'n')).toBe('Con cansancio')
-    expect(etiquetaDeIntencion({ intention: 'ligero' }, 'n')).toBe('Con ligereza')
+    expect(animoDe({ feelings: ['cansado'] }, 'm')).toEqual(['Cansado'])
+    expect(animoDe({ feelings: ['cansado'] }, 'f')).toEqual(['Cansada'])
+    expect(animoDe({ feelings: ['cansado'] }, 'n')).toEqual(['Con cansancio'])
+    expect(fichasDeIntencion({ intentions: ['ligero'] }, 'n')[0].texto).toBe('Con ligereza')
+  })
+
+  it('el género alcanza a las tres, no solo a la primera', () => {
+    expect(animoDe({ feelings: ['cansado', 'inquieto', 'motivado'] }, 'f')).toEqual([
+      'Cansada',
+      'Inquieta',
+      'Motivada',
+    ])
   })
 
   it('sin género declarado se resuelve en neutro y no se rompe nada', () => {
-    expect(etiquetaDeAnimo({ feeling: 'motivado' }, undefined)).toBe('Con motivación')
-    expect(etiquetaDeAnimo(null, 'f')).toBe('')
+    expect(animoDe({ feelings: ['motivado'] }, undefined)).toEqual(['Con motivación'])
+    expect(animoDe(null, 'f')).toEqual([])
   })
 
   it('la palabra propia no pasa por el helper de género (RN-GEN-06)', () => {
-    expect(etiquetaDeAnimo({ feeling: ID_OTRA, feelingOther: 'Cansado' }, 'f')).toBe('«Cansado»')
+    expect(animoDe({ feelings: [ID_OTRA], feelingOther: 'Cansado' }, 'f')).toEqual(['«Cansado»'])
   })
 })
 
@@ -813,9 +941,9 @@ describe('criterio 10 — la noche y el resto del diario no se tocan', () => {
       'updatedAt',
       'completedAt',
       'skipped',
-      'feeling',
+      'feelings',
       'feelingOther',
-      'intention',
+      'intentions',
       'intentionOther',
       'gratitude',
       'action',
@@ -831,7 +959,7 @@ describe('criterio 10 — la noche y el resto del diario no se tocan', () => {
   })
 
   it('ningún archivo de la mañana toca la noche, el journal ni los hábitos', () => {
-    // `ChipsUnicos` salió de esta lista al subir un nivel: dejó de ser un
+    // `ChipsCatalogo` salió de esta lista al subir un nivel: dejó de ser un
     // archivo de la mañana el día en que la noche también lo montó.
     //
     // **Revisión del paso 8 (25 ago):** la lista nombraba al producto pausado y
@@ -841,7 +969,7 @@ describe('criterio 10 — la noche y el resto del diario no se tocan', () => {
     ;['MomentoAnimo', 'MomentoGratitud', 'MomentoIntencionAccion', 'MomentoPausa'].forEach(
       (nombre) => expect(MOMENTO(nombre)).not.toMatch(/noche|night|journal/i),
     )
-    ;['manana', 'mananaAcciones', 'mananaPausa', 'mananaEmociones', 'seleccionUnica'].forEach(
+    ;['manana', 'mananaAcciones', 'mananaPausa', 'mananaEmociones', 'seleccionEmociones'].forEach(
       (nombre) => expect(codigoDe(`src/diario/${nombre}.js`)).not.toMatch(/night|journal|habit/i),
     )
   })
@@ -849,7 +977,7 @@ describe('criterio 10 — la noche y el resto del diario no se tocan', () => {
   it('lo que comparten los dos recorridos no conoce a ninguno de los dos', () => {
     // Subieron un nivel el 23 ago. Un componente compartido que alcanzara el
     // copy de un recorrido volvería a ser de ese recorrido, disfrazado.
-    ;['ChipsUnicos.jsx', 'Pasos.jsx'].forEach((nombre) =>
+    ;['ChipsCatalogo.jsx', 'Pasos.jsx'].forEach((nombre) =>
       expect(`${nombre}: ${COMPARTIDO(nombre)}`).not.toMatch(/diario\.manana|diario\.noche/),
     )
     // `pildora` subió otro nivel más y la regla que la vigila se endurece con
