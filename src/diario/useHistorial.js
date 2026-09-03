@@ -7,10 +7,11 @@
 // optimizar todavía, y optimizarlo antes de tiempo sería inventarse un problema.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { shared } from '@/lib/db'
+import { DEFAULT_DIA_TERMINA_A, shared } from '@/lib/db'
 import * as historial from './historial.js'
 import { fechaDeHoy } from './diario.js'
 import { estadoPin } from './pin.js'
+import { editable } from './ventanaEdicion.js'
 
 export function useHistorial(uid) {
   const [mes, setMes] = useState(null)
@@ -18,6 +19,10 @@ export function useHistorial(uid) {
   const [genero, setGenero] = useState('n')
   const [hoy, setHoy] = useState(null)
   const [diaAbierto, setDiaAbierto] = useState(null)
+  // Cuándo termina el día de esta persona: es lo que decide desde qué instante
+  // se cuentan las 72 horas de la ventana de edición (RN-DB-01). Se lee con el
+  // perfil, que ya se pedía, y no vuelve a pedirse por cada día que se abre.
+  const [diaTerminaA, setDiaTerminaA] = useState(DEFAULT_DIA_TERMINA_A)
   const [carga, setCarga] = useState('cargando')
   // Con un PIN puesto, el journal se lee **solo desde el journal**. Aquí no se
   // ofrece desbloquear: sería una segunda puerta a lo mismo, y dos puertas es
@@ -45,6 +50,7 @@ export function useHistorial(uid) {
       ])
       if (!vivo.current) return
       setGenero(perfil?.gender ?? 'n')
+      setDiaTerminaA(perfil?.diaTerminaA ?? DEFAULT_DIA_TERMINA_A)
       setHoy(fecha)
       setJournalConPin(pin.activo)
       setMes(historial.mesDe(fecha))
@@ -82,7 +88,10 @@ export function useHistorial(uid) {
 
     abrirDia: async (fecha) => {
       const dia = await historial.cargarDia(uid, fecha, { conJournal: !journalConPin })
-      if (vivo.current) setDiaAbierto(dia)
+      // Se calcula al abrirlo y no se guarda: es una vista, como el punto de
+      // ánimo (RN-DB-05). El Historial sigue mostrando el día entero lo diga
+      // como lo diga — esto solo decide si se dice que ya quedó como quedó.
+      if (vivo.current) setDiaAbierto({ ...dia, editable: editable(fecha, { diaTerminaA }) })
     },
 
     cerrarDia: () => setDiaAbierto(null),

@@ -12,7 +12,12 @@
 // pregunta. El héroe no sabe qué momentos hay ni cómo se cambian; solo le
 // reserva el sitio (`conmutador`), que es de quien gobierna el estado.
 //
-// **`respiracion` es el segundo hueco, entre el conmutador y la frase.** Va ahí
+// **`dias` es el hueco de la ventana de edición** (3 sep 2026): qué día se
+// está escribiendo, cuando hay más de uno abierto. Va justo detrás del
+// conmutador y delante de la respiración. El héroe tampoco sabe qué días hay ni
+// cuántas horas dura la ventana: le reserva el sitio y ya.
+//
+// **`respiracion` es el tercer hueco, entre los días y la frase.** Va ahí
 // y no debajo de la frase porque la frase es el aire previo a la primera
 // pregunta del Diario: lo que se ofrece antes de escribir se ofrece antes de
 // ese aire, no interrumpiéndolo. Es un hueco propio y no parte del primero
@@ -22,7 +27,7 @@
 import FraseDelDia from './FraseDelDia'
 import { fechaLarga } from '@/diario/fechas'
 
-export default function HeroeHoy({ estado, saludo, conmutador, respiracion }) {
+export default function HeroeHoy({ estado, saludo, conmutador, dias, respiracion }) {
   return (
     <header className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
@@ -31,6 +36,8 @@ export default function HeroeHoy({ estado, saludo, conmutador, respiracion }) {
       </div>
 
       {conmutador}
+
+      {dias}
 
       {respiracion}
 

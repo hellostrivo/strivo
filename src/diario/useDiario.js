@@ -13,12 +13,19 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import * as diario from './diario.js'
+import { editable as sePuedeEscribir } from './ventanaEdicion.js'
 
 /** §5.3 — Retraso del autoguardado desde el último carácter. */
 export const RETRASO_AUTOGUARDADO = 800
 
 const ESTADO_VACIO = {
   fecha: null,
+  hoy: null,
+  diaTerminaA: null,
+  // Sin día cargado no se escribe nada: `false` es lo honesto mientras no se
+  // sepa de qué día se está hablando.
+  editable: false,
+  dias: [],
   nombre: null,
   genero: 'n',
   morning: null,
@@ -45,6 +52,12 @@ const ESPACIOS = Object.freeze({
   }),
 })
 
+/**
+ * La pantalla puede pedir un día anterior (`fechaPedida`) y no solo el de hoy:
+ * la ventana de edición dura 72 horas desde que empieza el día
+ * (`ventanaEdicion.js`). Sin fecha se carga el día al que pertenece este
+ * momento, que es lo que hacía siempre.
+ */
 export function useDiario(uid, fechaPedida = null) {
   const [estado, setEstado] = useState(ESTADO_VACIO)
   const [carga, setCarga] = useState('cargando')
@@ -113,6 +126,26 @@ export function useDiario(uid, fechaPedida = null) {
     }
   }, [])
 
+  /**
+   * ¿El día que se está mirando sigue abierto?
+   *
+   * **Se pregunta en cada toque y no una vez al cargar**: la ventana es
+   * continua y una app que se queda abierta toda la noche la cruza sola. Es
+   * lógica pura sobre dos datos que ya están en el estado, así que preguntarlo
+   * a menudo no cuesta nada.
+   */
+  const abierto = useCallback(
+    () => sePuedeEscribir(estado.fecha, { diaTerminaA: estado.diaTerminaA }),
+    [estado.fecha, estado.diaTerminaA],
+  )
+
+  /**
+   * Lo pendiente se vuelca aunque la ventana se haya cerrado entre la última
+   * tecla y este momento, y no es un descuido: eso se escribió con el día
+   * abierto y **nada de lo escrito se pierde** (§14, no-negociable 4). Lo que
+   * la ventana cerrada impide es empezar algo nuevo, y de eso se ocupan
+   * `programar` y los dos guardados de toque.
+   */
   const volcar = useCallback(async () => {
     if (temporizador.current) {
       clearTimeout(temporizador.current)
@@ -133,6 +166,7 @@ export function useDiario(uid, fechaPedida = null) {
 
   const programar = useCallback(
     (espacio, patch) => {
+      if (!abierto()) return
       const forma = ESPACIOS[espacio]
       pendiente.current[espacio] = forma.acumular(pendiente.current[espacio], patch)
       // Eco inmediato en pantalla: lo escrito se ve aunque el guardado tarde.
@@ -142,7 +176,7 @@ export function useDiario(uid, fechaPedida = null) {
         volcar()
       }, RETRASO_AUTOGUARDADO)
     },
-    [volcar],
+    [abierto, volcar],
   )
 
   // Salir de la vista no puede perder una frase a medio escribir.
@@ -166,12 +200,21 @@ export function useDiario(uid, fechaPedida = null) {
 
     /** Un toque —una emoción, un estado— se guarda al momento. */
     guardarManana: (patch) =>
-      ejecutar(async () => ({ morning: await diario.guardarManana(uid, estado.fecha, patch) })),
+      abierto()
+        ? ejecutar(async () => ({ morning: await diario.guardarManana(uid, estado.fecha, patch) }))
+        : Promise.resolve(null),
     guardarNoche: (patch) =>
-      ejecutar(async () => ({ night: await diario.guardarNoche(uid, estado.fecha, patch) })),
+      abierto()
+        ? ejecutar(async () => ({ night: await diario.guardarNoche(uid, estado.fecha, patch) }))
+        : Promise.resolve(null),
   }
 
-  return { estado, carga, error, acciones, reintentar: cargar }
+  // `editable` se recalcula al pintar y no se hereda de la carga: entre que el
+  // día se cargó y ahora puede haber pasado el límite, y la pantalla tiene que
+  // enterarse sin recargar nada.
+  const dia = { ...estado, editable: estado.fecha ? abierto() : false }
+
+  return { estado: dia, carga, error, acciones, reintentar: cargar }
 }
 
 export default useDiario

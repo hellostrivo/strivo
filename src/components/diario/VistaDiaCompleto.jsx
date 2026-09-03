@@ -26,6 +26,14 @@
 //
 // Un día en blanco no es un día perdido y no se presenta como tal: se dice que
 // también estuvo, y se sale por donde se entró.
+//
+// **Los días que ya cerraron su ventana lo dicen al pie** (3 sep 2026). Desde
+// que la edición dura 72 horas hay días del calendario que todavía se pueden
+// escribir y días que ya no, y la diferencia se dice una vez, en voz baja y al
+// final: "Este día ya quedó como quedó". No se dice nada en los que siguen
+// abiertos —sería una cuenta atrás en una pantalla que no tiene dónde
+// escribir— y **no cambia nada de lo que se ve**: el día se lee entero, igual
+// que antes de que la ventana existiera.
 
 import { copy, interpolate } from '@copy'
 import { diaVacio } from '@/diario/historial'
@@ -227,6 +235,8 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
           </ul>
         </div>
       )}
+
+      {dia.editable === false && <p className="text-sm text-on-surface-soft">{textos.cerrado}</p>}
     </article>
   )
 }

@@ -192,6 +192,27 @@ export const copy = {
         noche: 'Noche',
       },
 
+      // La ventana de 72 horas (3 sep 2026). Qué día se está escribiendo, y
+      // qué pasa con los que ya se cerraron.
+      //
+      // **Los días anteriores se nombran, no se cuentan.** "Hoy", "Ayer" y el
+      // nombre del día de la semana; nunca "hace 2 días" ni "1 de 3", que
+      // convertirían una navegación en una cuenta atrás. Tampoco se marca
+      // cuáles quedaron en blanco: eso sería la lista de lo que falta, y aquí
+      // no falta nada (RN-05).
+      //
+      // `retroTemplate` es la etiqueta discreta de estar en un día pasado. Dice
+      // de qué día es lo que se está escribiendo y no dice nada más: sin "aún
+      // estás a tiempo", sin "te quedan X horas" y sin recordar que ese día se
+      // pasó sin escribir.
+      dias: {
+        label: 'Día que estás escribiendo',
+        hoy: 'Hoy',
+        ayer: 'Ayer',
+        retroTemplate: 'Registro del {dia}',
+        cerrado: 'Este día ya quedó como quedó. Aquí sigue, para leerlo.',
+      },
+
       // Sin tarjeta de acción y sin estado "hecho": el Diario se muestra en
       // Hoy, así que no hay nada que anunciar ni que dar por terminado.
       // RN-HOY-03 se cumple sin decir nada — lo escrito está a la vista.
@@ -1300,6 +1321,11 @@ export const copy = {
         granVision: 'Cómo imaginabas el día',
         // Un día en blanco no es un día perdido.
         vacio: 'Este día no tiene nada escrito. También estuviste.',
+        // La ventana de 72 horas (3 sep 2026). Se dice **solo** cuando ya se
+        // cerró: decirlo también en los días abiertos sería una cuenta atrás
+        // en una pantalla que no tiene dónde escribir. Nada se oculta y nada
+        // desaparece — el día se lee entero, igual que antes.
+        cerrado: 'Este día ya quedó como quedó.',
       },
     },
     // ─── Tu perfil (26 ago 2026) ──────────────────────────────────────────────

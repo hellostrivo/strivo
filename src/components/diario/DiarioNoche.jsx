@@ -71,7 +71,7 @@ const VALORES_VACIOS = Object.freeze({
   descarga: '',
 })
 
-export default function DiarioNoche({ estado, acciones }) {
+export default function DiarioNoche({ estado, acciones, soloLectura = false }) {
   const [vista, setVista] = useState('recorrido')
   const [paso, setPaso] = useState(0)
   const [valores, setValores] = useState(VALORES_VACIOS)
@@ -226,6 +226,26 @@ export default function DiarioNoche({ estado, acciones }) {
   const abrirDescarga = () => {
     setDescargaPedida(true)
     setPaso(PASO_DESCARGA)
+  }
+
+  /**
+   * Un día fuera de la ventana de 72 horas se lee y no se escribe
+   * (`@/diario/ventanaEdicion`). **No se oculta y no desaparece**: se muestra
+   * con la misma pantalla de consulta que un día ya cerrado, con las preguntas
+   * delante y las respuestas debajo. Lo único que no está es el enlace para
+   * cambiar algo, porque ya no hay nada que cambiar.
+   *
+   * Va después de todos los hooks a propósito: el día se carga igual, se lee
+   * igual y solo cambia lo que se pinta.
+   */
+  if (soloLectura) {
+    return (
+      <div ref={marco}>
+        <ResumenNoche
+          bloques={resumenDeNoche(night, estado.morning, estado.genero, estado.fecha)}
+        />
+      </div>
+    )
   }
 
   if (vista === 'cierre') {

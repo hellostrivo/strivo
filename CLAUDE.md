@@ -276,6 +276,7 @@ catálogo son decorativos y van ocultos al lector de pantalla.
 | **RN-08** | Lo escrito debe ser exportable. |
 | **RN-09** | Toda pantalla es abandonable sin coste y sin confirmación. |
 | **RN-10** | Cinco destinos máximo —tres en la cabecera, dos en la barra de abajo—; tres toques de profundidad máxima. |
+| **RN-11** | **Un día se escribe hasta 72 horas después de haber empezado.** La ventana es deslizante y continua: no se reinicia a medianoche y no depende de la franja de la mañana ni de la noche. Pasado el plazo el día **se lee entero y no se toca** — nunca se oculta ni desaparece. Ningún día futuro se puede escribir. |
 
 **Verifica estas antes de cada feature: si viola una regla, no entra.**
 
@@ -585,6 +586,9 @@ el componente.**
 - `src/diario/noche.js` → `animoDeNoche` es el **único** sitio que decide el ánimo de una noche.
 - `src/lib/respiracion/` → el motor de ritmo. `ritmoRespiracion.js` es un envoltorio de compatibilidad.
 - `src/lib/umbralSesion.js` → el «ya se cruzó» del umbral, compartido por sus dos consumidores.
+- `src/diario/ventanaEdicion.js` → hasta cuándo se puede escribir en un día, y **el único sitio donde
+  vive el 72** (`HORAS_DE_EDICION`). Lo leen el día, su estado de React, el Historial y la pantalla
+  Hoy; hay una prueba que falla si alguno lo escribe a mano.
 - `src/diario/manana.js` → `resumenDeManana`: qué bloques hay, en qué orden y con qué título. El
   componente solo pinta. También `animosDeManana` e `intencionesDeManana`, que son el **único** sitio
   que sabe que una mañana de agosto guardó un id suelto donde ahora hay lista.
@@ -639,7 +643,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**58 archivos de prueba · 1.584 casos · los seis comandos en verde.**
+**59 archivos de prueba · 1.609 casos · los seis comandos en verde.**
 
 ### Marca: el logo oficial y el video de apertura (25 ago 2026)
 
@@ -877,6 +881,85 @@ por dentro**: lo que se retira se deja de escribir, no se borra.
 
 **Lo que sigue sin verse en un teléfono**, como el resto: si el recorrido de siete pasos se siente
 más breve o solo más corto.
+
+### La ventana de edición de 72 horas (3 sep 2026)
+
+Lo pidió el propietario del producto después de que una tester llegara a casa a las dos de la
+mañana y no pudiera cerrar el día que acababa de vivir: la clave de fecha ya había cambiado y se
+encontró el día siguiente en blanco. **No es un caso raro** —se registra tarde, se olvida un día, se
+viaja— y cortar a medianoche castiga el uso real de la app, que es lo contrario de un refugio
+(RN-05).
+
+**Lo que había, verificado antes de tocar nada.** No existía ninguna regla de «día cerrado»: nadie
+comparaba contra la fecha de hoy, nadie llamaba a `toDateString()` y `dayState` sigue sin escribirse.
+El bloqueo era **de alcance, no de guardia**: `Hoy.jsx` llamaba a `useDiario(uid)` sin fecha, así que
+la única fecha que la app sabía escribir era la de ahora. `useDiario` ya aceptaba una `fechaPedida`
+que nadie le pasaba nunca. La capa de datos escribe cualquier clave que se le dé.
+
+**La regla vive en `src/diario/ventanaEdicion.js`, y el 72 solo ahí** (`HORAS_DE_EDICION`). Hay una
+prueba que falla si alguno de los seis consumidores lo escribe a mano.
+
+- **Un día empieza cuando lo dice el perfil, no cuando lo dice la medianoche.** Se cuenta desde el
+  mismo `diaTerminaA` que elige la clave de fecha (RN-DB-01): con `diaTerminaA = "03:00"`, el día
+  `2026-09-01` va de las 03:00 de ese día a las 03:00 del siguiente, y las 72 horas se cuentan desde
+  ahí. Contarlo distinto haría que la ventana y la clave discreparan justo en las horas en que la
+  gente escribe tarde, que es el caso que esto viene a resolver.
+- **Todo en hora local y nada en UTC.** El inicio de un día se construye con sus tres números —nunca
+  `new Date(cadena)`—, así que **cambiar de huso no esconde ni duplica un registro**: la clave se
+  guardó con el día que se vivió y no se reinterpreta jamás. Lo que se mide es **tiempo transcurrido
+  de verdad**, así que un cambio de horario no regala ni quita una hora de ventana.
+- **Nada de esto se persiste.** Es lógica pura sobre tres datos —la fecha, el corte del perfil y el
+  reloj— y se calcula al mirarla, como el punto de ánimo (RN-DB-05). Una marca de «cerrado» escrita
+  a medianoche envejecería mal y habría que corregirla en silencio, que es justo lo que RN-DB-02
+  prohíbe.
+
+**Dónde se comprueba, y por qué en un solo sitio.** El guardián es `useDiario`, que es el único
+camino por el que la app escribe un día: `programar` y los dos guardados de toque preguntan **en cada
+toque** —la ventana es continua y una app abierta toda la noche la cruza sola— y `editable` se
+recalcula al pintar en vez de heredarse de la carga. `guardarManana` y `guardarNoche` siguen siendo
+escritura de bajo nivel y no comprueban nada: dos guardianes de la misma regla dan dos respuestas.
+
+**Lo pendiente sí se vuelca aunque la ventana se cierre entre la última tecla y el volcado.** Eso se
+escribió con el día abierto y **nada de lo escrito se pierde** (§14, no-negociable 4). Lo que la
+ventana cerrada impide es empezar algo nuevo.
+
+**En pantalla:**
+
+- **Hoy ofrece los días abiertos y los nombra, no los cuenta** (`SelectorDia`, bajo el conmutador de
+  sección). «Hoy», «Ayer» y el nombre del día de la semana; ni «hace 2 días», ni «1 de 3», ni horas
+  que queden. **Ningún día lleva marca de vacío**: sería la lista de lo que falta, y aquí no falta
+  nada. El día elegido se distingue por **peso y borde**, nunca solo por color.
+- **Estar en un día pasado se dice una vez y en voz baja**: «Registro del martes», debajo del
+  selector. Sin advertencia y sin recordarle a nadie que ese día pasó sin que escribiera.
+- **Un día fuera de la ventana se lee entero.** Se pinta con la misma pantalla de consulta que un día
+  ya cerrado —las preguntas delante, las respuestas debajo— y sin el enlace de «Cambiar algo»: sin
+  nada que tocar, un control que no lleva a ningún sitio es peor que su ausencia. En el Historial se
+  dice al pie, «Este día ya quedó como quedó», **solo en los que ya cerraron**: decirlo también en
+  los abiertos sería una cuenta atrás en una pantalla que no tiene dónde escribir.
+- **El selector no se pinta si solo hay un día abierto**, y la elección **no se persiste**: al volver
+  a abrir la app se entra por hoy, como siempre (RN-NAV-05).
+
+**Los bordes que se preguntaron, y qué se decidió:**
+
+- **Rachas, métricas y constancia: no existen y no van a existir** (§14, no-negociable 2). Nada que
+  recalcular. Lo único derivado del día —el punto de ánimo del calendario y el «ánimo bajo reciente»
+  que retira las frases de esfuerzo— **se calcula al pintar**, así que un día completado de forma
+  retroactiva ya se refleja solo. No hacía falta tocar nada para eso y no se tocó.
+- **Track de hábitos: no existe en este producto** (§1.2, y `eslint.config.js` lo impide). La premisa
+  del encargo venía de otra app.
+- **Días a medias de días anteriores se siguen escribiendo** dentro de la ventana: el autoguardado es
+  el mismo, la fecha es la única que cambia y `completedAt` sigue siendo lo único que cierra un
+  recorrido (RN-DB-09).
+- **El Journal se queda fuera a propósito.** Sus entradas nunca se cerraron a medianoche —se pueden
+  editar siempre— y volverlas inmutables sería una restricción nueva que nadie pidió, en el único
+  sitio del producto donde el sistema está mudo (RN-JR-01). **Está sin decidir y es del propietario
+  del producto.**
+
+**Sin cambios en el modelo de datos.** No hay campo nuevo, no se escribe nada distinto y no hace
+falta migrar nada.
+
+**Lo que sigue sin verse en un teléfono**, como el resto: si volver a un día anterior se siente
+natural o se siente una pantalla de administración.
 
 ### Divergencias conocidas entre el blueprint y el código
 

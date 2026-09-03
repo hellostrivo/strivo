@@ -36,6 +36,12 @@
 //
 // Volver a entrar es un toque y no pide confirmación: cambiar de idea sobre cómo
 // quieres pasar el día no es deshacer nada.
+//
+// **El enlace para cambiar algo es opcional** (3 sep 2026). Un día que ya pasó
+// su ventana de 72 horas se pinta con esta misma pantalla y sin él: sin nada
+// que tocar, un control que no lleva a ningún sitio sería peor que su ausencia.
+// Sin `onEditar` no se pinta el botón, y no se pone nada en su lugar — un "ya
+// no se puede editar" al pie sería un reproche con otra forma.
 
 import { clsx } from 'clsx'
 import { PILDORA, PILDORA_ELEGIDA } from '@components/shared/pildora'
@@ -62,7 +68,7 @@ function Respuesta({ bloque }) {
   ))
 }
 
-export default function ResumenManana({ bloques, onEditar }) {
+export default function ResumenManana({ bloques, onEditar = null }) {
   return (
     <div className="flex flex-col gap-8">
       {/* Rótulo tenue, no un segundo título: la pantalla se identifica sin
@@ -88,17 +94,19 @@ export default function ResumenManana({ bloques, onEditar }) {
         </section>
       ))}
 
-      <button
-        type="button"
-        onClick={onEditar}
-        className={clsx(
-          'self-start rounded-full px-3 py-2 min-h-touch-sm text-sm',
-          'text-on-surface-soft hover:text-on-surface',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30',
-        )}
-      >
-        {textos.resumen.editar}
-      </button>
+      {onEditar && (
+        <button
+          type="button"
+          onClick={onEditar}
+          className={clsx(
+            'self-start rounded-full px-3 py-2 min-h-touch-sm text-sm',
+            'text-on-surface-soft hover:text-on-surface',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30',
+          )}
+        >
+          {textos.resumen.editar}
+        </button>
+      )}
     </div>
   )
 }

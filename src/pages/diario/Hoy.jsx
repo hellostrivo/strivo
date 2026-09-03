@@ -20,12 +20,21 @@
 // **Cerrar el día es escribir la noche, y nada más.** No hay un recorrido
 // guiado paralelo: la ceremonia de cierre está al final de la sección Noche,
 // donde se escribe.
+//
+// **Y no siempre se escribe el día de hoy** (3 sep 2026). La ventana de
+// edición dura 72 horas desde que empieza cada día, así que esta pantalla
+// puede estar mostrando el de ayer o el de anteayer: el selector de arriba
+// elige cuál y `useDiario` carga ese. Qué día se está escribiendo lo sabe esta
+// pantalla y nadie más — las secciones reciben el estado ya resuelto, igual que
+// antes. Un día que ya pasó su ventana no se oculta ni desaparece: se muestra
+// entero y sin nada que tocar.
 
 import { useEffect, useState } from 'react'
 import { clsx } from 'clsx'
 import DiarioManana from '@components/diario/DiarioManana'
 import DiarioNoche from '@components/diario/DiarioNoche'
 import HeroeHoy from '@components/diario/HeroeHoy'
+import SelectorDia from '@components/diario/SelectorDia'
 import SelectorMomento from '@components/diario/SelectorMomento'
 import TarjetaRespiracion from '@components/diario/TarjetaRespiracion'
 import Respiracion from '@components/shared/Respiracion'
@@ -62,7 +71,11 @@ function Fondo({ momento }) {
 }
 
 export default function Hoy({ uid, onHideNav, onMomento }) {
-  const { estado, carga, error, acciones, reintentar } = useDiario(uid)
+  // `null` es "el día al que pertenece este momento", que es con lo que abre
+  // siempre la pantalla. Elegir otro día de la ventana lo fija aquí y recarga.
+  // No se persiste: al volver a abrir la app se entra por hoy, como siempre.
+  const [fechaPedida, setFechaPedida] = useState(null)
+  const { estado, carga, error, acciones, reintentar } = useDiario(uid, fechaPedida)
   const [momento, setMomento] = useState(momentoInicial)
   const [vista, setVista] = useState('hoy')
   const [umbral, setUmbral] = useState(false)
@@ -192,6 +205,10 @@ export default function Hoy({ uid, onHideNav, onMomento }) {
       <HeroeHoy
         estado={estado}
         conmutador={<SelectorMomento momento={momento} onCambiar={setMomento} />}
+        /* Los días que la ventana todavía tiene abiertos. Con uno solo el
+           selector no se pinta: ofrecer una lista de un elemento es enseñar un
+           mecanismo que no hace nada. */
+        dias={<SelectorDia dias={estado.dias} fecha={estado.fecha} onCambiar={setFechaPedida} />}
         /* La entrada a la respiración, la misma en las dos secciones: lo que
            cambia entre ellas es la paleta, no el destino. Va pegada al
            conmutador y por delante de la frase del día, que es el aire previo
@@ -214,12 +231,17 @@ export default function Hoy({ uid, onHideNav, onMomento }) {
         }
       />
 
+      {/* Un día que ya cerró su ventana se dice una vez, en voz baja y sin
+          alarma: no hay aviso, no hay ventana emergente y no hay nada que
+          confirmar. Debajo sigue estando el día entero, para leerlo. */}
+      {!estado.editable && <p className="text-sm text-on-surface-soft">{textos.dias.cerrado}</p>}
+
       {/* El Diario, aquí mismo. Sin tarjeta que lo anuncie y sin paso previo:
           la sección elegida arriba es la que se escribe abajo. */}
       {momento === 'manana' ? (
-        <DiarioManana estado={estado} acciones={acciones} />
+        <DiarioManana estado={estado} acciones={acciones} soloLectura={!estado.editable} />
       ) : (
-        <DiarioNoche estado={estado} acciones={acciones} />
+        <DiarioNoche estado={estado} acciones={acciones} soloLectura={!estado.editable} />
       )}
 
       {/* El día ya está montado detrás: cuando la luz se va, no hay nada que

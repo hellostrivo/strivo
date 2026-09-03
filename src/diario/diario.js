@@ -27,6 +27,7 @@ import { fraseDelDia } from '@/content/frases-del-dia'
 import { hayAlgoEscrito } from './manana.js'
 import { animoDeNoche, hayAlgoEscrito as hayAlgoDeNoche } from './noche.js'
 import { sumarDias } from './fechas.js'
+import { diasEditables, editable as sePuedeEscribir } from './ventanaEdicion.js'
 
 /** Días hacia atrás que se miran para saber si el ánimo reciente es bajo. */
 const DIAS_DE_ANIMO_RECIENTE = 3
@@ -37,6 +38,18 @@ const ANIMOS_BAJOS = Object.freeze(['agotado', 'inquieto'])
 /** La fecha a la que pertenece este momento, según el perfil (RN-DB-01). */
 export async function fechaDeHoy(uid) {
   return strivoDateKey(await shared.getDiaTerminaA(uid))
+}
+
+/**
+ * Los días que todavía se pueden escribir, del de hoy hacia atrás.
+ *
+ * La regla vive entera en `ventanaEdicion.js`; aquí solo se le dan los dos
+ * datos que necesita, que son de esta persona: cuándo termina su día y cuál es
+ * su día de hoy.
+ */
+export async function ventanaAbierta(uid) {
+  const diaTerminaA = await shared.getDiaTerminaA(uid)
+  return diasEditables(strivoDateKey(diaTerminaA), { diaTerminaA })
 }
 
 /**
@@ -88,7 +101,13 @@ export function nocheEscrita(night) {
  * @returns {Promise<object>} estado del día.
  */
 export async function cargarDia(uid, fechaPedida = null) {
-  const fecha = fechaPedida ?? (await fechaDeHoy(uid))
+  // `diaTerminaA` se lee una vez y sirve para tres cosas: elegir la fecha de
+  // hoy, decidir si la que se pide todavía se puede escribir y saber qué días
+  // ofrece la pantalla. Preguntarlo tres veces daría tres respuestas iguales y
+  // una tercera ocasión de que discrepen.
+  const diaTerminaA = await shared.getDiaTerminaA(uid)
+  const hoy = strivoDateKey(diaTerminaA)
+  const fecha = fechaPedida ?? hoy
 
   const [perfil, morning, night, animoBajo, recientes, noches] = await Promise.all([
     shared.getProfile(uid),
@@ -101,6 +120,15 @@ export async function cargarDia(uid, fechaPedida = null) {
 
   return {
     fecha,
+    // El día al que pertenece este momento, que no siempre es el que se está
+    // mirando: desde el 3 de septiembre de 2026 se puede abrir un día anterior
+    // sin salir de Hoy.
+    hoy,
+    diaTerminaA,
+    // Se calcula al cargar y se vuelve a calcular al escribir (`useDiario`): la
+    // ventana es continua y una app abierta toda la noche la cruza sola.
+    editable: sePuedeEscribir(fecha, { diaTerminaA }),
+    dias: diasEditables(hoy, { diaTerminaA }),
     nombre: perfil?.name ?? null,
     genero: perfil?.gender ?? 'n',
     morning,
@@ -121,6 +149,13 @@ export async function cargarDia(uid, fechaPedida = null) {
 // ─── Escritura ────────────────────────────────────────────────────────────────
 // Cada bloque guarda lo suyo con un merge parcial. Ninguna escritura depende de
 // otra, así que una vista a medias nunca deja el día en un estado imposible.
+//
+// **La ventana de 72 horas no se comprueba aquí, y es a propósito.** Estas dos
+// funciones son escritura de bajo nivel, como las de `lib/db/`: reciben la
+// fecha ya decidida y la escriben. Quien decide si esa fecha se puede escribir
+// es `useDiario`, que es el único camino por el que la app escribe un día y el
+// que tiene el reloj delante en el momento del toque. Poner la comprobación en
+// los dos sitios significaría dos respuestas a la misma pregunta.
 
 export async function guardarManana(uid, fecha, patch) {
   await diario.saveMorningEntry(uid, fecha, patch)
