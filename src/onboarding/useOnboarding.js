@@ -96,7 +96,6 @@ export function useOnboarding(uid, { onUid } = {}) {
         ...previas,
         nombre: perfil?.name ?? previas.nombre,
         genero: opcionDe(perfil?.gender),
-        identidad: perfil?.identidadCentral ?? previas.identidad,
         despertar: perfil?.wakeTime ?? previas.despertar,
         dormir: perfil?.sleepTime ?? previas.dormir,
         motivos: expediente?.motivos ?? previas.motivos,

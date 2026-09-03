@@ -12,12 +12,12 @@
 // lista tiene componente y copy: añadir uno a medias falla en voz alta en vez
 // de dejar un hueco en pantalla.
 //
-// El orden va de lo más cercano a lo más reflexivo: cómo te llamas, cómo
-// hablarte, cómo son tus días y quién quieres ser. Lo que llegue después
-// —cuenta, plan, suscripción— va detrás: son gestiones, no eres tú.
+// El orden va de lo más cercano a lo más cotidiano: cómo te llamas, cómo
+// hablarte y cómo son tus días. Lo que llegue después —cuenta, plan,
+// suscripción— va detrás: son gestiones, no eres tú.
 
 /** Los bloques que hay hoy, en el orden en que se ven. */
-export const BLOQUES = Object.freeze(['nombre', 'genero', 'horarios', 'identidad'])
+export const BLOQUES = Object.freeze(['nombre', 'genero', 'horarios'])
 
 /** ¿Es un bloque del perfil? */
 export function es(id) {

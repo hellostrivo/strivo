@@ -4,16 +4,19 @@
 // Está separado del hook a propósito: aquí no hay React, así que qué se guarda
 // —y qué no— se puede leer y probar sin montar una pantalla.
 //
-// **Cada campo va a su sitio del modelo canónico**, y ninguno es nuevo salvo
-// los que el spec añadió: el nombre, el género, la identidad y los horarios son
-// `shared/profile`; el motivo y por dónde va el recorrido son
-// `shared/onboarding`; los avisos son `shared/preferences`. Un campo fuera de
-// esas listas lanza `UNKNOWN_FIELD` al escribir (RN-DB-03), que es lo que
-// mantiene honesto este archivo.
+// **Cada campo va a su sitio del modelo canónico**, y ninguno es nuevo: el
+// nombre, el género y los horarios son `shared/profile`; el motivo y por dónde
+// va el recorrido son `shared/onboarding`; los avisos son
+// `shared/preferences`. Un campo fuera de esas listas lanza `UNKNOWN_FIELD` al
+// escribir (RN-DB-03), que es lo que mantiene honesto este archivo.
+//
+// **`identidadCentral` ya no se escribe desde aquí.** P4 se retiró del
+// recorrido, así que nadie vuelve a poner esa frase; la que ya esté guardada se
+// queda donde está y `updateProfile` no la toca (RN-DB-04).
 
 import { interpolate } from '@copy'
+import { resolveGender } from '@copy/gender'
 import { generoDe } from './genero.js'
-import { paraGuardar as identidadParaGuardar, paraCierre } from './identidad.js'
 import { paraGuardar as motivosParaGuardar } from './motivos.js'
 import { normalizarHora, DESPERTAR_SUGERIDO, DORMIR_SUGERIDO } from './horarios.js'
 import { ORDEN, VERSION } from './pasos.js'
@@ -30,7 +33,6 @@ export const RESPUESTAS_INICIALES = Object.freeze({
   genero: null,
   motivos: Object.freeze([]),
   motivoOtro: '',
-  identidad: '',
   despertar: DESPERTAR_SUGERIDO,
   dormir: DORMIR_SUGERIDO,
 })
@@ -46,7 +48,6 @@ export function perfilDesde(respuestas) {
   return {
     name: String(respuestas.nombre ?? '').trim() || null,
     gender: generoDe(respuestas.genero),
-    identidadCentral: identidadParaGuardar(respuestas.identidad),
     wakeTime: normalizarHora(respuestas.despertar),
     sleepTime: normalizarHora(respuestas.dormir),
   }
@@ -85,23 +86,23 @@ export function expedienteDe(paso, completedSteps) {
 }
 
 /**
- * El cierre (P8): la frase y, si hay hora de despertar, cuándo se vuelven a ver.
+ * El cierre (P8): el saludo de bienvenida, con el nombre y en su género.
  *
- * **Nunca arma una frase con áreas.** Hay dos redacciones y solo dos: con
- * identidad y sin ella. La versión con áreas del modelo anterior no existe en
- * el copy y no tiene de dónde salir.
+ * **Es lo único que se dice en esa pantalla.** Antes llevaba una frase armada
+ * con la identidad central y la hora de la vuelta debajo; la identidad se
+ * retiró del recorrido y lo demás se retira con ella. Una última pantalla que
+ * saluda y abre la puerta no necesita un segundo mensaje explicando el primero.
+ *
+ * Sin nombre se saluda igual, sin hueco y sin coma colgando: dejar el nombre en
+ * blanco es una respuesta válida (RN-02) y el cierre no es sitio para
+ * señalarla.
  *
  * @param {object} textos - `copy.diario.onboarding.p8`
- * @returns {{frase: string, proxima: ?string}}
+ * @param {{nombre?: string, genero?: 'm'|'f'|'n'}} respuesta
+ * @returns {string}
  */
-export function cierreDe(textos, { identidad, despertar } = {}) {
-  const frase = identidad
-    ? interpolate(textos.closingTemplate, { identidad: paraCierre(identidad) })
-    : textos.closingPlain
-
-  const hora = normalizarHora(despertar)
-  return {
-    frase,
-    proxima: hora ? interpolate(textos.nextTemplate, { hora }) : null,
-  }
+export function bienvenidaDe(textos, { nombre, genero } = {}) {
+  const suyo = String(nombre ?? '').trim()
+  const plantilla = resolveGender(suyo ? textos.welcomeTemplate : textos.welcomePlain, genero)
+  return suyo ? interpolate(plantilla, { nombre: suyo }) : plantilla
 }

@@ -40,7 +40,9 @@ describe('los campos que el onboarding escribe', () => {
     })
   })
 
-  it('la identidad central es una frase suelta, sin nada con qué combinarse', () => {
+  it('la identidad central se sigue leyendo aunque ya nadie la escriba', () => {
+    // P4 salió del recorrido el 2 de septiembre de 2026 y el campo se quedó:
+    // lo que ya está guardado no se sobrescribe ni desaparece (RN-DB-04).
     expect(FIELDS.profile).toContain('identidadCentral')
     // Lo que este spec vino a evitar: ni áreas, ni identidad por área.
     FIELDS.profile.forEach((campo) => expect(campo).not.toMatch(/[áa]rea/i))
@@ -80,7 +82,9 @@ describe('cuándo queda onboarding pendiente (RN-DB-09)', () => {
   it('lo decide la marca de cierre y no cuántos pasos se recorrieron', async () => {
     await initUserTree(UID)
 
-    // Ocho pasos anotados y sin marca: sigue pendiente.
+    // Los ocho pasos de la versión anterior anotados —`p4` incluido, que ya no
+    // existe— y sin marca: sigue pendiente. Un expediente viejo se relee tal
+    // cual y la capa de datos no lo corrige por su cuenta (RN-DB-02, RN-DB-04).
     await shared.updateOnboarding(UID, {
       completedSteps: ['p1', 'p2', 'p2a', 'p3', 'p4', 'p5', 'p6', 'p7'],
     })

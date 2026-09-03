@@ -31,7 +31,7 @@ export const copy = {
   // ni "progreso", ni "ritual" referido a un checklist (§C2.6, criterio 3).
   diario: {
     // ─── El onboarding (F-1B) ─────────────────────────────────────────────
-    // Ocho pasos y un sub-paso, una sola vez en la vida de la cuenta.
+    // Siete pasos y un sub-paso, una sola vez en la vida de la cuenta.
     //
     // **Vive dentro de `diario` y no en un namespace de primer nivel.** Strivo
     // es una sola aplicación: un `copy.onboarding` por encima diría que hay
@@ -113,32 +113,6 @@ export const copy = {
         otherCounterTemplate: '{n} de {max}',
       },
 
-      // La identidad central. **No depende de ninguna área, en ningún punto**:
-      // el modelo de tres niveles del alcance retirado no vuelve, y el campo
-      // que la guarda no tiene con qué combinarse.
-      //
-      // Solo el primer chip lleva marca de género; los demás están redactados
-      // para no necesitarla. Una vez tocado, su texto es texto de la persona y
-      // no vuelve a pasar por el resolutor (RN-GEN-06).
-      p4: {
-        headline: 'La persona que quieres ser se construye un día a la vez.',
-        subhead:
-          'No busques la frase perfecta. Solo escribe algo que quieras recordar cuando abras Strivo.',
-        prefix: 'Soy alguien que...',
-        suggestionsLabel: 'Sugerencias',
-        chips: {
-          cuidado: { m: 'cuida de sí mismo.', f: 'cuida de sí misma.', n: 'se cuida.' },
-          paz: 'encuentra paz incluso en días difíciles.',
-          promesa: 'cumple lo que se promete.',
-          intencion: 'vive con intención.',
-          aprendizaje: 'aprende de cada experiencia.',
-          avances: 'celebra sus pequeños avances.',
-        },
-        chipOther: 'Otro',
-        closing:
-          'Esta frase será un recordatorio silencioso de la persona en la que quieres convertirte.',
-      },
-
       p5: {
         question: '¿Cómo son tus días?',
         hint: 'Para acompañarte a tu ritmo, no al de la app. Lo cambias cuando quieras.',
@@ -178,14 +152,27 @@ export const copy = {
         skipNote: 'Sin cuenta también funciona todo. La puedes crear después.',
       },
 
-      // El cierre lee la identidad si la hay y dice otra cosa si no la hay.
-      // **No arma ninguna frase con áreas**: `closingWithAreas`,
-      // `closingPlainWithAreas` y `areasJoin` no existen aquí y no van a
-      // existir.
+      // El cierre saluda por el nombre, en el género del perfil, y no dice
+      // nada más. **Un solo mensaje y un botón**: la frase que se armaba con
+      // la identidad central se fue con la pantalla que la preguntaba, y la
+      // hora de la vuelta se fue con ella. Explicar el saludo debajo del
+      // saludo sería estrenar una segunda voz en la última pantalla.
+      //
+      // El neutro no es el masculino reutilizado ni una terminación en "-e":
+      // es una redacción distinta que rodea la marca (RN-GEN-02).
       p8: {
-        closingTemplate: 'Te estás convirtiendo en alguien que {identidad}.',
-        closingPlain: 'Aquí empieza tu espacio.',
-        nextTemplate: 'Nos vemos mañana a las {hora}.',
+        welcomeTemplate: {
+          m: 'Bienvenido, {nombre}',
+          f: 'Bienvenida, {nombre}',
+          n: 'Te damos la bienvenida, {nombre}',
+        },
+        // Sin nombre se saluda igual, sin coma colgando ni hueco a la vista:
+        // dejarlo en blanco es una respuesta y no se señala (RN-02).
+        welcomePlain: {
+          m: 'Bienvenido',
+          f: 'Bienvenida',
+          n: 'Te damos la bienvenida',
+        },
         ctaLabel: 'Entrar a Strivo',
       },
     },
@@ -891,6 +878,9 @@ export const copy = {
         },
         catalogo: [
           { id: 'en_paz', emoji: '😌', label: { m: 'En paz', f: 'En paz', n: 'En paz' } },
+          // Sin marca de género en las tres formas: "feliz" no la lleva, así
+          // que el neutro no necesita rodearla (RN-GEN-02).
+          { id: 'feliz', emoji: '🙂', label: { m: 'Feliz', f: 'Feliz', n: 'Feliz' } },
           {
             id: 'tranquilo',
             emoji: '🌿',
@@ -1350,16 +1340,6 @@ export const copy = {
         hint: 'Para acompañarte a tu ritmo, no al de la app.',
         wakeLabel: 'Me despierto a las',
         sleepLabel: 'Me duermo a las',
-      },
-
-      // La misma pregunta de la pantalla 4 de 8 del onboarding, con la misma
-      // frase delante y el mismo catálogo de sugerencias detrás.
-      identidad: {
-        titulo: 'La persona que quieres ser',
-        hint: 'No busques la frase perfecta. Algo que quieras recordar cuando abras Strivo.',
-        prefix: 'Soy alguien que...',
-        suggestionsLabel: 'Sugerencias',
-        chipOther: 'Otro',
       },
     },
   },

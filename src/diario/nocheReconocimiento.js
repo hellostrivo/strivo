@@ -58,7 +58,7 @@ export const GRUPO_POR_DEFECTO = GRUPOS.neutro
 
 /**
  * Qué grupo le toca a cada emoción de cierre. Lista cerrada y explícita
- * (RN-06): son los doce ids de `nocheEmociones.js`, ni uno más.
+ * (RN-06): son los trece ids de `nocheEmociones.js`, ni uno más.
  *
  * Los cinco de `cuidado` son los cuatro que ya abren la tarjeta de descarga
  * —inquieto, frustrado, triste, abrumado— más `cansado`. El cansancio no pide
@@ -66,6 +66,7 @@ export const GRUPO_POR_DEFECTO = GRUPOS.neutro
  */
 const GRUPO_POR_EMOCION = Object.freeze({
   en_paz: GRUPOS.sereno,
+  feliz: GRUPOS.sereno,
   tranquilo: GRUPOS.sereno,
   agradecido: GRUPOS.sereno,
   orgulloso: GRUPOS.sereno,

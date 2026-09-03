@@ -2,7 +2,7 @@
 // "¿Cómo me siento al cerrar el día?" — el catálogo del tercer momento de la
 // noche, enlazado con su copy (§7 de la actualización del 23 ago).
 //
-// Doce opciones más la palabra propia, **selección única**. Sustituye a
+// Trece opciones más la palabra propia, **selección única**. Sustituye a
 // "¿Cómo te vas a dormir?", que admitía dos: nombrar cómo se cierra el día no
 // es hacer un inventario, y con dos respuestas la pregunta deja de tener una.
 //
@@ -65,6 +65,7 @@ export function ofreceDescarga(id) {
 
 const ANIMO_POR_EMOCION = Object.freeze({
   en_paz: 'en_paz',
+  feliz: 'en_paz',
   agradecido: 'en_paz',
   orgulloso: 'en_paz',
   tranquilo: 'tranquilo',

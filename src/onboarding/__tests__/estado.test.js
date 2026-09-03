@@ -2,8 +2,8 @@
 // Qué del recorrido llega al árbol de datos, y qué se pinta al final.
 //
 // Las dos comprobaciones que importan aquí: que lo dejado en blanco se guarde
-// como respuesta y no como hueco, y que el cierre **no arme nunca una frase con
-// áreas**, que es lo que este spec vino a evitar.
+// como respuesta y no como hueco, y que el cierre diga **una sola cosa** —el
+// saludo, en el género de quien lo lee— y no arme una frase con nada más.
 
 import { describe, expect, it } from 'vitest'
 
@@ -13,7 +13,7 @@ import { ORDEN, PASOS, VERSION } from '../pasos.js'
 import {
   RESPUESTAS_INICIALES,
   anotarPaso,
-  cierreDe,
+  bienvenidaDe,
   expedienteDe,
   motivoDesde,
   perfilDesde,
@@ -27,7 +27,6 @@ const CONTESTADO = {
   genero: 'femenino',
   motivos: ['paz', 'otro'],
   motivoOtro: 'dormir mejor',
-  identidad: 'cuida de sí misma.',
   despertar: '6:30',
   dormir: '23:15',
 }
@@ -50,11 +49,19 @@ describe('lo que se escribe en el perfil', () => {
   })
 
   it('lo dejado en blanco se guarda como respuesta, no como hueco', () => {
-    const enBlanco = perfilDesde({ ...RESPUESTAS_INICIALES, nombre: '   ', identidad: '' })
+    const enBlanco = perfilDesde({ ...RESPUESTAS_INICIALES, nombre: '   ' })
     expect(enBlanco.name).toBeNull()
-    expect(enBlanco.identidadCentral).toBeNull()
     // Sin contestar, el género es el neutro y no la ausencia de género.
     expect(enBlanco.gender).toBe('n')
+  })
+
+  it('la identidad central ya no se escribe: la que haya guardada se queda quieta', () => {
+    // P4 salió del recorrido, así que nadie vuelve a poner esa frase. El campo
+    // sigue en el modelo para poder leer un perfil viejo (RN-DB-04), pero no
+    // aparece en el parche: `updateProfile` fusiona, y un `null` aquí borraría
+    // lo que alguien escribió en la versión anterior.
+    expect(perfilDesde(CONTESTADO)).not.toHaveProperty('identidadCentral')
+    expect(RESPUESTAS_INICIALES).not.toHaveProperty('identidad')
   })
 
   it('el perfil no lleva ni un campo de áreas', () => {
@@ -99,37 +106,57 @@ describe('lo que se escribe en el expediente', () => {
 })
 
 describe('el cierre (P8)', () => {
-  it('con identidad, la frase la lleva dentro y sin doble punto', () => {
-    const { frase } = cierreDe(textos.p8, { identidad: 'cuida de sí misma.' })
-    expect(frase).toBe('Te estás convirtiendo en alguien que cuida de sí misma.')
-    expect(frase).not.toMatch(/\.\./)
+  it('saluda por el nombre, en el género que se eligió', () => {
+    expect(bienvenidaDe(textos.p8, { nombre: 'Alejandra', genero: 'f' })).toBe(
+      'Bienvenida, Alejandra',
+    )
+    expect(bienvenidaDe(textos.p8, { nombre: 'Alejandro', genero: 'm' })).toBe(
+      'Bienvenido, Alejandro',
+    )
+    expect(bienvenidaDe(textos.p8, { nombre: 'Alex', genero: 'n' })).toBe(
+      'Te damos la bienvenida, Alex',
+    )
   })
 
-  it('sin identidad, dice otra cosa y no señala lo que falta', () => {
-    const { frase } = cierreDe(textos.p8, { identidad: null })
-    expect(frase).toBe(textos.p8.closingPlain)
-    expect(frase).not.toMatch(/falta|incompleto|sin responder|pendiente/i)
+  it('sin género declarado saluda en neutro, que es lo que vale sin contestar', () => {
+    expect(bienvenidaDe(textos.p8, { nombre: 'Alex' })).toBe('Te damos la bienvenida, Alex')
+    expect(bienvenidaDe(textos.p8, { nombre: 'Alex', genero: null })).toBe(
+      'Te damos la bienvenida, Alex',
+    )
   })
 
-  it('nunca intenta interpolar áreas, porque no existen', () => {
-    const conYSin = [
-      cierreDe(textos.p8, { identidad: 'vive con intención' }),
-      cierreDe(textos.p8, {}),
-    ]
-    conYSin.forEach(({ frase }) => {
-      expect(frase).not.toMatch(/\{areas\}|\{identidad\}/)
-      expect(frase).not.toMatch(/[áa]rea/i)
+  it('el nombre se limpia de espacios antes de saludar', () => {
+    expect(bienvenidaDe(textos.p8, { nombre: '  Alejandra  ', genero: 'f' })).toBe(
+      'Bienvenida, Alejandra',
+    )
+  })
+
+  it('sin nombre saluda igual: sin coma colgando, sin hueco y sin señalar nada', () => {
+    ;[{}, { nombre: '' }, { nombre: '   ' }, { nombre: null }].forEach((respuesta) => {
+      const saludo = bienvenidaDe(textos.p8, { ...respuesta, genero: 'f' })
+      expect(saludo).toBe('Bienvenida')
+      expect(saludo).not.toMatch(/,\s*$|\{nombre\}/)
+      expect(saludo).not.toMatch(/falta|incompleto|sin responder|pendiente/i)
+    })
+  })
+
+  it('no queda una segunda frase que explique el saludo', () => {
+    // Un saludo y un botón. La frase con la identidad central se fue con la
+    // pantalla que la preguntaba, y la hora de la vuelta con ella.
+    expect(textos.p8.closingTemplate).toBeUndefined()
+    expect(textos.p8.closingPlain).toBeUndefined()
+    expect(textos.p8.nextTemplate).toBeUndefined()
+    expect(Object.keys(textos.p8)).toEqual(['welcomeTemplate', 'welcomePlain', 'ctaLabel'])
+  })
+
+  it('nunca intenta interpolar áreas ni identidad, porque no existen', () => {
+    ;['f', 'm', 'n'].forEach((genero) => {
+      const saludo = bienvenidaDe(textos.p8, { nombre: 'Alex', genero })
+      expect(saludo).not.toMatch(/\{areas\}|\{identidad\}/)
+      expect(saludo).not.toMatch(/[áa]rea/i)
     })
     expect(textos.p8.closingWithAreas).toBeUndefined()
     expect(textos.p8.closingPlainWithAreas).toBeUndefined()
     expect(textos.p8.areasJoin).toBeUndefined()
-  })
-
-  it('la hora de la vuelta solo aparece si hay hora que decir', () => {
-    expect(cierreDe(textos.p8, { despertar: '07:00' }).proxima).toBe(
-      'Nos vemos mañana a las 07:00.',
-    )
-    expect(cierreDe(textos.p8, { despertar: '' }).proxima).toBeNull()
-    expect(cierreDe(textos.p8, {}).proxima).toBeNull()
   })
 })

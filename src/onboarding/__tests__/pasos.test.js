@@ -1,10 +1,14 @@
 // src/onboarding/__tests__/pasos.test.js
-// El recorrido: ocho pasos, un sub-paso y ningún hueco.
+// El recorrido: siete pasos, un sub-paso y ningún hueco.
 //
 // Lo que estas pruebas custodian no es el orden por el orden: es que el género
 // siga sin contar en el indicador. Un día alguien va a querer "arreglar" que
-// P2A no tenga número, y arreglarlo significa que el total pase a nueve para
-// unas personas y a ocho para otras.
+// P2A no tenga número, y arreglarlo significa que el total pase a ocho para
+// unas personas y a siete para otras.
+//
+// Y custodian que los identificadores no se renumeren al retirar un paso: `p5`
+// es el cuarto número que se enseña y sigue llamándose `p5`, porque así se
+// escribió en los expedientes que ya existen.
 
 import { describe, expect, it } from 'vitest'
 
@@ -22,16 +26,25 @@ import {
   siguiente,
 } from '../pasos.js'
 
-describe('los ocho pasos y su sub-paso', () => {
-  it('el recorrido son nueve pantallas en un orden fijo', () => {
-    expect(ORDEN).toEqual(['p1', 'p2', 'p2a', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8'])
-    expect(ORDEN).toHaveLength(9)
+describe('los siete pasos y su sub-paso', () => {
+  it('el recorrido son ocho pantallas en un orden fijo', () => {
+    expect(ORDEN).toEqual(['p1', 'p2', 'p2a', 'p3', 'p5', 'p6', 'p7', 'p8'])
+    expect(ORDEN).toHaveLength(8)
   })
 
-  it('el indicador cuenta ocho, y el género no está entre ellos', () => {
-    expect(TOTAL).toBe(8)
+  it('la identidad central salió del recorrido y no queda de ella ni el hueco', () => {
+    expect(ORDEN).not.toContain('p4')
+    expect(CONTADOS).not.toContain('p4')
+    expect(PASOS.identidad).toBeUndefined()
+    expect(Object.values(PASOS)).not.toContain('p4')
+    expect(es('p4')).toBe(false)
+    expect(indicadorDe('p4')).toBeNull()
+  })
+
+  it('el indicador cuenta siete, y el género no está entre ellos', () => {
+    expect(TOTAL).toBe(7)
     expect(CONTADOS).not.toContain(PASOS.genero)
-    expect(CONTADOS).toHaveLength(8)
+    expect(CONTADOS).toHaveLength(7)
   })
 
   it('el género es el único sub-paso', () => {
@@ -45,9 +58,14 @@ describe('los ocho pasos y su sub-paso', () => {
     expect(indicadorDe(PASOS.genero)).toBeNull()
   })
 
-  it('los números van del uno al ocho, sin saltarse ninguno', () => {
-    expect(CONTADOS.map((paso) => indicadorDe(paso).n)).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
-    CONTADOS.forEach((paso) => expect(indicadorDe(paso).total).toBe(8))
+  it('los números van del uno al siete, sin saltarse ninguno', () => {
+    expect(CONTADOS.map((paso) => indicadorDe(paso).n)).toEqual([1, 2, 3, 4, 5, 6, 7])
+    CONTADOS.forEach((paso) => expect(indicadorDe(paso).total).toBe(7))
+  })
+
+  it('el número lo da la posición, no el nombre: los horarios son el 4 y se llaman p5', () => {
+    expect(PASOS.horarios).toBe('p5')
+    expect(indicadorDe(PASOS.horarios).n).toBe(4)
   })
 
   it('el nombre y el motivo son el 2 y el 3, con el género entre medias', () => {
@@ -82,6 +100,12 @@ describe('retomar a medias (RN-09)', () => {
     expect(retomarEn(PASOS.genero)).toBe(PASOS.genero)
   })
 
+  it('quien se quedó en la identidad central sigue por donde iba, no desde cero', () => {
+    // Es lo único que hubo que migrar de aquel paso: el resto de lo que dejó
+    // escrito —nombre, género, motivo— sigue en su sitio y se relee igual.
+    expect(retomarEn('p4')).toBe(PASOS.horarios)
+  })
+
   it('sin expediente, o con uno de otra versión, se empieza por el principio', () => {
     expect(retomarEn(null)).toBe(PASOS.bienvenida)
     expect(retomarEn(undefined)).toBe(PASOS.bienvenida)
@@ -91,6 +115,6 @@ describe('retomar a medias (RN-09)', () => {
 
 describe('la versión del recorrido', () => {
   it('se guarda para poder leer un onboarding viejo sabiendo qué se preguntó', () => {
-    expect(VERSION).toBe(1)
+    expect(VERSION).toBe(2)
   })
 })

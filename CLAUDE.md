@@ -56,7 +56,7 @@ Strivo
 │
 └── barra inferior — lo que ya pasó, y tú
     ├── /historial     calendario → día completo
-    └── /perfil        nombre · género · horarios · identidad central
+    └── /perfil        nombre · género · horarios
 ```
 
 **El reparto es la decisión, no la maquetación** (26 ago 2026). Arriba, bajo el símbolo, lo que se
@@ -287,8 +287,10 @@ catálogo son decorativos y van ocultos al lector de pantalla.
 
 ```javascript
 shared/ {
-  // `identidadCentral` es una frase y nada más: no se combina con nada, y esa
-  // es la garantía de que el modelo de áreas no vuelve por la puerta de atrás.
+  // `identidadCentral` es de la versión anterior del onboarding: **se lee, no
+  // se escribe** desde el 1 de septiembre de 2026. Era una frase y nada más:
+  // no se combinaba con nada, y esa es la garantía de que el modelo de áreas
+  // no vuelve por la puerta de atrás.
   profile:     { name, gender, identidadCentral, diaTerminaA,
                  wakeTime, sleepTime, createdAt },
   auth:        { uid, email, phone },
@@ -332,7 +334,7 @@ breathing/ {
 | **RN-DB-06** | Se persisten identificadores, no etiquetas. |
 | **RN-DB-07** | Los límites de longitud son sugerencias, no validaciones. |
 | **RN-DB-08** | Fechas como `YYYY-MM-DD` en zona local. **Un día es el día de quien lo vivió.** |
-| **RN-DB-09** | La marca de cierre (`completedAt`) es lo único que determina si un recorrido está cerrado. No se infiere de cuántos campos hay escritos. **Vale también para el onboarding:** saltarse los ocho pasos es haberlo hecho. |
+| **RN-DB-09** | La marca de cierre (`completedAt`) es lo único que determina si un recorrido está cerrado. No se infiere de cuántos campos hay escritos. **Vale también para el onboarding:** saltarse los siete pasos es haberlo hecho. |
 | **RN-DB-10** | **Respiración no lee ni escribe en `diario/`, y `diario/` no lee `breathing/`.** Lo único que comparten es el motor de ritmo, que es lógica pura sin datos. Lo imponen `eslint.config.js` y una prueba, no una convención. |
 
 **Dos filosofías de validación, y la frontera es una carpeta.** En `src/lib/db/` los registros los
@@ -394,7 +396,7 @@ pantalla**.
 ```
 1 de 3  ·  La pregunta del día, según el ánimo    (lista de 1 a 3, uno al abrir)
 2 de 3  ·  Una reflexión breve                    (rotativa, o ligada a la mañana)
-3 de 3  ·  ¿Cómo me siento al cerrar el día?      (única, 12 + Algo más)
+3 de 3  ·  ¿Cómo me siento al cerrar el día?      (única, 13 + Algo más)
    +    ·  ¿Hay algo que quieras dejar aquí?      (por la emoción, o a mano)
    →       Tu día puede terminar aquí · «Cerrar mi día» · Buenas noches
    →       La consulta: lo respondido, con las preguntas delante
@@ -475,7 +477,7 @@ hay entradas: si apareciera solo cuando las hay, la frase estaría contando lo q
 **Historial** (§7). **Muestra, no analiza** (RN-HIS-01): sin tendencias, sin medias, sin gráficas,
 sin comparación entre semanas. Punto de ánimo de cinco estados —agotado, inquieto, normal, tranquilo,
 en paz— **derivado al vuelo y nunca persistido** (RN-HIS-02). La escala de cinco es más gruesa que el
-catálogo de doce **y se asume**: la respuesta exacta se lee en la vista del día. **La palabra propia
+catálogo de trece **y se asume**: la respuesta exacta se lee en la vista del día. **La palabra propia
 devuelve «Estuviste»** (RN-HIS-04): colocarla en una escala sería el diagnóstico que este producto
 prohíbe. **Los campos de versiones anteriores se siguen leyendo** con sus rótulos propios
 (RN-HIS-07): nada de lo ya escrito se sobrescribe ni desaparece.
@@ -555,7 +557,7 @@ src/
 ├── components/
 │   ├── shared/      Simbolo · TransicionLuz · Campo · Chips · pildora · BarraInferior
 │   ├── ui/          primitivas
-│   ├── onboarding/  las nueve pantallas y su contenedor
+│   ├── onboarding/  las ocho pantallas y su contenedor
 │   ├── perfil/      la pantalla de cuenta y su marco de bloque
 │   └── diario/      NavStrivo · manana/ · noche/ · journal · historial
 └── pages/diario/    Hoy · Journal · Historial
@@ -570,7 +572,7 @@ src/
 | **RN-TEC-04** | **`breathing/` no importa nada de `diario/` y viceversa.** |
 | **RN-TEC-05** | **`components/shared/` no importa nada específico de una sección.** Lo que necesiten llega **por props**. |
 | **RN-TEC-06** | **`onboarding/` no importa `diario/` ni `breathing/`.** Corre antes de la app, una sola vez, y todo lo que escribe vive en `shared/`. No se enruta: se interpone. |
-| **RN-TEC-07** | **`perfil/` tampoco.** Es gestión de cuenta, no una sección del refugio: lo único que toca es `shared/profile`. Sí lee los catálogos del onboarding —género e identidad—, y eso es deliberado: son campos del perfil, no pasos de un recorrido, y dos copias del mismo catálogo se separan en cuanto alguien edite una. |
+| **RN-TEC-07** | **`perfil/` tampoco.** Es gestión de cuenta, no una sección del refugio: lo único que toca es `shared/profile`. Sí lee el catálogo de género del onboarding, y eso es deliberado: es un campo del perfil, no un paso de un recorrido, y dos copias del mismo catálogo se separan en cuanto alguien edite una. |
 
 Esa última regla es la que da forma a media base de código: `TransicionLuz` recibe su tema desde
 `globals.css` y no por props de sección; `Respiracion` (la de la sección) recibe `base` y `salida`
@@ -637,7 +639,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**58 archivos de prueba · 1.578 casos · los seis comandos en verde.**
+**58 archivos de prueba · 1.584 casos · los seis comandos en verde.**
 
 ### Marca: el logo oficial y el video de apertura (25 ago 2026)
 
@@ -673,12 +675,13 @@ Llegan dos materiales del diseñador y los dos sustituyen algo que ya existía:
 
 ### Fase F-1B — el onboarding, construido (25 ago 2026)
 
-**Nueve pantallas, ocho pasos, una sola vez.** Escrito desde cero contra v5.0; de
-`feat/onboarding-p1-p3c` no se portó ni una línea. El copy vive en `copy.diario.onboarding` y el
+**Nueve pantallas, ocho pasos, una sola vez** —hoy ocho y siete: P4 salió el 1 de septiembre de
+2026, más abajo—. Escrito desde cero contra v5.0; de `feat/onboarding-p1-p3c` no se portó ni una
+línea. El copy vive en `copy.diario.onboarding` y el
 recorrido en `src/onboarding/` + `src/components/onboarding/`.
 
 - **Se interpone, no se enruta.** `App.jsx` pregunta `shared.onboardingPendiente(uid)` —que mira
-  `completedAt` y solo eso— y monta el onboarding o las cuatro secciones. Saltarse los ocho pasos
+  `completedAt` y solo eso— y monta el onboarding o las cuatro secciones. Saltarse todos los pasos
   también es haberlo hecho, así que contar `completedSteps` habría dejado fuera a quien entró de
   largo. Un árbol de antes de que existiera no trae la marca y lo hace una vez: nunca lo vio.
 - **Abre con el video de marca, como cualquier otra apertura de la app.** Es la misma
@@ -691,9 +694,10 @@ recorrido en `src/onboarding/` + `src/components/onboarding/`.
   indicador **no se pinta** —lo mismo que hace la mañana con su pausa opcional—. Sus cuatro opciones
   se resuelven a los tres valores del modelo: «prefiero no contestar» y «otro» van las dos al neutro,
   que es también lo que vale sin contestar.
-- **La identidad central (P4) no depende de áreas en ningún punto**, y hay tres pruebas que lo
-  vigilan: ni un archivo del onboarding las nombra, ni una cadena de su copy las menciona, y el
-  cierre no tiene una redacción con áreas que armar.
+- **Nada del onboarding depende de áreas en ningún punto**, y hay dos pruebas que lo vigilan: ni un
+  archivo del recorrido las nombra ni una cadena de su copy las menciona. Era la garantía que
+  sostenía la identidad central (P4); sigue en pie ahora que ese paso ya no está, porque nunca fue
+  suya sino del recorrido entero.
 - **P7 muda el árbol.** Hasta ahí se escribe bajo un uid local; al crear la cuenta, `mudarUid` renombra
   `users/{local}/**` al uid de Firebase. Sin eso, las reglas de Firestore —que exigen que el segmento
   de la ruta sea el uid autenticado— dejarían fuera de la nube todo lo escrito en los pasos previos.
@@ -719,8 +723,9 @@ regla se cambia, no se rodea. El blueprint §4 queda pendiente de esta revisión
   escritura y las secuencias de cierre (RN-NAV-04). Con la de abajo solo en Hoy, llegar al Historial
   desde el Journal costaría dos toques donde antes costaba uno.
 - **El Historial no cambió por dentro.** Sigue siendo el mismo calendario y la misma vista de día.
-- **Tu perfil es una pila de bloques, y esa es su forma.** Hoy hay cuatro —nombre, género, horarios e
-  identidad central— y la lista de cuáles existen vive en `src/perfil/bloques.js`. Añadir el plan de
+- **Tu perfil es una pila de bloques, y esa es su forma.** Hoy hay tres —nombre, género y horarios;
+  el de identidad central salió con su paso— y la lista de cuáles existen vive en
+  `src/perfil/bloques.js`. Añadir el plan de
   pago de una fase posterior es **un identificador allí, un texto en el copy y un componente**; hay
   una prueba que falla si falta cualquiera de los tres. **No hay bloques de "próximamente"**: una
   pantalla que promete lo que no puede cumplir es lo contrario de un refugio.
@@ -752,10 +757,10 @@ tres cosas y ninguna cambia el modelo de datos ni el copy:
   paso en medio, "Atrás" y "Continuar" abajo, dentro del área segura y siempre a
   la vista. Antes la columna crecía con el contenido y en un teléfono había que
   ir a buscar "Continuar" por debajo del borde. **Lo único que se desplaza es la
-  franja de en medio**, y hoy solo lo necesita la identidad central (P4), que es
-  el paso más largo. **La bienvenida y el cierre se centran verticalmente**: no
-  piden nada, y una frase sola pegada al techo se lee como el encabezado de un
-  formulario. Los pasos con preguntas no se centran — se moverían de sitio al
+  franja de en medio**, que hoy no lo necesita ningún paso —lo necesitaba la
+  identidad central (P4), que era el más largo y ya no está—. **La bienvenida y
+  el cierre se centran verticalmente**: no piden nada, y una frase sola pegada
+  al techo se lee como el encabezado de un formulario. Los pasos con preguntas no se centran — se moverían de sitio al
   aparecer o desaparecer un campo.
 - **El bloque de horarios (P5) ya no se va de lado.** Un `input[type="time"]`
   trae un ancho propio del navegador, mayor que el hueco de un teléfono, y su
@@ -835,6 +840,44 @@ modo en que una prueba así no sirve para nada.
 todo encabezado nuevo, con su lista de exenciones. Es lo que evitaría que esto vuelva a pasar en una
 pantalla que aún no existe, y está sin hacer.
 
+### El onboarding pierde un paso, el cierre saluda y la noche admite «Feliz» (1 sep 2026)
+
+Lo pidió el propietario del producto. Son tres cambios sueltos y **ninguno toca el modelo de datos
+por dentro**: lo que se retira se deja de escribir, no se borra.
+
+- **La identidad central (P4) sale del recorrido, entera.** Se van la pantalla
+  (`components/onboarding/Identidad.jsx`), su módulo (`onboarding/identidad.js`), su copy
+  (`onboarding.p4`) y el bloque que la volvía a preguntar en Tu perfil. El onboarding pasa de ocho
+  pasos a **siete**, y el indicador lo dice solo: el total sale de `CONTADOS` y nunca estuvo escrito
+  en el copy, así que no quedó un «de 8» en ninguna parte.
+  - **Los identificadores no se renumeran.** Los horarios son hoy el paso 4 y se siguen llamando
+    `p5`, porque así están escritos en los expedientes que ya existen. El número lo da la posición,
+    no el nombre.
+  - **Quien se quedó justo en P4 sigue por donde iba**, no desde cero: `RETIRADOS` en `pasos.js`
+    lleva `p4` a `p5`. Sin eso, `retomarEn` lo habría tratado como un paso desconocido y lo habría
+    devuelto a la bienvenida, que es exactamente el coste que RN-09 no admite. Un `completedSteps`
+    con `p4` dentro se relee tal cual: `anotarPaso` lo filtra al escribir y nadie lo corrige al leer.
+  - **`identidadCentral` no se borra de nadie.** Sale de `perfilDesde`, así que ningún guardado
+    posterior lo toca —`updateProfile` fusiona, y un `null` en el parche habría borrado la frase de
+    quien la escribió al guardar cualquier otra cosa—. Sigue en `FIELDS.profile` y se sigue
+    sembrando nulo en un árbol nuevo, para que un perfil viejo y uno de hoy tengan la misma forma al
+    leerse (RN-DB-04). **La versión del recorrido sube a 2**, que es lo que permite saber qué se le
+    preguntó a cada quien.
+- **El cierre (P8) es un saludo y un botón.** «Bienvenida, Alejandra» en femenino, «Bienvenido…» en
+  masculino y «Te damos la bienvenida…» en neutro y sin contestar. Se fueron con P4 la frase que se
+  armaba con la identidad y la hora de la vuelta que iba debajo: explicar el saludo debajo del
+  saludo es estrenar una segunda voz en la última pantalla que alguien lee antes de entrar. **Sin
+  nombre saluda igual**, sin coma colgando y sin señalar la pregunta que se dejó en blanco.
+- **«Feliz» entra en «¿Cómo me siento al cerrar el día?»**, justo detrás de «En paz». Trece opciones
+  más la palabra propia. **No trajo mecánica propia**: mismo chip, misma selección única, mismo tope,
+  mismo `id` persistido. Cae en el ánimo `en_paz` de la escala de cinco —no la amplía, que exigiría
+  un color de marca nuevo— y en el grupo **sereno** de la pregunta del reconocimiento: quien cierra
+  el día feliz acaba de decir que fue bueno. No ofrece la descarga por su cuenta, como el resto de
+  las serenas.
+
+**Lo que sigue sin verse en un teléfono**, como el resto: si el recorrido de siete pasos se siente
+más breve o solo más corto.
+
 ### Divergencias conocidas entre el blueprint y el código
 
 Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos manda**:
@@ -910,8 +953,9 @@ diagnóstico completo está en `docs/archivo/SPEC_ONBOARDING_LIMPIEZA_FORMIA.md`
 aplica**: opera sobre componentes que aquí no existen. Se conserva porque sus §3–§5 son la decisión
 de producto y **su copy es la base de texto ya validada** para reescribir el de F-1.
 
-Son **nueve pantallas y ocho pasos**: el género es un sub-paso (P2A) y no entra en la cuenta del
-indicador, igual que la pausa opcional de la Mañana no entra en la suya (RN-MAN-02).
+Eran **nueve pantallas y ocho pasos**; hoy son ocho y siete. El género es un sub-paso (P2A) y no
+entra en la cuenta del indicador, igual que la pausa opcional de la Mañana no entra en la suya
+(RN-MAN-02).
 
 | Paso | Pantalla | Nota |
 |---|---|---|
@@ -919,11 +963,11 @@ indicador, igual que la pausa opcional de la Mañana no entra en la suya (RN-MAN
 | P2 | Nombre | |
 | P2A | Género | Para los pronombres del copy: masculino · femenino · prefiero no contestar · otro |
 | P3 | Motivo | «¿Qué te gustaría encontrar aquí?»: paz, avance, escucha, sueño, espacio, otro |
-| P4 | Identidad central | «Soy alguien que…», con chips de sugerencia editables, sin marca de género salvo la primera |
+| ~~P4~~ | ~~Identidad central~~ | **Retirado el 1 de septiembre de 2026**, con su pantalla, su copy, su módulo y su bloque del Perfil |
 | P5 | Horarios | Despertar / dormir |
 | P6 | Recordatorios | Dos avisos al día, opcional |
 | P7 | Crear cuenta | Google · Apple · correo, con opción de saltar |
-| P8 | Cierre | Frase de identidad si existe, mensaje neutro si no |
+| P8 | Cierre | «Bienvenida, Alejandra» —el saludo en el género elegido— y el botón de entrar |
 
 **Fuera de este flujo, explícitamente:** selección de áreas, identidad por área y hábitos sugeridos.
 Esas pantallas eran de Formia (pausada) y **no vuelven salvo que Formia se reactive**. Por eso el
@@ -940,12 +984,12 @@ tocó: ni un archivo, ni un cherry-pick, ni una línea de copy.
 
 **Lo que quedó abierto del recorrido**, y conviene decidirlo antes de darlo por cerrado:
 
-- **La revisión editorial del copy no se ha hecho.** El texto de los ocho pasos viene del spec y pasa
+- **La revisión editorial del copy no se ha hecho.** El texto de los siete pasos viene del spec y pasa
   §3.3 con prueba automática. Hay una frase que conviene mirar: «reconocer lo que **sí lograste**»
   (P1). RN-NOC-03 eligió «reconocer» justamente para no exigir que algo haya salido bien, y §1.2 dice
   que esto no es productividad; «lograste» reintroduce el logro en la primera frase que alguien lee.
 - **El recorrido no se ha probado en teléfono real**, como el resto del producto. La pregunta que
-  ninguna prueba contesta es si las nueve pantallas se sienten breves o se sienten un trámite.
+  ninguna prueba contesta es si las ocho pantallas se sienten breves o se sienten un trámite.
 
 ---
 

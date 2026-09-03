@@ -1,5 +1,5 @@
 // src/components/onboarding/Onboarding.jsx
-// El recorrido de entrada: nueve pantallas, ocho pasos, una sola vez.
+// El recorrido de entrada: ocho pantallas, siete pasos, una sola vez.
 //
 // **Se interpone solo la primera vez.** Quién decide eso es `App.jsx`, que
 // pregunta al árbol de datos si queda onboarding pendiente; aquí se da por
@@ -16,9 +16,9 @@
 // "Continuar" quedaba por debajo del borde y había que ir a buscarlo.
 //
 // **Lo único que se desplaza es la franja de en medio**, y solo cuando el paso
-// no cabe —hoy la identidad central, que es el más largo—. Los demás caben
-// enteros, y un recorrido de entrada en el que hay que rebuscar el botón para
-// seguir no es un recorrido breve.
+// no cabe. Hoy caben todos, y la franja se queda como está: un paso más largo
+// que la ventana volvería a necesitarla, y un recorrido de entrada en el que
+// hay que rebuscar el botón para seguir no es un recorrido breve.
 //
 // **La bienvenida y el cierre se centran verticalmente**: no tienen nada que
 // rellenar, y una frase sola pegada al techo de la pantalla se lee como el
@@ -71,7 +71,6 @@ import Bienvenida from './Bienvenida'
 import Nombre from './Nombre'
 import Genero from './Genero'
 import Motivo from './Motivo'
-import Identidad from './Identidad'
 import Horarios from './Horarios'
 import Recordatorios from './Recordatorios'
 import CuentaPaso from './Cuenta'
@@ -87,7 +86,7 @@ import { crearConCorreo, entrarConProveedor } from '@/onboarding/cuenta'
 const textos = copy.diario.onboarding
 
 /** Los pasos cuyo avance es un "Continuar" y nada más. */
-const CON_CONTINUAR = [PASOS.nombre, PASOS.genero, PASOS.motivo, PASOS.identidad, PASOS.horarios]
+const CON_CONTINUAR = [PASOS.nombre, PASOS.genero, PASOS.motivo, PASOS.horarios]
 
 /**
  * ¿Toca umbral en esta sesión?
@@ -173,14 +172,6 @@ export default function Onboarding({ uid, onUid, onTerminado }) {
         onOtro={(valor) => acciones.responder('motivoOtro', valor, { teclado: true })}
       />
     ),
-    [PASOS.identidad]: () => (
-      <Identidad
-        textos={textos.p4}
-        valor={respuestas.identidad}
-        genero={genero}
-        onCambiar={(valor) => acciones.responder('identidad', valor, { teclado: true })}
-      />
-    ),
     [PASOS.horarios]: () => (
       <Horarios
         textos={textos.p5}
@@ -211,12 +202,7 @@ export default function Onboarding({ uid, onUid, onTerminado }) {
       />
     ),
     [PASOS.cierre]: () => (
-      <Cierre
-        textos={textos.p8}
-        identidad={respuestas.identidad}
-        despertar={respuestas.despertar}
-        onEntrar={entrar}
-      />
+      <Cierre textos={textos.p8} nombre={respuestas.nombre} genero={genero} onEntrar={entrar} />
     ),
   }
 

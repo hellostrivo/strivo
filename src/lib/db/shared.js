@@ -114,7 +114,7 @@ export async function updateOnboarding(uid, patch) {
  * ¿Queda por hacer el onboarding de esta persona?
  *
  * Lo decide `completedAt` y **solo** `completedAt` (RN-DB-09): saltarse los
- * ocho pasos también es terminarlo, así que contar `completedSteps` diría que
+ * siete pasos también es terminarlo, así que contar `completedSteps` diría que
  * no ha terminado alguien que ya entró. Un árbol sin la rama —el de quien
  * instaló la app antes de que el onboarding existiera— cuenta como pendiente:
  * la ausencia de marca no es una marca.
@@ -135,8 +135,10 @@ export async function initShared(uid, { profile, auth, preferences, onboarding }
   await saveProfile(uid, {
     name: null,
     gender: 'n',
-    // La escribe P4 del onboarding. Nace nula y no se inventa: un refugio no
-    // le pone palabras a nadie antes de que las diga (RN-DB4-08).
+    // De una versión anterior del onboarding: ya no se pregunta en ninguna
+    // pantalla. Se sigue sembrando nula —y no se deja de sembrar— para que un
+    // árbol nuevo y uno viejo tengan la misma forma al leerse: lo que cambió
+    // es quién la escribe, que hoy no es nadie.
     identidadCentral: null,
     diaTerminaA: DEFAULT_DIA_TERMINA_A,
     wakeTime: null,

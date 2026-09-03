@@ -19,7 +19,6 @@
 
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { copy } from '@copy'
 import { shared } from '@/lib/db'
 import { initUserTree } from '@/lib/db/index.js'
 import { cargarDia } from '@/diario/diario.js'
@@ -28,7 +27,8 @@ import { UID, resetLocalDB } from '@/lib/db/__tests__/helpers.js'
 import { alternar, generoDe, opcionDe } from '@/onboarding/genero'
 import { perfilDesde } from '@/onboarding/estado'
 import { CIERRE } from '@/diario/nocheEmociones'
-import { chipsDe } from '@/onboarding/identidad'
+import { bienvenidaDe } from '@/onboarding/estado'
+import { copy } from '@copy'
 
 /** Lo que hace la pantalla al tocar una opción y dejar que se guarde sola. */
 async function tocarGenero(uid, valores, opcion) {
@@ -43,7 +43,6 @@ async function abrirPerfil(uid) {
   return {
     nombre: perfil?.name ?? '',
     genero: opcionDe(perfil?.gender),
-    identidad: perfil?.identidadCentral ?? '',
     despertar: perfil?.wakeTime ?? '',
     dormir: perfil?.sleepTime ?? '',
   }
@@ -98,19 +97,27 @@ describe('cambiar el género en Tu perfil', () => {
     expect(new Set([enMasculino, enFemenino, enNeutro]).size).toBe(3)
   })
 
-  it('también cambia las sugerencias de la identidad, en las dos pantallas', async () => {
+  it('y cambia el saludo con el que se entra, que también se resuelve al pintar', async () => {
+    // Aquí vivía la misma comprobación sobre las sugerencias de la identidad
+    // central. Esa pregunta salió del producto; el saludo del cierre (P8) es
+    // hoy el otro consumidor del género fuera del catálogo de la noche, y se
+    // resuelve igual: del perfil al pintar, no de lo que se guardó.
     await initUserTree(UID)
+    const p8 = copy.diario.onboarding.p8
+    await shared.updateProfile(UID, { name: 'Alejandra' })
     const valores = await abrirPerfil(UID)
-    const chips = copy.diario.onboarding.p4.chips
 
     await tocarGenero(UID, valores, 'femenino')
-    const enFemenino = chipsDe(chips, (await cargarDia(UID)).genero)
+    const perfilFemenino = await shared.getProfile(UID)
+    expect(bienvenidaDe(p8, { nombre: perfilFemenino.name, genero: perfilFemenino.gender })).toBe(
+      'Bienvenida, Alejandra',
+    )
 
     await tocarGenero(UID, { ...valores, genero: null }, 'masculino')
-    const enMasculino = chipsDe(chips, (await cargarDia(UID)).genero)
-
-    expect(enFemenino[0].texto).toBe('cuida de sí misma.')
-    expect(enMasculino[0].texto).toBe('cuida de sí mismo.')
+    const perfilMasculino = await shared.getProfile(UID)
+    expect(bienvenidaDe(p8, { nombre: perfilMasculino.name, genero: perfilMasculino.gender })).toBe(
+      'Bienvenido, Alejandra',
+    )
   })
 
   it('vuelve marcada la opción que se tocó, al reabrir la pantalla', async () => {
@@ -127,6 +134,9 @@ describe('cambiar el género en Tu perfil', () => {
     expect((await abrirPerfil(UID)).genero).toBeNull()
   })
 
+  // Y esta es la garantía de que retirar P4 no le borró la frase a nadie: el
+  // perfil ya no la escribe, así que fusionar cualquier otro cambio la deja
+  // exactamente donde estaba (RN-DB-04).
   it('no toca nada más del perfil al cambiar solo el género', async () => {
     await initUserTree(UID)
     await shared.updateProfile(UID, {

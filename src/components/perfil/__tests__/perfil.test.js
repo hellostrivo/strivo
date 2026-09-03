@@ -58,12 +58,14 @@ describe('la pantalla es una pila de bloques', () => {
 })
 
 describe('los catálogos no se repiten', () => {
-  it('el género y las sugerencias se leen de donde se preguntan la primera vez', () => {
+  it('el género se lee de donde se pregunta la primera vez', () => {
     // Dos copias del mismo catálogo se separan en cuanto alguien edite una.
     expect(pantalla).toMatch(/copy\.diario\.onboarding\.p2a\.options/)
-    expect(pantalla).toMatch(/copy\.diario\.onboarding\.p4\.chips/)
     expect(pantalla).toMatch(/from '@\/onboarding\/genero'/)
-    expect(pantalla).toMatch(/from '@\/onboarding\/identidad'/)
+  })
+
+  it('el bloque de la identidad central no quedó colgando', () => {
+    expect(pantalla).not.toMatch(/identidad/i)
   })
 
   it('los chips son los de la casa, no una copia', () => {

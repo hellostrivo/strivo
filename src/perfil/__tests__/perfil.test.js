@@ -18,8 +18,14 @@ import { perfilDesde } from '@/onboarding/estado'
 const textos = copy.diario.perfil
 
 describe('los bloques del perfil', () => {
-  it('son los cuatro de esta fase, en su orden', () => {
-    expect(BLOQUES).toEqual(['nombre', 'genero', 'horarios', 'identidad'])
+  it('son los tres de esta fase, en su orden', () => {
+    expect(BLOQUES).toEqual(['nombre', 'genero', 'horarios'])
+  })
+
+  it('la identidad central salió del perfil con el paso que la preguntaba', () => {
+    expect(BLOQUES).not.toContain('identidad')
+    expect(es('identidad')).toBe(false)
+    expect(textos.identidad).toBeUndefined()
   })
 
   it('cada bloque declarado tiene su texto: no se puede añadir a medias', () => {
@@ -46,7 +52,6 @@ describe('lo que el perfil escribe', () => {
   const valores = {
     nombre: 'Alejandra',
     genero: 'femenino',
-    identidad: 'cuida de sí misma.',
     despertar: '06:30',
     dormir: '23:15',
   }
@@ -61,11 +66,17 @@ describe('lo que el perfil escribe', () => {
     // a preguntar.
     expect(Object.keys(perfilDesde(valores)).sort()).toEqual([
       'gender',
-      'identidadCentral',
       'name',
       'sleepTime',
       'wakeTime',
     ])
+  })
+
+  it('no toca la identidad central que alguien escribió en la versión anterior', () => {
+    // `updateProfile` fusiona: si el parche la trajera como `null`, guardar el
+    // nombre borraría de paso una frase que nadie pidió borrar (RN-DB-04).
+    expect(perfilDesde(valores)).not.toHaveProperty('identidadCentral')
+    expect(FIELDS.profile).toContain('identidadCentral')
   })
 
   it('no escribe nada de áreas ni nada que mida', () => {

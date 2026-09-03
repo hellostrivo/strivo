@@ -12,34 +12,30 @@
 // (RN-EST-08). Tampoco hay nada obligatorio: cualquier bloque se puede dejar en
 // blanco, incluido el nombre.
 //
-// **Las tres preguntas del onboarding se vuelven a hacer con su mismo
-// catálogo.** El género con sus cuatro opciones y las mismas sugerencias de
-// identidad de la pantalla 4 de 8: son campos del perfil, no pasos de un
-// recorrido, y dos copias del catálogo se separarían en cuanto alguien editara
-// una.
+// **Las preguntas del onboarding se vuelven a hacer con su mismo catálogo.** El
+// género se pregunta aquí con las cuatro opciones de su sub-paso: son campos
+// del perfil, no pasos de un recorrido, y dos copias del catálogo se separarían
+// en cuanto alguien editara una.
 //
 // Lo que **no** hay aquí, y no es un olvido: nada que mida, nada que compare y
 // ningún dato que la persona no haya escrito ella misma. Un perfil que devuelve
 // cifras sobre quien lo abre es un panel de control, y este producto no tiene
 // uno (no-negociable 2).
 
-import { useRef } from 'react'
 import Bloque from './Bloque'
 import Button from '@components/ui/Button'
-import { CampoLinea, CampoTexto } from '@components/shared/Campo'
+import { CampoLinea } from '@components/shared/Campo'
 import { ListaDeChips } from '@components/shared/Chips'
 import { copy } from '@copy'
 import { BLOQUES } from '@/perfil/bloques'
 import { usePerfil } from '@/perfil/usePerfil'
 import { OPCIONES as GENEROS, alternar as alternarGenero } from '@/onboarding/genero'
-import { chipsDe, recortar } from '@/onboarding/identidad'
 
 const textos = copy.diario.perfil
 
-// Los dos catálogos se leen de donde se preguntan por primera vez. Ver la nota
-// del namespace en `copy/index.js`: un solo sitio hasta que haya un tercero.
+// El catálogo se lee de donde se pregunta por primera vez. Ver la nota del
+// namespace en `copy/index.js`: un solo sitio hasta que haya un tercero.
 const OPCIONES_GENERO = copy.diario.onboarding.p2a.options
-const SUGERENCIAS = copy.diario.onboarding.p4.chips
 
 function Marco({ children }) {
   return (
@@ -50,18 +46,7 @@ function Marco({ children }) {
 }
 
 export default function Perfil({ uid }) {
-  const { valores, carga, genero, acciones, reintentar } = usePerfil(uid)
-  const campoIdentidad = useRef(null)
-
-  const sugerencias = chipsDe(SUGERENCIAS, genero)
-
-  const tocarSugerencia = (id) => {
-    const elegida = sugerencias.find((chip) => chip.id === id)
-    // "Otro" no borra lo escrito: lleva el foco al campo y se aparta. Vaciarlo
-    // sería destruir contenido sin preguntar (RN-EST-07).
-    if (elegida) acciones.responder('identidad', elegida.texto)
-    campoIdentidad.current?.focus()
-  }
+  const { valores, carga, acciones, reintentar } = usePerfil(uid)
 
   const bloques = {
     nombre: () => (
@@ -105,36 +90,6 @@ export default function Perfil({ uid }) {
             onChange={(evento) => acciones.responder('dormir', evento.target.value)}
           />
         </label>
-      </div>
-    ),
-
-    identidad: () => (
-      <div className="flex flex-col gap-4">
-        <label className="flex flex-col gap-2">
-          <span className="text-base text-on-surface">{textos.identidad.prefix}</span>
-          <CampoTexto
-            ref={campoIdentidad}
-            filas={3}
-            value={valores.identidad}
-            onChange={(evento) =>
-              acciones.responder('identidad', recortar(evento.target.value), { teclado: true })
-            }
-            onBlur={acciones.volcar}
-          />
-        </label>
-
-        <div className="flex flex-col gap-2">
-          <p className="text-sm text-on-surface-soft">{textos.identidad.suggestionsLabel}</p>
-          <ListaDeChips
-            etiqueta={textos.identidad.suggestionsLabel}
-            opciones={[...sugerencias, { id: 'otro', texto: textos.identidad.chipOther }]}
-            elegidas={sugerencias
-              .filter((chip) => chip.texto === valores.identidad)
-              .map((chip) => chip.id)}
-            punteados={['otro']}
-            onTocar={tocarSugerencia}
-          />
-        </div>
       </div>
     ),
   }

@@ -45,8 +45,14 @@ export const GENDERS = Object.freeze(['m', 'f', 'n'])
 
 export const FIELDS = Object.freeze({
   // shared/
-  // `identidadCentral` la escribe P4 del onboarding y la lee su cierre (P8).
-  // Es una frase y nada más: **no se combina con nada**. El modelo de tres
+  // `identidadCentral` es de una versión anterior del onboarding: **se lee, no
+  // se escribe**. La escribía P4, que salió del recorrido el 2 de septiembre de
+  // 2026 junto con el bloque del Perfil que la volvía a preguntar. Sigue en la
+  // lista porque lo que ya está guardado no se sobrescribe ni desaparece
+  // (RN-DB-04): retirarla de aquí haría que releer un perfil viejo se pareciera
+  // a un error, y el campo no se lo merece.
+  //
+  // Era una frase y nada más: **no se combinaba con nada**. El modelo de tres
   // niveles del alcance retirado —áreas, identidad por área— no vuelve, y la
   // forma de asegurarlo es que aquí no haya con qué combinarla.
   profile: Object.freeze([

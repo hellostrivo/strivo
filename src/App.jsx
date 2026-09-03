@@ -84,7 +84,7 @@ export default function App() {
  *
  * **Lo decide el árbol de datos, no una marca en el navegador** (F-1B). La
  * respuesta la da `shared.onboardingPendiente`, que mira `completedAt` y solo
- * eso: saltarse los ocho pasos también es haberlo hecho, así que contar pasos
+ * eso: saltarse los siete pasos también es haberlo hecho, así que contar pasos
  * dejaría fuera a quien entró de largo. Un árbol de antes de que el onboarding
  * existiera no trae esa marca y lo hace una vez, que es lo correcto: nunca lo
  * vio.

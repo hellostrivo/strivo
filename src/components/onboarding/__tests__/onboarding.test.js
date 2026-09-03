@@ -42,8 +42,8 @@ const PANTALLAS = ARCHIVOS.filter((ruta) => ruta.endsWith('.jsx'))
 const textos = copy.diario.onboarding
 
 describe('el árbol del onboarding', () => {
-  it('existe, y las nueve pantallas están', () => {
-    expect(ARCHIVOS.length).toBeGreaterThan(10)
+  it('existe, y las ocho pantallas están', () => {
+    expect(ARCHIVOS.length).toBeGreaterThan(9)
     ;[
       'Onboarding',
       'Progreso',
@@ -51,12 +51,22 @@ describe('el árbol del onboarding', () => {
       'Nombre',
       'Genero',
       'Motivo',
-      'Identidad',
       'Horarios',
       'Recordatorios',
       'Cuenta',
       'Cierre',
     ].forEach((nombre) => expect(existsSync(`src/components/onboarding/${nombre}.jsx`)).toBe(true))
+  })
+
+  it('de la identidad central no queda ni el archivo ni una referencia', () => {
+    // Se retiró entera el 2 de septiembre de 2026: la pantalla, su módulo y su
+    // copy. Lo que quedara colgando sería un import roto o, peor, un paso
+    // inalcanzable que nadie borra porque parece que hace algo.
+    expect(existsSync('src/components/onboarding/Identidad.jsx')).toBe(false)
+    expect(existsSync('src/onboarding/identidad.js')).toBe(false)
+    ARCHIVOS.forEach((ruta) =>
+      expect(`${ruta}: ${codigoDe(ruta)}`).not.toMatch(/identidad|Identidad|'p4'/),
+    )
   })
 
   it('no conoce ninguna sección de la app', () => {
@@ -71,7 +81,7 @@ describe('el árbol del onboarding', () => {
   })
 })
 
-describe('§2 — la identidad central no depende de áreas, en ningún punto', () => {
+describe('§2 — nada del onboarding depende de áreas, en ningún punto', () => {
   it('ni un archivo del onboarding nombra un área', () => {
     ARCHIVOS.forEach((ruta) =>
       expect(`${ruta}: ${codigoDe(ruta)}`).not.toMatch(/\b[áa]reas?\b|identidadPorArea/i),
@@ -80,12 +90,6 @@ describe('§2 — la identidad central no depende de áreas, en ningún punto', 
 
   it('ni una cadena del copy del onboarding la nombra', () => {
     expect(JSON.stringify(textos)).not.toMatch(/[áa]rea/i)
-  })
-
-  it('la pantalla de identidad no importa ningún catálogo que no sea el suyo', () => {
-    const identidad = codigoDe('src/components/onboarding/Identidad.jsx')
-    expect(identidad).toMatch(/from '@\/onboarding\/identidad'/)
-    expect(identidad).not.toMatch(/catalogo|AREAS|areas/i)
   })
 })
 
@@ -165,12 +169,17 @@ describe('nada bloquea (RN-02, no-negociable 1)', () => {
   })
 })
 
-describe('el indicador cuenta ocho y el sub-paso no se pinta', () => {
-  it('el copy dice "Paso {n} de {total}" y el total son ocho', () => {
+describe('el indicador cuenta siete y el sub-paso no se pinta', () => {
+  it('el copy dice "Paso {n} de {total}" y el total son siete', () => {
     expect(textos.nav.progressTemplate).toBe('Paso {n} de {total}')
-    expect(TOTAL).toBe(8)
-    expect(CONTADOS).toHaveLength(8)
-    expect(ORDEN).toHaveLength(9)
+    expect(TOTAL).toBe(7)
+    expect(CONTADOS).toHaveLength(7)
+    expect(ORDEN).toHaveLength(8)
+  })
+
+  it('el total sale de la lista y no de un número escrito en el copy', () => {
+    // Es lo que hizo que retirar un paso no dejara un "de 8" por ninguna parte.
+    expect(JSON.stringify(textos.nav)).not.toMatch(/de 8|de 7/)
   })
 
   it('el componente no calcula el número: lo pide, y no dibuja si no hay', () => {
@@ -255,7 +264,8 @@ describe('el recorrido cabe en una pantalla', () => {
   it('lo único que se desplaza es el paso, y lo hace por dentro', () => {
     // `min-h-0` es lo que se lo permite: sin él, un paso alto estira la columna
     // en vez de desplazarse por dentro, y lo que se sale por abajo son los dos
-    // controles. Hoy solo lo necesita la identidad central, que es el más largo.
+    // controles. Hoy caben todos, y la franja se queda por si vuelve a hacer
+    // falta.
     expect(contenedor).toMatch(/<main className="flex min-h-0 flex-1 flex-col overflow-y-auto">/)
   })
 
@@ -272,11 +282,10 @@ describe('el recorrido cabe en una pantalla', () => {
         /flex flex-1 flex-col justify-center/,
       ),
     )
-    ;['Nombre', 'Genero', 'Motivo', 'Identidad', 'Horarios', 'Recordatorios', 'Cuenta'].forEach(
-      (pantalla) =>
-        expect(codigoDe(`src/components/onboarding/${pantalla}.jsx`)).not.toMatch(
-          /flex-1 flex-col justify-center/,
-        ),
+    ;['Nombre', 'Genero', 'Motivo', 'Horarios', 'Recordatorios', 'Cuenta'].forEach((pantalla) =>
+      expect(codigoDe(`src/components/onboarding/${pantalla}.jsx`)).not.toMatch(
+        /flex-1 flex-col justify-center/,
+      ),
     )
   })
 

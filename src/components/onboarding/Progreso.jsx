@@ -1,5 +1,5 @@
 // src/components/onboarding/Progreso.jsx
-// "Paso {n} de 8", y ocho puntos.
+// "Paso {n} de 7", y siete puntos.
 //
 // **Cuenta pasos, no campos.** Dice dónde estás, no cuánto te falta por
 // rellenar: en un recorrido donde todo se puede dejar en blanco, un contador de
@@ -10,8 +10,11 @@
 // sub-paso un sitio en la cuenta que no tiene. Es lo mismo que hace la mañana
 // mientras dura su pausa opcional.
 //
+// **El total no está escrito aquí ni en el copy**: sale de `CONTADOS`, así que
+// retirar un paso lo baja solo y no deja un "de 8" olvidado en ninguna parte.
+//
 // No es `IndicadorPasos` del diario, aunque se le parezca: aquel cuenta los tres
-// momentos de un recorrido del día y recibe el copy de cuál. Este cuenta ocho
+// momentos de un recorrido del día y recibe el copy de cuál. Este cuenta los
 // pasos que solo existen una vez. Compartirlos obligaría a uno de los dos a
 // llevar el vocabulario del otro.
 

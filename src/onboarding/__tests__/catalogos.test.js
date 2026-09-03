@@ -1,10 +1,11 @@
 // src/onboarding/__tests__/catalogos.test.js
-// Los tres catálogos del recorrido: género, motivo e identidad.
+// Los dos catálogos del recorrido: género y motivo.
 //
-// Las tres preguntas guardan **identificadores y no etiquetas** (RN-DB-06), y
-// las tres se pueden dejar en blanco. Lo que aquí se vigila de verdad es lo que
-// no está: el motivo no ofrece construir hábitos y la identidad no tiene con
-// qué combinarse.
+// Las dos preguntas guardan **identificadores y no etiquetas** (RN-DB-06), y
+// las dos se pueden dejar en blanco. Lo que aquí se vigila de verdad es lo que
+// no está: el motivo no ofrece construir hábitos, y la identidad central —que
+// era el tercer catálogo— salió entera del recorrido el 2 de septiembre de
+// 2026, con su pantalla, su copy y su módulo.
 
 import { describe, expect, it } from 'vitest'
 
@@ -19,13 +20,6 @@ import {
   paraGuardar as motivoParaGuardar,
   recortarOtro,
 } from '../motivos.js'
-import {
-  MAX_IDENTIDAD,
-  chipsDe,
-  paraCierre,
-  paraGuardar as identidadParaGuardar,
-  recortar,
-} from '../identidad.js'
 
 const textos = copy.diario.onboarding
 
@@ -118,46 +112,10 @@ describe('P3 — cinco motivos y una palabra propia', () => {
   })
 })
 
-describe('P4 — la identidad central no depende de nada', () => {
-  it('las sugerencias salen del copy y solo la primera lleva marca de género', () => {
-    const enFemenino = chipsDe(textos.p4.chips, 'f')
-    const enMasculino = chipsDe(textos.p4.chips, 'm')
-    const enNeutro = chipsDe(textos.p4.chips, 'n')
-
-    expect(enFemenino).toHaveLength(6)
-    expect(enFemenino[0].texto).toBe('cuida de sí misma.')
-    expect(enMasculino[0].texto).toBe('cuida de sí mismo.')
-    expect(enNeutro[0].texto).toBe('se cuida.')
-
-    // Las otras cinco están redactadas para no necesitar el resolutor.
-    enFemenino.slice(1).forEach((chip, i) => expect(chip.texto).toBe(enMasculino[i + 1].texto))
-  })
-
-  it('ninguna sugerencia usa la terminación en -e (RN-GEN-02)', () => {
-    chipsDe(textos.p4.chips, 'n').forEach((chip) => expect(chip.texto).not.toMatch(/\belle\b/i))
-  })
-
-  it('la frase se recorta y se guarda tal como se escribió', () => {
-    expect(MAX_IDENTIDAD).toBe(120)
-    expect(recortar('x'.repeat(500))).toHaveLength(120)
-    expect(identidadParaGuardar('  vive con intención.  ')).toBe('vive con intención.')
-  })
-
-  it('una frase en blanco se guarda como nada, no como cadena vacía', () => {
-    expect(identidadParaGuardar('   ')).toBeNull()
-    expect(identidadParaGuardar(null)).toBeNull()
-  })
-
-  it('el cierre no sale con dos puntos', () => {
-    // La plantilla ya termina en punto y los chips también.
-    expect(paraCierre('cuida de sí misma.')).toBe('cuida de sí misma')
-    expect(paraCierre('vive con intención')).toBe('vive con intención')
-    expect(paraCierre('  se cuida.  ')).toBe('se cuida')
-  })
-
-  it('el copy de la identidad no nombra áreas por ningún lado', () => {
-    const cadenas = JSON.stringify(textos.p4)
-    expect(cadenas).not.toMatch(/[áa]rea/i)
-    expect(textos.p4.areas).toBeUndefined()
+describe('la identidad central ya no se pregunta', () => {
+  it('no queda copy suyo en el recorrido', () => {
+    expect(textos.p4).toBeUndefined()
+    // Y el cierre, que la leía, dice otra cosa: un saludo y nada más.
+    expect(textos.p8.closingTemplate).toBeUndefined()
   })
 })

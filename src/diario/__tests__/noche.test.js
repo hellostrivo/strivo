@@ -169,7 +169,7 @@ describe('criterio 1 — el reconocimiento sustituye a la pregunta de gratitud',
 // ─── La pregunta se dice en el tono del día (30 ago 2026) ────────────────────
 
 describe('la pregunta del reconocimiento acompaña el ánimo, y no lo interpreta', () => {
-  it('las doce emociones del catálogo caen en un grupo, y solo en uno', () => {
+  it('las trece emociones del catálogo caen en un grupo, y solo en uno', () => {
     // Lista cerrada y explícita (RN-06): se mira el id, jamás lo que alguien
     // escribió. Las cinco de cuidado son las cuatro que ya abren la tarjeta de
     // descarga más el cansancio, que no pide soltar nada pero tampoco está para
@@ -178,6 +178,7 @@ describe('la pregunta del reconocimiento acompaña el ánimo, y no lo interpreta
 
     expect(porGrupo(GRUPOS.sereno)).toEqual([
       'en_paz',
+      'feliz',
       'tranquilo',
       'agradecido',
       'orgulloso',
@@ -192,8 +193,8 @@ describe('la pregunta del reconocimiento acompaña el ánimo, y no lo interpreta
       'abrumado',
     ])
     // Ni una se queda fuera, y ninguna está en dos sitios.
-    expect(porGrupo(GRUPOS.sereno).length + porGrupo(GRUPOS.neutro).length).toBe(7)
-    expect(CIERRE.IDS).toHaveLength(12)
+    expect(porGrupo(GRUPOS.sereno).length + porGrupo(GRUPOS.neutro).length).toBe(8)
+    expect(CIERRE.IDS).toHaveLength(13)
   })
 
   it('sin emoción elegida se pregunta en neutro: así se entra al recorrido', () => {
@@ -591,9 +592,10 @@ describe('criterio 5 y 6 — la emoción de cierre, en selección única', () =>
     expect(JSON.stringify(copy.diario)).not.toMatch(/¿Cómo te vas a dormir\?/)
   })
 
-  it('el catálogo son las doce de §7, en su orden y con su emoji', () => {
+  it('el catálogo son las trece de §7, en su orden y con su emoji', () => {
     expect(CIERRE.CATALOGO.map((opcion) => opcion.id)).toEqual([
       'en_paz',
+      'feliz',
       'tranquilo',
       'agradecido',
       'orgulloso',
@@ -607,6 +609,39 @@ describe('criterio 5 y 6 — la emoción de cierre, en selección única', () =>
       'abrumado',
     ])
     CIERRE.CATALOGO.forEach((opcion) => expect(opcion.emoji).toBeTruthy())
+  })
+
+  it('"Feliz" entra detrás de "En paz" y no es un caso aparte', () => {
+    // Se añadió el 2 de septiembre de 2026 y no trajo mecánica propia: misma
+    // forma de opción, mismo chip, misma selección única, mismo ánimo sereno.
+    // Lo que no toca es el tope —sigue siendo una— ni la palabra propia.
+    expect(CIERRE.IDS.indexOf('feliz')).toBe(CIERRE.IDS.indexOf('en_paz') + 1)
+    expect(CIERRE.es('feliz')).toBe(true)
+
+    const opcion = CIERRE.CATALOGO[1]
+    expect(Object.keys(opcion).sort()).toEqual(['emoji', 'id', 'label'])
+    expect(opcion.emoji).toBeTruthy()
+
+    // Sin marca de género: "feliz" no la lleva, y las tres formas coinciden.
+    expect(['m', 'f', 'n'].map((genero) => CIERRE.etiquetaDe('feliz', genero))).toEqual([
+      'Feliz',
+      'Feliz',
+      'Feliz',
+    ])
+
+    // Se elige, se suelta y se guarda como cualquier otra: un id, nunca la
+    // etiqueta (RN-DB-06).
+    expect(CIERRE.alternar(null, 'feliz')).toBe('feliz')
+    expect(CIERRE.alternar('triste', 'feliz')).toBe('feliz')
+    expect(CIERRE.alternar('feliz', 'feliz')).toBe(null)
+    expect(CIERRE.paraGuardar('feliz', '')).toEqual({ valor: 'feliz', otro: null })
+
+    // Y cae en la escala de cinco sin ampliarla, y en el grupo sereno: quien
+    // cierra el día feliz acaba de decir que fue bueno.
+    expect(animoDeEmocion('feliz')).toBe('en_paz')
+    expect(grupoDeCierre('feliz')).toBe(GRUPOS.sereno)
+    // No pide soltar nada por su cuenta, como el resto de las serenas.
+    expect(ofreceDescarga('feliz')).toBe(false)
   })
 
   it('las emociones difíciles no llevan tratamiento distinto', () => {

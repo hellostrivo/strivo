@@ -11,12 +11,12 @@
 // vacío lo que ya había. Es el único bloqueo de esta pantalla y no se ve: solo
 // impide escribir, nunca impide tocar.
 //
-// **Las tres preguntas son las del onboarding, y por eso no se reescriben
-// aquí.** El género, los horarios y la identidad central son campos de
-// `shared/profile`, no pasos de un recorrido: quien los define es su módulo, y
-// esta pantalla los vuelve a preguntar con el mismo catálogo y la misma regla
-// (`onboarding/genero`, `onboarding/identidad`, `onboarding/estado`). Si
-// aparece un tercer consumidor, esos módulos piden un hogar neutral.
+// **Las preguntas son las del onboarding, y por eso no se reescriben aquí.** El
+// género y los horarios son campos de `shared/profile`, no pasos de un
+// recorrido: quien los define es su módulo, y esta pantalla los vuelve a
+// preguntar con el mismo catálogo y la misma regla (`onboarding/genero`,
+// `onboarding/estado`). Si aparece un tercer consumidor, esos módulos piden un
+// hogar neutral.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { shared } from '@/lib/db'
@@ -38,7 +38,6 @@ export const RETRASO_AUTOGUARDADO = 800
 const VACIO = Object.freeze({
   nombre: '',
   genero: null,
-  identidad: '',
   despertar: '',
   dormir: '',
 })
@@ -70,7 +69,6 @@ export function usePerfil(uid) {
       setValores({
         nombre: perfil?.name ?? '',
         genero: opcionDe(perfil?.gender),
-        identidad: perfil?.identidadCentral ?? '',
         despertar: perfil?.wakeTime ?? '',
         dormir: perfil?.sleepTime ?? '',
       })
