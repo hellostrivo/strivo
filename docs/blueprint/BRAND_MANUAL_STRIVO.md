@@ -1,6 +1,7 @@
 # Manual de Marca — Strivo
 
-> **Versión 2.0 — 25 de agosto de 2026.** Una marca, dos paletas, un símbolo.
+> **Versión 2.1 — 1 de septiembre de 2026.** Una marca, dos paletas, un símbolo.
+> Recalibración cromática de las dos paletas de momento (§0.1, §4.3, §4.4).
 > Documento hermano del *Blueprint de Producto v5.0*, que lo referencia y no lo duplica:
 > **el manual manda en todo lo cromático, tipográfico y simbólico** (blueprint §10.1).
 > Pendientes: espaciado de logo, aprobación de la versión monocromática, íconos de UI (§9).
@@ -27,6 +28,33 @@ motivo está en §4.3.
 
 Lo retirado no se ha perdido: vive en la rama de resguardo del repositorio, congelada. Este manual no
 lo nombra porque describe la marca vigente, no su historia.
+
+## 0.1 Qué cambia en la versión 2.1
+
+La v2.0 dejó escrito que «los ocho hexes de las dos paletas que sobreviven no se han tocado». **Eso
+deja de ser cierto aquí: los ocho se recalibran.** La revisión del 1 de septiembre de 2026 recogió
+dos observaciones que apuntaban al mismo sitio:
+
+- La paleta se percibía **genérica, sin personalidad** — el morado y el lavanda pastel son el lugar
+  común de la categoría de bienestar, y ocuparlo no distingue a Strivo de nada.
+- Los **rosas y pasteles de la mañana** se leían como una estética estereotipadamente femenina, que
+  no es el público ni el tono de un producto que quiere ser universal.
+
+**La decisión: sustituir la familia cromática entera de los dos momentos por una extraída de la luz
+de un atardecer.** No es un retoque de tono; es cambiar el eje. Lo que antes giraba sobre morado y
+lavanda ahora gira sobre ámbar, arena, terracota y ciruela apagada.
+
+| | Antes (v2.0) | Ahora (v2.1) |
+|---|---|---|
+| Eje cromático | Morados y lavanda pastel | Luz de atardecer: ámbar → terracota → ciruela |
+| Mañana | Lavanda y rosa orquídea sobre crema | Ámbar, arena y durazno quemado |
+| Noche | Morado saturado y violeta | Ciruela apagada y azul violáceo ceniza |
+| Origen de los valores | Archivo fuente del diseñador | Muestreo de una fotografía de referencia (§4.3.1) |
+
+**Lo que NO cambia, y es deliberado:** la estructura de tokens (los mismos ocho nombres), la escala
+neutra de §4.2, los tokens semánticos de §4.5, la jerarquía de superficies, la tipografía, el
+símbolo y el comportamiento de las pantallas. El repliegue de v2.0 retiró un producto; esta versión
+recolorea el que quedó **sin mover una sola pieza de sitio**.
 
 ---
 
@@ -58,7 +86,7 @@ Esta lista es normativa, no retórica: cada línea tiene consecuencias visuales.
 | **Territorio** | Pausa · Reflexión · Calma |
 | **Pregunta central** | ¿Cómo estoy? |
 | **Símbolo** | «S» caligráfica en espiral |
-| **Familia cromática** | Morados y lavanda, sobre bases cálidas |
+| **Familia cromática** | Luz de atardecer: ámbar, terracota y ciruela apagada |
 
 ---
 
@@ -117,7 +145,7 @@ ya trae la palabra, y ponerla dos veces sería nombrar la marca dos veces.
 
 ### 3.2 Color de símbolo vs. color de marca
 
-El color del logo (`#2B282F`) **no coincide** con el primario de la paleta (`#6C5AA7`,
+El color del logo (`#2B282F`) **no coincide** con el primario de la paleta (`#7A5A5F`,
 `strivo-pm-500`). Es intencional y sobrevive al cambio de archivo: el logo tiene su propio tono «de
 firma». El tono anterior era `#2B2730`; el oficial es `#2B282F`, y la regla es la misma.
 
@@ -205,20 +233,61 @@ color. Por eso Respiración nombra siempre la fase con texto y con geometría, y
 > paleta de momento (§4.5), no con estos neutros. La escala se conserva como **valor por defecto del
 > cromo** y como punto de partida documentado.
 
-### 4.3 Strivo — Mañana (claridad suave)
+### 4.3 Strivo — Mañana (claridad cálida)
 
-Uso: la sección Mañana de Hoy, tono más ligero y despejado.
+Uso: la sección Mañana de Hoy, tono más ligero y luminoso.
 
 | Token | Hex | Uso sugerido |
 |---|---|---|
-| `strivo-am-50` | `#F6F2E9` | Fondo base más claro |
-| `strivo-am-100` | `#DCCFF1` | Superficie primaria, tarjetas |
-| `strivo-am-200` | `#E5C2DC` | Acento secundario — tono intermedio orquídea/rosa entre `am-100` y `am-300` |
-| `strivo-am-300` | `#F6DDE8` | Superficie suave, fondos de tarjeta |
+| `strivo-am-50` | `#FAF3E9` | Fondo base más claro — arena muy clara |
+| `strivo-am-100` | `#E8C9A4` | Superficie primaria, tarjetas — arena ámbar |
+| `strivo-am-200` | `#F2BE95` | Acento secundario — durazno quemado |
+| `strivo-am-300` | `#F4DFC4` | Superficie suave, fondos de tarjeta — crema cálida |
 
-**Renombrados el 25 de agosto de 2026.** Los cuatro hexes están confirmados contra el archivo fuente
-y **no se han modificado**: lo único que cambió es el prefijo del token, que nombraba a un producto
-que ya no existe.
+**Recalibrados el 1 de septiembre de 2026.** Los cuatro hexes anteriores (`#F6F2E9`, `#DCCFF1`,
+`#E5C2DC`, `#F6DDE8`) quedan derogados. El caso más claro era `am-100`: un **lavanda** haciendo de
+superficie primaria dentro de la sección que el manual describe como cálida, lo que contradecía a
+§4.1 antes incluso de llegar a la percepción de nadie. Los rosas y lilas **desaparecen por completo
+de la mañana** y no vuelven.
+
+#### 4.3.1 Origen de los valores
+
+Los ocho tokens de §4.3 y §4.4 no se eligieron por gusto ni se generaron sintéticamente: **se
+muestrearon de una fotografía de atardecer** aportada como referencia en la revisión. El muestreo se
+hizo por bandas horizontales y por agrupamiento de color sobre la imagen completa, y estos son los
+anclajes medidos que sostienen la paleta:
+
+| Zona de la imagen | Hex medido | Alimenta |
+|---|---|---|
+| Núcleo del sol | `#DD7E20` | `am-200` |
+| Ámbar del horizonte | `#BF844E` | `am-100`, `am-200` |
+| Durazno de transición | `#D0B3A0` | `am-300` |
+| Malva ceniza del cielo medio | `#B2AEC5` | `pm-400` |
+| Azul violáceo del cenit | `#7272A8` | `pm-400` |
+| Ciruela del cielo bajo | `#7F6C79` | `pm-500`, `pm-700` |
+| Profundo cálido del mar | `#242228` | referencia de fondo oscuro |
+
+**Dos restricciones gobernaron la derivación**, y explican por qué los tokens no son los hexes
+medidos tal cual:
+
+1. **Luminancia conservada.** Cada token nuevo se ajustó para quedar cerca de la luminancia relativa
+   del token que sustituye: **los ocho quedan por debajo de 0,05 de desviación**. Es lo que permite
+   que la jerarquía de superficies de §8.3 y los degradados de §7 sigan funcionando **sin tocar una
+   sola regla de layout**.
+
+   **`am-200` se corrigió al integrar** (1 sep 2026). El muestreo directo daba `#DFAF88`, que se
+   oscurecía 0,12 respecto del token que sustituye, y `lint:contraste` lo rechazó: sobre esa
+   superficie va la atribución de la frase del día, que se pinta con el **secundario** `#3A3546` y no
+   con la tinta, y caía a 5,98:1 contra un umbral AAA de 7:1. La verificación de §4.7 no lo cubría
+   porque midió solo `ink` sobre las cuatro superficies de mañana. El token se aclaró a `#F2BE95`
+   —mismo durazno quemado, ΔE 6,0 respecto del valor muestreado— hasta 7,07:1, con la desviación de
+   luminancia en 0,025. De paso **recupera la separación que la superficie necesita**: ΔE 9,7 frente
+   a `am-100`, que es la que tenía la pareja de v2.0 (9,5), y el recuadro de la frase vuelve a
+   distinguirse del pie del degradado de la mañana.
+2. **Contraste verificado antes de escribir el token**, no después. Los resultados están en §4.7.
+
+**La imagen de referencia no es un asset de marca** y no se distribuye con el producto: fue el
+instrumento para fijar los valores, y una vez fijados el manual manda sobre ella.
 
 ### 4.4 Strivo — Noche (introspección profunda)
 
@@ -226,10 +295,23 @@ Uso: la sección Noche de Hoy, tono más denso e íntimo.
 
 | Token | Hex | Uso sugerido |
 |---|---|---|
-| `strivo-pm-50` | `#F3EFEA` | Texto claro sobre fondo oscuro / fondo alternativo |
-| `strivo-pm-400` | `#8D82B6` | Acento, fondo de ícono de app |
-| `strivo-pm-500` | `#6C5AA7` | **Color primario de marca**, CTAs |
-| `strivo-pm-700` | `#5A5568` | Superficie oscura, texto sobre claro |
+| `strivo-pm-50` | `#F2EDE5` | Texto claro sobre fondo oscuro / fondo alternativo |
+| `strivo-pm-400` | `#8A7E9B` | Acento, fondo de ícono de app — azul violáceo ceniza |
+| `strivo-pm-500` | `#7A5A5F` | **Color primario de marca**, CTAs — ciruela terracota |
+| `strivo-pm-700` | `#5D5260` | Superficie oscura, texto sobre claro |
+
+**Recalibrados el 1 de septiembre de 2026.** Los hexes anteriores (`#F3EFEA`, `#8D82B6`, `#6C5AA7`,
+`#5A5568`) quedan derogados.
+
+**Sobre `pm-500`, que es el token que más carga la identidad.** Pasa de un morado saturado
+(`#6C5AA7`) a una **ciruela terracota apagada** (`#7A5A5F`): el tono de la fotografía justo donde el
+naranja del horizonte se apaga contra el malva del cielo. Es el cambio que responde de frente a la
+observación de «genérico»: el primario deja de ser el morado que comparte con media categoría y pasa
+a ser el color de la hora en que la luz se va, que es exactamente lo que el producto nombra. De paso
+**mejora en contraste** — blanco encima sube de 5,74:1 a 6,08:1 (§4.7).
+
+`pm-400` conserva el azul violáceo del cenit de la imagen, pero desaturado hacia ceniza: sigue siendo
+el acento frío que la noche necesita para no ser monocroma, sin volver al lila.
 
 ### 4.5 Paleta compartida — tokens semánticos
 
@@ -280,16 +362,16 @@ código; los neutros y el símbolo viven en `design-tokens.json`. Los valores so
   },
   "momento": {
     "am": {
-      "50": "#F6F2E9",
-      "100": "#DCCFF1",
-      "200": "#E5C2DC",
-      "300": "#F6DDE8"
+      "50": "#FAF3E9",
+      "100": "#E8C9A4",
+      "200": "#F2BE95",
+      "300": "#F4DFC4"
     },
     "pm": {
-      "50": "#F3EFEA",
-      "400": "#8D82B6",
-      "500": "#6C5AA7",
-      "700": "#5A5568"
+      "50": "#F2EDE5",
+      "400": "#8A7E9B",
+      "500": "#7A5A5F",
+      "700": "#5D5260"
     }
   }
 }
@@ -308,9 +390,35 @@ integrar nada.
 Hallazgos permanentes, anotados como informativos y no como fallos:
 
 - **Los primarios de marca no llevan texto de cuerpo encima.** Blanco sobre `strivo-pm-500` da
-  5,74:1: pasa AA y no AAA. Se usan como acento y como borde, donde el umbral es 3:1.
+  6,08:1 con la paleta v2.1 (era 5,74:1): pasa AA y no AAA. Se usan como acento y como borde, donde
+  el umbral es 3:1.
 - **El círculo de la respiración no se mide contra el 3:1 de WCAG 1.4.11:** la fase la dice el texto,
   el círculo es el ritmo y no el dato.
+
+**Verificación de la recalibración v2.1.** Las combinaciones se midieron **antes** de fijar los
+tokens, no después. Todas pasan con margen:
+
+| Combinación | Ratio | Umbral | |
+|---|---|---|---|
+| `ink` sobre `am-50` | 14,57:1 | 7:1 (AAA) | ✅ |
+| `ink` sobre `am-100` | 10,18:1 | 7:1 (AAA) | ✅ |
+| `ink` sobre `am-200` | 9,61:1 | 7:1 (AAA) | ✅ |
+| `ink` sobre `am-300` | 12,38:1 | 7:1 (AAA) | ✅ |
+| `pm-50` sobre `night` | 15,38:1 | 7:1 (AAA) | ✅ |
+| Blanco sobre `pm-500` | 6,08:1 | 4,5:1 (AA) | ✅ |
+| Blanco sobre `pm-700` | 7,39:1 | 4,5:1 (AA) | ✅ |
+| `pm-400` sobre `night` | 4,73:1 | 3:1 (gráfico) | ✅ |
+| Secundario `#3A3546` sobre `am-200` | 7,07:1 | 7:1 (AAA) | ✅ |
+| `am-100` frente a `am-50` (superficie) | 1,43:1 | — | separa por luminancia (§8.3) |
+| `am-300` frente a `am-50` (superficie) | 1,18:1 | — | separa por luminancia (§8.3) |
+
+**La tabla mide `ink`, y la app también pinta el secundario.** Esa es la lección de la integración:
+la pre-verificación de arriba se hizo con la tinta principal (`#241E33`), pero cinco superficies del
+producto llevan encima el secundario `#3A3546`, con el mismo umbral de 7:1 por ser texto de cuerpo.
+Es lo que dejó pasar el `#DFAF88` de §4.3.1. **Cualquier recalibración futura mide los dos.**
+
+Esta tabla es **informativa y no sustituye a `npm run lint:contraste`**, que sigue siendo la fuente
+de verdad y debe pasar tras la recalibración.
 
 ---
 
@@ -408,8 +516,8 @@ reducido.
 
 | Pantalla | Momento | Vestimenta |
 |---|---|---|
-| **Hoy · Mañana** | Mañana | Degradado claro, texto oscuro, acento malva |
-| **Hoy · Noche** | Noche | Degradado índigo, texto claro, acento violáceo |
+| **Hoy · Mañana** | Mañana | Degradado cálido claro, texto oscuro, acento ámbar |
+| **Hoy · Noche** | Noche | Degradado profundo, texto claro, acento ciruela |
 | **Journal** | — | Superficie clara, cromo neutro |
 | **Respiración** | Según la hora | Paleta de momento; las cuatro fases por luminancia |
 | **Historial** | — | Superficie clara, cromo neutro |
@@ -439,7 +547,7 @@ automáticamente.
 
 ### 8.1 Botones primarios
 
-- Fondo en `strivo-pm-500` (`#6C5AA7`), texto blanco.
+- Fondo en `strivo-pm-500` (`#7A5A5F`), texto blanco.
 - Sobre superficies que cambian de tema se usa la variante de superficie: el primario sobre el fondo
   nocturno es tinta sobre tinta, y un rectángulo blanco a las once de la noche tampoco sirve.
 
@@ -462,7 +570,7 @@ solo por borde**.
 - [x] ~~Archivo vectorial original del logo~~ — ✅ `Strivo_Logo_Oficial.svg` (25 ago 2026, sustituye
       a `strivo_simbolo.svg`)
 - [x] ~~Nombre de la tipografía~~ — ✅ Inter, confirmada
-- [x] ~~Verificar el secundario de la mañana~~ — ✅ confirmado: `#E5C2DC`
+- [x] ~~Verificar el secundario de la mañana~~ — ✅ recalibrado en v2.1: `#F2BE95` (§4.3, corregido al integrar — §4.3.1)
 - [x] ~~Verificación de contraste de cada combinación~~ — ✅ automatizada en `npm run lint:contraste`
 - [x] ~~Naming definitivo de la navegación~~ — ✅ Hoy · Journal · Respiración · Historial
 - [ ] **Espacio de seguridad** del logo — no definido aún. El tamaño mínimo sí: 56 px de alto (§3.1)
@@ -473,6 +581,16 @@ solo por borde**.
       (§3.3)
 - [ ] **Set de iconos emocionales propios** (16) — encargado, especificado en §6.2
 - [ ] **Set de iconos internos de UI** (check, flecha, más, etc.)
+- [ ] **Decidir si `night` acompaña a la recalibración v2.1.** Queda fuera del alcance acordado —es
+      un token semántico de §4.5, no de momento— pero **es el fondo de la sección Noche**, y hoy es
+      un índigo violáceo frío (`#191428`) bajo una paleta que ya no lo es. La imagen de referencia da
+      `#242228` en el mar profundo; el candidato derivado es **`#1E1A22`**, un casi-negro cálido que
+      mantiene la regla de «nunca negro puro» (RN-VIS-03). Con la paleta actual el contraste no
+      falla (`pm-50` encima da 15,38:1), así que **no es urgente: es de coherencia**
+- [ ] **Decidir si `am-50` se separa más de `paper`.** Con la v2.1 quedan casi idénticos
+      (`#FAF3E9` frente a `#FBF8F4`). No es un error —el fondo base claro y el papel pueden
+      convivir— pero si se quiere que la mañana lea más ámbar que crema, el candidato es
+      **`#F9EFE1`**
 
 ---
 

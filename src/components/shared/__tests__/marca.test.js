@@ -72,19 +72,20 @@ describe('los valores llegaron intactos del manual (criterios 3 y 4)', () => {
   // un solo consumidor: quien pinta lee la hoja. Así que la comprobación pasa de
   // la copia al original, que es donde un error tendría consecuencias.
   it('las dos paletas del momento están completas y coinciden con §4.8', () => {
-    // Eran cuatro —dos productos por dos momentos— y quedan dos. Los ocho hexes
-    // de Mañana y Noche no se han tocado: el repliegue quita un producto, no
-    // recalibra el color del que se queda.
+    // Eran cuatro —dos productos por dos momentos— y quedan dos. **Los ocho
+    // hexes se recalibran el 1 de septiembre de 2026** (manual v2.1, §0.1): la
+    // familia morado/lavanda sale y entra una extraída de la luz de un
+    // atardecer. Cambian los valores, no los nombres ni el número de tokens.
     const hoja = cssDe('src/styles/tokens-strivo.css')
     Object.entries({
-      'am-50': '#F6F2E9',
-      'am-100': '#DCCFF1',
-      'am-200': '#E5C2DC',
-      'am-300': '#F6DDE8',
-      'pm-50': '#F3EFEA',
-      'pm-400': '#8D82B6',
-      'pm-500': '#6C5AA7',
-      'pm-700': '#5A5568',
+      'am-50': '#FAF3E9',
+      'am-100': '#E8C9A4',
+      'am-200': '#F2BE95',
+      'am-300': '#F4DFC4',
+      'pm-50': '#F2EDE5',
+      'pm-400': '#8A7E9B',
+      'pm-500': '#7A5A5F',
+      'pm-700': '#5D5260',
     }).forEach(([token, hex]) => {
       expect(`${token}: ${hoja}`).toMatch(new RegExp(`--strivo-${token}:\\s*${hex}`))
     })
@@ -96,11 +97,12 @@ describe('los valores llegaron intactos del manual (criterios 3 y 4)', () => {
   // vivía partida: el nombre nuevo se comprobaba en el CSS y el viejo en el
   // manual. Con el manual reeditado a una marca, las dos mitades dicen lo mismo.
   //
-  // El hex es lo que el criterio 4 protege, y ese no se ha movido en ninguno de
-  // los dos pasos: el repliegue renombra un token, no recalibra un color.
-  it('el secundario de la mañana es #E5C2DC (criterio 4)', () => {
-    expect(cssDe('src/styles/tokens-strivo.css')).toMatch(/--strivo-am-200:\s*#E5C2DC/)
-    expect(manual).toMatch(/`strivo-am-200`\s*\|\s*`#E5C2DC`/)
+  // El hex es lo que el criterio 4 protege. **Se movió una vez, en v2.1**: el
+  // rosa orquídea pasa a durazno quemado con la recalibración. Lo que la prueba
+  // sostiene no es un valor concreto, es que la hoja y el manual digan el mismo.
+  it('el secundario de la mañana es #F2BE95 (criterio 4)', () => {
+    expect(cssDe('src/styles/tokens-strivo.css')).toMatch(/--strivo-am-200:\s*#F2BE95/)
+    expect(manual).toMatch(/`strivo-am-200`\s*\|\s*`#F2BE95`/)
   })
 
   // El criterio 3 vigilaba `#5D4766`, el punto de convergencia cromática entre
@@ -237,8 +239,19 @@ describe('el logo de la app (criterio 5, revisado 25 ago)', () => {
     expect(logo).toContain(tokens.brand.simbolos.strivo)
     expect(logo).toContain(tokens.brand.simbolos.puntos)
     // Ninguno de los dos es el primario de la paleta, y siguen sin forzarse.
-    expect(tokens.brand.simbolos.strivo).not.toBe('#6C5AA7')
-    expect(tokens.brand.simbolos.puntos).not.toBe('#6C5AA7')
+    //
+    // **El primario se lee de la hoja, no se escribe aquí** (1 sep 2026). Esta
+    // guarda nombraba `#6C5AA7` a mano; cuando la recalibración v2.1 retiró ese
+    // hex del producto, la prueba siguió en verde comparando contra un color
+    // que ya no existía en ninguna parte. Vigilaba un pasado. Leyendo el token
+    // vigila lo que dice el manual §3.2: que el tono de firma no se arrastre
+    // detrás del primario, sea cual sea el primario de hoy.
+    const primario = cssDe('src/styles/tokens-strivo.css').match(
+      /--strivo-pm-500:\s*(#[0-9A-Fa-f]{6})/,
+    )?.[1]
+    expect(primario).toBeDefined()
+    expect(tokens.brand.simbolos.strivo.toUpperCase()).not.toBe(primario.toUpperCase())
+    expect(tokens.brand.simbolos.puntos.toUpperCase()).not.toBe(primario.toUpperCase())
     expect(tokens.brand.simbolos.lumia).toBeUndefined()
   })
 

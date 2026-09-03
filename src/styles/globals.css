@@ -161,13 +161,13 @@
    Medido sobre las dos superficies del producto (`strivo-am-50` de día y
    `strivo-pm-50` de noche), que es donde se pintan:
 
-     inhalar   color-ink       #241E33   14,36:1 / 14,02:1
-     sostén    strivo-pm-700    #5A5568    6,41:1 /  6,25:1
-     exhalar   strivo-pm-500    #6C5AA7    5,14:1 /  5,02:1
-     descanso  strivo-pm-400    #8D82B6    3,13:1 /  3,06:1
+     inhalar   color-ink       #241E33   14,57:1 / 13,77:1
+     sostén    strivo-pm-700    #5D5260    6,71:1 /  6,34:1
+     exhalar   strivo-pm-500    #7A5A5F    5,52:1 /  5,22:1
+     descanso  strivo-pm-400    #8A7E9B    3,44:1 /  3,25:1
 
    Las cuatro pasan el 3:1 de WCAG 1.4.11 (RN-RE-VIS-16), y el `lint:contraste`
-   las mide. **Entre fases contiguas hay entre 1,25:1 y 1,64:1**, igual que
+   las mide. **Entre fases contiguas hay entre 1,22:1 y 2,17:1**, igual que
    pasaba con la escala de Strivo: no basta para nombrar una fase por su color, y
    por eso RN-RE-VIS-17 —palabra y forma siempre— no es aquí un adorno de
    accesibilidad sino lo que sostiene la lectura.
@@ -222,12 +222,13 @@
      su propio `data-surface` y el texto se invierte con él. */
   --strivo-conmutador: #1D1833;
   --strivo-conmutador-activo: rgba(242, 238, 247, .16);
-  /* La frase del día va en el secundario de la paleta —`strivo-am-200`, el rosa
-     de la mañana— y no en otro velo blanco: es la única superficie teñida de
-     Hoy, así que se separa del resto por color y no por un tercer escalón de
-     luminancia, que la habría puesto a competir con la tarjeta de respiración
-     (RN-HOY-07). Medido: la tinta sobre ella da 10,0:1 y el secundario 7,4:1,
-     los dos AAA. El borde es el lavanda de la misma paleta. */
+  /* La frase del día va en el secundario de la paleta —`strivo-am-200`, el
+     durazno quemado de la mañana— y no en otro velo blanco: es la única
+     superficie teñida de Hoy, así que se separa del resto por color y no por un
+     tercer escalón de luminancia, que la habría puesto a competir con la
+     tarjeta de respiración (RN-HOY-07). Medido con la paleta v2.1: la tinta
+     sobre ella da 9,6:1 y el secundario 7,1:1, los dos AAA. El borde es el azul
+     violáceo ceniza de la misma paleta. */
   --strivo-frase: var(--strivo-am-200);
   --strivo-frase-borde: var(--strivo-pm-400);
 }
@@ -241,19 +242,28 @@
   --strivo-conmutador: #F2DDE7;
   --strivo-conmutador-activo: rgba(36, 30, 51, .12);
   /* De noche el secundario entra como velo y no como color plano: `strivo-pm-400`
-     en sólido dejaría el texto claro en 2,9:1 y el oscuro en 5,1:1 —ni uno ni
-     otro llegan a AAA—, mientras que al 20 % sobre el degradado tiñe sin
-     aclarar y el cuerpo se queda entre 9,5:1 y 11,9:1. El borde es el lavanda
-     claro de la mañana, que es el que se ve sobre el velo. */
-  --strivo-frase: rgba(141, 130, 182, .20);
-  --strivo-frase-borde: rgba(220, 207, 241, .30);
+     en sólido no llegaría a AAA por ninguno de los dos lados, mientras que al
+     20 % sobre el degradado tiñe sin aclarar y el cuerpo se queda entre 9,7:1 y
+     12,1:1. El borde es la arena ámbar de la mañana, que es la que se ve sobre
+     el velo.
+
+     **Los dos salían escritos a mano en `rgba()`** —los canales de `#8D82B6` y
+     `#DCCFF1`, copiados de la paleta v2.0— y por eso el barrido de hexes de la
+     recalibración v2.1 no los veía: un hex en decimal no se parece a un hex.
+     Ahora piden el token y le aplican la opacidad con `color-mix`, que es lo
+     que ya hacía la cuadrícula de más abajo. Era una violación de RN-VIS-02
+     anterior a este cambio, y la habría dejado en lavanda bajo una paleta que
+     ya no lo es. */
+  --strivo-frase: color-mix(in srgb, var(--strivo-pm-400) 20%, transparent);
+  --strivo-frase-borde: color-mix(in srgb, var(--strivo-am-100) 30%, transparent);
   /* §6.3.9 — El acento de la respiración es el naranja del amanecer y de
      noche no funciona: se pinta sobre un degradado frío y oscuro, que es lo
-     contrario del fondo para el que se eligió. De noche toma el lavanda de la
-     paleta (`strivo-am-100`), que sobre el degradado nocturno se lee a 12,2:1
-     en su extremo más oscuro y a 9,7:1 en el más claro. */
+     contrario del fondo para el que se eligió. De noche toma la arena ámbar de
+     la paleta (`strivo-am-100`), que sobre el degradado nocturno se lee a
+     11,4:1 en su extremo más oscuro y a 9,1:1 en el más claro. El halo pedía
+     ese mismo tono escrito a mano en `rgba()`; ahora lo pide por su token. */
   --color-breath: var(--strivo-am-100);
-  --color-breath-halo: rgba(220, 207, 241, .28);
+  --color-breath-halo: color-mix(in srgb, var(--strivo-am-100) 28%, transparent);
   /* Un velo crema a las once de la noche sería un fogonazo. */
   --transicion-velo: #191428;
   --transicion-luz: radial-gradient(circle, rgba(232, 165, 74, .18) 0%, rgba(232, 165, 74, 0) 70%);
@@ -265,10 +275,10 @@
    más claro que el fondo contra el que se eligió. La atribución es texto de
    cuerpo a 14 px, así que su umbral sigue siendo 7:1 y ahí no llega.
    No se arregla en el componente, que no sabe qué hora es: lo arregla la
-   superficie que sí lo sabe, subiendo su propio secundario al lavanda claro de
-   la paleta (7,4:1). El componente sigue pidiendo `text-on-surface-soft` por el
+   superficie que sí lo sabe, subiendo su propio secundario a la arena ámbar de
+   la paleta (7,1:1). El componente sigue pidiendo `text-on-surface-soft` por el
    papel que cumple (RN-VIS-02). De día no hace falta: el secundario oscuro da
-   7,4:1 sobre el rosa. */
+   7,1:1 sobre el durazno quemado. */
 [data-momento='noche'] .bg-strivo-frase {
   --color-text-soft: var(--strivo-am-100);
 }
@@ -280,7 +290,7 @@
    clase que dice "cabecera" en la barra de abajo es de las que llevan a que
    alguien duplique la regla en lugar de reutilizarla.
 
-   Sobre `strivo-am-300` —un rosa pálido— la franja se comía con la mañana clara,
+   Sobre `strivo-am-300` —una crema cálida— la franja se comía con la mañana clara,
    así que toma el mismo contratono que el conmutador Mañana/Noche, que es la
    otra pieza de cromo de esa pantalla. Las dos leen `--strivo-conmutador`, así
    que no pueden separarse.
@@ -290,7 +300,7 @@
    la misma decisión que SPEC_10 tomó con el velo de `TransicionLuz`.
 
    **Solo en Mañana.** De noche la cabecera se queda en su rango claro
-   (`strivo-am-100`), que es lo que decidió SPEC_12 para que el texto siga saliendo
+   (`strivo-am-100`, la arena ámbar), que es lo que decidió SPEC_12 para que el texto siga saliendo
    de los tokens AAA sobre claro. Este contratono resuelve la mañana, que era el
    caso roto.
 

@@ -63,14 +63,14 @@ const TEXTO = {
 }
 
 const MARCA = {
-  strivoAm50: '#F6F2E9',
-  strivoAm100: '#DCCFF1',
-  strivoAm200: '#E5C2DC',
-  strivoAm300: '#F6DDE8',
-  strivoPm50: '#F3EFEA',
-  strivoPm400: '#8D82B6',
-  strivoPm500: '#6C5AA7',
-  strivoPm700: '#5A5568',
+  strivoAm50: '#FAF3E9',
+  strivoAm100: '#E8C9A4',
+  strivoAm200: '#F2BE95',
+  strivoAm300: '#F4DFC4',
+  strivoPm50: '#F2EDE5',
+  strivoPm400: '#8A7E9B',
+  strivoPm500: '#7A5A5F',
+  strivoPm700: '#5D5260',
   strivo50: '#F6F4F1',
   strivo100: '#E9E7E3',
   strivo300: '#D4D1CD',
@@ -89,7 +89,7 @@ const MARCA = {
   conmutadorPm: '#F2DDE7',
   // §6.3.9 — El círculo de la respiración, en sus dos versiones.
   breathAm: '#E8A54A',
-  breathPm: '#DCCFF1',
+  breathPm: '#E8C9A4',
   // El logo de Strivo lleva su color dentro del `.svg` (manual §3.2: el tono de
   // firma no es el primario de la paleta y no se toca). Sobre el contratono de
   // la mañana no se ve, así que ahí se pinta la versión monocromática que el

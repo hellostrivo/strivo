@@ -188,10 +188,33 @@ escribe a mano en un componente** (§10.1). Los valores viven en `src/tokens/des
 
 | Token | Hex | | Token | Hex |
 |---|---|---|---|---|
-| `strivo-am-50` | `#F6F2E9` | | `strivo-pm-50` | `#F3EFEA` |
-| `strivo-am-100` | `#DCCFF1` | | `strivo-pm-400` | `#8D82B6` |
-| `strivo-am-200` | `#E5C2DC` | | `strivo-pm-500` | `#6C5AA7` (primario) |
-| `strivo-am-300` | `#F6DDE8` | | `strivo-pm-700` | `#5A5568` |
+| `strivo-am-50` | `#FAF3E9` | | `strivo-pm-50` | `#F2EDE5` |
+| `strivo-am-100` | `#E8C9A4` | | `strivo-pm-400` | `#8A7E9B` |
+| `strivo-am-200` | `#F2BE95` | | `strivo-pm-500` | `#7A5A5F` (primario) |
+| `strivo-am-300` | `#F4DFC4` | | `strivo-pm-700` | `#5D5260` |
+
+**Recalibrados el 1 de septiembre de 2026 (manual v2.1, §0.1).** La familia morado/lavanda sale
+entera y entra una extraída de la luz de un atardecer: ámbar, arena y durazno quemado de día;
+ciruela terracota y azul violáceo ceniza de noche. **Cambian los ocho valores y nada más** — ni los
+nombres, ni el número de tokens, ni la escala neutra, ni los semánticos, ni el color de firma del
+logo. Los tokens nuevos conservan la luminancia de los que sustituyen, que es lo que permitió
+recolorear sin mover una sola regla de maquetación.
+
+**Dos cosas se corrigieron al integrar, y las dos las encontró la verificación:**
+
+- **`am-200` llegó como `#DFAF88` y entró como `#F2BE95`.** El valor muestreado fallaba
+  `lint:contraste`: sobre esa superficie va la atribución de la frase del día, que se pinta con el
+  **secundario** (`#3A3546`) y no con la tinta, y caía a 5,98:1 contra un umbral AAA de 7:1. La
+  pre-verificación del manual §4.7 no lo vio porque midió solo `ink` sobre las cuatro superficies de
+  mañana. Aclarado queda en 7,07:1 sin salirse del durazno quemado (ΔE 6,0 del valor muestreado).
+  **La comprobación que faltaba está anotada en el manual:** una recalibración mide la tinta *y* el
+  secundario, porque el producto pinta los dos.
+- **Tres copias de la paleta salían escritas a mano en `rgba()`** —el recuadro de la frase de noche,
+  su borde y el halo de la respiración—, con los canales de `#8D82B6` y `#DCCFF1` en decimal. **Por
+  eso ningún barrido de hexes las encontraba: un hex en decimal no se parece a un hex.** Era una
+  violación de RN-VIS-02 anterior a este cambio, y habría dejado tres piezas en lavanda bajo una
+  paleta que ya no lo es. Ahora piden su token con `color-mix`, que ya era el idioma de la casa en
+  `globals.css`.
 
 **Escala neutra** (no cambia con la hora): `strivo-50` `#F6F4F1` · `100` `#E9E7E3` · `300` `#D4D1CD`
 · `600` `#6E6A73` · `700` `#58545D` · `800` `#423E47` · `900` `#2B2730`.

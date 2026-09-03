@@ -29,15 +29,15 @@
  * la raíz —no hay entre qué elegir— y lo que sigue colgando de un atributo es
  * el momento, que es lo único que cambia. */
 :root {
-  --strivo-am-50: #F6F2E9;
-  --strivo-am-100: #DCCFF1;
-  --strivo-am-200: #E5C2DC;
-  --strivo-am-300: #F6DDE8;
+  --strivo-am-50: #FAF3E9;
+  --strivo-am-100: #E8C9A4;
+  --strivo-am-200: #F2BE95;
+  --strivo-am-300: #F4DFC4;
 
-  --strivo-pm-50: #F3EFEA;
-  --strivo-pm-400: #8D82B6;
-  --strivo-pm-500: #6C5AA7;
-  --strivo-pm-700: #5A5568;
+  --strivo-pm-50: #F2EDE5;
+  --strivo-pm-400: #8A7E9B;
+  --strivo-pm-500: #7A5A5F;
+  --strivo-pm-700: #5D5260;
 }
 
 /* Claridad suave. El acento se repite en los dos momentos —no cambia con la
