@@ -395,6 +395,40 @@
   filter: brightness(0) invert(1);
 }
 
+/* ─── La presentación de las secciones ───────────────────────────────────────
+   Las cuatro composiciones que se ven una vez, entre el onboarding y la primera
+   entrada a Hoy. Van aquí y no en el componente por lo de siempre: quien sabe
+   qué hora es —y por tanto sobre qué fondo cae el dibujo— es el tema, no la
+   pieza que lo pinta (RN-VIS-02).
+
+   Tres papeles y no una paleta nueva: los tres salen de los ocho tonos de la
+   marca, y cada momento elige cuál cumple cada papel.
+
+     trazo     la línea que dibuja la forma. Es lo que hace legible la
+               composición, así que se le pide el 3:1 de WCAG 1.4.11 sobre las
+               dos paradas del degradado que le tocan (5,52:1 y 4,69:1 de día,
+               11,37:1 y 10,36:1 de noche).
+     profundo  el segundo tono, el que da volumen. También por encima del 3:1
+               (5,70:1 de día, 4,31:1 de noche).
+     calido    el relleno suave, y el único de los tres que **no** llega al 3:1
+               de día: la arena ámbar sobre una crema es 1,52:1. No lo necesita
+               y por eso está medido como informativo — es relleno de una forma
+               que ya tiene su línea, y lo que hay que leer lo dice el texto. Es
+               la misma liga del círculo de la respiración (§6.3.9).
+
+   `lint:contraste` mide los seis pares. */
+[data-momento='manana'] {
+  --presentacion-trazo: var(--strivo-pm-500);
+  --presentacion-profundo: var(--strivo-pm-700);
+  --presentacion-calido: var(--strivo-am-200);
+}
+
+[data-momento='noche'] {
+  --presentacion-trazo: var(--strivo-am-100);
+  --presentacion-profundo: var(--strivo-pm-400);
+  --presentacion-calido: var(--strivo-am-200);
+}
+
 /* ─── Acento de la respiración (§6.3.9) ──────────────────────────────────────
    Naranja/dorado deliberadamente más saturado que `amber` (#E5A25C): tiene que
    destacar sobre el degradado de amanecer, que ya es cálido. Usar el ámbar del
@@ -728,4 +762,69 @@
   .gradient-transition {
     transition: background 900ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
+
+  /* Las cuatro composiciones de la presentación. Un `stroke` y un `fill` no se
+     pueden pedir con las utilidades de texto y fondo, así que tienen las suyas
+     y por el mismo motivo: el componente nombra el papel, el tema pone el tono. */
+  .trazo-presentacion     { stroke: var(--presentacion-trazo); }
+  .trazo-presentacion-profundo { stroke: var(--presentacion-profundo); }
+  .trazo-presentacion-calido   { stroke: var(--presentacion-calido); }
+  .relleno-presentacion   { fill: var(--presentacion-trazo); }
+  .relleno-presentacion-profundo { fill: var(--presentacion-profundo); }
+  .relleno-presentacion-calido   { fill: var(--presentacion-calido); }
+
+  /* El aliento del visual de Respiración: doce segundos por ciclo, que es más
+     lento que cualquier patrón real de la sección y lo bastante para que se
+     note sin pedir que se mire. No hay nada que leer dentro de la forma y no
+     hay nada que esperar a que termine: la tarjeta se puede pasar en cualquier
+     momento del ciclo.
+
+     `transform-box: fill-box` es lo que hace que el centro de la escala sea el
+     centro de la propia forma y no el origen del lienzo, donde el dibujo se
+     iría de viaje en vez de respirar.
+
+     Con "reducir movimiento" la regla global de más arriba la deja en un
+     fotograma; `animation-play-state` la detiene además en un punto medio, que
+     es la forma en reposo y no un extremo del recorrido (RN-VIS-05). */
+  .aliento-presentacion {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: aliento-presentacion 12000ms cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  }
+
+  /* La salida de la presentación: dos segundos de desvanecido y nada más.
+
+     **Solo opacidad.** Ni escala, ni desplazamiento, ni un tono que entre por
+     encima: lo de detrás ya está montado —la app entera, con su degradado del
+     momento— así que lo único que hace falta es que esto se vaya. Un velo de
+     color en medio metería un cambio de color donde no lo hay, y una escala
+     convertiría la salida en un gesto.
+
+     La curva es la de las entradas de la casa (`bienvenida-*`): sale rápido al
+     principio y se posa despacio, que es lo contrario de un corte.
+
+     `forwards` porque lo que se va no vuelve: sin él, el último fotograma
+     reaparecería entero justo antes de desmontarse. La duración vive en
+     `Presentacion.jsx` (`SALIDA`) y una prueba compara las dos.
+
+     Con "reducir movimiento" la regla global de más arriba la deja en un
+     fotograma, y el componente además no espera: entrar es inmediato
+     (RN-VIS-05). */
+  .salida-presentacion {
+    animation: salida-presentacion 2000ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .aliento-presentacion { animation: none; }
+  }
+}
+
+@keyframes aliento-presentacion {
+  0%, 100% { transform: scale(0.92); opacity: 0.72; }
+  50%      { transform: scale(1.06); opacity: 1; }
+}
+
+@keyframes salida-presentacion {
+  from { opacity: 1; }
+  to   { opacity: 0; }
 }

@@ -1368,6 +1368,61 @@ export const copy = {
         sleepLabel: 'Me duermo a las',
       },
     },
+
+    // ─── La presentación de las secciones ─────────────────────────────────
+    // Cuatro tarjetas, una vez, entre el final del onboarding y la primera vez
+    // que alguien entra a Hoy.
+    //
+    // **Cuenta lo que hay, no explica cómo se usa.** No hay una sola
+    // instrucción —ni "desliza", ni "toca aquí"—, y no hay una sola promesa de
+    // resultado: cada tarjeta dice qué es esa sección y para qué está, en una
+    // frase. Un recorrido de entrada que enseña a manejar la app la convierte
+    // en algo que hay que aprender.
+    //
+    // **Vive dentro de `diario` y junto al onboarding** por el mismo motivo que
+    // aquel: Strivo es una sola aplicación, y esto es cómo se termina de entrar
+    // a ella, no una capa por encima.
+    //
+    // Los cuatro títulos son los nombres de las secciones, y son los mismos que
+    // se leen en la cabecera y en la barra de abajo. Se escriben aquí en vez de
+    // leerse de `copy.shared.navegacion` porque ahí son rótulos de un enlace y
+    // aquí son el encabezado de una tarjeta: dos papeles distintos que hoy se
+    // dicen igual. Hay una prueba que falla si dejan de coincidir, que es lo
+    // que evita que uno se quede atrás sin que nadie lo note.
+    presentacion: {
+      nav: {
+        skip: 'Omitir',
+        next: 'Siguiente',
+        // El único texto del producto que nombra la marca en un botón. Lo hace
+        // porque es literalmente la puerta: detrás de esto ya está la app.
+        enter: 'Entrar a Strivo',
+        // Lo que oye un lector de pantalla. Los puntos son mudos a la vista
+        // —el número no se pinta en ninguna parte, contar tarjetas no es lo
+        // que se viene a hacer aquí— y aquí se dice entero.
+        posicionTemplate: 'Tarjeta {n} de {total}',
+        puntosLabel: 'Ir a una tarjeta',
+      },
+
+      hoy: {
+        titulo: 'Hoy',
+        frase: 'Tu punto de partida. Por la mañana y al cerrar el día, un momento para ti.',
+      },
+
+      journal: {
+        titulo: 'Journal',
+        frase: 'Tu espacio privado para anotar pensamientos, soltar emociones y ordenar ideas.',
+      },
+
+      respiracion: {
+        titulo: 'Respiración',
+        frase: 'Ejercicios guiados para conectar contigo. Para cuando necesites hacer una pausa.',
+      },
+
+      historial: {
+        titulo: 'Historial',
+        frase: 'Mira tu camino recorrido. Cada día en que estuviste para ti queda aquí.',
+      },
+    },
   },
 
   // ─── Compartido entre los dos espacios ────────────────────────────────────

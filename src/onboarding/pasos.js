@@ -24,8 +24,14 @@
  * más larga que el resto para una frase que después no aparecía en ningún
  * sitio. Sirve para leer un onboarding viejo sabiendo qué se le preguntó, igual
  * que la versión de la mañana y la de la noche.
+ * 3 — los mismos siete pasos, y detrás la presentación de las secciones: al
+ * terminar el recorrido se ven cuatro tarjetas antes de entrar por primera vez.
+ * **El recorrido no cambia** —ni un paso, ni una pregunta, ni una palabra—, y
+ * la versión sube igualmente porque es lo que distingue a quien terminó con la
+ * presentación delante de quien terminó antes de que existiera. De eso depende
+ * que a nadie que ya entró le aparezca de golpe (`presentacion/entrada.js`).
  */
-export const VERSION = 2
+export const VERSION = 3
 
 /** Los identificadores estables. Es lo que se anota en `completedSteps`. */
 export const PASOS = Object.freeze({

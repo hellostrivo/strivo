@@ -163,10 +163,15 @@ export async function initShared(uid, { profile, auth, preferences, onboarding }
   // `completedAt: null` se siembra explícito porque es lo que mira el arranque
   // para saber si hay que hacer el onboarding. `version` no se siembra: la
   // escribe el onboarding al empezar, igual que la mañana escribe la suya.
+  //
+  // `tourCompletedAt` se siembra nulo por lo mismo: es lo que mira la entrada
+  // para saber si queda por ver la presentación de las secciones, y un árbol
+  // nuevo llega con las dos mitades de la entrada por hacer.
   await saveOnboarding(uid, {
     completedSteps: [],
     currentStep: null,
     completedAt: null,
+    tourCompletedAt: null,
     motivos: [],
     motivoOtro: null,
     ...onboarding,

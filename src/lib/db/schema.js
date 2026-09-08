@@ -80,11 +80,20 @@ export const FIELDS = Object.freeze({
   // `motivos` y `motivoOtro` son la respuesta de P3. Se guardan aquí y no en el
   // perfil porque es una respuesta que se da una vez y no vuelve a mutar: el
   // perfil es lo que sigue siendo cierto cada día.
+  //
+  // `tourCompletedAt` es la marca de la presentación de las secciones: las
+  // cuatro tarjetas que se ven una vez, justo después del recorrido y antes de
+  // entrar por primera vez. Va en este mismo documento y no en uno propio
+  // porque es lo mismo que `completedAt` cuenta de la otra mitad de la entrada:
+  // un documento aparte serían dos escrituras y dos sincronizaciones para
+  // responder a la misma pregunta —¿ya entró esta persona?—. Se escribe una
+  // vez y no vuelve a mutar.
   onboarding: Object.freeze([
     'version',
     'completedSteps',
     'currentStep',
     'completedAt',
+    'tourCompletedAt',
     'motivos',
     'motivoOtro',
   ]),

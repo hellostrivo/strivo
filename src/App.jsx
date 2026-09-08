@@ -26,17 +26,19 @@
 // una regla de reescritura en el hospedaje, recargar en `/historial`
 // devolvería un 404. El hash no depende de configuración que esta spec no toca.
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { clsx } from 'clsx'
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { momentoDe } from '@lib/timeSlot'
 
 import ArranqueProvisional from '@/components/ArranqueProvisional'
 import Onboarding from '@components/onboarding/Onboarding'
+import Presentacion from '@components/presentacion/Presentacion'
 import TransicionLuz, { prefiereMenosMovimiento } from '@components/shared/TransicionLuz'
 import NavStrivo from '@components/diario/NavStrivo'
 import BarraInferior from '@components/shared/BarraInferior'
 import { cruzarUmbral, umbralPendiente } from '@lib/umbralSesion'
+import { presentacionPendiente } from '@/presentacion/entrada'
 import { shared } from '@/lib/db'
 
 import Respiracion from '@/breathing/Respiracion'
@@ -79,8 +81,14 @@ export default function App() {
 }
 
 /**
- * Por dónde se entra: el onboarding la primera vez, las cuatro secciones el
- * resto de las veces.
+ * Por dónde se entra: el onboarding la primera vez, la presentación de las
+ * secciones justo detrás, y las cuatro secciones el resto de las veces.
+ *
+ * **La entrada tiene dos mitades y las dos se preguntan al árbol.** El
+ * onboarding pregunta lo que la app necesita saber; la presentación cuenta lo
+ * que la app tiene dentro. Las dos marcas viven en `shared/onboarding` y la
+ * segunda no se muestra a quien ya había entrado antes de que existiera
+ * (`presentacion/entrada.js`).
  *
  * **Lo decide el árbol de datos, no una marca en el navegador** (F-1B). La
  * respuesta la da `shared.onboardingPendiente`, que mira `completedAt` y solo
@@ -101,16 +109,46 @@ export default function App() {
 function Entrada({ uid, onUid }) {
   const [pendiente, setPendiente] = useState(null)
 
+  // La segunda mitad de la entrada: las cuatro tarjetas que cuentan qué hay
+  // dentro. Es estado aparte del onboarding y no un tercer valor del mismo,
+  // porque las dos mitades se responden con preguntas distintas y una de ellas
+  // —la de aquí— también la decide lo que acaba de pasar en esta sesión.
+  const [presentando, setPresentando] = useState(false)
+
+  // La presentación ya se está yendo por la puerta grande. Lo único que cambia
+  // aquí es que las secciones se montan **debajo** durante esos dos segundos:
+  // así, cuando el desvanecido termina, lo que se ve no aparece —ya estaba—. Es
+  // lo mismo que hace el umbral de entrada, y por el mismo motivo (RN-LU-MAN-02).
+  const [saliendo, setSaliendo] = useState(false)
+
+  // Lo que ya se decidió en esta sesión no lo reabre una lectura que llega
+  // tarde. Al crear una cuenta en P7 el uid cambia y la lectura de arranque se
+  // repite: sin esto, cerrar la presentación mientras esa segunda lectura está
+  // en vuelo la volvería a abrir.
+  const presentacionResuelta = useRef(false)
+
   useEffect(() => {
     let vigente = true
-    shared
-      .onboardingPendiente(uid)
-      .then((respuesta) => vigente && setPendiente(respuesta))
+    // Las dos mitades se preguntan a la vez: son dos lecturas del mismo
+    // documento local y ninguna depende de la respuesta de la otra.
+    Promise.all([shared.onboardingPendiente(uid), presentacionPendiente(uid)])
+      .then(([onboarding, presentacion]) => {
+        if (!vigente) return
+        setPendiente(onboarding)
+        if (!presentacionResuelta.current) setPresentando(!onboarding && presentacion)
+      })
       .catch(() => vigente && setPendiente(false))
     return () => {
       vigente = false
     }
   }, [uid])
+
+  /** La presentación se da por pasada, se haya visto entera o se haya omitido. */
+  const cerrarPresentacion = () => {
+    presentacionResuelta.current = true
+    setPresentando(false)
+    setSaliendo(false)
+  }
 
   // **Lo que se ve mientras se averigua es el tono del velo, no el papel de la
   // app** (26 ago). Detrás de esto viene el umbral, así que pintar crema aquí
@@ -123,6 +161,14 @@ function Entrada({ uid, onUid }) {
     )
   }
 
+  // ─── El único punto de enganche entre el onboarding y la app ───────────────
+  //
+  // Aquí es donde termina el recorrido de entrada y empieza el producto, y es
+  // la única línea que hay que mover el día que el onboarding se sustituya por
+  // otro: la presentación no la monta el recorrido, la monta quien decide por
+  // dónde se entra. `onTerminado` entrega el uid definitivo —que puede no ser
+  // con el que se empezó, si en P7 se creó una cuenta— y a partir de ahí lo que
+  // toca es la presentación, no Hoy.
   if (pendiente) {
     return (
       <Onboarding
@@ -131,8 +177,32 @@ function Entrada({ uid, onUid }) {
         onTerminado={(uidFinal) => {
           onUid(uidFinal)
           setPendiente(false)
+          setPresentando(true)
         }}
       />
+    )
+  }
+
+  // Las cuatro tarjetas, entre el recorrido y la primera vez que se llega a
+  // Hoy. Quien ya había entrado antes de que esto existiera no pasa por aquí:
+  // lo resuelve `presentacionPendiente`, que lo mira por la versión con la que
+  // se terminó el recorrido y no por la ausencia de una marca que a esa persona
+  // le falta por otro motivo.
+  //
+  // **Los dos últimos segundos se solapan.** Al tocar "Entrar a Strivo" las
+  // secciones se montan aquí debajo y la presentación se desvanece encima, así
+  // que la app no aparece: se descubre. Es la única vez que las dos cosas están
+  // montadas a la vez, y dura lo que dura el desvanecido.
+  if (presentando) {
+    return (
+      <>
+        {saliendo && <Secciones uid={uid} />}
+        <Presentacion
+          uid={uid}
+          onSaliendo={() => setSaliendo(true)}
+          onTerminado={cerrarPresentacion}
+        />
+      </>
     )
   }
 

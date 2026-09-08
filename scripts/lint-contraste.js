@@ -239,6 +239,41 @@ const PARES = [
   ['Respiración · cuerpo sobre tarjeta de bloque', TEXTO.onLight, sobre(TEXTO.blanco, 0.72, MARCA.strivoAm50), CUERPO],
   ['Respiración · secundario sobre tarjeta de bloque', TEXTO.onLightSoft, sobre(TEXTO.blanco, 0.72, MARCA.strivoAm50), CUERPO],
 
+  // ── La presentación de las secciones (8 sep) ────────────────────────────────
+  // Las cuatro tarjetas que se ven una vez, entre el onboarding y la primera
+  // entrada a Hoy. Se pintan sobre el mismo degradado del momento que el
+  // onboarding, así que lo que hay que medir es lo que cae **en la parada
+  // contraria a la tinta**: de día la más oscura (`am-100`, que es donde va el
+  // pie de la pantalla) y de noche la más clara (`#2C2350`).
+  //
+  // El texto va todo a `text-on-surface` y ninguno a `-soft`: el secundario
+  // sobre claro llega a AAA en las dos paradas de la mañana, pero sobre la
+  // parada clara de la noche se queda en 6,60:1 y esto es texto de cuerpo. La
+  // jerarquía la hace el peso y el tamaño, que es lo que el manual §5 pide.
+  ['Presentación · cuerpo sobre la mañana', TEXTO.onLight, MARCA.strivoAm100, CUERPO],
+  ['Presentación · cuerpo sobre la noche', TEXTO.onDark, '#2C2350', CUERPO],
+  // El botón principal y "Omitir" van sobre `bg-raised`, que es el mismo velo
+  // de las tarjetas del resto del producto.
+  ['Presentación · CTA sobre la mañana', TEXTO.onLight, sobre(TEXTO.blanco, 0.72, MARCA.strivoAm100), CUERPO],
+  ['Presentación · CTA sobre la noche', TEXTO.onDark, sobre('#F2EEF7', 0.12, '#2C2350'), CUERPO],
+  // Los cuatro puntos. El activo es un indicador de estado —1.4.11, 3:1— y va
+  // además más ancho, así que nunca se comunica solo por color. Los otros tres
+  // son orientación: se les pide el listón del separador, que es lo mismo que
+  // se le pidió a la cuadrícula de SPEC_05.
+  ['Presentación · punto activo sobre la mañana', sobre(TEXTO.onLight, 0.85, MARCA.strivoAm100), MARCA.strivoAm100, NO_TEXTO],
+  ['Presentación · punto activo sobre la noche', sobre(TEXTO.onDark, 0.85, '#2C2350'), '#2C2350', NO_TEXTO],
+  ['Presentación · punto en reposo sobre la mañana', sobre(TEXTO.onLight, 0.35, MARCA.strivoAm100), MARCA.strivoAm100, SEPARADOR],
+  ['Presentación · punto en reposo sobre la noche', sobre(TEXTO.onDark, 0.35, '#2C2350'), '#2C2350', SEPARADOR],
+  // Los dos tonos que **dibujan** las composiciones. Se miden sobre la mitad de
+  // arriba de la pantalla, que es donde caen: de día entre `am-50` y `am-300`,
+  // de noche entre `#191428` y `#221B3A`. Se les pide el 3:1 de 1.4.11 porque
+  // son la línea que hace legible la forma.
+  ['Presentación · trazo sobre la mañana', MARCA.strivoPm500, MARCA.strivoAm300, NO_TEXTO],
+  ['Presentación · tono profundo sobre la mañana', MARCA.strivoPm700, MARCA.strivoAm300, NO_TEXTO],
+  ['Presentación · trazo sobre la noche', MARCA.strivoAm100, '#221B3A', NO_TEXTO],
+  ['Presentación · tono profundo sobre la noche', MARCA.strivoPm400, '#221B3A', NO_TEXTO],
+  ['Presentación · acento cálido sobre la noche', MARCA.strivoAm200, '#221B3A', NO_TEXTO],
+
   // ── Tu perfil (26 ago) ──────────────────────────────────────────────────────
   // La pantalla se pinta sobre la base del cromo —`strivo-50`, como el Journal y
   // el Historial— y cada bloque va en una tarjeta `bg-raised`, que es blanco al
@@ -291,6 +326,13 @@ const INFORMATIVOS = [
   // oculta del todo en vez de quedar ilegible"— y a 0,25 se obtiene lo peor de
   // las dos cosas, una mancha ilegible que sigue tirando del ojo.
   ['control de sesión a α 0,25 (NO se usa)', sobre(TEXTO.onLight, 0.25, MARCA.strivoAm50), MARCA.strivoAm50],
+  // El relleno cálido de las composiciones de la presentación, de día. Es el
+  // único de sus tres papeles que no llega al 3:1 —arena ámbar sobre una crema
+  // son 1,52:1— y **no lo necesita**: es el relleno de una forma que ya tiene su
+  // línea por encima, y lo que hay que leer lo dice el texto de la tarjeta. Es
+  // la misma liga del círculo de la respiración. De noche sí llega, y por eso
+  // ese par sí se exige arriba.
+  ['acento cálido de la presentación sobre la mañana', MARCA.strivoAm200, MARCA.strivoAm50],
   // **El recuadro de la frase contra el fondo sobre el que se pinta.** No se le
   // exige umbral: no es un indicador ni un borde funcional —lo que separa el
   // recuadro es su tinte, y además lleva línea y elevación—, y es la misma

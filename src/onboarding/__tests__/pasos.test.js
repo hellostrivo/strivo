@@ -115,6 +115,10 @@ describe('retomar a medias (RN-09)', () => {
 
 describe('la versión del recorrido', () => {
   it('se guarda para poder leer un onboarding viejo sabiendo qué se preguntó', () => {
-    expect(VERSION).toBe(2)
+    // Subió a 3 el 8 de septiembre de 2026 sin que el recorrido cambiara: es lo
+    // que distingue a quien lo terminó con la presentación de las secciones
+    // detrás de quien lo terminó antes de que existiera, y de eso depende que a
+    // nadie que ya entró le aparezca de golpe (`presentacion/entrada.js`).
+    expect(VERSION).toBe(3)
   })
 })

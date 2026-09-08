@@ -11,6 +11,7 @@
 //   diario       `diario/`              Hoy, Journal, Respiración, Historial
 //   Respiración  `breathing/`           la herramienta
 //   onboarding   `onboarding/`          cómo se entra, una vez y antes de todo
+//   presentación `presentacion/`        qué hay dentro, una vez y justo detrás
 //   neutral      `lib/respiracion/`     el motor de ritmo, que no conoce a nadie
 //
 // Antes el mapa tenía tres partes, porque había dos espacios que no podían
@@ -63,6 +64,11 @@ const ONBOARDING =
   'depender de diario/ ni de breathing/. Lo que necesite de una sección, que ' +
   'llegue por props desde App.jsx.'
 
+const PRESENTACION =
+  'La presentación de las secciones cuenta lo que hay dentro, no lo monta: no ' +
+  'puede depender de diario/ ni de breathing/. Su tarjeta es un nombre, una ' +
+  'frase del copy y un dibujo propio.'
+
 const COMPARTIDO =
   'Un componente de components/shared/ lo usan todas las secciones y el ' +
   'onboarding: no puede depender de diario/ ni de breathing/. Lo que necesite, ' +
@@ -80,6 +86,18 @@ const DIARIO_FILES = [
 const ONBOARDING_FILES = [
   'src/onboarding/**/*.{js,jsx}',
   'src/components/onboarding/**/*.{js,jsx}',
+]
+
+// La presentación de las secciones es la otra mitad de la entrada: corre una
+// vez, justo detrás del onboarding, y **cuenta** lo que hay en las secciones
+// sin montar ninguna. Le toca la misma regla y por el mismo motivo: en cuanto
+// importara algo del diario o de Respiración para dibujar su tarjeta, dejaría
+// de ser la puerta y pasaría a ser una sección que se cuela delante de las
+// otras. Lo que sabe de cada sección es un nombre y una frase, y los dos vienen
+// del copy.
+const PRESENTACION_FILES = [
+  'src/presentacion/**/*.{js,jsx}',
+  'src/components/presentacion/**/*.{js,jsx}',
 ]
 
 const BREATHING_FILES = [
@@ -208,6 +226,23 @@ export default [
             { group: DIARIO_MODULES, message: ONBOARDING },
             { group: BREATHING_MODULES, message: ONBOARDING },
             { group: DB_ENTRYPOINT, importNames: ['diario'], message: ONBOARDING },
+          ],
+        },
+      ],
+    },
+  },
+
+  // ─── La presentación tampoco es de ninguna sección ──────────────────────────
+  {
+    files: PRESENTACION_FILES,
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            { group: DIARIO_MODULES, message: PRESENTACION },
+            { group: BREATHING_MODULES, message: PRESENTACION },
+            { group: DB_ENTRYPOINT, importNames: ['diario'], message: PRESENTACION },
           ],
         },
       ],

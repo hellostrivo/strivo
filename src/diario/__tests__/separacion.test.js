@@ -84,6 +84,14 @@ describe('el diario no sabe nada de hábitos (§C2.6, revisión 25 ago)', () => 
     // secciones —corre antes de la app y todo lo que escribe vive en
     // `shared/`—, y `eslint.config.js` custodia esa frontera igual que las
     // otras: no puede importar ni el diario ni Respiración.
+    //
+    // **`presentacion` se suma el 8 de septiembre de 2026**, y por el mismo
+    // motivo que `onboarding`: es la otra mitad de la entrada —las cuatro
+    // tarjetas que cuentan qué hay dentro, una vez y justo detrás del
+    // recorrido—. Tampoco es un segundo producto y tampoco es una sección: no
+    // tiene ruta, no la alcanza ningún enlace, y `eslint.config.js` le prohíbe
+    // importar el diario y Respiración igual que al onboarding. Lo que sabe de
+    // cada sección es un nombre, una frase del copy y un dibujo propio.
     expect(carpetasDe('src')).toEqual([
       'assets',
       'breathing',
@@ -95,6 +103,7 @@ describe('el diario no sabe nada de hábitos (§C2.6, revisión 25 ago)', () => 
       'onboarding',
       'pages',
       'perfil',
+      'presentacion',
       'styles',
       'tokens',
     ])
@@ -105,7 +114,14 @@ describe('el diario no sabe nada de hábitos (§C2.6, revisión 25 ago)', () => 
     // gestión de cuenta, no una quinta sección del refugio: no escribe en
     // `diario/` y lo único que toca es `shared/profile`. Va fuera del árbol del
     // diario por eso, y no porque sea un producto aparte.
-    expect(carpetasDe('src/components')).toEqual(['diario', 'onboarding', 'perfil', 'shared', 'ui'])
+    expect(carpetasDe('src/components')).toEqual([
+      'diario',
+      'onboarding',
+      'perfil',
+      'presentacion',
+      'shared',
+      'ui',
+    ])
   })
 
   it('no aparece Habit ni HabitLog en el árbol del Diario', () => {
