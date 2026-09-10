@@ -336,6 +336,18 @@ describe('la salida por la puerta grande', () => {
     expect(fotogramas).not.toMatch(/transform|background|color|filter/)
   })
 
+  it('se disuelve con la curva de los velos, no con la de las entradas', () => {
+    // `ease-smooth` arranca rápido y se posa despacio: bueno para algo que
+    // entra, malo para algo que se cruza con lo que hay detrás. Con ella la
+    // opacidad caía casi entera en el primer tercio y el segundo largo que
+    // faltaba no tenía ya nada que enseñar. `ease-in-out` es la del umbral de
+    // entrada y la de su despedida, y es la que reparte la disolución por el
+    // medio.
+    expect(regla).toMatch(/cubic-bezier\(0\.4, 0, 0\.2, 1\)/)
+    const velo = css.match(/\.transicion-salida-velo \{[\s\S]*?\n {2}\}/)[0]
+    expect(velo).toMatch(/cubic-bezier\(0\.4, 0, 0\.2, 1\)/)
+  })
+
   it('lo que se va no vuelve', () => {
     // Sin `forwards`, el último fotograma reaparecería entero justo antes de
     // desmontarse: un parpadeo en el sitio donde menos se puede tener.
@@ -346,9 +358,26 @@ describe('la salida por la puerta grande', () => {
     // Es lo que hace que al terminar no aparezca nada: ya estaba ahí
     // (RN-LU-MAN-02). El aviso sale antes de esperar a la marca, para que los
     // dos segundos descubran la app y no un hueco.
-    expect(app).toMatch(/\{saliendo && <Secciones uid=\{uid\} \/>\}/)
+    expect(app).toMatch(/\{\(!presentando \|\| saliendo\) && <Secciones uid=\{uid\} \/>\}/)
     expect(app).toMatch(/onSaliendo=\{\(\) => setSaliendo\(true\)\}/)
     expect(carrusel).toMatch(/setSaliendo\(true\)\s*\n\s*onSaliendo\?\.\(\)/)
+  })
+
+  it('y no se desmonta al final: es la misma app, en la misma ranura', () => {
+    // **Este era el corte.** `App` tenía dos retornos —un fragmento mientras se
+    // presentaba y `<Secciones />` a secas después—, y React compara por
+    // posición y por tipo: al cerrar la presentación, la app que llevaba dos
+    // segundos montada se desmontaba y volvía a montarse entera. Hoy perdía sus
+    // datos, volvía a `cargando` —degradado y nada más— y el contenido
+    // reaparecía un instante después, justo cuando el desvanecido acababa de
+    // terminar. Un solo retorno, y `Secciones` no se mueve de la primera ranura.
+    // La app se pinta desde una sola expresión: si vuelve a haber dos caminos
+    // que la devuelvan, uno de ellos la estará remontando.
+    expect(app.match(/<Secciones uid=\{uid\} \/>/g)).toHaveLength(1)
+    expect(app).not.toMatch(/return <Secciones/)
+    // Y en ese orden: la app en la primera ranura, la presentación encima. Al
+    // revés, la que cambiaría de posición al cerrarse sería la app.
+    expect(app.indexOf('&& <Secciones')).toBeLessThan(app.indexOf('{presentando && ('))
   })
 
   it('mientras se va queda por encima, sin empujar a la app de sitio', () => {
@@ -386,7 +415,10 @@ describe('es la puerta, no una sección', () => {
   })
 
   it('se interpone entre el onboarding y Hoy, en un solo punto', () => {
-    expect(app).toMatch(/if \(presentando\) \{[\s\S]{0,260}<Presentacion/)
+    // Se monta por `presentando` y por nada más. **Ya no desde un retorno
+    // propio** (9 sep 2026): comparte el del producto para que la app no se
+    // remonte al cerrarla, y lo que la condiciona es su ranura del fragmento.
+    expect(app).toMatch(/\{presentando && \([\s\S]{0,260}<Presentacion/)
     expect(app).toMatch(/setPresentando\(true\)/)
     expect(app.match(/<Presentacion/g)).toHaveLength(1)
   })

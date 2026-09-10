@@ -1006,6 +1006,41 @@ en el copy ni en la navegación**:
 **Lo que sigue sin verse en un teléfono**, como el resto: si el cromo oscuro en cinco pantallas se
 siente una sola app o se siente una app oscura.
 
+### «Entrar a Strivo» deja de cortar al final (9 sep 2026)
+
+Lo pidió el propietario del producto: la puerta de la cuarta tarjeta se sentía abrupta. **El
+desvanecido de dos segundos ya estaba y funcionaba**; lo que fallaba eran sus dos extremos, y ninguno
+era un problema de animación:
+
+- **Al terminar, la app se desmontaba y volvía a montarse entera.** `App` tenía dos retornos —un
+  fragmento mientras se presentaba, `<Secciones />` a secas después—, y React compara por posición y
+  por tipo: al cerrar la presentación el elemento raíz cambiaba de tipo y se llevaba por delante la
+  app que llevaba dos segundos montada debajo. Hoy volvía a `carga === 'cargando'`, que es el
+  degradado y nada más, y el contenido reaparecía un instante después. **El parpadeo caía justo
+  cuando el desvanecido acababa de terminar**, que es donde peor se ve. Ahora hay un solo retorno y
+  `Secciones` no se mueve de su ranura: nada se remonta y no hay nada que volver a cargar.
+- **La curva era la de las entradas y no la de los velos.** Llevaba `ease-smooth`
+  —`cubic-bezier(0.25, 0.46, 0.45, 0.94)`, arranca rápido y se posa despacio—, buena para algo que
+  entra y mala para algo que se cruza con lo que hay detrás: la opacidad caía casi entera en el
+  primer tercio, la app quedaba descubierta enseguida y el segundo largo que faltaba ya no tenía nada
+  que enseñar. Ahora lleva `ease-in-out`, que es la del umbral de entrada y la de su despedida: sale
+  despacio, se disuelve por el medio y se posa.
+
+**Lo que no se hizo, y por qué.** No se le puso una animación de opacidad a la pantalla que llega.
+Las dos capas comparten el degradado del momento y la de abajo es opaca, así que «A se desvanece
+sobre B» y «B aparece bajo A» son el mismo fotograma compuesto: no hay nada que ganar. Y sí habría
+qué perder — detrás de todo está el `body`, que es crema fija (`#FBF8F4`), de modo que dos capas
+translúcidas a la vez dejarían pasar un fogonazo claro a las once de la noche; y una opacidad animada
+sobre `Secciones` crearía un contexto de apilamiento que sacaría a la barra de abajo del borde de la
+ventana durante esos dos segundos, para devolverla de golpe al acabar. La forma correcta de que la
+app «aparezca» aquí es que lo de encima se vaya, que es lo que hace.
+
+**Sin cambios en el contenido, la estructura ni la funcionalidad.** «Omitir» sigue saliendo al
+instante, la duración sigue siendo 2 s y con «reducir movimiento» entrar sigue siendo inmediato.
+
+**Lo que sigue sin verse en un teléfono:** si dos segundos sin poder tocar nada, ahora que la
+disolución los usa enteros, se sienten serenos o se sienten una espera.
+
 ### Divergencias conocidas entre el blueprint y el código
 
 Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos manda**:
@@ -1114,9 +1149,14 @@ tocó: ni un archivo, ni un cherry-pick, ni una línea de copy.
 **Lo que quedó abierto del recorrido**, y conviene decidirlo antes de darlo por cerrado:
 
 - **La revisión editorial del copy no se ha hecho.** El texto de los siete pasos viene del spec y pasa
-  §3.3 con prueba automática. Hay una frase que conviene mirar: «reconocer lo que **sí lograste**»
-  (P1). RN-NOC-03 eligió «reconocer» justamente para no exigir que algo haya salido bien, y §1.2 dice
-  que esto no es productividad; «lograste» reintroduce el logro en la primera frase que alguien lee.
+  §3.3 con prueba automática. La frase que estaba anotada aquí para mirar —«reconocer lo que **sí
+  lograste**» (P1)— **ya no existe en el copy**, así que esa queda saldada.
+  - **Y la frase de apoyo de P1 dejó de prometer tres minutos** (9 sep 2026). Decía «Tres minutos
+    para respirar, reconocer cómo fue tu día y seguir adelante con más calma» y dice «**Un momento
+    para conectar contigo**, reconocer cómo fue tu día y seguir adelante con más calma». Lo pidió el
+    propietario del producto. Ponerle una duración a la primera frase que alguien lee convierte el
+    refugio en un hueco de la agenda, y además era una cifra que el producto no cumple: la mañana, la
+    noche y una respiración no duran lo mismo.
 - **El recorrido no se ha probado en teléfono real**, como el resto del producto. La pregunta que
   ninguna prueba contesta es si las ocho pantallas se sienten breves o se sienten un trámite.
 

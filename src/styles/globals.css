@@ -844,8 +844,18 @@
      color en medio metería un cambio de color donde no lo hay, y una escala
      convertiría la salida en un gesto.
 
-     La curva es la de las entradas de la casa (`bienvenida-*`): sale rápido al
-     principio y se posa despacio, que es lo contrario de un corte.
+     **La curva es la de los velos de la casa, no la de sus entradas** (9 sep
+     2026). Llevaba la de `bienvenida-*` —`ease-smooth`, que arranca rápido y se
+     posa despacio—, que es la buena para algo que entra y la mala para algo que
+     se disuelve: la opacidad caía casi entera en el primer tercio, así que la
+     app quedaba descubierta enseguida y el segundo largo que faltaba no tenía
+     ya nada que enseñar. Eso es lo que hacía que la puerta se sintiera un corte
+     con una espera detrás.
+
+     Ahora lleva `ease-in-out`, que es la del umbral de entrada y la de su
+     despedida (`transicion-entrada`, `transicion-salida-velo`): sale despacio,
+     se disuelve por el medio y se posa. Es el único sitio del producto donde
+     dos pantallas se cruzan, y ahora las dos se cruzan como se cruza el umbral.
 
      `forwards` porque lo que se va no vuelve: sin él, el último fotograma
      reaparecería entero justo antes de desmontarse. La duración vive en
@@ -855,7 +865,7 @@
      fotograma, y el componente además no espera: entrar es inmediato
      (RN-VIS-05). */
   .salida-presentacion {
-    animation: salida-presentacion 2000ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation: salida-presentacion 2000ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
 
   @media (prefers-reduced-motion: reduce) {

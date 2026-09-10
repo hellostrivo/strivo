@@ -193,20 +193,32 @@ function Entrada({ uid, onUid }) {
   // secciones se montan aquí debajo y la presentación se desvanece encima, así
   // que la app no aparece: se descubre. Es la única vez que las dos cosas están
   // montadas a la vez, y dura lo que dura el desvanecido.
-  if (presentando) {
-    return (
-      <>
-        {saliendo && <Secciones uid={uid} />}
+  //
+  // **Y la app se monta en el mismo sitio del árbol siempre** (9 sep 2026).
+  // Antes eran dos retornos distintos: `<>{saliendo && <Secciones/>}<Presentacion/></>`
+  // mientras se presentaba y `<Secciones/>` después. React compara por posición
+  // y por tipo, así que al terminar el desvanecido el fragmento se convertía en
+  // otro elemento y **la app que llevaba dos segundos montada se desmontaba y
+  // volvía a montarse entera**: Hoy perdía sus datos, volvía a `cargando` —que
+  // es una pantalla con el degradado y nada más— y el contenido reaparecía un
+  // instante después. Ese parpadeo era el corte que se veía al final de una
+  // transición que por lo demás ya estaba bien hecha.
+  //
+  // Con un solo retorno, `Secciones` ocupa siempre la primera ranura del
+  // fragmento y lo único que cambia al cerrar la presentación es que la segunda
+  // se queda vacía. Nada se remonta y no hay nada que volver a cargar.
+  return (
+    <>
+      {(!presentando || saliendo) && <Secciones uid={uid} />}
+      {presentando && (
         <Presentacion
           uid={uid}
           onSaliendo={() => setSaliendo(true)}
           onTerminado={cerrarPresentacion}
         />
-      </>
-    )
-  }
-
-  return <Secciones uid={uid} />
+      )}
+    </>
+  )
 }
 
 function Secciones({ uid }) {
