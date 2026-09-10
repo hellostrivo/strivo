@@ -17,10 +17,12 @@
 // recorrido y este componente solo las pinta: volver atrás, cambiar la emoción
 // y volver aquí cambia el título y las ideas, y deja el texto donde estaba.
 //
-// **Abre con un solo campo.** Tres campos vacíos a la vez se leen como tres
-// huecos por rellenar, y esto no es un formulario: el segundo y el tercero los
-// pide quien escribe, tocando "Añadir otro". Hasta tres, cada uno guardado
-// aparte, todos editables y ninguno obligatorio.
+// **Abre con un solo campo.** Varios campos vacíos a la vez se leen como varios
+// huecos por rellenar, y esto no es un formulario: los siguientes los pide quien
+// escribe, tocando "Añadir otro". **Hasta cinco desde el 10 de septiembre de
+// 2026** —eran tres—, cada uno guardado aparte, todos editables y ninguno
+// obligatorio. Cinco no es una meta y no se anuncia por adelantado: quien tenga
+// una sola cosa que nombrar la escribe y sigue, exactamente igual que antes.
 //
 // **Con ideas de apoyo, y son las de esta pregunta.** No las tenía: la pregunta
 // traía su propio abanico en el texto de apoyo y una lista genérica encima
@@ -58,8 +60,8 @@ export default function MomentoReconocimiento({ pregunta, filas, onCambiar, onVo
         placeholder={textos.placeholder}
         maxLength={MAX_RECONOCIMIENTO_LINEA}
         textoAnadir={textos.anadir}
-        // Una lista de tres no necesita que le anuncien que llegó al final: se
-        // ve. La frase del tope es de una lista que puede llegar a diez.
+        // Una lista de cinco no necesita que le anuncien que llegó al final:
+        // se ve. La frase del tope es de una lista que puede llegar a diez.
         textoTope={null}
       />
 

@@ -47,6 +47,7 @@ import {
   VERSION,
   algoQueReconoces,
   camposOmitidos,
+  emocionesDeCierre,
   estaCerrada,
   hayDescarga,
   marcaLocal,
@@ -66,7 +67,10 @@ const PASOS = textos.pasos
 
 const VALORES_VACIOS = Object.freeze({
   reflexion: '',
-  emocion: null,
+  // La emoción de cierre admite hasta tres desde el 10 de septiembre de 2026,
+  // así que aquí vive una lista y no un id suelto. Cuántas caben no se decide en
+  // esta pantalla: lo dice el catálogo.
+  emociones: [],
   emocionPropia: '',
   descarga: '',
 })
@@ -89,7 +93,9 @@ export default function DiarioNoche({ estado, acciones, soloLectura = false }) {
   useEffect(() => {
     setValores({
       reflexion: night?.reflection ?? '',
-      emocion: night?.closingFeeling ?? null,
+      // `emocionesDeCierre` lee las dos formas: la lista de hoy y el id suelto
+      // de las noches anteriores, que no se migran (RN-DB-04).
+      emociones: emocionesDeCierre(night),
       emocionPropia: night?.closingFeelingOther ?? '',
       descarga: night?.release ?? '',
     })
@@ -120,7 +126,7 @@ export default function DiarioNoche({ estado, acciones, soloLectura = false }) {
    * Lo escrito **no se toca**: las filas viven en `reconocido` y esto solo
    * decide qué se lee encima de ellas.
    */
-  const reconocimiento = reconocimientoDeLaNoche(valores.emocion, estado.fecha)
+  const reconocimiento = reconocimientoDeLaNoche(valores.emociones, estado.fecha)
 
   const pregunta = reflexionDeLaNoche(
     estado.noches,
@@ -134,7 +140,8 @@ export default function DiarioNoche({ estado, acciones, soloLectura = false }) {
   // por hoy?" no ofrece la descarga por ninguna de las dos vías.
   const descargaDisponible = puedeOfrecerDescarga(night)
   const conDescarga =
-    descargaDisponible && (descargaPedida || ofreceDescarga(valores.emocion) || hayDescarga(night))
+    descargaDisponible &&
+    (descargaPedida || ofreceDescarga(valores.emociones) || hayDescarga(night))
 
   /**
    * §5 — La pregunta se congela al mostrarse, no al contestarse. Salir y volver
@@ -174,32 +181,32 @@ export default function DiarioNoche({ estado, acciones, soloLectura = false }) {
   /**
    * Tocar un chip es un toque y se guarda ya. Escribir la palabra propia es
    * escribir, y espera como todo lo demás.
+   *
+   * La lista con la que trabajan los chips la resuelve el propio catálogo y
+   * llega ya resuelta: hasta tres desde el 10 de septiembre de 2026, y cuántas
+   * caben no se cuenta aquí.
    */
-  const cambiarEmocion = (valor, tecleando = false) => {
-    // La lista con la que trabajan los chips la resuelve el propio catálogo y
-    // llega ya resuelta: aquí entra la emoción elegida —una, o ninguna— porque
-    // es una y solo una lo que la noche guarda (27 ago 2026).
-    const siguientes = {
-      ...valores,
-      ...(tecleando ? { emocionPropia: valor } : { emocion: valor }),
-    }
+  const cambiarEmocion = (patch) => {
+    const siguientes = { ...valores, ...patch }
     setValores(siguientes)
 
-    const elegida = CIERRE.paraGuardar(siguientes.emocion, siguientes.emocionPropia)
-    const registro = { closingFeeling: elegida.valor, closingFeelingOther: elegida.otro }
+    const elegidas = CIERRE.paraGuardarVarias(siguientes.emociones, siguientes.emocionPropia)
+    const registro = { closingFeelings: elegidas.valores, closingFeelingOther: elegidas.otro }
+
+    const tecleando = 'emocionPropia' in patch
     if (tecleando) escribir(registro)
     else guardar(registro)
   }
 
   /** Lo que hay ahora mismo, mezclando lo guardado con lo que está en pantalla. */
   const entradaActual = () => {
-    const elegida = CIERRE.paraGuardar(valores.emocion, valores.emocionPropia)
+    const elegidas = CIERRE.paraGuardarVarias(valores.emociones, valores.emocionPropia)
     return {
       ...night,
       recognized: textosDe(reconocido),
       reflection: valores.reflexion,
-      closingFeeling: elegida.valor,
-      closingFeelingOther: elegida.otro,
+      closingFeelings: elegidas.valores,
+      closingFeelingOther: elegidas.otro,
       release: valores.descarga,
     }
   }
@@ -316,8 +323,8 @@ export default function DiarioNoche({ estado, acciones, soloLectura = false }) {
           valores={valores}
           genero={estado.genero}
           conDescarga={descargaDisponible}
-          onCambiar={(id) => cambiarEmocion(id)}
-          onValorPropio={(texto) => cambiarEmocion(texto, true)}
+          onCambiar={(emociones) => cambiarEmocion({ emociones })}
+          onValorPropio={(texto) => cambiarEmocion({ emocionPropia: texto })}
           onAbrirDescarga={abrirDescarga}
         />
       )}

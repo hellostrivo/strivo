@@ -627,9 +627,9 @@ export const copy = {
 
     // ─── La noche, en tres momentos (actualización del 23 ago a §5.4) ─────
     //
-    //   1 de 3 · ¿Qué quiero reconocer de hoy?     (lista de 1 a 3, uno al abrir)
+    //   1 de 3 · ¿Qué quiero reconocer de hoy?     (lista de 1 a 5, uno al abrir)
     //   2 de 3 · Una reflexión breve               (rotativa, o ligada a la mañana)
-    //   3 de 3 · ¿Cómo me siento al cerrar el día? (selección única, 12 + Algo más)
+    //   3 de 3 · ¿Cómo me siento al cerrar el día? (hasta 3, de 13 + Algo más)
     //      +   · Si quieres, deja algo aquí        (por la emoción, o a mano)
     //      →     El cierre: "Tu día puede terminar aquí."
     //
@@ -892,7 +892,14 @@ export const copy = {
       // aviso y no hay ninguna que esté peor contestada que otra.
       emocion: {
         titulo: '¿Cómo me siento al cerrar el día?',
-        lead: 'Elige lo que más se acerque a cómo estás.',
+        // Hasta tres, desde el 10 de septiembre de 2026: un día no se cierra
+        // sintiendo una sola cosa, y elegir cuál de dos es la verdadera es
+        // resumirse justo al terminar. Misma redacción que la de la mañana,
+        // porque es la misma pregunta hecha doce horas después.
+        lead: 'Elige hasta tres, las que más se acerquen a cómo estás.',
+        // Solo aparece si se toca una cuarta, y solo entonces. Dice qué pasa,
+        // no qué se hizo mal: no hay nada que corregir en sentir una cosa más.
+        max: 'Caben tres a la vez. Suelta alguna si quieres cambiarla.',
         // Palabra propia: hasta 30 caracteres, sin emoji automático y
         // siempre editable. No pasa por el helper de género (RN-GEN-06).
         otra: {

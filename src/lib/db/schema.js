@@ -140,6 +140,17 @@ export const FIELDS = Object.freeze({
   // `inheritedWins` y `newWins` se retiraron antes, con las victorias y el
   // checklist de logros. Volver a nombrar cualquiera de los seis aquí los
   // reabriría a la escritura.
+  //
+  // `closingFeeling` salió el 10 de septiembre de 2026, cuando "¿Cómo me siento
+  // al cerrar el día?" pasó a admitir hasta tres respuestas: donde había un id
+  // ahora hay una lista, `closingFeelings`. Es exactamente lo que le pasó a
+  // `feeling` en la mañana, y con la misma garantía: **las noches ya escritas no
+  // se tocan** (RN-DB-04), siguen trayendo su campo en singular y `noche.js` lo
+  // sigue leyendo, así que una noche de agosto se relee igual que se escribió.
+  // Lo que no vuelve a ocurrir es que alguien escriba ahí.
+  //
+  // `closingFeelingOther` **se queda en singular y sigue escribiéndose**: "Algo
+  // más" es uno por pregunta, no uno por selección.
   nightRitual: Object.freeze([
     'version',
     'updatedAt',
@@ -149,7 +160,7 @@ export const FIELDS = Object.freeze({
     'reflectionId',
     'reflectionSource',
     'reflection',
-    'closingFeeling',
+    'closingFeelings',
     'closingFeelingOther',
     'release',
   ]),

@@ -56,12 +56,12 @@ describe('registros por fecha', () => {
   it('el ritual de noche se guarda por partes sin perder lo anterior', async () => {
     await diario.saveNightRitual(UID, DATE, { reflection: 'Que se puede pedir ayuda' })
     await diario.saveNightRitual(UID, DATE, { recognized: ['El café de la mañana'] })
-    await diario.saveNightRitual(UID, DATE, { closingFeeling: 'tranquilo' })
+    await diario.saveNightRitual(UID, DATE, { closingFeelings: ['tranquilo'] })
 
     const ritual = await diario.getNightRitual(UID, DATE)
     expect(ritual.reflection).toBe('Que se puede pedir ayuda')
     expect(ritual.recognized).toEqual(['El café de la mañana'])
-    expect(ritual.closingFeeling).toBe('tranquilo')
+    expect(ritual.closingFeelings).toEqual(['tranquilo'])
   })
 
   // El checklist de logros se retiró el 23 ago con las victorias. El campo sale

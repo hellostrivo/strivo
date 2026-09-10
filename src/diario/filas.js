@@ -24,12 +24,14 @@
  * no es un formulario: el segundo lo pide quien escribe, tocando "Añadir otro".
  *
  * **La gratitud llega hasta diez desde el 30 de agosto de 2026** y el
- * reconocimiento sigue en tres. Diez no es una meta ni algo que haya que
- * alcanzar —abrir sigue costando un campo, y cerrar con ese campo vacío sigue
- * siendo cerrar—: es sitio para quien una mañana tiene mucho que agradecer y a
- * la tercera línea se quedaba sin dónde ponerlo. El tope se dice una sola vez
- * al llegar, con la frase que ya estaba escrita para una lista de diez, y no se
- * anuncia por adelantado: contar lo que queda sería convertirlo en un objetivo.
+ * reconocimiento **hasta cinco desde el 10 de septiembre de 2026**. Ninguno de
+ * los dos números es una meta ni algo que haya que alcanzar —abrir sigue
+ * costando un campo, y cerrar con ese campo vacío sigue siendo cerrar—: es
+ * sitio para quien una noche tiene más de tres cosas que nombrar y a la tercera
+ * se quedaba sin dónde ponerlas. El tope se dice una sola vez al llegar en la
+ * gratitud, con la frase que ya estaba escrita para una lista de diez, y no se
+ * anuncia por adelantado en ninguna de las dos: contar lo que queda sería
+ * convertirlo en un objetivo.
  *
  * `crecerSola` era lo que separaba a la gratitud de la noche —tres renglones de
  * salida, uno nuevo en cuanto se escribía en el último— y esa lista se retiró
@@ -38,7 +40,7 @@
  */
 export const LIMITES = Object.freeze({
   gratitudManana: Object.freeze({ min: 1, max: 10, crecerSola: false }),
-  reconocimiento: Object.freeze({ min: 1, max: 3, crecerSola: false }),
+  reconocimiento: Object.freeze({ min: 1, max: 5, crecerSola: false }),
 })
 
 export function filaVacia() {

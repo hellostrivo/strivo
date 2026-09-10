@@ -168,20 +168,20 @@ describe('cambiar el género en Tu perfil', () => {
     const { diario } = await import('@/lib/db')
     await diario.saveNightRitual(UID, '2026-07-15', {
       version: 2,
-      closingFeeling: 'tranquilo',
+      closingFeelings: ['tranquilo'],
       completedAt: new Date().toISOString(),
     })
 
     const guardada = await diario.getNightRitual(UID, '2026-07-15')
-    expect(guardada.closingFeeling).toBe('tranquilo')
-    expect(CIERRE.etiquetaDe(guardada.closingFeeling, generoDe('masculino'))).toBe('Tranquilo')
+    expect(guardada.closingFeelings).toEqual(['tranquilo'])
+    expect(CIERRE.etiquetaDe(guardada.closingFeelings[0], generoDe('masculino'))).toBe('Tranquilo')
 
     // Se cambia el género hoy, y esa noche se relee distinta sin haberla tocado.
     await tocarGenero(UID, { ...valores, genero: null }, 'femenino')
     const genero = (await cargarDia(UID)).genero
     const sigueIgual = await diario.getNightRitual(UID, '2026-07-15')
 
-    expect(sigueIgual.closingFeeling).toBe('tranquilo')
-    expect(CIERRE.etiquetaDe(sigueIgual.closingFeeling, genero)).toBe('Tranquila')
+    expect(sigueIgual.closingFeelings).toEqual(['tranquilo'])
+    expect(CIERRE.etiquetaDe(sigueIgual.closingFeelings[0], genero)).toBe('Tranquila')
   })
 })

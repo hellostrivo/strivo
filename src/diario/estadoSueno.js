@@ -19,6 +19,7 @@
 
 import { copy } from '@copy'
 import { resolveGender } from '@copy/gender'
+import { animoMasPesado } from './nocheEmociones.js'
 
 const textos = copy.diario.noche.sueno
 
@@ -75,8 +76,10 @@ const ANIMO_POR_ESTADO = Object.freeze({
   otro: 'normal',
 })
 
-/** De lo más pesado a lo más ligero. Con dos selecciones, gana el más pesado. */
-const ORDEN_DE_PESO = Object.freeze(['agotado', 'inquieto', 'normal', 'tranquilo', 'en_paz'])
+// Con dos selecciones gana el más pesado, y ese orden ya no vive aquí: lo
+// declara `nocheEmociones.js`, que contesta la misma pregunta para las noches de
+// hoy —que desde el 10 de septiembre de 2026 también admiten más de una—. Dos
+// copias del mismo orden se separan el día que alguien toque una.
 
 /**
  * El ánimo de cinco estados de una noche de la versión 1.
@@ -89,9 +92,5 @@ const ORDEN_DE_PESO = Object.freeze(['agotado', 'inquieto', 'normal', 'tranquilo
  * @returns {'agotado'|'inquieto'|'normal'|'tranquilo'|'en_paz'}
  */
 export function animoDerivado(seleccion) {
-  const animos = (seleccion ?? [])
-    .map((id) => ANIMO_POR_ESTADO[id])
-    .filter((animo) => animo !== undefined)
-  if (animos.length === 0) return 'normal'
-  return ORDEN_DE_PESO.find((animo) => animos.includes(animo)) ?? 'normal'
+  return animoMasPesado((seleccion ?? []).map((id) => ANIMO_POR_ESTADO[id]))
 }

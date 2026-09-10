@@ -3,7 +3,7 @@
 //
 // El recorrido pregunta, por este orden:
 //
-//   1. ¿Qué quiero reconocer de hoy?          (lista de 1 a 3, uno al abrir)
+//   1. ¿Qué quiero reconocer de hoy?          (lista de 1 a 5, uno al abrir)
 //   2. Una reflexión breve                    (`nocheReflexion.js`)
 //   3. ¿Cómo me siento al cerrar el día?      (`nocheEmociones.js`)
 //   +  Si quieres, deja algo aquí             (por la emoción, o a mano)
@@ -27,7 +27,7 @@
 // otra deja de orientar. Es la misma decisión que la pausa de la mañana.
 
 import { copy } from '@copy'
-import { CIERRE, animoDeEmocion } from './nocheEmociones.js'
+import { CIERRE, animoDeCierre } from './nocheEmociones.js'
 import { reconocimientoDeLaNoche } from './nocheReconocimiento.js'
 import { animoDerivado } from './estadoSueno.js'
 import { preguntaGuardada } from './nocheReflexion.js'
@@ -71,8 +71,22 @@ export function hayReflexion(entrada) {
   return String(entrada?.reflection ?? '').trim() !== ''
 }
 
+/**
+ * Cómo se cerró el día, en lista.
+ *
+ * La pregunta admite hasta tres desde el 10 de septiembre de 2026 y se guarda en
+ * `closingFeelings`; las noches anteriores guardaron un solo id en
+ * `closingFeeling` y se siguen leyendo tal cual, sin migrarlas ni reescribirlas
+ * (RN-DB-04). Nadie vuelve a escribir el campo en singular. Es lo mismo que hace
+ * `animosDeManana` con las mañanas de agosto.
+ */
+export function emocionesDeCierre(entrada) {
+  if (Array.isArray(entrada?.closingFeelings)) return entrada.closingFeelings
+  return entrada?.closingFeeling ? [entrada.closingFeeling] : []
+}
+
 export function hayEmocion(entrada) {
-  return Boolean(entrada?.closingFeeling)
+  return emocionesDeCierre(entrada).length > 0
 }
 
 export function hayDescarga(entrada) {
@@ -115,9 +129,16 @@ export function camposOmitidos(entrada, { conDescarga = false } = {}) {
   return omitidos
 }
 
-/** Cómo se lee la emoción de cierre de una noche guardada. */
-export function etiquetaDeEmocion(entrada, genero) {
-  return CIERRE.etiquetaDeRespuesta(entrada?.closingFeeling, entrada?.closingFeelingOther, genero)
+/**
+ * Cómo se leen las emociones de cierre de una noche guardada: cada una con su
+ * texto y su emoji, en el orden en que se eligieron.
+ *
+ * Mismas fichas que la mañana, y por lo mismo: la palabra propia no lleva emoji
+ * y lo que no resuelve a nada —un id de una versión anterior del catálogo— se
+ * cae en vez de pintarse en blanco.
+ */
+export function fichasDeCierre(entrada, genero) {
+  return CIERRE.fichasDeRespuesta(emocionesDeCierre(entrada), entrada?.closingFeelingOther, genero)
 }
 
 /**
@@ -128,7 +149,9 @@ export function etiquetaDeEmocion(entrada, genero) {
  * (§5.4.1): lo consumen el punto del calendario y el repertorio de frases.
  */
 export function animoDeNoche(night) {
-  if (hayEmocion(night)) return animoDeEmocion(night.closingFeeling)
+  // Con más de una emoción gana la más pesada, que es la misma regla que ya
+  // aplicaba `animoDerivado` a las noches de la versión 1 (`nocheEmociones.js`).
+  if (hayEmocion(night)) return animoDeCierre(emocionesDeCierre(night))
   if ((night?.sleepState?.length ?? 0) > 0) return animoDerivado(night.sleepState)
   return null
 }
@@ -185,7 +208,7 @@ export function resumenDeNoche(entrada, morning, genero, fecha) {
       // las que salió. Sin fecha sale la primera de su grupo — que se relea
       // ligeramente distinta es preferible a rotularla con una etiqueta que
       // nadie llegó a leer.
-      titulo: reconocimientoDeLaNoche(entrada.closingFeeling, fecha).titulo,
+      titulo: reconocimientoDeLaNoche(emocionesDeCierre(entrada), fecha).titulo,
       forma: 'texto',
       fichas: [],
       lineas: entrada.recognized
@@ -205,15 +228,15 @@ export function resumenDeNoche(entrada, morning, genero, fecha) {
     })
   }
 
-  const emocion = etiquetaDeEmocion(entrada, genero)
-  if (emocion !== '') {
+  const emociones = fichasDeCierre(entrada, genero)
+  if (emociones.length > 0) {
     bloques.push({
       id: PREGUNTAS.emocion,
       titulo: textos.emocion.titulo,
       forma: 'chip',
-      // Una sola ficha: la noche guarda una emoción. La forma del bloque es la
-      // misma que la de la mañana, que trae hasta tres.
-      fichas: [{ texto: emocion, emoji: CIERRE.emojiDe(entrada.closingFeeling) }],
+      // Hasta tres fichas, como la mañana. Se leen todas y en el orden en que se
+      // eligieron: lo que se contestó es lo que se relee, no una muestra.
+      fichas: emociones,
       lineas: [],
     })
   }

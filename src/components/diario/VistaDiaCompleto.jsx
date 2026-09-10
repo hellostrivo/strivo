@@ -42,7 +42,7 @@ import { etiquetasDe as etiquetasDeSueno } from '@/diario/estadoSueno'
 import { etiquetaDe as etiquetaHeredada } from '@/diario/emociones'
 import { fichasDeAnimo, fichasDeIntencion, hayAlgoEscrito } from '@/diario/manana'
 import {
-  etiquetaDeEmocion,
+  fichasDeCierre,
   hayAlgoEscrito as hayAlgoDeNoche,
   hayDescarga,
   hayReconocimiento,
@@ -89,7 +89,9 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
   const granVision = String(morning?.granVision ?? '').trim()
   const emocionesHeredadas = (morning?.emotions ?? []).map((id) => etiquetaHeredada(id, genero))
   const estadoDeSueno = etiquetasDeSueno(night?.sleepState, night?.sleepStateOther, genero)
-  const emocionDeCierre = etiquetaDeEmocion(night, genero)
+  // Hasta tres desde el 10 de septiembre de 2026, y se leen todas, igual que
+  // las de la mañana: la vista de un día es lo que se escribió ese día.
+  const emocionDeCierre = fichasDeCierre(night, genero).map((ficha) => ficha.texto)
   const preguntaDeEsaNoche = preguntaGuardada(night, morning, genero)
 
   return (
@@ -175,9 +177,9 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
             </Bloque>
           )}
 
-          {emocionDeCierre !== '' && (
+          {emocionDeCierre.length > 0 && (
             <Bloque titulo={textos.emocionCierre}>
-              <p className="text-base text-on-surface">{emocionDeCierre}</p>
+              <p className="text-base text-on-surface">{emocionDeCierre.join(' · ')}</p>
             </Bloque>
           )}
 

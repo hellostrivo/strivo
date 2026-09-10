@@ -54,9 +54,9 @@ describe('el día', () => {
   })
 
   it('no persiste el ánimo derivado: es una vista, no un dato (§5.4.1)', async () => {
-    await guardarNoche(UID, HOY, { closingFeeling: 'cansado' })
+    await guardarNoche(UID, HOY, { closingFeelings: ['cansado'] })
     expect(await db.getDayState(UID, HOY)).toBeNull()
-    expect(await db.getNightRitual(UID, HOY)).toEqual({ closingFeeling: 'cansado' })
+    expect(await db.getNightRitual(UID, HOY)).toEqual({ closingFeelings: ['cansado'] })
   })
 
   it('el estado de sueño se fue con su pregunta: ya no hay quien lo escriba', () => {
@@ -81,7 +81,7 @@ describe('el día', () => {
     expect(nocheEscrita(null)).toBe(false)
     expect(nocheEscrita({})).toBe(false)
     expect(nocheEscrita({ recognized: ['aguanté el día'] })).toBe(true)
-    expect(nocheEscrita({ closingFeeling: 'cansado' })).toBe(true)
+    expect(nocheEscrita({ closingFeelings: ['cansado'] })).toBe(true)
     expect(nocheEscrita({ reflection: 'me costó' })).toBe(true)
     expect(nocheEscrita({ release: 'la conversación pendiente' })).toBe(true)
     // Una noche de la versión anterior sigue contando como noche con algo escrito.
@@ -96,9 +96,9 @@ describe('el día', () => {
     })
 
     it('tres noches pesadas seguidas retiran las frases de esfuerzo', async () => {
-      await guardarNoche(UID, '2026-08-09', { closingFeeling: 'cansado' })
-      await guardarNoche(UID, '2026-08-08', { closingFeeling: 'triste' })
-      await guardarNoche(UID, '2026-08-07', { closingFeeling: 'abrumado' })
+      await guardarNoche(UID, '2026-08-09', { closingFeelings: ['cansado'] })
+      await guardarNoche(UID, '2026-08-08', { closingFeelings: ['triste'] })
+      await guardarNoche(UID, '2026-08-07', { closingFeelings: ['abrumado'] })
       expect(await animoBajoReciente(UID, HOY)).toBe(true)
 
       const dia = await cargarDia(UID, HOY)
@@ -106,8 +106,8 @@ describe('el día', () => {
     })
 
     it('una noche buena entre medias y el repertorio vuelve entero', async () => {
-      await guardarNoche(UID, '2026-08-09', { closingFeeling: 'cansado' })
-      await guardarNoche(UID, '2026-08-08', { closingFeeling: 'en_paz' })
+      await guardarNoche(UID, '2026-08-09', { closingFeelings: ['cansado'] })
+      await guardarNoche(UID, '2026-08-08', { closingFeelings: ['en_paz'] })
       expect(await animoBajoReciente(UID, HOY)).toBe(false)
     })
   })

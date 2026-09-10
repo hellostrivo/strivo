@@ -15,12 +15,13 @@
 // palabra que alguien acaba de inventar es exactamente el diagnóstico que §9
 // prohíbe.
 //
-// **Si hay una difícil entre varias, manda la difícil.** Hoy la noche guarda
-// una sola emoción, así que la regla no llega a usarse; se escribe igual porque
-// la mañana ya admite tres y la pregunta que hay que contestar antes de que la
-// noche también las admita no es "¿qué hacemos?", sino "¿dónde está escrito?".
-// Nunca se muestra una pregunta de gratitud sobre un día que alguien acaba de
-// nombrar difícil.
+// **Si hay una difícil entre varias, manda la difícil.** Se escribió cuando la
+// noche guardaba una sola emoción —por si acaso, y porque la pregunta que había
+// que contestar antes no era "¿qué hacemos?" sino "¿dónde está escrito?"— y
+// desde el 10 de septiembre de 2026, que la noche admite hasta tres, es la regla
+// que se aplica todas las noches. Nunca se muestra una pregunta de gratitud
+// sobre un día que alguien acaba de nombrar difícil, ni aunque haya nombrado
+// también algo sereno.
 //
 // **La rotación no se guarda: se deriva de la fecha.** Y es a propósito. La
 // pregunta tiene que poder cambiar en el momento en que alguien cambia su

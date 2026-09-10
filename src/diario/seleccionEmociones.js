@@ -12,10 +12,12 @@
 // (`MAXIMO`) y de ahí lo toman el componente que pinta los chips y el que
 // guarda: un tope escrito en dos sitios se separa en cuanto alguien cambia uno.
 //
-// **La noche sigue admitiendo una y esa asimetría es la decisión** (§7): nombrar
-// cómo se cierra el día no es hacer un inventario, y de esa respuesta se deriva
-// el punto de ánimo del calendario. La mañana pregunta qué hay y hacia dónde
-// acompañarse, y ninguna de las dos cosas es una sola casi nunca.
+// **Desde el 10 de septiembre de 2026 las tres admiten hasta tres**: la noche
+// dejó de ser la excepción. La asimetría existió mientras el punto de ánimo del
+// calendario —que es de cinco estados— no supo qué hacer con varias; hoy lo
+// sabe, y gana la más pesada (`nocheEmociones.js`). La mecánica de una
+// respuesta se queda porque no cuesta nada y porque `maximo` sigue siendo un
+// parámetro: quien cree una pregunta de respuesta única la encuentra hecha.
 //
 // Es distinto del catálogo del Journal (`emocionesJournal.js`), que admite tres
 // y pide una sola palabra: aquí la respuesta propia es libre hasta 30
@@ -55,7 +57,7 @@ export function etiquetaPropia(texto) {
  *
  * @param {{catalogo: object[]}} textos - Nodo de copy con `catalogo`.
  * @param {{maximo?: number}} [opciones] - Cuántas respuestas admite la
- *   pregunta. Uno por defecto, que es lo que admite la noche.
+ *   pregunta. Uno por defecto; los tres catálogos del día piden tres.
  * @returns {object} las funciones de ese catálogo.
  */
 export function crearSeleccion(textos, { maximo = 1 } = {}) {
@@ -114,11 +116,11 @@ export function crearSeleccion(textos, { maximo = 1 } = {}) {
 
   // ─── Cuando la pregunta admite varias ──────────────────────────────────────
   //
-  // Las tres funciones de arriba siguen ahí porque la noche guarda **una**
-  // respuesta y la lee como tal. Estas trabajan sobre una lista, que es lo que
-  // la mañana guarda desde el 27 de agosto de 2026. No son otra mecánica: son
-  // las mismas reglas —qué es seleccionable, qué se descarta al guardar, cómo
-  // se lee lo guardado— aplicadas a más de una respuesta.
+  // Las tres funciones de arriba se quedan para quien guarde **una** respuesta
+  // y la lea como tal; hoy ya no las usa ninguna de las tres preguntas del día.
+  // Estas trabajan sobre una lista. No son otra mecánica: son las mismas reglas
+  // —qué es seleccionable, qué se descarta al guardar, cómo se lee lo guardado—
+  // aplicadas a más de una respuesta.
 
   /**
    * Toca una opción cuando la pregunta admite varias.
@@ -141,9 +143,9 @@ export function crearSeleccion(textos, { maximo = 1 } = {}) {
    * **Con `maximo` en uno la nueva sustituye a la anterior**, y no es una
    * excepción a lo de arriba: es lo mismo dicho donde solo cabe una respuesta.
    * Un tope de tres se alcanza —hay tres cosas dichas y una cuarta que no
-   * cabe—; un tope de una no se alcanza nunca, porque tocar otra emoción de
-   * cierre no es añadir, es cambiar de respuesta. Hacer que la noche exigiera
-   * soltar antes de elegir sería pedir dos toques para corregirse.
+   * cabe—; un tope de una no se alcanza nunca, porque tocar otra opción no es
+   * añadir, es cambiar de respuesta, y exigir soltar antes de elegir sería
+   * pedir dos toques para corregirse.
    *
    * @returns {{seleccion: string[], topeAlcanzado: boolean}}
    */

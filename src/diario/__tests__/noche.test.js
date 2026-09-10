@@ -31,8 +31,9 @@ import {
   algoQueReconoces,
   animoDeNoche,
   camposOmitidos,
+  emocionesDeCierre,
   estaCerrada,
-  etiquetaDeEmocion,
+  fichasDeCierre,
   hayAlgoEscrito,
   marcaLocal,
   resumenDeNoche,
@@ -42,6 +43,8 @@ import {
   EMOCIONES_DE_DESCARGA,
   ID_OTRA,
   MAX_PALABRA_PROPIA,
+  ORDEN_DE_ANIMO,
+  animoDeCierre,
   animoDeEmocion,
   ofreceDescarga,
 } from '@/diario/nocheEmociones'
@@ -267,7 +270,7 @@ describe('la pregunta del reconocimiento acompaña el ánimo, y no lo interpreta
     expect(despues.titulo).not.toBe(antes.titulo)
     expect(despues.sugerencias).not.toBe(antes.sugerencias)
     // Y la pregunta se arma con la emoción de pantalla, no con la guardada.
-    expect(CONTENEDOR).toMatch(/reconocimientoDeLaNoche\(valores\.emocion, estado\.fecha\)/)
+    expect(CONTENEDOR).toMatch(/reconocimientoDeLaNoche\(valores\.emociones, estado\.fecha\)/)
     expect(CONTENEDOR).not.toMatch(/reconocimientoDeLaNoche\(night/)
   })
 
@@ -329,9 +332,11 @@ describe('la pregunta del reconocimiento acompaña el ánimo, y no lo interpreta
 
 // ─── Criterio 2 ───────────────────────────────────────────────────────────────
 
-describe('criterio 2 — el reconocimiento admite hasta tres elementos', () => {
-  it('abre con un solo campo, no con tres huecos por rellenar', () => {
-    expect(LIMITES.reconocimiento).toEqual({ min: 1, max: 3, crecerSola: false })
+describe('criterio 2 — el reconocimiento admite hasta cinco elementos', () => {
+  it('abre con un solo campo, no con cinco huecos por rellenar', () => {
+    // Eran tres hasta el 10 de septiembre de 2026. Lo que no cambia es cómo
+    // abre: un campo, y los demás los pide quien escribe.
+    expect(LIMITES.reconocimiento).toEqual({ min: 1, max: 5, crecerSola: false })
     expect(filasIniciales([], LIMITES.reconocimiento)).toHaveLength(1)
   })
 
@@ -345,9 +350,18 @@ describe('criterio 2 — el reconocimiento admite hasta tres elementos', () => {
     expect(puedeAnadir([{ id: null, texto: 'aguanté' }], LIMITES.reconocimiento)).toBe(true)
   })
 
-  it('deja de ofrecerse en el tercero', () => {
-    const tres = ['uno', 'dos', 'tres'].map((texto) => ({ id: null, texto }))
-    expect(puedeAnadir(tres, LIMITES.reconocimiento)).toBe(false)
+  it('sigue ofreciéndose en el tercero y deja de ofrecerse en el quinto', () => {
+    const filasCon = (cuantas) =>
+      Array.from({ length: cuantas }, (_, indice) => ({ id: null, texto: `linea ${indice}` }))
+    expect(puedeAnadir(filasCon(3), LIMITES.reconocimiento)).toBe(true)
+    expect(puedeAnadir(filasCon(4), LIMITES.reconocimiento)).toBe(true)
+    expect(puedeAnadir(filasCon(5), LIMITES.reconocimiento)).toBe(false)
+  })
+
+  it('el tope no se anuncia: una lista de cinco se ve entera', () => {
+    // La frase del tope es de una lista que puede llegar a diez. Contar lo que
+    // queda convertiría en un objetivo algo que no lo es.
+    expect(MOMENTO('MomentoReconocimiento')).toMatch(/textoTope=\{null\}/)
   })
 
   it('vaciar el último campo lo retira y "Añadir otro" vuelve a ofrecerse', () => {
@@ -365,8 +379,15 @@ describe('criterio 2 — el reconocimiento admite hasta tres elementos', () => {
       { id: null, texto: ' llamé a mi madre ' },
       { id: null, texto: '' },
       { id: null, texto: 'terminé el informe' },
+      { id: null, texto: 'salí a caminar' },
+      { id: null, texto: 'dormí la siesta' },
     ]
-    expect(textosDe(filas)).toEqual(['llamé a mi madre', 'terminé el informe'])
+    expect(textosDe(filas)).toEqual([
+      'llamé a mi madre',
+      'terminé el informe',
+      'salí a caminar',
+      'dormí la siesta',
+    ])
   })
 
   it('cada línea cabe en 160 caracteres y el campo lo aplica', () => {
@@ -585,10 +606,10 @@ describe('criterio 4 — la conexión con la mañana, como mucho dos veces por s
 
 // ─── Criterio 5 y 6 ───────────────────────────────────────────────────────────
 
-describe('criterio 5 y 6 — la emoción de cierre, en selección única', () => {
+describe('criterio 5 y 6 — la emoción de cierre, hasta tres', () => {
   it('la pregunta sustituye a "¿Cómo te vas a dormir?"', () => {
     expect(textos.emocion.titulo).toBe('¿Cómo me siento al cerrar el día?')
-    expect(textos.emocion.lead).toBe('Elige lo que más se acerque a cómo estás.')
+    expect(textos.emocion.lead).toBe('Elige hasta tres, las que más se acerquen a cómo estás.')
     expect(JSON.stringify(copy.diario)).not.toMatch(/¿Cómo te vas a dormir\?/)
   })
 
@@ -613,8 +634,8 @@ describe('criterio 5 y 6 — la emoción de cierre, en selección única', () =>
 
   it('"Feliz" entra detrás de "En paz" y no es un caso aparte', () => {
     // Se añadió el 2 de septiembre de 2026 y no trajo mecánica propia: misma
-    // forma de opción, mismo chip, misma selección única, mismo ánimo sereno.
-    // Lo que no toca es el tope —sigue siendo una— ni la palabra propia.
+    // forma de opción, mismo chip, misma mecánica, mismo ánimo sereno. Lo que
+    // no toca es el tope ni la palabra propia.
     expect(CIERRE.IDS.indexOf('feliz')).toBe(CIERRE.IDS.indexOf('en_paz') + 1)
     expect(CIERRE.es('feliz')).toBe(true)
 
@@ -631,10 +652,10 @@ describe('criterio 5 y 6 — la emoción de cierre, en selección única', () =>
 
     // Se elige, se suelta y se guarda como cualquier otra: un id, nunca la
     // etiqueta (RN-DB-06).
-    expect(CIERRE.alternar(null, 'feliz')).toBe('feliz')
-    expect(CIERRE.alternar('triste', 'feliz')).toBe('feliz')
-    expect(CIERRE.alternar('feliz', 'feliz')).toBe(null)
-    expect(CIERRE.paraGuardar('feliz', '')).toEqual({ valor: 'feliz', otro: null })
+    expect(CIERRE.alternarVarias([], 'feliz').seleccion).toEqual(['feliz'])
+    expect(CIERRE.alternarVarias(['triste'], 'feliz').seleccion).toEqual(['triste', 'feliz'])
+    expect(CIERRE.alternarVarias(['feliz'], 'feliz').seleccion).toEqual([])
+    expect(CIERRE.paraGuardarVarias(['feliz'], '')).toEqual({ valores: ['feliz'], otro: null })
 
     // Y cae en la escala de cinco sin ampliarla, y en el grupo sereno: quien
     // cierra el día feliz acaba de decir que fue bueno.
@@ -664,11 +685,85 @@ describe('criterio 5 y 6 — la emoción de cierre, en selección única', () =>
     expect(JSON.stringify(textos.emocion)).not.toMatch(/cuidado|preocupa|alarma|problema/i)
   })
 
-  it('solo cabe una, y tocar la elegida la suelta', () => {
-    expect(CIERRE.alternar(null, 'triste')).toBe('triste')
-    expect(CIERRE.alternar('triste', 'en_paz')).toBe('en_paz')
-    expect(CIERRE.alternar('triste', 'triste')).toBe(null)
-    expect(CIERRE.paraGuardar('en_paz', '')).toEqual({ valor: 'en_paz', otro: null })
+  it('caben tres, y tocar una elegida la suelta', () => {
+    // Hasta el 10 de septiembre de 2026 cabía una sola. Lo pidió el propietario
+    // del producto: un día no se cierra sintiendo una sola cosa.
+    expect(CIERRE.MAXIMO).toBe(3)
+    expect(CIERRE.alternarVarias([], 'triste').seleccion).toEqual(['triste'])
+    expect(CIERRE.alternarVarias(['triste'], 'en_paz').seleccion).toEqual(['triste', 'en_paz'])
+    expect(CIERRE.alternarVarias(['triste', 'en_paz'], 'triste').seleccion).toEqual(['en_paz'])
+    expect(CIERRE.paraGuardarVarias(['en_paz', 'cansado'], '')).toEqual({
+      valores: ['en_paz', 'cansado'],
+      otro: null,
+    })
+  })
+
+  it('la cuarta no entra hasta soltar alguna, y se dice en voz baja', () => {
+    // La alternativa —dejarla entrar soltando la más antigua, como el Journal—
+    // se descartó en la mañana y aquí vale lo mismo: quitarle a alguien algo
+    // que acaba de decir de sí mismo para hacer sitio es peor que no añadir.
+    const tres = ['cansado', 'agradecido', 'pensativo']
+    const cuarta = CIERRE.alternarVarias(tres, 'en_paz')
+    expect(cuarta.seleccion).toEqual(tres)
+    expect(cuarta.topeAlcanzado).toBe(true)
+
+    // Y soltar una deja sitio otra vez: nada queda bloqueado.
+    const dos = CIERRE.alternarVarias(tres, 'agradecido')
+    expect(dos.seleccion).toEqual(['cansado', 'pensativo'])
+    expect(CIERRE.alternarVarias(dos.seleccion, 'en_paz').seleccion).toHaveLength(3)
+
+    // El aviso dice qué pasa, no qué se hizo mal, y no reprende.
+    expect(textos.emocion.max).toBe('Caben tres a la vez. Suelta alguna si quieres cambiarla.')
+    expect(MOMENTO('MomentoEmocion')).toMatch(/avisoTexto=\{textos\.emocion\.max\}/)
+  })
+
+  it('nada bloquea: la pregunta se puede dejar en blanco entera', () => {
+    // §14, no-negociable 1. El tope es lo único que no crece; ningún chip se
+    // apaga y ningún control lleva `disabled` (eso lo prueba `ChipsCatalogo`).
+    expect(CIERRE.paraGuardarVarias([], '')).toEqual({ valores: [], otro: null })
+    expect(camposOmitidos({})).toContain(PREGUNTAS.emocion)
+    expect(MOMENTO('MomentoEmocion')).not.toMatch(/disabled|required|aria-invalid/)
+  })
+
+  it('el guardado es una lista, y las noches de antes se releen igual', () => {
+    // RN-DB-04 — `closingFeeling` sale de la escritura, no de la lectura: una
+    // noche de agosto guardó un id suelto y se sigue leyendo tal cual.
+    expect(emocionesDeCierre({ closingFeelings: ['en_paz', 'cansado'] })).toEqual([
+      'en_paz',
+      'cansado',
+    ])
+    expect(emocionesDeCierre({ closingFeeling: 'en_paz' })).toEqual(['en_paz'])
+    expect(emocionesDeCierre({})).toEqual([])
+    expect(emocionesDeCierre(null)).toEqual([])
+
+    expect(CONTENEDOR).toMatch(/closingFeelings: elegidas\.valores/)
+    expect(CONTENEDOR).not.toMatch(/closingFeeling:/)
+    expect(CONTENEDOR).toMatch(/emocionesDeCierre\(night\)/)
+  })
+
+  it('con varias, el punto del calendario lo decide la más pesada', () => {
+    // No es una regla nueva: es la que ya aplicaba `animoDerivado` a las noches
+    // de la versión 1, que también guardaban dos estados. La app no maquilla el
+    // día de nadie para que el calendario se vea mejor.
+    expect(animoDeCierre(['agradecido', 'cansado'])).toBe('agotado')
+    expect(animoDeCierre(['en_paz', 'tranquilo'])).toBe('tranquilo')
+    expect(animoDeCierre(['triste', 'feliz'])).toBe('inquieto')
+    expect(animoDeCierre('en_paz')).toBe('en_paz')
+    expect(animoDeCierre([])).toBe('normal')
+    // La palabra propia no arrastra a nada: cae en el centro de la escala.
+    expect(animoDeCierre([ID_OTRA, 'en_paz'])).toBe('normal')
+    // Y el orden vive en un solo sitio, de lo más pesado a lo más ligero.
+    expect(ORDEN_DE_ANIMO).toEqual(['agotado', 'inquieto', 'normal', 'tranquilo', 'en_paz'])
+    expect(codigoDe('src/diario/estadoSueno.js')).toMatch(/animoMasPesado/)
+  })
+
+  it('una difícil entre varias sigue ofreciendo la descarga', () => {
+    // Lista cerrada y explícita, nunca un análisis (RN-06): que alguien esté
+    // además agradecido no desmiente que esté inquieto.
+    expect(ofreceDescarga(['agradecido', 'inquieto'])).toBe(true)
+    expect(ofreceDescarga(['agradecido', 'en_paz'])).toBe(false)
+    expect(ofreceDescarga([])).toBe(false)
+    expect(ofreceDescarga('triste')).toBe(true)
   })
 
   it('se anuncia como algo que se puede soltar, no como un radio', () => {
@@ -688,9 +783,20 @@ describe('criterio 5 y 6 — la emoción de cierre, en selección única', () =>
   })
 
   it('las etiquetas se resuelven al género vigente, también en lo ya guardado', () => {
-    expect(etiquetaDeEmocion({ closingFeeling: 'cansado' }, 'f')).toBe('Cansada')
-    expect(etiquetaDeEmocion({ closingFeeling: 'cansado' }, 'm')).toBe('Cansado')
-    expect(etiquetaDeEmocion({ closingFeeling: 'cansado' }, 'n')).toBe('Con cansancio')
+    const cansada = (genero) => fichasDeCierre({ closingFeelings: ['cansado'] }, genero)[0].texto
+    expect(cansada('f')).toBe('Cansada')
+    expect(cansada('m')).toBe('Cansado')
+    expect(cansada('n')).toBe('Con cansancio')
+    // Y una noche de agosto, con su id suelto, se lee igual.
+    expect(fichasDeCierre({ closingFeeling: 'cansado' }, 'f')[0].texto).toBe('Cansada')
+  })
+
+  it('se leen todas y en el orden en que se eligieron, con su emoji', () => {
+    const fichas = fichasDeCierre({ closingFeelings: ['cansado', 'agradecido'] }, 'f')
+    expect(fichas.map((ficha) => ficha.texto)).toEqual(['Cansada', 'Agradecida'])
+    expect(fichas.every((ficha) => ficha.emoji)).toBe(true)
+    // Un id de una versión anterior del catálogo se cae, no se pinta en blanco.
+    expect(fichasDeCierre({ closingFeelings: ['contento'] }, 'f')).toEqual([])
   })
 })
 
@@ -699,20 +805,28 @@ describe('criterio 5 y 6 — la emoción de cierre, en selección única', () =>
 describe('criterio 7 — "Algo más" se crea, se elige, se edita y se quita', () => {
   it('acepta hasta 30 caracteres y no los transforma', () => {
     expect(MAX_PALABRA_PROPIA).toBe(30)
-    expect(CIERRE.paraGuardar(ID_OTRA, 'a'.repeat(50)).otro).toHaveLength(30)
-    expect(CIERRE.paraGuardar(ID_OTRA, 'con la cabeza en otro sitio').otro).toBe(
+    expect(CIERRE.paraGuardarVarias([ID_OTRA], 'a'.repeat(50)).otro).toHaveLength(30)
+    expect(CIERRE.paraGuardarVarias([ID_OTRA], 'con la cabeza en otro sitio').otro).toBe(
       'con la cabeza en otro sitio',
     )
   })
 
   it('sin nada escrito no se guarda un chip vacío', () => {
-    expect(CIERRE.paraGuardar(ID_OTRA, '   ')).toEqual({ valor: null, otro: null })
+    expect(CIERRE.paraGuardarVarias([ID_OTRA], '   ')).toEqual({ valores: [], otro: null })
+    // Y convive con las del catálogo sin llevárselas por delante.
+    expect(CIERRE.paraGuardarVarias(['en_paz', ID_OTRA], '   ')).toEqual({
+      valores: ['en_paz'],
+      otro: null,
+    })
   })
 
   it('se relee entre comillas y sin emoji asignado', () => {
-    expect(etiquetaDeEmocion({ closingFeeling: ID_OTRA, closingFeelingOther: 'raro' }, 'f')).toBe(
-      '«raro»',
-    )
+    const propia = fichasDeCierre(
+      { closingFeelings: [ID_OTRA], closingFeelingOther: 'raro' },
+      'f',
+    )[0]
+    expect(propia.texto).toBe('«raro»')
+    expect(propia.emoji).toBe(null)
     expect(CIERRE.emojiDe(ID_OTRA)).toBe(null)
     expect(textos.emocion.otra.chip).not.toMatch(/[\u{1F300}-\u{1FAFF}]/u)
   })
@@ -894,10 +1008,13 @@ describe('criterio 12 — los registros anteriores quedan intactos', () => {
       'reflectionId',
       'reflectionSource',
       'reflection',
-      'closingFeeling',
+      'closingFeelings',
       'closingFeelingOther',
       'release',
     ])
+    // `closingFeeling` salió de la escritura el 10 de septiembre de 2026, no de
+    // la lectura: donde había un id ahora hay una lista (RN-DB-04).
+    expect(FIELDS.nightRitual).not.toContain('closingFeeling')
     expect(VERSION).toBe(2)
   })
 
@@ -921,8 +1038,11 @@ describe('criterio 12 — los registros anteriores quedan intactos', () => {
   })
 
   it('el punto del calendario se deriva de las dos versiones', () => {
+    expect(animoDeNoche({ closingFeelings: ['en_paz'] })).toBe('en_paz')
+    expect(animoDeNoche({ closingFeelings: ['triste'] })).toBe('inquieto')
+    expect(animoDeNoche({ closingFeelings: ['agradecido', 'cansado'] })).toBe('agotado')
+    // Las noches de antes traen su id suelto y se leen igual.
     expect(animoDeNoche({ closingFeeling: 'en_paz' })).toBe('en_paz')
-    expect(animoDeNoche({ closingFeeling: 'triste' })).toBe('inquieto')
     expect(animoDeNoche({ sleepState: ['agradecido', 'cansado'] })).toBe('agotado')
     expect(animoDeNoche({ recognized: ['algo'] })).toBe(null)
     expect(animoDeNoche(null)).toBe(null)

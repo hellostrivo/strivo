@@ -8,12 +8,12 @@
 // ninguna regla: recibe el suyo, su copy, su etiqueta y **la regla de selección
 // de quien lo monta**.
 //
-// **Se llamaba `ChipsUnicos` y dejó de ser cierto** (27 ago 2026). Las dos
-// preguntas de la mañana admiten hasta tres respuestas y la de la noche sigue
-// admitiendo una; lo que las distingue no es el componente sino la función que
-// se le pasa, que es de su catálogo. Un componente que dijera "únicos" mientras
-// pinta tres elegidas es de los que llevan a escribir el segundo componente en
-// vez de reutilizar este.
+// **Se llamaba `ChipsUnicos` y dejó de ser cierto** (27 ago 2026). Las tres
+// preguntas admiten hasta tres respuestas —las dos de la mañana desde entonces,
+// la de la noche desde el 10 de septiembre de 2026—; cuántas caben no lo dice
+// este componente sino la función que se le pasa, que es de su catálogo. Un
+// componente que dijera "únicos" mientras pinta tres elegidas es de los que
+// llevan a escribir el segundo componente en vez de reutilizar este.
 //
 // Es primo de `ChipsEmociones` —la píldora es la misma— pero no es él: aquel
 // pide una sola palabra de 24 caracteres sin espacios; este admite hasta 30 tal
@@ -26,8 +26,8 @@
 // cuenta nada. Lo que sí es de aquí es que un toque que no hace nada se
 // explique — sin él, la pantalla parece rota. La frase llega en `avisoTexto` y
 // dice qué pasa, nunca qué se hizo mal; **solo si quien monta trajo algo que
-// decir**: en la noche no hay ninguna, porque con una sola respuesta lo que
-// ocurre no es que se alcance un tope, sino que la respuesta cambia.
+// decir**: una pregunta de respuesta única no alcanza ningún tope, porque ahí
+// tocar otra opción no es añadir, es cambiar de respuesta.
 //
 // **Ningún chip se apaga y ninguno lleva `disabled`.** Los tres elegidos se
 // sueltan tocándolos, la pregunta entera se puede dejar en blanco y nada impide

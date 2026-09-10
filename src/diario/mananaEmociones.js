@@ -9,8 +9,8 @@
 // propietario del producto y el argumento se sostiene igual con tres: nadie
 // amanece sintiendo una sola cosa, y obligar a elegir cuál de dos es la
 // verdadera es pedirle a alguien que se resuma antes de empezar el día. La
-// noche sigue admitiendo una y esa asimetría es deliberada — está explicada en
-// `seleccionEmociones.js`.
+// noche admite lo mismo desde el 10 de septiembre de 2026, por el mismo motivo
+// y con el mismo tope — está explicado en `nocheEmociones.js`.
 //
 // **El tope se declara aquí y no en la pantalla.** Es una regla del catálogo,
 // así que quien pinta los chips y quien guarda la respuesta lo toman de él.

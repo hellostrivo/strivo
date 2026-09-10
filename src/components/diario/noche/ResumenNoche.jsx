@@ -19,7 +19,8 @@
 //
 // **La noche trae una sola ficha y la mañana hasta tres**, y aun así las dos
 // pantallas pintan `fichas`: una forma de bloque para las dos consultas, no dos
-// que se parezcan. Que aquí siempre venga una es del catálogo de la noche.
+// que se parezcan. Cuántas vengan es del catálogo —la noche admite hasta tres
+// desde el 10 de septiembre de 2026— y esta pantalla las pinta todas.
 //
 // A la respuesta escrita a mano no se le pone emoji: sale su palabra entre
 // comillas y la píldora se pinta igual.

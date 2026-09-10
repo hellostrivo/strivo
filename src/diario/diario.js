@@ -168,5 +168,6 @@ export async function guardarNoche(uid, fecha, patch) {
 }
 
 // El estado de sueño dejó de escribirse el 23 ago: "¿Cómo te vas a dormir?" la
-// sustituyó "¿Cómo me siento al cerrar el día?", que es selección única y se
-// guarda en `closingFeeling`. `guardarEstadoSueno` se fue con la pregunta.
+// sustituyó "¿Cómo me siento al cerrar el día?", que admite hasta tres desde el
+// 10 de septiembre de 2026 y se guarda en `closingFeelings`.
+// `guardarEstadoSueno` se fue con la pregunta.

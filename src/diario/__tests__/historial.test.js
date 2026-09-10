@@ -56,13 +56,13 @@ describe('puntos de ánimo (§5.10 · §6.3.5)', () => {
   })
 
   it('el punto sale de la emoción de cierre, derivada al vuelo', async () => {
-    await diario.saveNightRitual(UID, '2026-08-10', { closingFeeling: 'en_paz' })
+    await diario.saveNightRitual(UID, '2026-08-10', { closingFeelings: ['en_paz'] })
     const dias = await cargarMes(UID, AGOSTO)
     expect(dias.find((dia) => dia.fecha === '2026-08-10').animo).toBe('en_paz')
   })
 
   it('una emoción difícil no se maquilla para que el calendario se vea mejor', async () => {
-    await diario.saveNightRitual(UID, '2026-08-10', { closingFeeling: 'triste' })
+    await diario.saveNightRitual(UID, '2026-08-10', { closingFeelings: ['triste'] })
     const dias = await cargarMes(UID, AGOSTO)
     expect(dias.find((dia) => dia.fecha === '2026-08-10').animo).toBe('inquieto')
   })
@@ -76,13 +76,13 @@ describe('puntos de ánimo (§5.10 · §6.3.5)', () => {
   })
 
   it('todo ánimo que se pinta está en la paleta de cinco', async () => {
-    await diario.saveNightRitual(UID, '2026-08-10', { closingFeeling: 'inquieto' })
+    await diario.saveNightRitual(UID, '2026-08-10', { closingFeelings: ['inquieto'] })
     const dias = await cargarMes(UID, AGOSTO)
     dias.filter((dia) => dia.animo !== null).forEach((dia) => expect(ANIMOS).toContain(dia.animo))
   })
 
   it('el ánimo no se persiste: `dayState` sigue sin escribirse (§5.4.1)', async () => {
-    await diario.saveNightRitual(UID, '2026-08-10', { closingFeeling: 'en_paz' })
+    await diario.saveNightRitual(UID, '2026-08-10', { closingFeelings: ['en_paz'] })
     await cargarMes(UID, AGOSTO)
     expect(await diario.getDayState(UID, '2026-08-10')).toBeNull()
   })

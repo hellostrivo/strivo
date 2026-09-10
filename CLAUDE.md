@@ -310,11 +310,13 @@ diario/ {
                           feelings[], feelingOther, intentions[], intentionOther,
                           gratitude[], action, reflectionId, reflection },
 
-  // La noche de tres momentos. `gratitude`, `learning`, `sleepState` y
-  // `sleepStateOther` son de la versión anterior: se leen, no se escriben.
+  // La noche de tres momentos. `gratitude`, `learning`, `sleepState`,
+  // `sleepStateOther` y —desde el 10 sep 2026— `closingFeeling` son de
+  // versiones anteriores: se leen, no se escriben. El último guardaba un id
+  // suelto donde ahora hay lista.
   nightRitual/{fecha}:  { version, updatedAt, completedAt, skipped,
                           recognized[], reflectionId, reflectionSource, reflection,
-                          closingFeeling, closingFeelingOther, release },
+                          closingFeelings[], closingFeelingOther, release },
 
   journal/{entryId}:    { date, text, emotions[], otherText, createdAt, updatedAt },
   pinConfig:            { salt, hash, iterations, algorithm, enabled }
@@ -395,9 +397,9 @@ pantalla**.
 ### Noche
 
 ```
-1 de 3  ·  La pregunta del día, según el ánimo    (lista de 1 a 3, uno al abrir)
+1 de 3  ·  La pregunta del día, según el ánimo    (lista de 1 a 5, uno al abrir)
 2 de 3  ·  Una reflexión breve                    (rotativa, o ligada a la mañana)
-3 de 3  ·  ¿Cómo me siento al cerrar el día?      (única, 13 + Algo más)
+3 de 3  ·  ¿Cómo me siento al cerrar el día?      (hasta 3, de 13 + Algo más)
    +    ·  ¿Hay algo que quieras dejar aquí?      (por la emoción, o a mano)
    →       Tu día puede terminar aquí · «Cerrar mi día» · Buenas noches
    →       La consulta: lo respondido, con las preguntas delante
@@ -444,12 +446,14 @@ pantalla**.
 
 ### Ambos
 
-- **Hasta tres en la mañana, una en la noche**, y la asimetría es la decisión: de la emoción de
-  cierre sale el punto de ánimo del calendario, que es de cinco estados y no sabría qué hacer con
-  tres. Con una sola, tocar otra **cambia la respuesta** en vez de alcanzar un tope: exigir soltar
-  antes de elegir sería pedir dos toques para corregirse. Se suelta tocando el chip otra vez, y esa
-  es la forma de omitir. Por eso son botones con `aria-pressed` y **no radios**: un radio no se
-  deselecciona, y anunciarlo así sería mentir al lector de pantalla. **«Algo más» es la excepción**:
+- **Hasta tres en las tres preguntas emocionales del día** (10 sep 2026). La noche era la
+  excepción —una sola— y dejó de serlo: la asimetría existía porque el punto de ánimo del
+  calendario, que es de cinco estados, no sabía qué hacer con tres; hoy lo sabe, y **gana la más
+  pesada** (`animoDeCierre`), que es la regla que ya aplicaban las noches de la versión 1. Al llegar
+  a tres, la cuarta no entra hasta soltar alguna, y se dice en voz baja. Se suelta tocando el chip
+  otra vez, y esa es la forma de omitir. Por eso son botones con `aria-pressed` y **no radios**: un
+  radio no se deselecciona, y anunciarlo así sería mentir al lector de pantalla. **«Algo más» es la
+  excepción**:
   tocarlo cuando ya está elegido **reabre el campo**, y quitarlo tiene su propio control — editar y
   borrar no pueden ser el mismo gesto cuando hay texto de por medio.
 - **La palabra propia no recibe emoji**, ni siquiera al releerse: elegirle uno sería la app
@@ -478,7 +482,10 @@ hay entradas: si apareciera solo cuando las hay, la frase estaría contando lo q
 **Historial** (§7). **Muestra, no analiza** (RN-HIS-01): sin tendencias, sin medias, sin gráficas,
 sin comparación entre semanas. Punto de ánimo de cinco estados —agotado, inquieto, normal, tranquilo,
 en paz— **derivado al vuelo y nunca persistido** (RN-HIS-02). La escala de cinco es más gruesa que el
-catálogo de trece **y se asume**: la respuesta exacta se lee en la vista del día. **La palabra propia
+catálogo de trece **y se asume**: la respuesta exacta se lee en la vista del día, que las muestra
+todas. Con varias emociones de cierre **gana la más pesada** (10 sep 2026): una noche agradecida y
+agotada se pinta agotada, porque la app no maquilla el día de nadie para que el calendario se vea
+mejor. **La palabra propia
 devuelve «Estuviste»** (RN-HIS-04): colocarla en una escala sería el diagnóstico que este producto
 prohíbe. **Los campos de versiones anteriores se siguen leyendo** con sus rótulos propios
 (RN-HIS-07): nada de lo ya escrito se sobrescribe ni desaparece.
@@ -584,6 +591,11 @@ el componente.**
 **Dónde vive cada regla — un sitio y solo uno.** Dos copias de la misma regla envejecen distinto:
 
 - `src/diario/noche.js` → `animoDeNoche` es el **único** sitio que decide el ánimo de una noche.
+  También `emocionesDeCierre`, que es el único que sabe que una noche de agosto guardó un id suelto
+  donde ahora hay lista.
+- `src/diario/nocheEmociones.js` → `ORDEN_DE_ANIMO` y `animoMasPesado`: cuál de varios ánimos manda,
+  **de lo más pesado a lo más ligero**. Lo leen la noche de hoy (`animoDeCierre`) y las de la versión
+  1 (`estadoSueno.animoDerivado`), que hacían la misma cuenta con su propia copia del orden.
 - `src/lib/respiracion/` → el motor de ritmo. `ritmoRespiracion.js` es un envoltorio de compatibilidad.
 - `src/lib/umbralSesion.js` → el «ya se cruzó» del umbral, compartido por sus dos consumidores.
 - `src/diario/ventanaEdicion.js` → hasta cuándo se puede escribir en un día, y **el único sitio donde
@@ -1040,6 +1052,51 @@ instante, la duración sigue siendo 2 s y con «reducir movimiento» entrar sigu
 
 **Lo que sigue sin verse en un teléfono:** si dos segundos sin poder tocar nada, ahora que la
 disolución los usa enteros, se sienten serenos o se sienten una espera.
+
+### El reconocimiento llega a cinco y la noche admite tres emociones (10 sep 2026)
+
+Lo pidió el propietario del producto. Son dos cambios en la noche y **el modelo de datos se amplía
+sin tocar nada de lo ya escrito** (RN-DB-04):
+
+- **El reconocimiento (1 de 3) admite hasta cinco renglones**, eran tres. Es un número en `filas.js`
+  y nada más: sigue abriendo con **un** campo, los demás los pide quien escribe tocando «Añadir
+  otro», cada uno se guarda aparte y ninguno es obligatorio. **El tope no se anuncia** —ni por
+  adelantado ni al llegar—: contar lo que queda convertiría en un objetivo algo que no lo es, y una
+  lista de cinco se ve entera. La pregunta sigue cambiando con la emoción de cierre exactamente
+  igual: no se tocó ni una línea de esa lógica.
+- **«¿Cómo me siento al cerrar el día?» pasa de una emoción a hasta tres.** `closingFeeling` sale de
+  la lista de escritura y entra `closingFeelings`; las noches anteriores siguen trayendo su campo en
+  singular y se releen igual. Al llegar a tres, **la cuarta no entra hasta soltar alguna** —mismo
+  criterio que la mañana, y por el mismo motivo: quitarle a alguien algo que acaba de decir de sí
+  mismo para hacer sitio es peor que no añadir lo cuarto—. Nada bloquea: ningún chip se apaga, se
+  suelta tocándolo otra vez y la pregunta se puede dejar en blanco entera.
+
+**Con esto se acaba la asimetría entre la mañana y la noche**, y lo que la sostenía era una sola
+cosa: el punto de ánimo del calendario es de cinco estados y no sabía qué hacer con tres. Ahora sí:
+**gana la más pesada** (`animoDeCierre`). No es una regla nueva —es la que ya aplicaba
+`animoDerivado` a las noches de la versión 1, que también guardaban dos estados— y dice lo mismo que
+`grupoDeCierre`: entre maquillar el día de alguien y no maquillarlo, la app no lo maquilla. **El
+orden de peso dejó de estar escrito dos veces**: vive en `nocheEmociones.js` y `estadoSueno.js` lo
+importa.
+
+**Lo demás cae solo, y conviene saber por qué:**
+
+- **La pregunta del reconocimiento ya sabía leer una lista.** `grupoDeCierre` se escribió en agosto
+  admitiendo varias «por si acaso»; desde hoy es la regla que se aplica todas las noches, sin cambiar
+  una línea. Una difícil entre tres manda: nunca una pregunta de gratitud sobre un día que alguien
+  acaba de nombrar difícil.
+- **La descarga también.** `ofreceDescarga` mira la lista y **con una de las cuatro basta**: que
+  alguien esté además agradecido no desmiente que esté inquieto. Sigue siendo lista cerrada y
+  explícita (RN-06), y la palabra propia sigue sin dispararla.
+- **La consulta y el Historial las muestran todas**, en el orden en que se eligieron, con la misma
+  forma de ficha que la mañana. La escala de cinco del calendario sigue siendo más gruesa que el
+  catálogo de trece, y la respuesta exacta se lee donde está: en la vista del día.
+
+**Sin migración.** No se reescribe ninguna noche y no se borra ningún campo: `closingFeeling` se
+sigue leyendo y simplemente ya nadie lo escribe.
+
+**Lo que sigue sin verse en un teléfono**, como el resto: si tres píldoras al cerrar el día y cinco
+renglones para reconocerlo siguen cabiendo en un recorrido de uno o dos minutos.
 
 ### Divergencias conocidas entre el blueprint y el código
 
