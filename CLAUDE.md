@@ -961,6 +961,51 @@ falta migrar nada.
 **Lo que sigue sin verse en un teléfono**, como el resto: si volver a un día anterior se siente
 natural o se siente una pantalla de administración.
 
+### El cromo va en contratono en todas las secciones, y el foco deja de dibujarse (9 sep 2026)
+
+Lo pidió el propietario del producto. Son dos ajustes visuales, **sin cambios en el modelo de datos,
+en el copy ni en la navegación**:
+
+- **Las dos franjas de cromo dejan de ser crema fuera de Hoy.** En el Journal, en Respiración, en el
+  Historial y en Tu perfil la cabecera y la barra de abajo salían en el rango claro
+  (`--espacio-cabecera`) y ahora toman **el mismo contratono que ya llevaban en la Mañana**
+  (`--strivo-conmutador`, `#1D1833`). El cromo es la única pieza que acompaña a las cinco pantallas,
+  y cambiar de color al cambiar de destino es justo lo que no debería hacer.
+  - **Es una sola regla con dos selectores**, no una copia por sección:
+    `[data-moment]:not([data-momento]) .cromo-espacio` es la app fuera de Hoy —el atributo del reloj
+    lo lleva la raíz siempre, el del conmutador solo mientras Hoy está montada— y
+    `[data-momento='manana'] .cromo-espacio` es la Mañana, que ya lo llevaba. Ningún componente
+    cambió: siguen pidiendo superficies por su papel y declarando su clase (RN-TEC-05, RN-VIS-02).
+  - **El literal `#1D1833` subió a `:root`.** Lo declaraba `[data-momento='manana']` cuando era el
+    único sitio que lo usaba; ahora que lo comparte con el cromo de las otras cuatro secciones, dos
+    declaraciones del mismo tono se habrían separado el día que alguien retocara una. La Mañana lo
+    hereda y la Noche de Hoy sigue siendo la única que lo invierte.
+  - **La Noche de Hoy se queda fuera a propósito** y conserva su rango claro (`strivo-am-100`): es la
+    decisión de SPEC_12 —el texto sale de los tokens AAA sobre claro— y no estaba en el encargo.
+    **Está sin decidir y es del propietario del producto** si la noche debe seguirla.
+  - **El logo va donde va el contratono.** El filtro monocromo dejó de ser de la Mañana: en su tono
+    de firma sobre el bloque oscuro da 1,17:1, así que si el fondo llegaba al Journal y el filtro no,
+    el logo desaparecía de cuatro pantallas.
+  - **Y se encontró un defecto anterior a este cambio.** La sección activa se pinta con `bg-raised`,
+    y `--color-raised` seguía siendo el velo de la superficie clara —blanco al 72 %— incluso sobre el
+    contratono: daba un gris claro con la tinta clara encima, **1,6:1**, el rótulo de la sección en la
+    que estás prácticamente sin leerse. Pasaba ya en la Mañana; `lint:contraste` no lo veía porque
+    medía el rótulo inactivo, que va sobre el bloque desnudo. Ahora el velo se invierte con la tinta
+    (10,7:1) y **los dos velos tienen nombre** —`--color-raised-on-light` y `--color-raised-on-dark`,
+    junto a los de texto y borde—: escribir la `rgba()` a mano dentro del cromo habría sido la cuarta
+    copia de la paleta en decimal, que es la que ningún barrido de hexes encuentra.
+- **El recuadro azul celeste de Respiración era el anillo de foco del navegador.** El encabezado de
+  la sección lleva `tabIndex={-1}` y recibe el foco al entrar, para que el lector de pantalla diga
+  dónde estás antes de que nadie tabule a ningún control (RN-RE-NAV-41). Un elemento así, enfocado
+  por script, se pinta con el anillo por defecto del sistema: de ahí el recuadro alrededor de la
+  palabra «Respiración», y de ahí que apareciera **en ocasiones** —solo al montar la pantalla—. **El
+  foco sigue yendo ahí y lo que se retira es su dibujo** (`.respiracion-encabezado:focus`): un
+  encabezado no es alcanzable con el tabulador, así que no es de los elementos a los que WCAG 2.4.7
+  exige indicador, y todos los controles conservan el suyo.
+
+**Lo que sigue sin verse en un teléfono**, como el resto: si el cromo oscuro en cinco pantallas se
+siente una sola app o se siente una app oscura.
+
 ### Divergencias conocidas entre el blueprint y el código
 
 Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos manda**:
@@ -991,7 +1036,8 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
   manual §6.2 y en el blueprint §15.3. Los catálogos usan hoy emojis del sistema.
 - **La versión monocromática del logo está en uso y sin aprobar** (manual §3.3). Está derivada con un
   filtro CSS y **no** como archivo nuevo, para que aprobarla —o sustituirla por la del diseñador— sea
-  borrar dos reglas. **Ahora son dos sitios y no uno:** la cabecera de la Mañana (1,17:1 sin filtro)
+  borrar dos reglas. **Y desde el 9 de septiembre de 2026 son más sitios:** el cromo de las cinco
+  pantallas —cabecera y barra de abajo, salvo en la Noche de Hoy— (1,17:1 sin filtro)
   y el logo quieto del umbral sobre el velo nocturno (2,09:1 sin filtro).
 - **El video de apertura no está en el precaché del service worker**, así que un primer arranque sin
   red no lo reproduce: `onError` cierra el umbral y se entra a Hoy sin más, que es lo que RN-EST-05

@@ -445,6 +445,22 @@
   }
 }
 
+/* RN-RE-NAV-41 — El encabezado recibe el foco al entrar, para que el lector de
+   pantalla diga donde estas antes de que nadie tabule a ningun control. **Lo que
+   no recibe es el anillo por defecto del navegador** (9 sep 2026): un elemento
+   con `tabindex="-1"` enfocado por script se pinta con el recuadro azul celeste
+   del sistema, y aparecia alrededor de la palabra "Respiracion" al abrir la
+   seccion. Nadie lo pidio y no dice nada: el foco esta ahi para el lector de
+   pantalla, no para la vista.
+
+   **No es una excepcion a "todo alcanzable por teclado, con foco visible".** Un
+   encabezado no es alcanzable con el tabulador —de eso se encarga el `-1`—, asi
+   que no es de los elementos a los que WCAG 2.4.7 exige indicador. Los controles
+   de la pantalla conservan el suyo, que ninguno de ellos pasa por aqui. */
+.respiracion-encabezado:focus {
+  outline: none;
+}
+
 /* RN-RE-NAV-21 y 25 — El progreso es periferico: se consulta si se busca, no se
    lee sin querer. Lo que domina es la visual. */
 .respiracion-progreso {

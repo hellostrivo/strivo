@@ -87,6 +87,14 @@
   --color-text-on-dark-faint:  #8F87A6;
   --color-border-on-light:     rgba(36, 30, 51, .12);
   --color-border-on-dark:      rgba(242, 238, 247, .16);
+  /* La superficie elevada, con nombre y no escrita a mano en cada sitio. Los
+     dos valores ya existían dentro de `[data-surface]`; salen aquí porque el
+     cromo los necesita **sin** declarar una superficie propia: la franja de
+     arriba y la de abajo invierten su tinta desde `.cromo-espacio`, y una
+     `rgba()` copiada allí sería la tercera copia de la paleta escrita a mano
+     que la recalibración v2.1 tuvo que ir a buscar en decimal. */
+  --color-raised-on-light:     rgba(255, 255, 255, .72);
+  --color-raised-on-dark:      rgba(242, 238, 247, .12);
 
   /* Cambio de tema de la pantalla Hoy (§5.2.1, token dur-theme). */
   --dur-theme: 320ms;
@@ -123,6 +131,17 @@
   --espacio-cabecera: var(--strivo-100);
   --espacio-borde: var(--strivo-600);
   --espacio-acento: var(--strivo-900);
+
+  /* El contratono: el bloque oscuro del cromo —la franja de arriba y la de
+     abajo— y, dentro de Hoy, el conmutador Mañana/Noche. **Su literal vive aquí
+     y solo aquí desde el 9 de septiembre de 2026**, cuando el cromo dejó de ser
+     crema fuera de Hoy: antes lo declaraba la Mañana, porque era el único sitio
+     que lo usaba. La Mañana lo hereda; la Noche de Hoy es la única que lo
+     invierte, más abajo. Dos declaraciones del mismo tono se habrían separado
+     el día que alguien retocara una.
+
+     No sale del manual: lo fijó el propietario del producto. */
+  --strivo-conmutador: #1D1833;
 
   /* SPEC_14 §5 — Las cuatro fases de Respiracion.
      Se separan por LUMINANCIA y no por tono: §5 pedia un eje calido→frio, y una
@@ -193,7 +212,7 @@
   --color-text-soft:  var(--color-text-on-light-soft);
   --color-text-faint: var(--color-text-on-light-faint);
   --color-border:     var(--color-border-on-light);
-  --color-raised:     rgba(255, 255, 255, .72);
+  --color-raised:     var(--color-raised-on-light);
 }
 
 [data-surface='dark'] {
@@ -201,7 +220,7 @@
   --color-text-soft:  var(--color-text-on-dark-soft);
   --color-text-faint: var(--color-text-on-dark-faint);
   --color-border:     var(--color-border-on-dark);
-  --color-raised:     rgba(242, 238, 247, .12);
+  --color-raised:     var(--color-raised-on-dark);
 }
 
 /* ─── Superficies del momento ────────────────────────────────────────────────
@@ -219,8 +238,11 @@
   --strivo-campo: rgba(255, 255, 255, .58);
   /* El conmutador va en contratono: de día, oscuro. Es el primer elemento
      interactivo de Hoy y no comparte superficie con nada más, así que declara
-     su propio `data-surface` y el texto se invierte con él. */
-  --strivo-conmutador: #1D1833;
+     su propio `data-surface` y el texto se invierte con él.
+
+     **El tono lo hereda de `:root`**, que es donde vive el contratono desde que
+     lo comparte con el cromo de todas las secciones. Aquí solo queda el velo
+     del lado activo, que sí es suyo. */
   --strivo-conmutador-activo: rgba(242, 238, 247, .16);
   /* La frase del día va en el secundario de la paleta —`strivo-am-200`, el
      durazno quemado de la mañana— y no en otro velo blanco: es la única
@@ -299,20 +321,29 @@
    superficies por su papel (RN-SURF-01) y quien decide qué son es el tema. Es
    la misma decisión que SPEC_10 tomó con el velo de `TransicionLuz`.
 
-   **Solo en Mañana.** De noche la cabecera se queda en su rango claro
-   (`strivo-am-100`, la arena ámbar), que es lo que decidió SPEC_12 para que el texto siga saliendo
-   de los tokens AAA sobre claro. Este contratono resuelve la mañana, que era el
-   caso roto.
+   **En todas las secciones menos en la Noche de Hoy** (9 sep 2026). Hasta ahora
+   la regla pedía `[data-momento='manana']`, que es un atributo que solo existe
+   mientras Hoy está montada: en el Journal, en Respiración, en el Historial y en
+   Tu perfil no había atributo, no había regla, y las dos franjas se quedaban en
+   el crema del rango claro. Eso hacía que el cromo —que es la única pieza que
+   acompaña a las cinco pantallas— cambiara de color al cambiar de destino, y el
+   cromo es justo lo que no debería moverse al navegar. Lo pidió el propietario
+   del producto.
 
-   `--strivo-conmutador` solo existe bajo `[data-momento]`, que pone la raíz de la
-   app mientras Hoy está montada. En el Journal, en Respiración y en el Historial
-   no hay atributo, no hay regla, y la cabecera conserva su rango claro.
+   Por eso son dos selectores y no uno: `[data-moment]:not([data-momento])` es la
+   raíz de la app fuera de Hoy —`data-moment`, el del reloj, lo lleva siempre; el
+   `data-momento` del conmutador solo en Hoy—, y `[data-momento='manana']` es la
+   Mañana, que ya lo llevaba. **La Noche de Hoy se queda fuera a propósito** y
+   conserva su rango claro (`strivo-am-100`, la arena ámbar): es lo que decidió
+   SPEC_12 para que el texto siga saliendo de los tokens AAA sobre claro, y no
+   estaba en el encargo.
 
-   Las cuatro secciones conservan forma, peso y borde. Lo único que cambia es la
+   Las secciones conservan forma, peso y borde. Lo único que cambia es la
    superficie que tienen debajo, y con ella su tinta: son texto sobre la
    cabecera, así que no podían quedarse literalmente iguales sin volverse
    ilegibles.
 */
+[data-moment]:not([data-momento]) .cromo-espacio,
 [data-momento='manana'] .cromo-espacio {
   background-color: var(--strivo-conmutador);
   /* Igual que abajo: lo que separa la franja es el bloque de color entero, no
@@ -322,6 +353,15 @@
   --color-text-soft:  var(--color-text-on-dark-soft);
   --color-text-faint: var(--color-text-on-dark-faint);
   --color-border:     var(--color-border-on-dark);
+  /* **La superficie elevada se invierte con la tinta, y hasta hoy no lo hacía.**
+     La sección activa se pinta con `bg-raised`, y `--color-raised` seguía siendo
+     el de la superficie clara —blanco al 72 %—: sobre el contratono daba un
+     bloque gris claro con la tinta clara encima, 1,6:1, el rótulo de la sección
+     en la que estás prácticamente sin leerse. El velo claro al 12 % da 10,7:1.
+     Se veía solo en la Mañana; sin esto pasaría a verse en las cinco pantallas,
+     que es lo que obligó a mirarlo. Los dos valores los mide
+     `npm run lint:contraste`. */
+  --color-raised:     var(--color-raised-on-dark);
   /* El acento marca el borde de la sección activa. `strivo-pm-500` sobre el
      contratono cae a 2,97:1 y se queda por debajo del 3:1 que WCAG 1.4.11 pide
      a un indicador; el lavanda claro de la misma paleta da 11,57:1. Sigue siendo
@@ -340,7 +380,11 @@
 
    La regla es la misma que llevaba la vela, y el problema también: aquella se
    quedaba en 3,33:1 —pasaba el umbral de no-texto, pero se apagaba— y esta ni
-   eso. De noche la cabecera es clara y el símbolo se pinta tal cual: 9,92:1. */
+   eso. En la Noche de Hoy la cabecera es clara y el símbolo se pinta tal cual:
+   9,92:1. **Los dos selectores son los de la regla de arriba, y tienen que
+   seguirla:** donde hay contratono hay monocromo, y un logo en su tono de firma
+   sobre el bloque oscuro del Journal sería el mismo 1,17:1 que en la Mañana. */
+[data-moment]:not([data-momento]) .cromo-espacio img,
 [data-momento='manana'] .cromo-espacio img {
   filter: brightness(0) invert(1);
 }

@@ -421,6 +421,21 @@ describe('la sesión (criterios 20, 21, 22, 23, 24)', () => {
     expect(codigoDe(CONFIG)).toMatch(/encabezado\.current\?\.focus\(\)/)
   })
 
+  it('ese foco no se dibuja: el encabezado no lleva anillo (9 sep 2026)', () => {
+    // Un `tabindex="-1"` enfocado por script recibe el anillo por defecto del
+    // navegador —un recuadro azul celeste—, y aparecía alrededor de la palabra
+    // "Respiración" al abrir la sección. El foco sigue yendo ahí, que es lo que
+    // la regla 41 pide; lo que se retira es su dibujo, porque un encabezado no
+    // es alcanzable con el tabulador y no es de los elementos a los que WCAG
+    // 2.4.7 exige indicador.
+    const css = readFileSync(CSS, 'utf8')
+    expect(codigoDe(CONFIG)).toMatch(/respiracion-encabezado/)
+    expect(css).toMatch(/\.respiracion-encabezado:focus \{\s*outline: none;\s*\}/)
+    // Y solo el encabezado: los controles conservan el suyo. Si alguien apagara
+    // el anillo de la pantalla entera, esto lo diría.
+    expect(css).not.toMatch(/^\s*\*?:?focus \{\s*outline: none/m)
+  })
+
   it('empezar es idempotente: dos toques, una sesión (criterio 32, caso 8.13)', () => {
     const hook = codigoDe('src/breathing/hooks/useSesionRespiracion.js')
     expect(hook).toMatch(/if \(maquina\.current !== null\) return/)

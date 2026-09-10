@@ -282,6 +282,28 @@ const PARES = [
   // tanto en su rango claro como en el contratono de la Mañana.
   ['Perfil · cuerpo sobre tarjeta de bloque', TEXTO.onLight, sobre(TEXTO.blanco, 0.72, MARCA.strivo50), CUERPO],
   ['Perfil · secundario sobre tarjeta de bloque', TEXTO.onLightSoft, sobre(TEXTO.blanco, 0.72, MARCA.strivo50), CUERPO],
+
+  // ── El cromo, ya en contratono en todas las secciones (9 sep 2026) ──────────
+  // La franja de arriba y la de abajo dejan de ser crema fuera de Hoy y toman el
+  // mismo contratono que ya llevaban en la Mañana. **Los pares de texto sobre
+  // ese bloque ya están medidos arriba** —cuerpo, rótulo, sección, borde activo
+  // y logo monocromo sobre `conmutadorAm`—: es el mismo tono, así que no hay
+  // números nuevos que sacar por ahí. Lo que sí es nuevo son dos cosas.
+  //
+  // Una: el bloque se pinta ahora también sobre la base de la noche, porque
+  // fuera de Hoy la paleta la elige el reloj (`data-moment`) y a esa hora la
+  // página va sobre `strivo-pm-50`.
+  ['Secciones · cromo sobre la base de noche', MARCA.conmutadorAm, MARCA.strivoPm50, NO_TEXTO],
+  // Y dos: **la sección activa**. Se pinta con `bg-raised`, y hasta hoy ese velo
+  // seguía siendo el de la superficie clara incluso sobre el contratono: blanco
+  // al 72 % encima del bloque oscuro daba un gris claro con la tinta clara
+  // encima, 1,6:1. Ese par no estaba en esta lista —se medía el rótulo inactivo,
+  // que va sobre el bloque desnudo— y por eso el rótulo de la sección en la que
+  // estás llevaba en la Mañana sin leerse. Ahora el velo se invierte con la
+  // tinta y se mide, que es lo que evita que vuelva a pasar en las cinco
+  // pantallas.
+  ['Secciones · sección activa sobre el cromo', TEXTO.onDark, sobre(TEXTO.onDark, 0.12, MARCA.conmutadorAm), CUERPO],
+  ['Secciones · borde de la sección activa sobre el cromo', MARCA.strivoAm100, sobre(TEXTO.onDark, 0.12, MARCA.conmutadorAm), NO_TEXTO],
 ]
 
 /**

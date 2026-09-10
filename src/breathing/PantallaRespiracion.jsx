@@ -86,6 +86,15 @@ export default function PantallaRespiracion({
 
   // RN-RE-NAV-41 — Al entrar, el foco va al encabezado. Quien usa lector de
   // pantalla necesita saber dónde está antes de tabular a ningún control.
+  //
+  // **El foco no se ve, y por eso el encabezado lleva clase (9 sep 2026).** Un
+  // `tabIndex={-1}` enfocado por script recibe el anillo por defecto del
+  // navegador —un recuadro azul celeste alrededor de la palabra—, que aparecía
+  // al abrir la sección sin que nadie lo hubiera pedido. El anillo lo apaga
+  // `.respiracion-encabezado` en `styles/respiracion.css`: un encabezado no es
+  // alcanzable con el tabulador, así que no es de los elementos a los que WCAG
+  // 2.4.7 exige indicador, y lo que la regla 41 pide —que el lector anuncie
+  // dónde estás— lo da el foco, no su dibujo.
   useEffect(() => {
     encabezado.current?.focus()
   }, [])
@@ -136,7 +145,11 @@ export default function PantallaRespiracion({
       <div className="flex flex-1 flex-col gap-5 px-5 pb-4 pt-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col gap-1">
-            <h1 ref={encabezado} tabIndex={-1} className="font-display text-lg text-on-surface">
+            <h1
+              ref={encabezado}
+              tabIndex={-1}
+              className="respiracion-encabezado font-display text-lg text-on-surface"
+            >
               {textos.titulo}
             </h1>
             <p className="text-sm text-on-surface-soft">{copy.respiracion.subtitulo}</p>

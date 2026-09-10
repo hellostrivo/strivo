@@ -260,8 +260,16 @@ describe('el tema lo manda el conmutador, no el reloj (RN-HOY-05)', () => {
 
   it('los dos colores del bloque viven en el CSS, no en el componente', () => {
     const css = readFileSync('src/styles/globals.css', 'utf8')
-    expect(css).toMatch(/\[data-momento='manana'\][\s\S]*?--strivo-conmutador:\s*#1D1833/)
+    // **El contratono se declara en `:root` desde el 9 de septiembre de 2026.**
+    // Lo declaraba la Mañana cuando era el único sitio que lo usaba; hoy viste
+    // también el cromo de las otras cuatro secciones, así que su literal subió
+    // a la raíz y la Mañana lo hereda. Lo que esta prueba defiende no cambia:
+    // los dos tonos están en el CSS y el componente no nombra ninguno, y siguen
+    // siendo un solo literal cada uno.
+    expect(css).toMatch(/:root \{[\s\S]*?--strivo-conmutador:\s*#1D1833/)
     expect(css).toMatch(/\[data-momento='noche'\][\s\S]*?--strivo-conmutador:\s*#F2DDE7/)
+    expect(css.match(/--strivo-conmutador:\s*#1D1833/g) ?? []).toHaveLength(1)
+    expect(codigoDe('src/components/diario/SelectorMomento.jsx')).not.toMatch(/#1D1833|#F2DDE7/)
   })
 })
 

@@ -268,6 +268,89 @@ describe('la cabecera se viste del momento de Hoy (21 ago)', () => {
   })
 })
 
+// ─────────────────────────────────────────────────────────────────────────────
+// El contratono deja de ser de la Mañana y pasa a ser el cromo (9 sep 2026).
+//
+// Lo pidió el propietario del producto: en el Journal, en Respiración, en el
+// Historial y en Tu perfil las dos franjas salían en crema, y el cromo es la
+// única pieza que acompaña a las cinco pantallas. Que cambie de color al cambiar
+// de destino es justo lo que el cromo no debería hacer.
+//
+// **La Noche de Hoy se queda fuera a propósito** y conserva su rango claro: no
+// estaba en el encargo y es la decisión de SPEC_12, que sigue en pie.
+
+describe('el cromo va en contratono en todas las secciones (9 sep 2026)', () => {
+  const css = readFileSync(CSS, 'utf8')
+
+  /** La regla del contratono, de su selector a su cierre. */
+  const regla = css.slice(
+    css.indexOf('[data-moment]:not([data-momento]) .cromo-espacio'),
+    css.indexOf('}', css.indexOf("[data-momento='manana'] .cromo-espacio {")),
+  )
+
+  it('alcanza a la app fuera de Hoy, que es donde no hay momento', () => {
+    // `data-moment` —el del reloj— lo lleva la raíz de la app siempre;
+    // `data-momento` —el del conmutador— solo mientras Hoy está montada. La
+    // pareja de los dos es "la app, fuera de Hoy", y es lo que faltaba.
+    expect(regla).toMatch(/\[data-moment\]:not\(\[data-momento\]\) \.cromo-espacio/)
+    expect(regla).toMatch(/\[data-momento='manana'\] \.cromo-espacio/)
+    expect(regla).toMatch(/background-color: var\(--strivo-conmutador\)/)
+  })
+
+  it('es una sola regla para las cinco pantallas, no una copia por sección', () => {
+    // Cinco reglas con el mismo cuerpo se separan en cuanto alguien retoca una.
+    // Y ninguna nombra una sección: el cromo no sabe dónde está montado.
+    expect(css.match(/\.cromo-espacio \{/g) ?? []).toHaveLength(1)
+    expect(css).not.toMatch(/\.cromo-espacio[^{]*journal|\.cromo-espacio[^{]*historial/i)
+  })
+
+  it('las dos franjas se visten a la vez: comparten el asidero', () => {
+    // La de arriba y la de abajo llevan la misma clase, así que no hay forma de
+    // pintar una sin la otra. Es lo que garantiza que no haya media pantalla en
+    // crema y media en contratono.
+    expect(codigoDe(NAV)).toMatch(/cromo-espacio/)
+    expect(codigoDe(BARRA)).toMatch(/cromo-espacio/)
+  })
+
+  it('el logo sigue al contratono a donde vaya', () => {
+    // En su tono de firma sobre el bloque oscuro da 1,17:1. Si el fondo llega al
+    // Journal y el filtro no, el logo desaparece de cuatro pantallas.
+    const img = css.slice(css.indexOf('.cromo-espacio img'))
+    const selectores = css.slice(
+      css.indexOf('[data-moment]:not([data-momento]) .cromo-espacio img'),
+      css.indexOf('{', css.indexOf('.cromo-espacio img')),
+    )
+    expect(selectores).toMatch(/\[data-moment\]:not\(\[data-momento\]\) \.cromo-espacio img/)
+    expect(selectores).toMatch(/\[data-momento='manana'\] \.cromo-espacio img/)
+    expect(img).toMatch(/filter: brightness\(0\) invert\(1\)/)
+  })
+
+  it('la superficie elevada se invierte con la tinta', () => {
+    // La sección activa se pinta con `bg-raised`. Con el velo de la superficie
+    // clara encima del contratono, el rótulo de la sección en la que estás daba
+    // 1,6:1 — y eso pasaba ya en la Mañana, antes de este cambio.
+    expect(regla).toMatch(/--color-raised:\s*var\(--color-raised-on-dark\)/)
+    // Y el par se mide, que es lo que evita que vuelva a colarse.
+    const lint = readFileSync('scripts/lint-contraste.js', 'utf8')
+    expect(lint).toMatch(/Secciones · sección activa sobre el cromo/)
+  })
+
+  it('los dos velos de la superficie elevada tienen nombre', () => {
+    // Escribir la `rgba()` a mano dentro del cromo habría sido la cuarta copia
+    // de la paleta en decimal, que es la que ningún barrido de hexes encuentra.
+    expect(css).toMatch(/--color-raised-on-light:\s*rgba\(255, 255, 255, \.72\)/)
+    expect(css).toMatch(/--color-raised-on-dark:\s*rgba\(242, 238, 247, \.12\)/)
+    // Solo el oscuro se cuenta: el claro comparte valor con `--strivo-tarjeta`
+    // —el velo de las tarjetas de la Mañana— por coincidencia y no por herencia,
+    // y son dos decisiones distintas que pueden separarse sin que sea un error.
+    expect(css.match(/rgba\(242, 238, 247, \.12\)/g) ?? []).toHaveLength(1)
+  })
+
+  it('la Noche de Hoy conserva su rango claro, que no estaba en el encargo', () => {
+    expect(css).not.toMatch(/\[data-momento='noche'\] \.cromo-espacio/)
+  })
+})
+
 describe('el conmutador sigue siendo el único origen del tema (RN-HOY-05)', () => {
   const app = codigoDe(APP)
   const hoy = codigoDe(HOY)
