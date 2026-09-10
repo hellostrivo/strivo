@@ -67,8 +67,13 @@ export const copy = {
 
       p1: {
         subtitle: 'Tu lugar para volver a ti.',
+        // **Ya no promete tres minutos** (9 sep 2026). Ponerle una duración a la
+        // primera frase que alguien lee convierte el refugio en algo que ocupa
+        // un hueco de la agenda, y además era una cifra que el producto no
+        // cumple: la mañana, la noche y una respiración no duran lo mismo. "Un
+        // momento" dice lo que de verdad se ofrece sin medirlo.
         support:
-          'Tres minutos para respirar, reconocer cómo fue tu día y seguir adelante con más calma.',
+          'Un momento para conectar contigo, reconocer cómo fue tu día y seguir adelante con más calma.',
         cta: 'Empezar',
       },
 
