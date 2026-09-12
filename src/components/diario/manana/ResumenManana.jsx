@@ -44,6 +44,7 @@
 // no se puede editar" al pie sería un reproche con otra forma.
 
 import { clsx } from 'clsx'
+import ListaNumerada from '@components/diario/ListaNumerada'
 import { PILDORA, PILDORA_ELEGIDA } from '@components/shared/pildora'
 import { copy } from '@copy'
 
@@ -60,6 +61,12 @@ function Respuesta({ bloque }) {
       </span>
     ))
   }
+
+  // La lista —hasta diez, hasta cinco— vuelve numerada y una respuesta debajo
+  // de otra, con sus párrafos; qué bloque es lista lo dice `numerado`, que
+  // viene de los datos. Lo demás escrito es una sola respuesta y no lleva
+  // número.
+  if (bloque.numerado) return <ListaNumerada lineas={bloque.lineas} />
 
   return bloque.lineas.map((linea, indice) => (
     <p key={indice} className="text-base text-on-surface whitespace-pre-wrap">
@@ -81,12 +88,13 @@ export default function ResumenManana({ bloques, onEditar = null }) {
           {/* Las píldoras no se estiran: `items-start` las deja del ancho de su
               contenido, como en el recorrido, y varias se reparten en filas
               igual que los chips que se tocaron para elegirlas. Lo escrito, en
-              cambio, va una línea debajo de otra: son respuestas distintas, no
-              una frase partida. */}
+              cambio, va una respuesta debajo de otra y a todo el ancho: son
+              respuestas distintas, no una frase partida, y una larga se lee
+              entera. */}
           <div
             className={clsx(
-              'flex items-start',
-              bloque.forma === 'chip' ? 'flex-wrap gap-2' : 'flex-col gap-1',
+              'flex',
+              bloque.forma === 'chip' ? 'flex-wrap items-start gap-2' : 'flex-col gap-1',
             )}
           >
             <Respuesta bloque={bloque} />

@@ -13,16 +13,22 @@
 //
 // Ninguno es obligatorio, ninguno valida y ninguno marca nada en rojo.
 
-import { forwardRef } from 'react'
+import { forwardRef, useEffect, useLayoutEffect, useRef } from 'react'
 import { clsx } from 'clsx'
 
-const BASE = [
+// La caja y el texto van separados porque no siempre van juntos: el párrafo de
+// una tarjeta (`CampoParrafo` con `desnudo`) pone el texto y deja que la
+// tarjeta ponga la caja, para que el foco y el borde sean de la tarjeta entera.
+const CAJA = [
   'w-full bg-strivo-campo border border-on-surface rounded-md',
-  'text-on-surface placeholder:text-on-surface-faint',
-  'px-4 py-3 text-base',
+  'px-4 py-3',
   'transition-colors duration-260 ease-smooth motion-reduce:transition-none',
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30',
 ]
+
+const TEXTO = ['text-on-surface placeholder:text-on-surface-faint', 'text-base']
+
+const BASE = [...CAJA, ...TEXTO]
 
 // Los dos reenvían la referencia porque alguna pantalla necesita llevar el
 // foco al campo sin que el campo sepa por qué: la sugerencia de identidad del
@@ -52,6 +58,65 @@ export const CampoTexto = forwardRef(function CampoTexto(
       rows={alto}
       value={value}
       className={clsx(BASE, 'resize-none leading-relaxed', className)}
+      {...props}
+    />
+  )
+})
+
+/**
+ * Área de escritura que crece con lo escrito y **nunca se desplaza por dentro**
+ * (12 sep 2026). Es el campo de las respuestas que pueden ser un párrafo —la
+ * gratitud de la mañana, el reconocimiento de la noche—: abre con `filas`
+ * líneas —una, por defecto: sitio para empezar, no para rellenar— y a partir
+ * de ahí mide lo que hay y se estira, línea a línea, solo cuando lo escrito lo
+ * pide. Lo que se desplaza es la pantalla, así que una respuesta de varios
+ * párrafos se lee entera antes de continuar.
+ *
+ * Se mide con `scrollHeight`, que es lo único que sabe cuántas líneas ocupa un
+ * texto ya envuelto: contar saltos de línea, como hace `CampoTexto`, no ve las
+ * que envuelve el ancho. `overflow-hidden` no esconde nada —la altura es
+ * siempre la del contenido—: quita la barra de desplazamiento que el navegador
+ * pintaría un instante entre la tecla y la medida.
+ *
+ * `desnudo` lo deja sin caja, para meterlo en una tarjeta que ya la tiene.
+ */
+export const CampoParrafo = forwardRef(function CampoParrafo(
+  { filas = 1, value, desnudo = false, className, ...props },
+  ref,
+) {
+  const nodo = useRef(null)
+
+  const asignar = (elemento) => {
+    nodo.current = elemento
+    if (typeof ref === 'function') ref(elemento)
+    else if (ref) ref.current = elemento
+  }
+
+  const medir = () => {
+    const elemento = nodo.current
+    if (!elemento) return
+    elemento.style.height = 'auto'
+    elemento.style.height = `${elemento.scrollHeight}px`
+  }
+
+  // Antes de pintar, para que no se vea el campo en su altura vieja un
+  // fotograma; y otra vez cuando cambia el ancho, porque cambia cómo envuelve.
+  useLayoutEffect(medir, [value])
+  useEffect(() => {
+    window.addEventListener('resize', medir)
+    return () => window.removeEventListener('resize', medir)
+  }, [])
+
+  return (
+    <textarea
+      ref={asignar}
+      rows={filas}
+      value={value}
+      className={clsx(
+        desnudo ? [TEXTO, 'w-full bg-transparent focus-visible:outline-none'] : BASE,
+        'resize-none leading-relaxed overflow-hidden',
+        className,
+      )}
       {...props}
     />
   )

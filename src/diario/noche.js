@@ -56,8 +56,13 @@ export const PREGUNTAS = Object.freeze({
 /** Los momentos que se cuentan en el indicador. La descarga no es uno. */
 export const MOMENTOS = Object.freeze(['reconocimiento', 'reflexion', 'emocion'])
 
-/** §3, §4 y §8 — extensiones sugeridas. Ninguna es un error al alcanzarse. */
-export const MAX_RECONOCIMIENTO_LINEA = 160
+/**
+ * §3, §4 y §8 — extensiones sugeridas. Ninguna es un error al alcanzarse.
+ *
+ * El reconocimiento ya no tiene tope de caracteres: desde el 12 de septiembre
+ * de 2026 cada respuesta cabe en palabras, y cuántas lo dice
+ * `LIMITES.reconocimiento` en `filas.js`, junto a cuántas respuestas caben.
+ */
 export const MAX_REFLEXION = 400
 export const MAX_DESCARGA = 400
 
@@ -192,7 +197,13 @@ export function algoQueReconoces(entrada) {
  * **Lo que quedó en blanco no aparece.** Sin marcador de ausencia y sin "sin
  * responder": una noche a medias se lee entera, no incompleta.
  *
+ * **`numerado` dice qué bloque es una lista** (12 sep 2026): el reconocimiento,
+ * que admite varias respuestas y las devuelve una debajo de otra con su número,
+ * en el orden en que se añadieron. Lo demás escrito es una sola respuesta y no
+ * lleva número. Lo decide esto y no la pantalla, que solo pinta.
+ *
  * @returns {Array<{id: string, titulo: string, forma: 'chip'|'texto',
+ *                   numerado: boolean,
  *                   fichas: Array<{texto: string, emoji: ?string}>,
  *                   lineas: string[]}>}
  */
@@ -210,6 +221,7 @@ export function resumenDeNoche(entrada, morning, genero, fecha) {
       // nadie llegó a leer.
       titulo: reconocimientoDeLaNoche(emocionesDeCierre(entrada), fecha).titulo,
       forma: 'texto',
+      numerado: true,
       fichas: [],
       lineas: entrada.recognized
         .map((linea) => String(linea ?? '').trim())
@@ -223,6 +235,7 @@ export function resumenDeNoche(entrada, morning, genero, fecha) {
       id: PREGUNTAS.reflexion,
       titulo: pregunta.titulo,
       forma: 'texto',
+      numerado: false,
       fichas: [],
       lineas: [String(entrada.reflection).trim()],
     })
@@ -234,6 +247,7 @@ export function resumenDeNoche(entrada, morning, genero, fecha) {
       id: PREGUNTAS.emocion,
       titulo: textos.emocion.titulo,
       forma: 'chip',
+      numerado: false,
       // Hasta tres fichas, como la mañana. Se leen todas y en el orden en que se
       // eligieron: lo que se contestó es lo que se relee, no una muestra.
       fichas: emociones,
@@ -246,6 +260,7 @@ export function resumenDeNoche(entrada, morning, genero, fecha) {
       id: PREGUNTAS.descarga,
       titulo: textos.descarga.titulo,
       forma: 'texto',
+      numerado: false,
       fichas: [],
       lineas: [String(entrada.release).trim()],
     })

@@ -27,7 +27,6 @@ export default function CampoGratitud({
   sugerencias,
   etiqueta,
   placeholder,
-  maxLength,
   textoAnadir,
   textoTope,
 }) {
@@ -123,7 +122,6 @@ export default function CampoGratitud({
         onEnfocar={setEnfocada}
         onDesenfocar={desenfocar}
         debajoDeFila={ideasDe}
-        maxLength={maxLength}
         textoAnadir={textoAnadir}
         textoTope={textoTope}
       />

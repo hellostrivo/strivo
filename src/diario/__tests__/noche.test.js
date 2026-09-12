@@ -15,6 +15,7 @@ import { copy } from '@copy'
 import { FIELDS } from '@/lib/db/schema'
 import {
   LIMITES,
+  MAX_PALABRAS_POR_RESPUESTA,
   alSalirDeFila,
   escribirEn,
   filasIniciales,
@@ -23,7 +24,6 @@ import {
 } from '@/diario/filas'
 import {
   MAX_DESCARGA,
-  MAX_RECONOCIMIENTO_LINEA,
   MAX_REFLEXION,
   MOMENTOS,
   PREGUNTAS,
@@ -336,7 +336,12 @@ describe('criterio 2 — el reconocimiento admite hasta cinco elementos', () => 
   it('abre con un solo campo, no con cinco huecos por rellenar', () => {
     // Eran tres hasta el 10 de septiembre de 2026. Lo que no cambia es cómo
     // abre: un campo, y los demás los pide quien escribe.
-    expect(LIMITES.reconocimiento).toEqual({ min: 1, max: 5, crecerSola: false })
+    expect(LIMITES.reconocimiento).toEqual({
+      min: 1,
+      max: 5,
+      crecerSola: false,
+      palabras: MAX_PALABRAS_POR_RESPUESTA,
+    })
     expect(filasIniciales([], LIMITES.reconocimiento)).toHaveLength(1)
   })
 
@@ -390,9 +395,12 @@ describe('criterio 2 — el reconocimiento admite hasta cinco elementos', () => 
     ])
   })
 
-  it('cada línea cabe en 160 caracteres y el campo lo aplica', () => {
-    expect(MAX_RECONOCIMIENTO_LINEA).toBe(160)
-    expect(MOMENTO('MomentoReconocimiento')).toMatch(/maxLength=\{MAX_RECONOCIMIENTO_LINEA\}/)
+  it('cada respuesta cabe en cuatrocientas palabras, y no en una línea', () => {
+    // Era un tope de 160 caracteres en un campo de una línea (12 sep 2026). El
+    // tope vive con los límites de la lista y lo aplica la mecánica, no la
+    // pantalla: no queda `maxLength` ni constante de caracteres.
+    expect(LIMITES.reconocimiento.palabras).toBe(MAX_PALABRAS_POR_RESPUESTA)
+    expect(MOMENTO('MomentoReconocimiento')).not.toMatch(/maxLength|MAX_RECONOCIMIENTO_LINEA/)
   })
 
   it('el bloque ofrece ideas, y son las de la pregunta que está en pantalla', () => {

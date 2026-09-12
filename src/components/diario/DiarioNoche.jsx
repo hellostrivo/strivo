@@ -28,6 +28,16 @@
 // fecha, ni frase del día —eso es del héroe— ni botón de volver. Lo único que
 // ocupa la pantalla entera es el cierre, que es la ceremonia.
 //
+// **Terminar responde en el acto y guarda detrás** (12 sep 2026). "Listo"
+// esperaba a dos escrituras encadenadas —volcar lo pendiente y escribir la
+// marca de cierre, cada una con su relectura— antes de cambiar de pantalla, sin
+// decir nada mientras tanto y sin nada que parara un segundo toque, que
+// encolaba las dos otra vez. Ahora el toque pone la ceremonia delante en el
+// mismo instante, una guarda deja pasar uno solo, y las escrituras corren
+// mientras la ceremonia ya se lee. Lo que sí espera a la base de datos es la
+// despedida: "Buenas noches" se dice cuando la noche está guardada, y si no se
+// pudo guardar se dice eso y se ofrece reintentar (`guardado`).
+//
 // §5.4.3 — El contenedor de Hoy declara `data-surface="dark"` y todo el texto
 // hereda el color claro. Ningún componente de aquí fija un color literal.
 
@@ -83,6 +93,13 @@ export default function DiarioNoche({ estado, acciones, soloLectura = false }) {
   // Abrir la descarga a mano es una decisión de esta sesión, no un dato del
   // día: quien la pidió no ha dicho nada de sí mismo todavía.
   const [descargaPedida, setDescargaPedida] = useState(false)
+  // Cómo va la escritura que cierra la noche: `pendiente` mientras está de
+  // camino, `listo` cuando respondió, `fallo` si no pudo. Lo lee la ceremonia.
+  const [guardado, setGuardado] = useState('pendiente')
+  // Una guarda y no `disabled`: nada bloquea, pero un segundo toque en "Listo"
+  // mientras el primero está de camino no tiene que cerrar la noche dos veces.
+  const cerrando = useRef(false)
+  const vivo = useRef(true)
   const marco = useRef(null)
   const primerRender = useRef(true)
 
@@ -103,8 +120,16 @@ export default function DiarioNoche({ estado, acciones, soloLectura = false }) {
     setVista(estaCerrada(night) ? 'resumen' : 'recorrido')
     setPaso(0)
     setDescargaPedida(false)
+    cerrando.current = false
     // Solo al cambiar de día: releer en cada guardado pisaría lo que se escribe.
   }, [estado.fecha])
+
+  useEffect(() => {
+    vivo.current = true
+    return () => {
+      vivo.current = false
+    }
+  }, [])
 
   // Cambiar de momento lleva la tarjeta arriba del todo. Sin esto, con el
   // teclado abierto la pregunta nueva puede quedar fuera de la ventana.
@@ -211,17 +236,35 @@ export default function DiarioNoche({ estado, acciones, soloLectura = false }) {
     }
   }
 
-  const terminar = async () => {
+  /**
+   * Escribe la noche entera con su marca de cierre. Lo pendiente del
+   * autoguardado se vuelca antes para que ninguna tecla de los últimos 800 ms
+   * llegue después que la marca; después va una sola escritura con todo lo que
+   * hay en pantalla. `guardarNoche` devuelve `null` cuando no pudo —lo escrito
+   * sigue en local y en el campo— y eso es lo que la ceremonia enseña como
+   * fallo, con su forma de reintentar.
+   */
+  const persistir = async () => {
+    setGuardado('pendiente')
     await acciones.volcar()
     const entrada = entradaActual()
-    await guardar({
+    const resultado = await guardar({
       recognized: entrada.recognized,
       reflection: entrada.reflection,
       release: entrada.release,
       skipped: camposOmitidos(entrada, { conDescarga }),
       completedAt: marcaLocal(),
     })
+    if (!vivo.current) return
+    setGuardado(resultado ? 'listo' : 'fallo')
+  }
+
+  /** La ceremonia se pone delante en el acto; la escritura va detrás. */
+  const terminar = () => {
+    if (cerrando.current) return
+    cerrando.current = true
     setVista('cierre')
+    persistir()
   }
 
   const avanzar = () => {
@@ -260,10 +303,15 @@ export default function DiarioNoche({ estado, acciones, soloLectura = false }) {
       <CierreDeLaNoche
         reconocido={algoQueReconoces(entradaActual())}
         conDescarga={hayDescarga(entradaActual())}
+        guardado={guardado}
+        onReintentar={persistir}
         // Al terminar la ceremonia se vuelve al día, que sigue debajo: no hay
         // pantalla anterior a la que salir y el día no se bloquea. Reabrir y
         // volver a cerrar no duplica nada (RN-VN-05).
-        onTerminar={() => setVista('resumen')}
+        onTerminar={() => {
+          cerrando.current = false
+          setVista('resumen')
+        }}
       />
     )
   }

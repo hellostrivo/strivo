@@ -14,6 +14,7 @@ import { copy } from '@copy'
 import { FIELDS } from '@/lib/db/schema'
 import {
   LIMITES,
+  MAX_PALABRAS_POR_RESPUESTA,
   alSalirDeFila,
   escribirEn,
   filasIniciales,
@@ -22,7 +23,6 @@ import {
 } from '@/diario/filas'
 import {
   MAX_ACCION,
-  MAX_GRATITUD_LINEA,
   MAX_REFLEXION,
   MOMENTOS,
   PREGUNTAS,
@@ -279,7 +279,12 @@ describe('criterio 4 — la gratitud admite hasta diez elementos independientes'
     // Diez desde el 30 de agosto de 2026, y **sigue abriendo con uno**: el tope
     // es sitio de sobra para quien tiene mucho que agradecer, no una meta. Un
     // campo por delante y los demás los pide quien escribe.
-    expect(LIMITES.gratitudManana).toEqual({ min: 1, max: 10, crecerSola: false })
+    expect(LIMITES.gratitudManana).toEqual({
+      min: 1,
+      max: 10,
+      crecerSola: false,
+      palabras: MAX_PALABRAS_POR_RESPUESTA,
+    })
     expect(filasIniciales([], LIMITES.gratitudManana)).toHaveLength(1)
   })
 
@@ -342,9 +347,14 @@ describe('criterio 4 — la gratitud admite hasta diez elementos independientes'
     expect(Object.keys(LIMITES).sort()).toEqual(['gratitudManana', 'reconocimiento'])
   })
 
-  it('cada línea cabe en 120 caracteres y el campo lo aplica', () => {
-    expect(MAX_GRATITUD_LINEA).toBe(120)
-    expect(MOMENTO('MomentoGratitud')).toMatch(/maxLength=\{MAX_GRATITUD_LINEA\}/)
+  it('cada respuesta cabe en cuatrocientas palabras, y no en una línea', () => {
+    // Era un tope de 120 caracteres en un campo de una línea (12 sep 2026). El
+    // tope vive con los límites de la lista y lo aplica la mecánica, no la
+    // pantalla: no queda `maxLength` ni constante de caracteres.
+    expect(MAX_PALABRAS_POR_RESPUESTA).toBe(400)
+    expect(LIMITES.gratitudManana.palabras).toBe(MAX_PALABRAS_POR_RESPUESTA)
+    expect(MOMENTO('MomentoGratitud')).not.toMatch(/maxLength|MAX_GRATITUD_LINEA/)
+    expect(COMPARTIDO('CampoGratitud.jsx')).not.toMatch(/maxLength/)
   })
 })
 

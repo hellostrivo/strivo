@@ -269,6 +269,13 @@ export const copy = {
       quitarConfirmar: '¿Quitar esto?',
       // El tope no reprende: celebra en voz baja y deja de crecer.
       tope: 'Diez cosas. Nada mal.',
+      // Cuánto cabe todavía en una respuesta, y solo cuando queda poco (12 sep
+      // 2026): desde las trescientas palabras de cuatrocientas. Antes de eso
+      // no se dice nada. Cuenta palabras de un texto, no nada de la persona:
+      // es el único sitio del diario donde hay una cifra, y va en voz baja.
+      quedanTemplate: 'Te quedan {n} palabras',
+      quedaUna: 'Te queda 1 palabra',
+      limiteTemplate: 'Llegaste al límite de {max} palabras',
     },
 
     // ─── La mañana, en tres momentos (§5.3, actualización del 23 ago) ──────

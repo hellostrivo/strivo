@@ -31,12 +31,17 @@
 // con el grupo— y siguen sin escribir nada: tocar una abre otra pregunta y ahí
 // acaba. Es el mismo `CampoGratitud` de la mañana, con su misma espera de cinco
 // segundos en el renglón enfocado y sus mismos dos "Ahora no" para callarse.
+//
+// **Cada respuesta cabe en cuatrocientas palabras desde el 12 de septiembre de
+// 2026**, y no en una línea: el tope vive en `LIMITES.reconocimiento`
+// (`palabras`) y lo aplica la mecánica de las filas, no esta pantalla. Cada una
+// se escribe en una tarjeta que crece con el texto y se lee entera antes de
+// continuar. La pregunta sigue cambiando con la emoción exactamente igual.
 
 import CampoGratitud from '../CampoGratitud'
 import { clsx } from 'clsx'
 import { copy } from '@copy'
 import { LIMITES } from '@/diario/filas'
-import { MAX_RECONOCIMIENTO_LINEA } from '@/diario/noche'
 
 const textos = copy.diario.noche.reconocimiento
 
@@ -58,7 +63,6 @@ export default function MomentoReconocimiento({ pregunta, filas, onCambiar, onVo
         sugerencias={pregunta.sugerencias}
         etiqueta={pregunta.titulo}
         placeholder={textos.placeholder}
-        maxLength={MAX_RECONOCIMIENTO_LINEA}
         textoAnadir={textos.anadir}
         // Una lista de cinco no necesita que le anuncien que llegó al final:
         // se ve. La frase del tope es de una lista que puede llegar a diez.

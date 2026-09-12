@@ -53,8 +53,13 @@ export const PREGUNTAS = Object.freeze({
 /** Los momentos que se cuentan en el indicador. La pausa no es uno de ellos. */
 export const MOMENTOS = Object.freeze(['animo', 'gratitud', 'intencion-accion'])
 
-/** §4 y §5 — extensiones sugeridas. Ninguna es un error al alcanzarse. */
-export const MAX_GRATITUD_LINEA = 120
+/**
+ * §4 y §5 — extensiones sugeridas. Ninguna es un error al alcanzarse.
+ *
+ * La gratitud ya no tiene tope de caracteres: desde el 12 de septiembre de 2026
+ * cada respuesta cabe en palabras, y cuántas lo dice `LIMITES.gratitudManana`
+ * en `filas.js`, junto a cuántas respuestas caben.
+ */
 export const MAX_ACCION = 240
 export const MAX_REFLEXION = 180
 
@@ -236,7 +241,13 @@ function enumerar(textosDeRespuesta, textosDeCierre) {
  * El orden es el del recorrido, y la pausa trae la pregunta que salió ese día
  * —son tres y rotan, así que sin `reflectionId` no se sabría cuál se contestó.
  *
+ * **`numerado` dice qué bloque es una lista** (12 sep 2026): la gratitud, que
+ * admite varias respuestas y las devuelve una debajo de otra con su número, en
+ * el orden en que se añadieron. Lo demás escrito es una sola respuesta y no
+ * lleva número. Lo decide esto y no la pantalla, que solo pinta.
+ *
  * @returns {Array<{id: string, titulo: string, forma: 'chip'|'texto',
+ *                   numerado: boolean,
  *                   fichas: Array<{texto: string, emoji: ?string}>,
  *                   lineas: string[]}>}
  */
@@ -250,6 +261,7 @@ export function resumenDeManana(entrada, genero) {
       id: PREGUNTAS.animo,
       titulo: textos.animo.titulo,
       forma: 'chip',
+      numerado: false,
       fichas: animo,
       lineas: [],
     })
@@ -263,6 +275,7 @@ export function resumenDeManana(entrada, genero) {
       id: PREGUNTAS.gratitud,
       titulo: textos.gratitud.titulo,
       forma: 'texto',
+      numerado: true,
       fichas: [],
       lineas: gracias,
     })
@@ -274,6 +287,7 @@ export function resumenDeManana(entrada, genero) {
       id: PREGUNTAS.intencion,
       titulo: textos.intencion.titulo,
       forma: 'chip',
+      numerado: false,
       fichas: intencion,
       lineas: [],
     })
@@ -284,6 +298,7 @@ export function resumenDeManana(entrada, genero) {
       id: PREGUNTAS.accion,
       titulo: textos.accion.titulo,
       forma: 'texto',
+      numerado: false,
       fichas: [],
       lineas: [String(entrada.action).trim()],
     })
@@ -295,6 +310,7 @@ export function resumenDeManana(entrada, genero) {
       id: PREGUNTAS.pausa,
       titulo: pregunta.titulo,
       forma: 'texto',
+      numerado: false,
       fichas: [],
       lineas: [String(entrada.reflection).trim()],
     })

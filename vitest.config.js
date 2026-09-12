@@ -15,6 +15,10 @@ export default defineConfig({
       '@contexts': path.resolve(__dirname, './src/contexts'),
     },
   },
+  // El JSX se transforma como en la app —con el runtime automático, sin
+  // `import React`—: sin esto, una prueba que pinte un componente a HTML se
+  // encuentra con `React is not defined`.
+  esbuild: { jsx: 'automatic' },
   test: {
     environment: 'node',
     setupFiles: ['./src/lib/db/__tests__/setup.js'],

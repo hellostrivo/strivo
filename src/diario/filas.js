@@ -15,6 +15,8 @@
 // Nada de esto es obligatorio. Una lista entera vacía es un estado válido: la
 // vista se puede recorrer y cerrar sin escribir una palabra (RN-VM-01).
 
+import { contarPalabras, recortarAPalabras } from './palabras.js'
+
 /**
  * Mínimos y máximos por lista.
  *
@@ -37,10 +39,38 @@
  * salida, uno nuevo en cuanto se escribía en el último— y esa lista se retiró
  * con la actualización de la noche. La mecánica se queda porque es de
  * `FilasDinamicas` y no de ninguna lista en concreto; hoy no la usa nadie.
+ *
+ * **`palabras` es cuánto cabe en cada respuesta, y se cuenta en palabras desde
+ * el 12 de septiembre de 2026.** Eran 120 y 160 caracteres —una línea— y una
+ * respuesta que quería ser un párrafo se quedaba a medias. Ahora cada una
+ * admite hasta cuatrocientas, cada una por su cuenta: tres respuestas son tres
+ * veces cuatrocientas, no cuatrocientas repartidas. Es un tope y no una meta:
+ * se dice al lado del campo que tiene el foco y en ningún otro sitio. Vive aquí,
+ * junto a cuántas respuestas caben, porque un tope escrito en dos sitios se
+ * separa en cuanto alguien cambia uno; `escribirEn` es quien lo aplica.
  */
+export const MAX_PALABRAS_POR_RESPUESTA = 400
+
+/**
+ * Desde cuántas palabras antes del tope se avisa de las que quedan. Con
+ * cuatrocientas de tope, el aviso aparece a las trescientas; antes no se dice
+ * nada, porque a quien va por la mitad no le hace falta saber que hay un final.
+ */
+export const PALABRAS_DE_AVISO = 100
+
 export const LIMITES = Object.freeze({
-  gratitudManana: Object.freeze({ min: 1, max: 10, crecerSola: false }),
-  reconocimiento: Object.freeze({ min: 1, max: 5, crecerSola: false }),
+  gratitudManana: Object.freeze({
+    min: 1,
+    max: 10,
+    crecerSola: false,
+    palabras: MAX_PALABRAS_POR_RESPUESTA,
+  }),
+  reconocimiento: Object.freeze({
+    min: 1,
+    max: 5,
+    crecerSola: false,
+    palabras: MAX_PALABRAS_POR_RESPUESTA,
+  }),
 })
 
 export function filaVacia() {
@@ -71,19 +101,52 @@ export function filasIniciales(filas, { min, max, crecerSola = true }) {
 /**
  * Escribe en una fila. Si era la última y ahora tiene contenido, nace otra
  * debajo — una sola, y solo si no se ha llegado al tope.
+ *
+ * Con `palabras` en los límites, la palabra que no cabe no entra, y las que ya
+ * están se pueden cambiar o borrar. Son dos casos y se tratan distinto:
+ *
+ *   · Si la fila **ya estaba al tope**, lo que se teclea de más se rechaza tal
+ *     cual y el texto se queda como estaba. Recortarlo tiraría el espacio que
+ *     acaba de escribirse y la letra siguiente se pegaría a la última palabra
+ *     —«palabra399» + « e» → «palabra399e»—, que se vio pasar tecleando.
+ *   · Si llega de golpe más de lo que cabe —pegar un texto largo—, se queda
+ *     con las primeras `palabras` y lo demás no entra.
+ *
+ * Sin `palabras` no se recorta nada — el tope es de la lista, no de la mecánica.
  */
-export function escribirEn(filas, indice, texto, { max, crecerSola = true }) {
+export function escribirEn(filas, indice, texto, { max, crecerSola = true, palabras = null }) {
   const actuales = Array.isArray(filas) ? filas : []
   if (indice < 0 || indice >= actuales.length) return actuales
 
+  const escrito = String(texto ?? '')
   const siguientes = [...actuales]
-  siguientes[indice] = { ...siguientes[indice], texto: String(texto ?? '') }
+  siguientes[indice] = {
+    ...siguientes[indice],
+    texto: cabeEn(siguientes[indice].texto, escrito, palabras),
+  }
 
   const esUltima = indice === siguientes.length - 1
   if (crecerSola && esUltima && siguientes[indice].texto.trim() !== '' && siguientes.length < max) {
     siguientes.push(filaVacia())
   }
   return siguientes
+}
+
+/**
+ * Las palabras que aún caben en una respuesta, o `null` mientras no toque
+ * avisar: quedan más de `PALABRAS_DE_AVISO`, o la lista no tiene tope. Cero
+ * es un valor y se devuelve: es el tope alcanzado.
+ */
+export function palabrasRestantes(texto, { palabras = null }) {
+  if (palabras === null) return null
+  const restantes = Math.max(0, palabras - contarPalabras(texto))
+  return restantes > PALABRAS_DE_AVISO ? null : restantes
+}
+
+function cabeEn(previo, escrito, palabras) {
+  if (palabras === null || contarPalabras(escrito) <= palabras) return escrito
+  if (contarPalabras(previo) >= palabras) return String(previo ?? '')
+  return recortarAPalabras(escrito, palabras)
 }
 
 /**

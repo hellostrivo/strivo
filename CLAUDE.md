@@ -655,7 +655,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**59 archivos de prueba · 1.609 casos · los seis comandos en verde.**
+**62 archivos de prueba · 1.734 casos · los seis comandos en verde.**
 
 ### Marca: el logo oficial y el video de apertura (25 ago 2026)
 
@@ -1097,6 +1097,73 @@ sigue leyendo y simplemente ya nadie lo escribe.
 
 **Lo que sigue sin verse en un teléfono**, como el resto: si tres píldoras al cerrar el día y cinco
 renglones para reconocerlo siguen cabiendo en un recorrido de uno o dos minutos.
+
+### Las respuestas largas de las dos listas, y la despedida de la noche se va sola (12 sep 2026)
+
+Lo pidió el propietario del producto. Son tres cosas y **el modelo de datos no cambia**: `gratitude`
+y `recognized` siguen siendo listas de texto, se leen igual y ninguna entrada anterior se toca.
+
+- **Cada respuesta de la gratitud (mañana, 2 de 3) y del reconocimiento (noche, 1 de 3) cabe en
+  cuatrocientas palabras**, y no en una línea. Eran 120 y 160 caracteres en un `<input>`, y una
+  respuesta que quería ser un párrafo se cortaba a la vista. El tope es **por respuesta y en
+  palabras** —tres respuestas son tres veces cuatrocientas— y vive en `LIMITES.*.palabras`
+  (`filas.js`), junto a cuántas respuestas caben; lo aplica `escribirEn`, no la pantalla. Contar
+  y recortar palabras es de `src/diario/palabras.js`: una palabra es un trozo entre espacios con al
+  menos una letra o cifra Unicode, así que «café,» cuenta una y una raya suelta no cuenta.
+  - **Al tope, lo que no cabe se rechaza tal cual; lo que llega de golpe se recorta a
+    cuatrocientas.** La primera versión recortaba siempre, y tecleando se vio que el recorte tiraba
+    el espacio recién escrito y la letra siguiente se pegaba a la última palabra («palabra399» +
+    « e» → «palabra399e»).
+  - **No hay contador: hay un aviso desde las trescientas** (tercer ajuste del día). «127 / 400
+    palabras» se retiró; hasta las 300 no se dice nada y desde ahí el pie dice cuántas quedan —«Te
+    quedan 44 palabras», «Te queda 1 palabra», «Llegaste al límite de 400 palabras»—. Cuándo toca
+    lo decide `palabrasRestantes` (`filas.js`, `PALABRAS_DE_AVISO = 100`); la pantalla solo elige
+    la frase. **Comparte fila con «Quitar» y no tiene línea propia**: una línea que apareciera y
+    se fuera movía la tarjeta entera entre apoyar y soltar el dedo sobre «Añadir otro», y el toque
+    se perdía. Se vio pasar en un navegador real.
+- **Cada respuesta es una tarjeta que crece con el texto** (`FilasDinamicas` → `CampoParrafo`, en
+  `shared/Campo.jsx`): abre en **una línea** y toma la altura de lo escrito —medida con
+  `scrollHeight`, que es lo único que ve las líneas que envuelve el ancho—. Una tarjeta vacía es su
+  línea y nada más; a 390 px el placeholder de la mañana envuelve en dos y la tarjeta mide eso, no
+  más. **Nunca se desplaza por dentro**: lo que se desplaza es la pantalla. `CampoTexto`
+  (reflexión, descarga, journal) no se tocó.
+  - **Sin número mientras se escribe** (ajuste del mismo día). La primera versión lo llevaba y se
+    retiró: la numeración es de la lectura y un «1» sobre un campo en blanco convierte la pregunta
+    en un formulario. El indicador del recorrido («2 de 3») no es esto y se queda.
+  - **El pie —aviso y «Quitar»— existe solo con texto y va debajo del campo**, no encima: al
+    escribir el primer carácter aparece bajo el cursor sin mover lo que se está tocando, y con
+    texto está siempre, tenga o no el foco, para que desenfocar no mueva «Añadir otro». **Y no
+    mide más que su texto**: la fila llevaba `min-h-touch-sm` y ponía casi dos líneas de aire bajo
+    una respuesta de una línea; ahora los 44 px del objetivo táctil son del botón, que se los come
+    con `-my-3`. Una tarjeta vacía mide 50 px, una de una línea 78.
+- **Lo guardado vuelve numerado, entero y con sus párrafos** en las dos consultas y en la vista de
+  día del Historial, con un solo `ListaNumerada`. Qué bloque es lista lo dicen los datos
+  (`numerado` en `resumenDeManana` y `resumenDeNoche`), no la pantalla. La gratitud de las noches
+  de la versión 1 se relee con la misma forma.
+- **«Listo» responde en el acto y la despedida se va sola.** La demora tenía dos causas, y ninguna
+  era la base de datos siendo lenta: `terminar` esperaba dos escrituras encadenadas —volcar lo
+  pendiente y la marca de cierre, cada una con relectura— antes de cambiar de pantalla, sin señal y
+  sin guarda contra un segundo toque, que encolaba las dos otra vez; y **«Buenas noches.» no volvía
+  nunca por su cuenta**: era un botón sin aspecto de botón que se quedaba hasta que alguien lo
+  tocaba. Ahora la ceremonia se pone delante en el mismo toque, una guarda (`cerrando`) deja pasar
+  uno solo, la escritura corre detrás y la despedida se lee **cinco segundos**, se desvanece en
+  **medio segundo** (`salida-cierre`, misma curva que la salida de la presentación) y vuelve a Hoy
+  con la noche cerrada debajo. Tocarla sigue saltando la espera; con «reducir movimiento» no hay
+  desvanecido. **«Buenas noches» solo se dice con la noche guardada**: si la escritura falla, la
+  ceremonia dice qué pasó, que lo escrito sigue aquí, y ofrece reintentar. Las dos duraciones viven
+  en `CierreDeLaNoche.jsx` y una prueba las compara con la hoja.
+
+**Verificado en Chromium con Playwright a 390 px**, además de la suite: tres respuestas de
+cuatrocientas palabras cada una, párrafos conservados al volver atrás y al releer, ceremonia
+inmediata, «Buenas noches» a los 40 ms del toque, vuelta a Hoy a los ~5,5 s (5,0 s con movimiento
+reducido), fallo de IndexedDB forzado → aviso y reintento → despedida, y la noche cerrada tras
+recargar. **`vitest.config.js` transforma ahora el JSX con el runtime automático**, que es lo que
+permite pintar un componente a HTML en una prueba sin `import React`.
+
+**Lo que sigue sin verse en un teléfono:** si una tarjeta de varios párrafos con el teclado abierto
+se sigue sintiendo un refugio y no un formulario, y si cinco segundos de despedida son un descanso
+o una espera. `DiarioManana.terminar` conserva la espera y sin guarda contra el doble toque: no
+estaba en el encargo y se deja anotado.
 
 ### Divergencias conocidas entre el blueprint y el código
 

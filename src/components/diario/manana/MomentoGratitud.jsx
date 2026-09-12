@@ -17,6 +17,12 @@
 // noche con otros límites: la actualización cambió la pregunta y la forma de la
 // lista, no el momento en que a alguien le cuesta arrancar.
 //
+// **Cada respuesta cabe en cuatrocientas palabras desde el 12 de septiembre de
+// 2026**, y no en una línea: el tope vive en `LIMITES.gratitudManana`
+// (`palabras`) y lo aplica la mecánica de las filas, no esta pantalla. Cada una
+// se escribe en una tarjeta que crece con el texto y se lee entera antes de
+// continuar.
+//
 // El ejemplo del marcador de posición es deliberadamente cotidiano: no da por
 // hecho que la mañana esté siendo buena, y por eso no ofrece nada
 // especialmente luminoso.
@@ -25,7 +31,6 @@ import CampoGratitud from '../CampoGratitud'
 import { clsx } from 'clsx'
 import { copy } from '@copy'
 import { LIMITES } from '@/diario/filas'
-import { MAX_GRATITUD_LINEA } from '@/diario/manana'
 
 const textos = copy.diario.manana.gratitud
 
@@ -47,7 +52,6 @@ export default function MomentoGratitud({ filas, onCambiar, onVolcar, onOmitir }
         sugerencias={textos.sugerencias}
         etiqueta={textos.titulo}
         placeholder={textos.placeholder}
-        maxLength={MAX_GRATITUD_LINEA}
         textoAnadir={textos.anadir}
       />
 

@@ -24,6 +24,12 @@
 // rota, así que una etiqueta genérica dejaría la respuesta sin contexto. La
 // ligada a la intención de esa mañana se reconstruye con ella.
 //
+// **Las listas vuelven numeradas y enteras** (12 sep 2026): la gratitud de la
+// mañana y el reconocimiento de la noche —y la gratitud de las noches de la
+// versión 1— se releen una respuesta debajo de otra, con su número, sus
+// párrafos y sin recortar, con el mismo `ListaNumerada` de las dos pantallas de
+// consulta. Un día se relee como se escribió.
+//
 // Un día en blanco no es un día perdido y no se presenta como tal: se dice que
 // también estuvo, y se sale por donde se entró.
 //
@@ -35,6 +41,7 @@
 // escribir— y **no cambia nada de lo que se ve**: el día se lee entero, igual
 // que antes de que la ventana existiera.
 
+import ListaNumerada from '@components/diario/ListaNumerada'
 import { copy, interpolate } from '@copy'
 import { diaVacio } from '@/diario/historial'
 import { etiquetasDe as etiquetasDeEmocion } from '@/diario/emocionesJournal'
@@ -61,18 +68,6 @@ function Bloque({ titulo, children }) {
       <h3 className="text-sm text-on-surface-soft">{titulo}</h3>
       {children}
     </section>
-  )
-}
-
-function Lista({ textos: lineas }) {
-  return (
-    <ul className="flex flex-col gap-1">
-      {lineas.map((linea, indice) => (
-        <li key={indice} className="text-base text-on-surface">
-          {linea}
-        </li>
-      ))}
-    </ul>
   )
 }
 
@@ -128,7 +123,7 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
 
           {(morning?.gratitude?.length ?? 0) > 0 && (
             <Bloque titulo={textos.gratitud}>
-              <Lista textos={morning.gratitude} />
+              <ListaNumerada lineas={morning.gratitude} />
             </Bloque>
           )}
 
@@ -167,7 +162,7 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
 
           {hayReconocimiento(night) && (
             <Bloque titulo={textos.reconocimiento}>
-              <Lista textos={night.recognized} />
+              <ListaNumerada lineas={night.recognized} />
             </Bloque>
           )}
 
@@ -193,7 +188,7 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
               noches que los respondieron. */}
           {(night?.gratitude?.length ?? 0) > 0 && (
             <Bloque titulo={textos.gratitud}>
-              <Lista textos={night.gratitude} />
+              <ListaNumerada lineas={night.gratitude} />
             </Bloque>
           )}
 

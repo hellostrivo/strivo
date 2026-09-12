@@ -868,6 +868,20 @@
     animation: salida-presentacion 2000ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
 
+  /* La despedida de la noche se va sola (12 sep 2026): "Buenas noches." se lee
+     cinco segundos y después se desvanece en medio segundo sobre Hoy, que ya
+     está montada debajo con la noche escrita. Es el mismo movimiento que la
+     salida de la presentación —solo opacidad, la curva de los velos, `forwards`
+     para que el último fotograma no reaparezca antes de desmontarse— y más
+     corto, porque aquí no se cruza una puerta: se apaga una luz. La duración
+     vive en `CierreDeLaNoche.jsx` (`SALIDA`) y una prueba compara las dos.
+
+     Con "reducir movimiento" el componente no la pone: a los cinco segundos se
+     vuelve, sin desvanecido (RN-VIS-05). */
+  .salida-cierre {
+    animation: salida-cierre 500ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .aliento-presentacion { animation: none; }
   }
@@ -879,6 +893,11 @@
 }
 
 @keyframes salida-presentacion {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes salida-cierre {
   from { opacity: 1; }
   to   { opacity: 0; }
 }
