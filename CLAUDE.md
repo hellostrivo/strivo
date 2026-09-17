@@ -1,6 +1,6 @@
 # CLAUDE.md — Strivo
 
-**Última actualización:** 25 ago 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
+**Última actualización:** 17 sep 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
 **Blueprint (documento rector):** `/docs/blueprint/Strivo_Blueprint_de_Producto_v5_0_24-08-2026.md`
 **Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO.md`
 **Plan operativo del repliegue:** `/docs/Strivo_Plan_de_Separacion_Tecnica_v1_24-08-2026.md`
@@ -655,7 +655,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**62 archivos de prueba · 1.734 casos · los seis comandos en verde.**
+**67 archivos de prueba · 1.866 casos · los seis comandos en verde.**
 
 ### Marca: el logo oficial y el video de apertura (25 ago 2026)
 
@@ -1164,6 +1164,49 @@ permite pintar un componente a HTML en una prueba sin `import React`.
 se sigue sintiendo un refugio y no un formulario, y si cinco segundos de despedida son un descanso
 o una espera. `DiarioManana.terminar` conserva la espera y sin guarda contra el doble toque: no
 estaba en el encargo y se deja anotado.
+
+### Lo que subió a la nube vuelve a bajar (SPEC_17A, 17 sep 2026)
+
+Hasta aquí Firestore era de solo escritura: la cola subía y nada volvía. Quien reinstalaba la app
+perdía su diario aunque estuviera íntegro en la nube. Esta entrega cierra las dos mitades —la cola
+se vacía de verdad (`startSync` conectado) y lo que subió baja— y deja cinco reglas que conviene no
+olvidar. La instrucción completa está en `docs/specs/SPEC_17A_INSTRUCCION_EJECUCION.md`.
+
+- **Tres reglas de fusión, en este orden, y viven en `src/lib/db/conflictos.js`.** (1) Ruta que no
+  existe en local, la escribe lo remoto. (2) Documento local con el campo de marca **ausente**
+  frente a remoto con marca: gana el remoto. (3) En todo lo demás gana lo local: empate, ambas sin
+  marca, remota menor o igual, marca local ilegible, o colección sin campo de marca. Se compara por
+  instante (`Date.parse`), nunca por texto: hay dos formatos en circulación. **Ausente e ilegible
+  no son lo mismo.** La regla 2 existe porque un documento sin campo de marca es un hueco que nadie
+  escribió —una semilla, o algo anterior a esta SPEC—; una marca presente pero imparseable es lo
+  contrario: alguien escribió ahí y solo no sabemos cuándo. Convertir «no puedo leerlo» en «no
+  existe» sería corregir en silencio (RN-DB-02). `null` cuenta como ausente: es la convención de
+  la casa para «todavía no».
+- **Una siembra ni sella, ni sube, ni pisa, y las tres salen de lo mismo: una siembra no es una
+  edición.** `initShared` escribe `name: null` y valores de fábrica que no dicen nada de nadie. No
+  sella `updatedAt`, porque un instante que nadie vivió le ganaría al perfil real que espera en la
+  nube. No encola, porque `sync.js` sube con `setDoc` sin `merge` y la semilla reemplazaría allí el
+  perfil real justo cuando la restauración falló y no hay otra copia. Y escribe solo donde no hay
+  nada (`writePathIfAbsent`, una transacción), porque la bajada puede seguir corriendo por detrás
+  cuando la siembra llega. Lo mismo vale para la semilla de preferencias de Respiración. El resto
+  de escrituras de `shared/` y `dayState` sí sellan, después de validar.
+- **El velo de restauración tiene techo: 15 segundos** (`TECHO_DE_ESPERA_MS`, `src/lib/sesion.js`).
+  `sin_red` no cubre la conexión colgada —`navigator.onLine` dice `true` y la lectura no vuelve—.
+  Pasado el techo el velo baja y se entra; la restauración no se cancela, sigue por detrás y marca
+  si termina. No es un umbral de fallo: una restauración lenta no pierde nada por cruzarlo. Nada
+  bloquea a la persona.
+- **El disparo es provisional y es deuda: `esUidDeCuenta` (`src/lib/sesion.js`).** Hoy la única
+  señal de que hay cuenta es que el uid no empiece por `local-`. SPEC_19 la sustituye por
+  `onAuthStateChanged` y este helper desaparece con ella. Por eso la restauración se evalúa **solo
+  al montar**: el uid cambia en P7, a mitad del onboarding, y restaurar ahí obligaría a decidir tres
+  cosas sobre un recorrido que SPEC_19 va a rehacer (DP-19.5). Quien entra en P7 a una cuenta con
+  datos los ve al siguiente arranque; nada se pierde.
+- **La restauración es el único sitio del código autorizado a leer de Firestore.** `getDoc` y
+  `getDocs` aparecen solo en `src/lib/db/restaurar.js` y su prueba, y hay una prueba que recorre
+  `src/` entero para comprobarlo. La lista de rutas va escrita literal allí —el SDK web no enumera
+  subcolecciones— y `diario/pinConfig` no está en ella a propósito. La bajada escribe por
+  `local.writePath` con `sync: false` y sin validadores: los días de agosto traen campos que el
+  modelo ya no admite escribir, y rechazarlos sería perder justo lo que esto viene a devolver.
 
 ### Divergencias conocidas entre el blueprint y el código
 
