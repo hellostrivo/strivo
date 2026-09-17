@@ -28,6 +28,13 @@ export {
 
 export { closeLocalDB, getLocalDB, mudarUid, pendingCount } from './local.js'
 export { flush, getPendingCount, listPending, startSync } from './sync.js'
+export {
+  MOTIVOS as MOTIVOS_RESTAURACION,
+  hayMarcaDeRestauracion,
+  restaurar,
+  retirarMarcaDeRestauracion,
+  ultimoResultado,
+} from './restaurar.js'
 
 /**
  * Monta el árbol de §C5.2 para un usuario nuevo.

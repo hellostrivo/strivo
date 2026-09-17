@@ -187,6 +187,33 @@ export async function mergePath({ uid, path, collection, id = null, patch, sync 
   return data
 }
 
+/**
+ * Escribe una ruta **solo si no existe**, y nunca la encola.
+ *
+ * Es la escritura de la siembra (SPEC_17A, D16). Existe porque la siembra
+ * puede correr con una restauración todavía en marcha por detrás —el velo
+ * tiene techo y la bajada no se cancela—, y un `put` a secas podría pisar el
+ * perfil real que acaba de bajar un instante antes. Leer y escribir van en
+ * la misma transacción por lo mismo que en `mergePath`: dos transacciones
+ * separadas dejan un hueco entre la lectura y la escritura, y ese hueco es
+ * exactamente donde cabría la bajada.
+ *
+ * @returns {Promise<boolean>} `true` si escribió; `false` si ya había algo.
+ */
+export async function writePathIfAbsent({ uid, path, collection, id = null, data }) {
+  assertUid(uid)
+  const db = await getLocalDB()
+  const tx = db.transaction(STORE_RECORDS, 'readwrite')
+  const store = tx.objectStore(STORE_RECORDS)
+
+  const existente = await store.get(path)
+  if (!existente) {
+    await store.put({ path, uid, collection, id, data, updatedAt: new Date().toISOString() })
+  }
+  await tx.done
+  return !existente
+}
+
 /** Borra una ruta en local y encola el borrado. */
 export async function deletePath({ uid, path, sync = true }) {
   assertUid(uid)

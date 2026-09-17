@@ -21,6 +21,11 @@
 // ningún dato que la persona no haya escrito ella misma. Un perfil que devuelve
 // cifras sobre quien lo abre es un panel de control, y este producto no tiene
 // uno (no-negociable 2).
+//
+// **El bloque de sincronización (SPEC_17A §4.6) no lo contradice**: no dice
+// nada de la persona, dice dónde está lo suyo. Su estado se anuncia con texto
+// en un contenedor `aria-live`, nunca solo con un punto de color, y el botón
+// de volver a intentar aparece solo cuando hay algo que intentar.
 
 import Bloque from './Bloque'
 import Button from '@components/ui/Button'
@@ -29,6 +34,7 @@ import { ListaDeChips } from '@components/shared/Chips'
 import { copy } from '@copy'
 import { BLOQUES } from '@/perfil/bloques'
 import { usePerfil } from '@/perfil/usePerfil'
+import { useSincronizacion } from '@/perfil/useSincronizacion'
 import { OPCIONES as GENEROS, alternar as alternarGenero } from '@/onboarding/genero'
 
 const textos = copy.diario.perfil
@@ -47,6 +53,7 @@ function Marco({ children }) {
 
 export default function Perfil({ uid }) {
   const { valores, carga, acciones, reintentar } = usePerfil(uid)
+  const sincronizacion = useSincronizacion(uid)
 
   const bloques = {
     nombre: () => (
@@ -90,6 +97,31 @@ export default function Perfil({ uid }) {
             onChange={(evento) => acciones.responder('dormir', evento.target.value)}
           />
         </label>
+      </div>
+    ),
+
+    sincronizacion: () => (
+      <div className="flex flex-col gap-4">
+        {/* El estado, con texto y en voz baja. Sin cuántas esperan a salir:
+            "Guardando" ya lo dice entero, y un número que el sondeo no ve
+            bajar se queda congelado como si algo estuviera atorado. */}
+        <div aria-live="polite" className="flex flex-col gap-1">
+          <p className="text-base text-on-surface">
+            {textos.sincronizacion[sincronizacion.estado]}
+          </p>
+          {sincronizacion.restauracionFallida && (
+            <p className="text-sm text-on-surface-soft leading-relaxed">
+              {copy.shared.restauracion.error}
+            </p>
+          )}
+        </div>
+        {sincronizacion.puedeReintentar && (
+          <div>
+            <Button size="sm" variant="surface" onClick={sincronizacion.reintentar}>
+              {textos.sincronizacion.reintentar}
+            </Button>
+          </div>
+        )}
       </div>
     ),
   }

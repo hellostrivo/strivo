@@ -30,14 +30,26 @@
 // guarda en `localStorage` es este archivo y solo este: dos sitios escribiendo
 // esa clave son dos sesiones distintas al siguiente arranque.
 //
+// **Desde SPEC_17A también arranca la nube, en las dos direcciones.** Con una
+// cuenta —`esUidDeCuenta`, la regla provisional de `lib/sesion`— pone en marcha
+// la cola de subida (`startSync`) y, antes de sembrar nada, baja lo que esa
+// cuenta tenga en Firestore (`prepararArbol`). El orden importa y está
+// explicado allí: restaurar primero, sembrar solo si después sigue sin haber
+// árbol. Mientras baja, el velo lleva una frase; si falla, se entra igual y el
+// reintento vive en Tu perfil. **La restauración se evalúa una sola vez por
+// sesión, al montar**: si el uid cambia en P7, la cola se rearranca con el
+// nuevo y no se restaura (D7, DP-19.5).
+//
 // **Por qué no se retira:** sin él no hay uid ni preferencias, y la app no
 // arranca. Sigue siendo un andamio.
 //
 // Se monta **una sola vez, en la raíz**, por encima de la navegación.
 
-import { useEffect, useState } from 'react'
-import { initUserTree, shared } from '@/lib/db'
+import { useEffect, useRef, useState } from 'react'
+import { startSync } from '@/lib/db'
+import { esUidDeCuenta, prepararArbol } from '@lib/sesion'
 import { momentoDe } from '@lib/timeSlot'
+import { copy } from '@copy'
 
 const CLAVE_UID = 'strivo.uid.local'
 
@@ -53,6 +65,16 @@ function uidLocal() {
 export default function ArranqueProvisional({ children }) {
   const [uid, setUid] = useState(uidLocal)
   const [listo, setListo] = useState(false)
+  const [restaurando, setRestaurando] = useState(false)
+
+  // Una sola evaluación de la restauración por sesión (§4.4). Se marca al
+  // primer arranque sea cual sea el uid: así el cambio de uid en P7 encuentra
+  // la pregunta ya contestada y no restaura a mitad del onboarding.
+  const arranqueEvaluado = useRef(false)
+
+  // El oyente del reintento al volver la red, si la restauración falló por eso.
+  // Se guarda para retirarlo al desmontar.
+  const quitarOyenteRed = useRef(null)
 
   /** La sesión pasa a otro uid: el de la cuenta que acaba de crearse. */
   const cambiarUid = (nuevo) => {
@@ -61,19 +83,35 @@ export default function ArranqueProvisional({ children }) {
     setUid(nuevo)
   }
 
+  // La cola de subida acompaña al uid: arranca con él y se rearranca si cambia
+  // (P7). `startSync` devuelve su limpieza, que retira los oyentes de red y de
+  // visibilidad y cancela el reintento pendiente. Sin cuenta no hay nada que
+  // subir: las reglas de Firestore no dejarían escribir bajo un uid local.
+  useEffect(() => {
+    if (!esUidDeCuenta(uid)) return undefined
+    return startSync(uid)
+  }, [uid])
+
   useEffect(() => {
     let vigente = true
 
     async function arrancar() {
-      // El perfil es la primera rama que escribe `initShared`, así que su
-      // ausencia es la señal de que el árbol no existe. Antes lo decía la
-      // identidad central, que era la hoja obligatoria del alcance retirado.
-      const profile = await shared.getProfile(uid)
+      // Solo el primer arranque de la sesión pregunta por la restauración. Un
+      // cambio de uid vuelve a pasar por aquí para sembrar si hiciera falta
+      // —no hace falta: `mudarUid` acaba de traer el árbol— y nada más.
+      const primero = !arranqueEvaluado.current
+      arranqueEvaluado.current = true
 
-      // `initUserTree` ya no exige una identidad central: es `shared/` con sus
-      // cuatro ramas y un `diario/` que nace vacío a propósito, porque un día en
-      // blanco sería un registro que nadie escribió (RN-DB4-08).
-      if (profile === null) await initUserTree(uid)
+      // El perfil es la primera rama que escribe `initShared`, así que su
+      // ausencia es la señal de que el árbol no existe. `prepararArbol` mira
+      // eso mismo para decidir si restaura, y siembra solo después: es `shared/`
+      // con sus cuatro ramas y un `diario/` que nace vacío a propósito, porque
+      // un día en blanco sería un registro que nadie escribió (RN-DB4-08).
+      const { quitarOyente } = await prepararArbol(uid, {
+        enRestauracion: primero ? (activa) => vigente && setRestaurando(activa) : undefined,
+        restaurarSiHaceFalta: primero,
+      })
+      if (quitarOyente) quitarOyenteRed.current = quitarOyente
 
       if (vigente) setListo(true)
     }
@@ -85,9 +123,32 @@ export default function ArranqueProvisional({ children }) {
     }
   }, [uid])
 
+  useEffect(() => () => quitarOyenteRed.current?.(), [])
+
   // El tono del velo y no el papel de la app: lo primero que se ve al abrir es
   // el umbral, y un fotograma crema delante de un velo nocturno es un fogonazo
   // a las once de la noche.
+  // Mientras baja lo de la cuenta, el mismo velo con una frase encima: sin
+  // rueda, sin barra y sin cuánto falta (RN-EST-02). El `data-surface` va solo
+  // aquí, donde hay texto que leer sobre el fondo —de noche el velo es índigo—
+  // y no en el velo de espera de abajo, que no cambia ni un píxel (§4.5).
+  if (restaurando) {
+    const momento = momentoDe()
+    return (
+      <div
+        data-moment={momento}
+        data-surface={momento === 'noche' ? 'dark' : 'light'}
+        className="velo-transicion flex min-h-screen items-center justify-center px-8 text-center"
+        aria-busy="true"
+        aria-live="polite"
+      >
+        <p className="font-display text-lg text-on-surface leading-snug">
+          {copy.shared.restauracion.enCurso}
+        </p>
+      </div>
+    )
+  }
+
   if (!listo) {
     return (
       <div data-moment={momentoDe()} className="velo-transicion min-h-screen" aria-busy="true" />

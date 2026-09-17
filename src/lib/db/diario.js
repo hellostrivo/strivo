@@ -162,6 +162,12 @@ export async function getDayState(uid, date) {
   return readPath(paths.diarioItem(uid, 'dayState', date))
 }
 
+/**
+ * Sella `updatedAt` después de validar (SPEC_17A): es lo que la restauración
+ * compara. La mañana, la noche y el journal ya traen el suyo —los dos primeros
+ * con `marcaLocal()`, que conserva a qué hora era esto para quien lo escribió—
+ * y por eso no se tocan; `dayState` era el único de la rama sin marca.
+ */
 export async function saveDayState(uid, date, dayState) {
   assertUid(uid)
   assertDateKey(date)
@@ -171,7 +177,7 @@ export async function saveDayState(uid, date, dayState) {
     path: paths.diarioItem(uid, 'dayState', date),
     collection: COLLECTIONS.dayState,
     id: date,
-    patch: dayState,
+    patch: { ...dayState, updatedAt: new Date().toISOString() },
   })
 }
 

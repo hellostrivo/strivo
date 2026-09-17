@@ -1386,6 +1386,21 @@ export const copy = {
         wakeLabel: 'Me despierto a las',
         sleepLabel: 'Me duermo a las',
       },
+
+      // SPEC_17A §4.6 — Dónde vive lo que escribes. Cuatro estados que se
+      // dicen con texto y nunca solo con un punto de color. Ninguno es una
+      // alarma: sin cuenta no es un problema, es un hecho; sin conexión se
+      // guardará cuando vuelva; y `pendiente` no es una cuenta atrás, es un
+      // "está en camino".
+      sincronizacion: {
+        titulo: 'Dónde vive lo que escribes',
+        hint: 'Lo tuyo se guarda aquí primero y se respalda después.',
+        alDia: 'Todo guardado',
+        pendiente: 'Guardando',
+        sinConexion: 'Sin conexión. Se guardará cuando vuelva.',
+        sinCuenta: 'Sin cuenta, lo escrito vive solo en este teléfono.',
+        reintentar: 'Intentar de nuevo',
+      },
     },
 
     // ─── La presentación de las secciones ─────────────────────────────────
@@ -1454,6 +1469,17 @@ export const copy = {
       // La transición entera es el área que la salta, y esto es lo que oye
       // quien la recorre con un lector de pantalla.
       saltar: 'Entrar',
+    },
+
+    // SPEC_17A — Lo que subió a la nube vuelve a bajar. `enCurso` va bajo el
+    // velo del umbral mientras se restaura un dispositivo vacío: sin rueda, sin
+    // barra y sin cuánto falta (RN-EST-02). `error` y `reintentar` los usa el
+    // bloque de sincronización de Tu perfil cuando la última restauración de
+    // la sesión no terminó. Ningún código de error a la vista (RN-EST-04).
+    restauracion: {
+      enCurso: 'Recuperando lo que escribiste.',
+      error: 'No pudimos recuperar todo ahora. Nada se perdió y lo intentaremos de nuevo.',
+      reintentar: 'Intentar de nuevo',
     },
 
     // El Home de Strivo — la pantalla por la que se entra a la app (revisión de

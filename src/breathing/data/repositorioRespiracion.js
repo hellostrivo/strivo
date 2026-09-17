@@ -83,10 +83,10 @@ async function leerColeccion(uid, collection) {
     .map((fila) => (fila.id === null ? { ...fila.data } : { id: fila.id, ...fila.data }))
 }
 
-async function escribir({ uid, path, collection, id = null, data }) {
+async function escribir({ uid, path, collection, id = null, data, sync = true }) {
   if (!enMemoria) {
     try {
-      await writePath({ uid, path, collection, id, data })
+      await writePath({ uid, path, collection, id, data, sync })
       return data
     } catch (error) {
       degradar(error)
@@ -122,6 +122,15 @@ function rutaPreferencias(uid) {
  * RN-RE-DAT-08 — Nunca lanza y nunca devuelve nada a medias. Sin preferencias
  * guardadas, siembra las de fábrica y las devuelve, con `guiaSonoraActiva` en
  * `false` (RN-RE-DAT-01).
+ *
+ * **La siembra no sube a la nube** (SPEC_17A, D15). `normalizarPreferencias`
+ * sella siempre `actualizadoEn` con la hora de ahora, así que unas
+ * preferencias de fábrica recién sembradas no solo competirían con las que
+ * esa persona ajustó en otro dispositivo: **ganarían**, por ser más nuevas.
+ * En un dispositivo nuevo con la restauración fallida, abrir Respiración las
+ * habría subido y sobrescrito en Firestore. Una siembra no es una edición:
+ * nadie la escribió. Lo que sí escribe una persona —`guardarPreferencias`,
+ * favoritos, recientes, sesiones— sube como siempre.
  */
 export async function leerPreferencias(uid) {
   const guardadas = await leer(rutaPreferencias(uid))
@@ -134,6 +143,7 @@ export async function leerPreferencias(uid) {
     collection: COLECCIONES.preferencias,
     id: CLAVE_PREFERENCIAS,
     data: frescas,
+    sync: false,
   })
   return frescas
 }

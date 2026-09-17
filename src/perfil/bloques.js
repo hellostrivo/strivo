@@ -15,9 +15,12 @@
 // El orden va de lo más cercano a lo más cotidiano: cómo te llamas, cómo
 // hablarte y cómo son tus días. Lo que llegue después —cuenta, plan,
 // suscripción— va detrás: son gestiones, no eres tú.
+//
+// `sincronizacion` es el primero de esos (SPEC_17A §4.6): dónde vive lo que
+// escribes y si ya está a salvo. Va al final por lo de arriba.
 
 /** Los bloques que hay hoy, en el orden en que se ven. */
-export const BLOQUES = Object.freeze(['nombre', 'genero', 'horarios'])
+export const BLOQUES = Object.freeze(['nombre', 'genero', 'horarios', 'sincronizacion'])
 
 /** ¿Es un bloque del perfil? */
 export function es(id) {

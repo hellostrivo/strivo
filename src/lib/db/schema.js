@@ -55,6 +55,14 @@ export const FIELDS = Object.freeze({
   // Era una frase y nada más: **no se combinaba con nada**. El modelo de tres
   // niveles del alcance retirado —áreas, identidad por área— no vuelve, y la
   // forma de asegurarlo es que aquí no haya con qué combinarla.
+  //
+  // `updatedAt` entra en los cuatro documentos de `shared/` y en `dayState` el
+  // 17 de septiembre de 2026 (SPEC_17A): es el criterio de fusión de la
+  // restauración, que solo sobrescribe un registro local cuando puede
+  // demostrar que el remoto es más nuevo. Lo sella la capa de datos
+  // (`shared.js`, `diario.js`), nunca la pantalla. **Lo ya escrito sin el
+  // campo se sigue leyendo igual** (RN-DB-04): no hay migración retroactiva, y
+  // un registro sin marca entra en la fusión como "sin marca", no como error.
   profile: Object.freeze([
     'name',
     'gender',
@@ -63,12 +71,13 @@ export const FIELDS = Object.freeze({
     'wakeTime',
     'sleepTime',
     'createdAt',
+    'updatedAt',
   ]),
-  auth: Object.freeze(['uid', 'email', 'phone']),
+  auth: Object.freeze(['uid', 'email', 'phone', 'updatedAt']),
   // `remindersEnabled` es la respuesta de P6, y es distinta del permiso del
   // navegador: conceder el permiso no es querer los avisos, y apagarlos
   // después no tiene por qué exigir retirárselo al sistema.
-  preferences: Object.freeze(['soundEnabled', 'reducedMotion', 'remindersEnabled']),
+  preferences: Object.freeze(['soundEnabled', 'reducedMotion', 'remindersEnabled', 'updatedAt']),
   // El expediente del onboarding. `completedSteps` y `currentStep` ya estaban:
   // son por dónde va y qué quedó atrás, y hacen que abandonar a mitad —que
   // RN-09 permite sin coste— retome donde estaba en vez de empezar de cero.
@@ -96,6 +105,7 @@ export const FIELDS = Object.freeze({
     'tourCompletedAt',
     'motivos',
     'motivoOtro',
+    'updatedAt',
   ]),
 
   // diario/
@@ -164,7 +174,7 @@ export const FIELDS = Object.freeze({
     'closingFeelingOther',
     'release',
   ]),
-  dayState: Object.freeze(['mood']),
+  dayState: Object.freeze(['mood', 'updatedAt']),
   pinConfig: Object.freeze(['salt', 'hash', 'iterations', 'algorithm', 'enabled']),
 })
 

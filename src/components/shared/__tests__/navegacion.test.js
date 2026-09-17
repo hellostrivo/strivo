@@ -208,7 +208,9 @@ describe('los andamios provisionales de la navegación se retiraron', () => {
     // el onboarding, que sigue sin construirse.
     const arranque = readFileSync('src/components/ArranqueProvisional.jsx', 'utf8')
     expect(arranque).toMatch(/⚠ PROVISIONAL/)
-    expect(arranque).toMatch(/initUserTree/)
+    // Desde SPEC_17A el árbol lo prepara `lib/sesion` —restaurar primero,
+    // sembrar después— y el arranque lo llama; la siembra sigue siendo suya.
+    expect(arranque).toMatch(/prepararArbol/)
   })
 
   it('se monta una sola vez, en la raíz', () => {

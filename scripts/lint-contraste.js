@@ -181,6 +181,11 @@ const PARES = [
   ['Umbral · logo sobre el velo claro', MARCA.simbolo, MARCA.veloClaro, NO_TEXTO],
   ['Umbral · puntos del logo sobre el velo claro', MARCA.simboloPuntos, MARCA.veloClaro, NO_TEXTO],
   ['Umbral · logo mono sobre el velo nocturno', MARCA.simboloMono, MARCA.night, NO_TEXTO],
+  // La frase de restauración (SPEC_17A §4.5) va sobre el mismo velo, y es
+  // texto: el contenedor declara `data-surface` según el reloj para que la
+  // tinta sea la de la superficie que toca (RN-VIS-02).
+  ['Restauración · frase sobre el velo claro', TEXTO.onLight, MARCA.veloClaro, CUERPO],
+  ['Restauración · frase sobre el velo nocturno', TEXTO.onDark, MARCA.night, CUERPO],
 
   // ── Strivo, el cromo de fuera de los espacios ───────────────────────────────
   ['Strivo · cuerpo sobre base', TEXTO.onLight, MARCA.strivo50, CUERPO],

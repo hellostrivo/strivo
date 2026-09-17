@@ -53,6 +53,29 @@ describe('criterio 13 — preferencias sobre una base vacía', () => {
     expect((await repo.leerPreferencias(UID)).visualPreferida).toBe('linea')
   })
 
+  it('SPEC_17A criterio 13: la siembra no encola nada para la nube', async () => {
+    // La semilla sale sellada con la hora de ahora, así que si subiera no
+    // solo competiría con las preferencias ajustadas en otro dispositivo:
+    // ganaría. Nadie la escribió, y nada que nadie escribió sale del teléfono.
+    await repo.leerPreferencias(UID)
+    expect(await local.pendingCount(UID)).toBe(0)
+  })
+
+  it('SPEC_17A criterio 13: guardar preferencias después sí encola', async () => {
+    await repo.leerPreferencias(UID)
+    await repo.guardarPreferencias(UID, { visualPreferida: 'linea' })
+    const cola = await local.listQueue(UID)
+    expect(cola).toHaveLength(1)
+    expect(cola[0].path).toBe(rutas.doc(UID, 'unica'))
+    expect(cola[0].data.visualPreferida).toBe('linea')
+  })
+
+  it('SPEC_17A criterio 13: favoritos, recientes y sesiones siguen subiendo', async () => {
+    await repo.leerPreferencias(UID)
+    await repo.crearFavorito(UID, { nombre: 'Calma', configuracion: configuracion() })
+    expect(await local.pendingCount(UID)).toBe(1)
+  })
+
   it('RN-RE-DAT-02: retoma la configuración de la última sesión', async () => {
     await repo.guardarPreferencias(UID, {
       ultimoPatronId: 'cuatro-siete-ocho',
@@ -328,7 +351,10 @@ describe('criterio 16 — nada de lo que ya había se toca', () => {
   })
 
   it('lo escrito sale hacia Firestore por la cola de siempre', async () => {
-    await repo.leerPreferencias(UID)
+    // Hasta SPEC_17A esta prueba miraba la siembra de `leerPreferencias`;
+    // desde D15 la siembra no sube —nadie la escribió— y lo que se vigila es
+    // lo que sí escribe una persona.
+    await repo.guardarPreferencias(UID, { visualPreferida: 'linea' })
     const cola = await local.listQueue(UID)
     expect(cola.some((entrada) => entrada.path.includes('/breathing/'))).toBe(true)
   })
