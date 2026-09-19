@@ -21,10 +21,39 @@ export const STORE_SYNC_QUEUE = 'syncQueue'
 
 let dbPromise = null
 
-/** Abre (o crea) la base local. Idempotente. */
+/**
+ * Abre (o crea) la base local. Idempotente.
+ *
+ * **La conexión se suelta sola cuando alguien pide borrar o migrar la base**
+ * (DP-17.12). Sin `blocking`, la conexión nunca se enteraba de que otra
+ * petición quería borrar la base: `deleteDatabase('strivo')` se quedaba en
+ * `blocked` indefinidamente y sin lanzar error, y las peticiones que quedaban
+ * colgadas detrás congelaban después cualquier transacción de esa página. Se
+ * vio en la validación manual de SPEC_17A: «borrar solo la base `strivo`» era
+ * una operación que a veces no ocurría y no avisaba, y solo funcionaba si
+ * nada había reabierto la conexión, que es una condición que nadie puede
+ * comprobar a ojo.
+ *
+ * `close()` no corta nada a medias: IndexedDB espera a que terminen las
+ * transacciones en curso antes de cerrar de verdad, así que esto no roza
+ * «nada se pierde». Lo que sí hace es dejar `dbPromise` en blanco para que la
+ * siguiente lectura reabra —tras el borrado, una base vacía— en vez de usar
+ * una conexión cerrada. `terminated` es la otra mitad de lo mismo: una
+ * conexión que el navegador cerró por su cuenta no deja `dbPromise` apuntando
+ * a algo muerto.
+ *
+ * Los dos anulan `dbPromise` solo si sigue siendo la promesa de **esta**
+ * conexión: si entre medias alguien la cerró y reabrió, el callback de la
+ * vieja no tira la nueva.
+ *
+ * `blocking` dispara también cuando otra pestaña abre una versión **mayor**.
+ * Hoy `DB_VERSION` es 1 y no hay migraciones; el día que haya una, la pestaña
+ * vieja se cerrará y su siguiente `getLocalDB()` fallará con `VersionError`
+ * por abrir con la versión antigua. Es un problema de ese día, no de este.
+ */
 export function getLocalDB() {
   if (!dbPromise) {
-    dbPromise = openDB(DB_NAME, DB_VERSION, {
+    const promesa = openDB(DB_NAME, DB_VERSION, {
       upgrade(db) {
         if (!db.objectStoreNames.contains(STORE_RECORDS)) {
           const records = db.createObjectStore(STORE_RECORDS, { keyPath: 'path' })
@@ -42,7 +71,15 @@ export function getLocalDB() {
           queue.createIndex('byUser', 'uid')
         }
       },
+      blocking(_actual, _pedida, event) {
+        event.target.close()
+        if (dbPromise === promesa) dbPromise = null
+      },
+      terminated() {
+        if (dbPromise === promesa) dbPromise = null
+      },
     })
+    dbPromise = promesa
   }
   return dbPromise
 }

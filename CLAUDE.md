@@ -655,7 +655,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**68 archivos de prueba · 1.891 casos · los seis comandos en verde.**
+**69 archivos de prueba · 1.895 casos · los seis comandos en verde.**
 
 ### Marca: el logo oficial y el video de apertura (25 ago 2026)
 
@@ -1237,8 +1237,12 @@ olvidar. La instrucción completa está en `docs/specs/SPEC_17A_INSTRUCCION_EJEC
   sin una sesión real de Firebase Auth `restaurar()` falla por permisos en silencio —`motivo:
   interrumpida`—, se siembra un árbol vacío y se acaba en el onboarding, que es justo el camino
   que dispara DP-17.10. La sesión se consigue con `crearConCorreo` desde la consola, sin tocar el
-  árbol local ni llamar a `mudarUid`. La segunda es que **`deleteDatabase` no borra con una
-  conexión abierta**: se queda en `blocked` sin lanzar error, y hay que `closeLocalDB()` antes. La
+  árbol local ni llamar a `mudarUid`. La segunda era que **`deleteDatabase` no borraba con una
+  conexión abierta**: se quedaba en `blocked` sin lanzar error, y las peticiones colgadas detrás
+  congelaban cualquier transacción posterior de la página. **Desde DP-17.12 la conexión se suelta
+  sola** —`getLocalDB` declara `blocking` y `terminated`—, así que borrar la base con la app
+  abierta resuelve por `success` y la siguiente lectura reabre una base vacía; `closeLocalDB()`
+  sigue existiendo para las pruebas y el cierre de sesión, no como requisito previo. La
   tercera es que **tocar «Omitir» sella `updatedAt` igual que contestar**, y lo único que abre o
   cierra la puerta es `completedAt`, que solo escribe `terminar()` al final: salirse en P7 deja el
   expediente a medias, con `currentStep: "p7"`, y la puerta abierta. La cuarta es que

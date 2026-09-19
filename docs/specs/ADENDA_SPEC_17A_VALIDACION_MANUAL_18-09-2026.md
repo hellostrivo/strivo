@@ -193,7 +193,7 @@ ultimoResultado(uid);   // ⇒ { ok: true, escritos: N, fusionados: M }
 ### Cuatro cosas que conviene no volver a aprender por las malas
 
 1. **Escribir `strivo.uid.local` a mano no basta.** Las reglas de Firestore son uid-scoped y exigen `auth.currentUser` para ese uid. Sin sesión real, `restaurar()` falla por permisos en silencio (`motivo: interrumpida`), se siembra un árbol vacío y se acaba en el onboarding.
-2. **`deleteDatabase` no borra con una conexión abierta.** Se queda en `blocked` sin lanzar error. Hay que `closeLocalDB()` primero.
+2. ~~**`deleteDatabase` no borra con una conexión abierta.** Se queda en `blocked` sin lanzar error. Hay que `closeLocalDB()` primero.~~ **Corregido por DP-17.12 (18 sep 2026):** la conexión se suelta sola cuando alguien pide borrar o migrar la base —`getLocalDB` declara `blocking` y `terminated`—, así que el borrado con la app abierta resuelve por `success` y la siguiente lectura reabre. El paso 3 del procedimiento de arriba sigue siendo válido pero ya no es necesario; lo que motivó la corrección fue que un `blocked` permanente dejaba después colgada cualquier transacción de la página.
 3. **Tocar "Omitir" sí marca el paso como completado** y sí sella `updatedAt`. Lo único que abre o cierra la puerta es `completedAt`, y solo lo escribe `terminar()` al final del recorrido: salirse en P7 deja el expediente a medias, con `currentStep: "p7"`.
 4. **`localhost:5173` es un origen compartido.** Conviven ahí bases de otros proyectos (`strivo-local`, `trazia`) y claves viejas (`strivo.localUserId`). "Limpiar todo" en ese origen es ambiguo: hay que borrar por nombre y verificar con `indexedDB.databases()`.
 
