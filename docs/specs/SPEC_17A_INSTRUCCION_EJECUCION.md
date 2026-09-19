@@ -4,7 +4,7 @@
 **Rama:** `strivo` · **Commit de referencia:** `0e4d7e7` (12 sep 2026)
 **Gobierna:** `SPEC_17_RESTAURACION_Y_PERSISTENCIA.md` (v2.0) + `SPEC_00B_CONVENCIONES_LANZAMIENTO.md`
 **Alcance de esta entrega:** Fase A. La Fase B (SQLite) no se toca hasta después de SPEC_21.
-**Versión:** 1.7 — 17 sep 2026. Fase A implementada. Incorpora D13 a D16, la distinción entre marca ausente e ilegible (§2), el reintento silencioso al volver la red, la siembra que no pisa (§4.1) y la retirada del conteo en Perfil (§4.6).
+**Versión:** 1.8 — 18 sep 2026. Corrige lo que la validación manual desmintió (SPEC_17A.2): la mudanza sube solo lo escrito (§4.1), la garantía de `mudarUid` era local (§4.4), el criterio 20 (§6) y DP-17.10 y DP-17.11 resueltas (§9). La 1.7 (17 sep) implementó la Fase A con D13 a D16, la distinción entre marca ausente e ilegible (§2), el reintento silencioso al volver la red, la siembra que no pisa (§4.1) y la retirada del conteo en Perfil (§4.6).
 
 ---
 
@@ -91,7 +91,7 @@ La comparación es **por instante**, sobre `Date.parse(...)`, nunca por texto: h
 - **No sella `updatedAt`.** Sellarla haría que un árbol recién montado reclamara un instante que nadie vivió, y con eso le ganaría al perfil que esa persona sí escribió y que está esperando en la nube.
 - **Escribe con `sync: false`.** `sync.js` sube con `setDoc` sin `merge`, así que una semilla encolada **sobrescribe el documento remoto entero**. Si la restauración falla en un dispositivo nuevo, la siembra que viene detrás borraría en la nube el perfil que esa persona escribió, y el reintento desde Perfil se quedaría sin nada que recuperar. Una siembra no tiene nada que contarle a la nube.
 
-No rompe el camino normal de quien empieza sin cuenta: al crear cuenta en P7, `mudarUid` reencola el árbol entero, semilla incluida, que es cuando esos cuatro documentos suben por primera vez.
+No rompe el camino normal de quien empieza sin cuenta: al crear cuenta en P7, `mudarUid` reencola lo que esa persona escribió —el perfil con su nombre, el expediente del recorrido—, que es cuando sube por primera vez. **Corregido el 18 de septiembre de 2026 (DP-17.10):** este párrafo decía que la mudanza reencolaba el árbol entero, semilla incluida. Era cierto para una cuenta nueva y destructivo para una que ya tenía datos: la semilla subía con `setDoc` sin `merge` y reemplazaba en Firestore el perfil real. Desde SPEC_17A.2 **las filas sin marca —las que siguen siendo semilla— no se reencolan al mudarse**; lo decide `esSemilla` en `conflictos.js`, la misma pregunta que hace la fusión. La semilla sube solo cuando la cuenta es nueva y alguien la convierte en otra cosa escribiendo encima.
 
 **Y una tercera: la siembra tampoco pisa.** Con el techo del velo (D16) la bajada puede seguir corriendo mientras se siembra, así que un `put` a secas podría sobrescribir un perfil real que acabara de bajar un instante antes —y la restauración marcaría, y ese nombre no volvería nunca—. La siembra escribe por `writePathIfAbsent` (nuevo en `local.js`, una sola transacción, nunca encola): **escribe solo donde no hay nada.** Es el §7 literal. Con las tres, `initShared` ni sella, ni sube, ni pisa.
 
@@ -197,7 +197,7 @@ Las etiquetas de respiración se escriben **literales aquí, con comentario** (D
 - **Cuando el uid cambia durante la sesión** (P7 llama a `cambiarUid`): se rearranca `startSync` con el uid nuevo —para que lo que se acaba de escribir suba— y **no se restaura**.
 - Un guard (`useRef`) impide que un re-render o un cambio de uid vuelvan a disparar la restauración en la misma sesión.
 
-**Limitación conocida, y es deliberada (D7).** Quien en P7 entra a una cuenta que ya tenía datos termina el onboarding sin ver su historial: le aparece la siguiente vez que abra la app. Restaurar a mitad del recorrido obligaría a decidir tres cosas —si el velo se interpone sobre P8, si el `completedAt` remoto salta la última pantalla, y qué pasa con el nombre recién tecleado frente al del perfil remoto— sobre un recorrido que SPEC_19 va a rehacer con `onAuthStateChanged` y una pantalla de entrar de verdad. **Nada se pierde:** el árbol remoto está intacto y `mudarUid` ya garantiza que lo local no lo pisa. Queda anotado como **DP-19.5 (nueva)**.
+**Limitación conocida, y es deliberada (D7).** Quien en P7 entra a una cuenta que ya tenía datos termina el onboarding sin ver su historial: le aparece la siguiente vez que abra la app. Restaurar a mitad del recorrido obligaría a decidir tres cosas —si el velo se interpone sobre P8, si el `completedAt` remoto salta la última pantalla, y qué pasa con el nombre recién tecleado frente al del perfil remoto— sobre un recorrido que SPEC_19 va a rehacer con `onAuthStateChanged` y una pantalla de entrar de verdad. ~~**Nada se pierde:** el árbol remoto está intacto y `mudarUid` ya garantiza que lo local no lo pisa.~~ **Corregido el 18 de septiembre de 2026:** esa frase era falsa. La garantía de `mudarUid` era **local** —el `store.get(destino)` de su bucle— y en un dispositivo que nunca vio esa cuenta no frenaba nada: la mudanza encolaba la semilla y la subida reemplazaba el perfil remoto. Lo cierra DP-17.10 (SPEC_17A.2): una semilla no sube ni después de mudarse. Lo que sigue abierto es que terminar el recorrido escribe el perfil y el expediente sellados bajo la cuenta, y eso sí pisa la nube: es materia de **DP-19.5 (nueva)**, y hasta entonces no se entra por P7 con una cuenta que tenga datos reales.
 
 ---
 
@@ -282,7 +282,7 @@ copy.diario.perfil.sincronizacion = {
 
 18. Con la app abierta y cuenta activa, lo escrito llega a Firestore sin intervención. (Hoy no llega: D1.)
 19. **Borrar solo la base `strivo` de IndexedDB** (DevTools → Application), recargar: vuelve todo, incluido el nombre del perfil, en el mismo arranque. Con 100 entradas, en menos de 30 s.
-20. Tras restaurar en un dispositivo nuevo, el Journal pide **crear** PIN, no desbloquear con uno viejo.
+20. Tras restaurar en un dispositivo nuevo, el Journal abre sin candado y sin pedir el PIN anterior; `diario/pinConfig` no existe en local ni se descargó. *(Redacción corregida el 18 sep 2026: decía «pide crear PIN». El código está bien —`estadoPin` devuelve `activo: false` sin `pinConfig` local— y pedir un PIN para leer lo propio sería un bloqueo.)*
 21. Perfil muestra los cuatro estados correctos.
 
 **Plan de pruebas.** Unitarias de `conflictos.js` (las tres reglas, empate, sin marca en uno y en los dos, colección inmutable, formatos mezclados, huso distinto) y de `restaurar` (vacío, con datos, interrumpido, idempotente, `pinConfig` excluido, `sync: false`, sin validadores, marca solo al terminar). De `ArranqueProvisional`: marca huérfana, orden restaurar→sembrar, uid local sin restauración, cambio de uid sin restauración. Más el hook de estado. El doble de Firestore se hace con `vi.mock('firebase/firestore')` y `fake-indexeddb`, **el mismo patrón que ya usa `sync.test.js`**. Regresión: la cola no cambia de comportamiento, `mudarUid`/`adoptarArbol` siguen sin pisar nada, y Hoy, Journal, Respiración e Historial intactos.
@@ -312,6 +312,10 @@ Fase B (SQLite y migración), `onAuthStateChanged` y entrar/salir/recuperar (SPE
 ## 9. Estado de las decisiones
 
 **Resueltas:** DP-17.6 (`startSync` en 17A), DP-17.7 (disparo provisional), DP-17.8 (marca en `localStorage`, con la corrección de D13), DP-17.9 (copy de Perfil).
+
+**Resueltas por SPEC_17A.2 (18 sep 2026), tras la validación manual:**
+- **DP-17.10** — La mudanza de P7 subía la semilla y pisaba la nube. `mudarUid` ya no reencola lo que sigue siendo semilla (`esSemilla`, en `conflictos.js`); lo escrito sube como antes, marca ilegible incluida.
+- **DP-17.11** — La puerta del onboarding se decidía sobre la semilla si la bajada llegaba tarde. `prepararArbol` coalesce las llamadas en vuelo por uid; el caso del techo de 15 s queda para SPEC_19.
 
 **Heredadas, sin cambio:** DP-17.1, 17.2, 17.3 (resueltas por el repo), DP-17.4 (no se invita a crear cuenta desde el indicador; eso es SPEC_19).
 

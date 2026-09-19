@@ -655,7 +655,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**67 archivos de prueba · 1.866 casos · los seis comandos en verde.**
+**68 archivos de prueba · 1.891 casos · los seis comandos en verde.**
 
 ### Marca: el logo oficial y el video de apertura (25 ago 2026)
 
@@ -1199,14 +1199,53 @@ olvidar. La instrucción completa está en `docs/specs/SPEC_17A_INSTRUCCION_EJEC
   señal de que hay cuenta es que el uid no empiece por `local-`. SPEC_19 la sustituye por
   `onAuthStateChanged` y este helper desaparece con ella. Por eso la restauración se evalúa **solo
   al montar**: el uid cambia en P7, a mitad del onboarding, y restaurar ahí obligaría a decidir tres
-  cosas sobre un recorrido que SPEC_19 va a rehacer (DP-19.5). Quien entra en P7 a una cuenta con
-  datos los ve al siguiente arranque; nada se pierde.
+  cosas sobre un recorrido que SPEC_19 va a rehacer (DP-19.5). **Y quien entra en P7 a una cuenta
+  que ya tiene datos no los ve en esa sesión, y hasta el 18 de septiembre de 2026 además los
+  perdía en la nube** (DP-17.10). Aquí decía «nada se pierde», y era falso: `mudarUid` garantizaba
+  no pisar nada, pero esa garantía solo existía en local —es el `store.get(destino)` de su bucle—
+  y en un dispositivo que nunca vio esa cuenta no hay nada bajo su uid, así que la mudanza
+  encolaba el árbol sembrado entero y `sync.js`, que sube con `setDoc` sin `merge`, reemplazaba en
+  Firestore el perfil real con `name: null`. La restauración bajaba después, fielmente, lo que la
+  subida acababa de borrar. Desde entonces **la mudanza no reencola lo que sigue siendo semilla**
+  —lo decide `esSemilla`, en `conflictos.js`, la misma pregunta que hace la fusión—, y con eso el
+  caso medido queda cerrado. **Lo que no cierra, y es más ancho de lo que la adenda escribió al
+  principio:** terminar el recorrido escribe el perfil entero y el expediente con `completedAt`,
+  los dos sellados y bajo el uid de la cuenta, así que quien entra por P7 a una cuenta con datos y
+  llega hasta P8 **sigue pisando `shared/profile` y `shared/onboarding` en la nube** con lo que
+  contestó —o con `name: null`, si lo saltó—. Eso es DP-19.5 y se resuelve donde se rehace la
+  entrada. **Hasta entonces: no entrar por P7 con ninguna cuenta que tenga datos reales en la
+  nube, incluidas las de prueba.**
+  - **Y la puerta del onboarding se decidía sobre la semilla si la bajada llegaba tarde**
+    (DP-17.11). Dos llamadas concurrentes a `prepararArbol` con el mismo uid —el doble montaje de
+    `React.StrictMode`, siempre en desarrollo— se pisaban: la segunda veía el perfil ausente porque
+    la primera seguía bajando, sembraba, y `Entrada` leía `completedAt: null` y mandaba al
+    onboarding a quien ya lo había hecho; terminarlo volvía a pasar por P7, que es el bucle que se
+    observó dos veces. Ahora la promesa en vuelo se guarda por uid y la segunda llamada la recibe
+    tal cual; no es una caché, la entrada se retira al resolverse. **Se apoya en que la llamada en
+    vuelo es siempre la que hace más** (`restaurarSiHaceFalta: true` primero), y está anotado en
+    `sesion.js`. El caso del techo de 15 s —la bajada que cruza el techo y la puerta ya decidida—
+    sigue abierto y se decide en SPEC_19 con DP-19.5.
 - **La restauración es el único sitio del código autorizado a leer de Firestore.** `getDoc` y
   `getDocs` aparecen solo en `src/lib/db/restaurar.js` y su prueba, y hay una prueba que recorre
   `src/` entero para comprobarlo. La lista de rutas va escrita literal allí —el SDK web no enumera
   subcolecciones— y `diario/pinConfig` no está en ella a propósito. La bajada escribe por
   `local.writePath` con `sync: false` y sin validadores: los días de agosto traen campos que el
   modelo ya no admite escribir, y rechazarlos sería perder justo lo que esto viene a devolver.
+- **Probar la restauración a mano tiene cuatro trampas, y las cuatro se aprendieron por las
+  malas** (adenda del 18 sep 2026, §5). La primera es que **escribir `strivo.uid.local` a mano no
+  basta**: las reglas de Firestore son uid-scoped y exigen `auth.currentUser` para ese uid, así que
+  sin una sesión real de Firebase Auth `restaurar()` falla por permisos en silencio —`motivo:
+  interrumpida`—, se siembra un árbol vacío y se acaba en el onboarding, que es justo el camino
+  que dispara DP-17.10. La sesión se consigue con `crearConCorreo` desde la consola, sin tocar el
+  árbol local ni llamar a `mudarUid`. La segunda es que **`deleteDatabase` no borra con una
+  conexión abierta**: se queda en `blocked` sin lanzar error, y hay que `closeLocalDB()` antes. La
+  tercera es que **tocar «Omitir» sella `updatedAt` igual que contestar**, y lo único que abre o
+  cierra la puerta es `completedAt`, que solo escribe `terminar()` al final: salirse en P7 deja el
+  expediente a medias, con `currentStep: "p7"`, y la puerta abierta. La cuarta es que
+  **`localhost:5173` es un origen compartido** con bases de otros proyectos y claves viejas, así
+  que «limpiar todo» ahí es ambiguo: se borra por nombre y se comprueba con `indexedDB.databases()`.
+  El resultado se lee por dentro con `ultimoResultado(uid)` de `restaurar.js`, en vez de deducirlo
+  de la pantalla.
 
 ### Divergencias conocidas entre el blueprint y el código
 

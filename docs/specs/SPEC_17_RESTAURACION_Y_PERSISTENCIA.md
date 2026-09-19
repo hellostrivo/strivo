@@ -100,7 +100,7 @@ En `copy` (Claude Code confirma la rama exacta; el proyecto ya no tiene bloque `
 
 1. Con una cuenta que tiene 100 entradas en Firestore, borrar los datos del navegador, entrar de nuevo: las 100 vuelven en menos de 30 s.
 2. La restauración **no** deja la cola con entradas pendientes (verificable con `pendingCount`): lo que baja no vuelve a subir.
-3. El PIN no se restaura: tras restaurar en un dispositivo nuevo, el Journal pide crear PIN, no desbloquear con uno viejo.
+3. El PIN no se restaura: tras restaurar en un dispositivo nuevo, el Journal abre sin candado y sin pedir el PIN anterior; `diario/pinConfig` no existe en local ni se descargó. *(Redacción corregida el 18 sep 2026: decía «pide crear PIN». Pedir un PIN para leer lo propio sería un bloqueo; el PIN es un cerrojo local que se ofrece donde siempre, no un peaje de entrada.)*
 4. Editar el mismo día en dos navegadores sin conexión y reconectar: prevalece el `updatedAt` mayor.
 5. Perfil muestra los cuatro estados correctos (al día, pendiente, sin conexión, sin cuenta).
 6. Sin `.env.local`, nada de esto se activa y la app funciona igual que hoy.
