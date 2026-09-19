@@ -57,8 +57,13 @@ function docSpec(uid, doc) {
 //   que recuperar. Una siembra no tiene nada que contarle a la nube.
 //
 // Quien empieza sin cuenta no pierde nada por esto: al crear cuenta en P7,
-// `mudarUid` reencola el árbol entero, semilla incluida, y ahí suben los
-// cuatro documentos por primera vez.
+// `mudarUid` reencola lo que esa persona escribió —el perfil con su nombre, el
+// expediente del recorrido— y ahí sube por primera vez. **Lo que sigue siendo
+// semilla no sube ni entonces** (DP-17.10): hasta el 18 de septiembre de 2026
+// la mudanza reencolaba el árbol entero, y al entrar en P7 a una cuenta que ya
+// tenía datos, la semilla reemplazaba en Firestore el perfil real. La pregunta
+// de qué es semilla la contesta `esSemilla` (`conflictos.js`), la misma que usa
+// la fusión.
 //
 // **Y nunca pisa nada** (D16). La siembra puede correr con una restauración
 // todavía en marcha por detrás —el velo tiene techo y la bajada no se

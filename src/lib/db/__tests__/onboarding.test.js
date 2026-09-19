@@ -112,12 +112,17 @@ describe('mudar el árbol a la cuenta (P7)', () => {
     expect(await shared.getProfile(UID)).toBeNull()
   })
 
-  it('lo mudado se reencola entero: son rutas que Firestore no ha visto', async () => {
+  it('lo escrito se reencola bajo el uid nuevo: son rutas que Firestore no ha visto', async () => {
+    // Hasta DP-17.10 esta prueba mudaba un árbol recién sembrado y esperaba
+    // cola: hoy una semilla no sube ni después de mudarse (`mudanza.test.js`),
+    // así que lo que se muda aquí es algo que alguien escribió.
     await initUserTree(UID)
+    await shared.updateProfile(UID, { name: 'Alejandra' })
     await mudarUid(UID, CUENTA)
 
     const cola = await listQueue()
     expect(cola.length).toBeGreaterThan(0)
+    expect(cola.some((entrada) => entrada.path === paths.sharedDoc(CUENTA, 'profile'))).toBe(true)
     cola.forEach((entrada) => {
       expect(entrada.uid).toBe(CUENTA)
       expect(entrada.path).toContain(`users/${CUENTA}/`)

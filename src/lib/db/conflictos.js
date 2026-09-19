@@ -92,8 +92,8 @@ export function marcaDe(coleccion, data) {
  * menor, local ilegible, colección sin campo— es `false`.
  *
  * `marcaDe` no distingue ausente de ilegible, y aquí sí hace falta: por eso
- * esta función pregunta además si el campo existe en el documento local. Esa
- * pregunta vive solo aquí y no cambia el contrato de `marcaDe`.
+ * esta función pregunta además `esSemilla` sobre el documento local. Esa
+ * pregunta no cambia el contrato de `marcaDe`.
  */
 export function ganaRemoto(coleccion, local, remoto) {
   const campo = campoDeMarca(coleccion)
@@ -101,12 +101,19 @@ export function ganaRemoto(coleccion, local, remoto) {
   const marcaRemota = marcaDe(coleccion, remoto)
   if (marcaRemota === null) return false
   const marcaLocal = marcaDe(coleccion, local)
-  if (marcaLocal === null) return !tieneCampo(local, campo)
+  if (marcaLocal === null) return esSemilla(coleccion, local)
   return marcaRemota > marcaLocal
 }
 
 /**
- * ¿Está el campo en el documento con un valor, aunque no se pueda leer?
+ * ¿Es este registro un hueco que nadie escribió?
+ *
+ * Es la pregunta que distingue **ausente** de **ilegible**, y es pública
+ * porque la hacen dos sitios: `ganaRemoto`, para dejar que lo remoto pise una
+ * siembra y solo una siembra; y `mudarUid` (DP-17.10), para no subir a la nube
+ * lo que sigue siendo semilla después de mudarse a una cuenta. Dos copias de
+ * la misma pregunta se separan en cuanto alguien edite una, y la diferencia
+ * entre las dos respuestas es que un `updatedAt: "ayer"` suba o no.
  *
  * `null` y `undefined` cuentan como **ausente**, no como ilegible: `null` es
  * la convención de la casa para "todavía no" —`name: null`, `completedAt:
@@ -114,8 +121,15 @@ export function ganaRemoto(coleccion, local, remoto) {
  * `actualizadoEn`. Una siembra con `null` es el mismo hueco que una siembra
  * sin la clave, y tratarla como escrita dejaría que unas preferencias de
  * fábrica le ganaran a las que esa persona sí ajustó (D13). Lo ilegible es
- * otra cosa: un valor que alguien puso y que no se puede fechar.
+ * otra cosa: un valor que alguien puso y que no se puede fechar, y por eso
+ * **no** es semilla.
+ *
+ * Una colección sin campo de marca (`breathing/sesiones`) nunca es semilla:
+ * ahí no hay forma de distinguir, y el lado seguro es tratar cada registro
+ * como escrito.
  */
-function tieneCampo(data, campo) {
-  return data !== null && typeof data === 'object' && data[campo] != null
+export function esSemilla(coleccion, data) {
+  const campo = campoDeMarca(coleccion)
+  if (campo === null) return false
+  return data?.[campo] == null
 }

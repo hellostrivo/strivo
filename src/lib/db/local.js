@@ -11,6 +11,7 @@
 
 import { openDB } from 'idb'
 import { assertUid, StrivoDataError, ERROR_CODES } from './schema.js'
+import { esSemilla } from './conflictos.js'
 
 const DB_NAME = 'strivo'
 const DB_VERSION = 1
@@ -248,7 +249,27 @@ const SIN_SINCRONIZAR = /\/diario\/pinConfig$/
  * sesión anónima. Lo que no se pudo mudar se cuenta y se devuelve, no se
  * descarta en silencio.
  *
- * Lo mudado se **reencola entero**: son rutas que Firestore no ha visto nunca.
+ * **Y esa garantía vale también para la nube** (DP-17.10). La intención de
+ * arriba siempre fue la correcta, pero hasta el 18 de septiembre de 2026 solo
+ * se aplicaba en local: la comprobación es el `store.get(destino)` del bucle,
+ * y en un dispositivo que nunca vio esa cuenta no hay nada bajo su uid, así
+ * que todo se mudaba y todo se encolaba —la semilla de `initShared` incluida—.
+ * `sync.js` sube con `setDoc` sin `merge`, de modo que un `shared/profile`
+ * con `name: null` reemplazaba en Firestore el perfil real de esa cuenta, y
+ * la restauración bajaba después, fielmente, lo que la subida acababa de
+ * borrar. Se midió en la validación manual de SPEC_17A.
+ *
+ * Por eso lo mudado **se reencola salvo lo que sigue siendo semilla**. Es D14
+ * extendido a la mudanza: una siembra ni sella, ni sube, ni pisa, y mudarse de
+ * uid no la convierte en otra cosa. La pregunta la contesta `esSemilla`
+ * (`conflictos.js`), que es la misma que hace la fusión para dejar que lo
+ * remoto pise una siembra y solo una siembra: una regla, un sitio. Lo que
+ * alguien escribió —una mañana, un journal, un perfil con nombre, incluso un
+ * registro cuya marca no se puede leer— sube igual que antes, porque ausente e
+ * ilegible no son lo mismo. Las filas semilla se mudan igual que las demás:
+ * siguen siendo suyas y siguen en local; solo no tienen nada que contarle a
+ * la nube.
+ *
  * Las entradas de la cola del uid viejo se retiran, porque apuntan a rutas que
  * ninguna sesión autenticada podrá escribir.
  *
@@ -279,13 +300,15 @@ export async function mudarUid(desde, hacia) {
     }
     await store.put({ ...fila, path: destino, uid: hacia })
     await store.delete(fila.path)
-    mudadas.push({ path: destino, data: fila.data })
+    mudadas.push({ path: destino, collection: fila.collection, data: fila.data })
   }
   await tx.done
 
   for (const entrada of await listQueue(desde)) await dequeue(entrada.seq)
   for (const fila of mudadas) {
     if (SIN_SINCRONIZAR.test(fila.path)) continue
+    // Una semilla no sube tampoco después de mudarse (DP-17.10, ver arriba).
+    if (esSemilla(fila.collection, fila.data)) continue
     await enqueue({ uid: hacia, path: fila.path, op: 'put', data: fila.data })
   }
 

@@ -8,7 +8,7 @@
 
 import { describe, expect, it } from 'vitest'
 
-import { CAMPO_DE_MARCA, campoDeMarca, ganaRemoto, marcaDe } from '../conflictos.js'
+import { CAMPO_DE_MARCA, campoDeMarca, esSemilla, ganaRemoto, marcaDe } from '../conflictos.js'
 
 const T0 = '2026-09-17T12:00:00.000Z'
 const T1 = '2026-09-17T13:00:00.000Z'
@@ -215,5 +215,44 @@ describe('criterio 5: respiración fusiona por sus campos', () => {
       ganaRemoto('breathing/sesiones', { iniciadaEn: T0 }, { iniciadaEn: T1, updatedAt: T1 }),
     ).toBe(false)
     expect(ganaRemoto('breathing/sesiones', {}, { updatedAt: T1 })).toBe(false)
+  })
+})
+
+describe('esSemilla: ausente e ilegible no son lo mismo (DP-17.10)', () => {
+  it('sin el campo de marca, o con null, es semilla: nadie escribió ahí', () => {
+    expect(esSemilla('shared', { name: null })).toBe(true)
+    expect(esSemilla('shared', { name: null, updatedAt: null })).toBe(true)
+    expect(esSemilla('shared', { updatedAt: undefined })).toBe(true)
+    expect(esSemilla('breathing', { actualizadoEn: null })).toBe(true)
+  })
+
+  it('con marca legible no es semilla', () => {
+    expect(esSemilla('shared', { name: 'Alejandra', updatedAt: T0 })).toBe(false)
+    expect(esSemilla('breathing/recientes', { usadoEn: T0 })).toBe(false)
+  })
+
+  it('con marca presente pero ilegible tampoco: alguien escribió, solo no sabemos cuándo', () => {
+    expect(esSemilla('shared', { updatedAt: 'ayer' })).toBe(false)
+    expect(esSemilla('shared', { updatedAt: 0 })).toBe(false)
+    expect(esSemilla('shared', { updatedAt: 1726000000000 })).toBe(false)
+    expect(esSemilla('breathing/favoritos', { actualizadoEn: 'hace poco' })).toBe(false)
+  })
+
+  it('una colección sin campo de marca nunca es semilla', () => {
+    expect(esSemilla('breathing/sesiones', {})).toBe(false)
+    expect(esSemilla('breathing/sesiones', { duracion: 300 })).toBe(false)
+  })
+
+  it('lo que no es un registro cuenta como hueco, no como escritura', () => {
+    expect(esSemilla('shared', null)).toBe(true)
+    expect(esSemilla('shared', undefined)).toBe(true)
+  })
+
+  it('ganaRemoto hace la misma pregunta y no una copia: una semilla pierde, una ilegible gana', () => {
+    const remoto = { updatedAt: T1 }
+    expect(ganaRemoto('shared', { name: null }, remoto)).toBe(esSemilla('shared', { name: null }))
+    expect(ganaRemoto('shared', { updatedAt: 'ayer' }, remoto)).toBe(
+      esSemilla('shared', { updatedAt: 'ayer' }),
+    )
   })
 })
