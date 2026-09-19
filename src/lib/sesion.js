@@ -10,8 +10,9 @@
 //     alguien edite una.
 //   - `prepararArbol`: el orden en que se restaura y se siembra. Es lógica sin
 //     React a propósito: es lo que hay que poder probar sin un navegador
-//     —marca huérfana, restaurar antes de sembrar, uid local sin restauración—
-//     y el componente que la llama solo decide qué se ve mientras tanto.
+//     —marca huérfana, restaurar antes de sembrar, uid local sin restauración,
+//     dos llamadas a la vez— y el componente que la llama solo decide qué se
+//     ve mientras tanto.
 
 import { initUserTree, shared } from './db/index.js'
 import {
@@ -49,6 +50,9 @@ export function esUidDeCuenta(uid) {
   return typeof uid === 'string' && uid.length > 0 && !uid.startsWith(PREFIJO_LOCAL)
 }
 
+/** Las evaluaciones de `prepararArbol` en curso, por uid (DP-17.11). */
+const EN_VUELO = new Map()
+
 /**
  * Deja el árbol de `users/{uid}/` listo para entrar, en este orden:
  *
@@ -75,6 +79,28 @@ export function esUidDeCuenta(uid) {
  * después no puede pisar lo que la bajada escriba mientras tanto: `initShared`
  * escribe solo donde no hay nada.
  *
+ * **Dos llamadas a la vez con el mismo uid son una** (DP-17.11). Cada llamada
+ * evaluaba por su cuenta si restaurar y si sembrar, y dos concurrentes se
+ * pisaban: la segunda veía `getProfile(uid) === null` porque la primera seguía
+ * bajando, sembraba, y `Entrada` leía el expediente sembrado —`completedAt:
+ * null`— y mandaba al onboarding a quien ya lo había hecho. Pasa siempre en
+ * desarrollo, porque `React.StrictMode` monta dos veces, y pasaría con
+ * cualquier re-montaje. Ahora la promesa en vuelo se guarda por uid y una
+ * segunda llamada la recibe tal cual, en vez de arrancar otra evaluación. No
+ * es una caché: la entrada se retira al resolverse, gane o falle, y una
+ * llamada posterior vuelve a evaluar con normalidad.
+ *
+ * **Se apoya en una suposición que hoy se cumple y conviene no romper:** la
+ * llamada en vuelo es siempre la que hace más. En `ArranqueProvisional` la
+ * primera va con `restaurarSiHaceFalta: true` y la segunda —la del doble
+ * montaje— con `false`, así que devolverle a la segunda la promesa de la
+ * primera nunca le da menos de lo que pidió. Si algún día un llamador
+ * invierte ese orden —una primera llamada que solo siembra y una segunda que
+ * quiere restaurar—, la coalescencia deja de ser correcta y hay que decidir
+ * qué gana. El guard `arranqueEvaluado` del componente responde a otra
+ * pregunta —una restauración por sesión, aunque cambie el uid— y sigue
+ * haciendo falta.
+ *
  * @param {string} uid
  * @param {object} [opciones]
  * @param {(activa: boolean) => void} [opciones.enRestauracion] - Se llama con
@@ -86,7 +112,20 @@ export function esUidDeCuenta(uid) {
  * @param {number} [opciones.techoMs=TECHO_DE_ESPERA_MS]
  * @returns {Promise<{restauracion: ?object, aTiempo: boolean, sembrado: boolean, quitarOyente: ?(() => void)}>}
  */
-export async function prepararArbol(
+export function prepararArbol(uid, opciones = {}) {
+  const enVuelo = EN_VUELO.get(uid)
+  if (enVuelo) return enVuelo
+
+  const promesa = evaluarArbol(uid, opciones).finally(() => {
+    // Se retira solo si la entrada sigue siendo esta: es lo que hace que una
+    // llamada posterior vuelva a evaluar en vez de recibir un resultado viejo.
+    if (EN_VUELO.get(uid) === promesa) EN_VUELO.delete(uid)
+  })
+  EN_VUELO.set(uid, promesa)
+  return promesa
+}
+
+async function evaluarArbol(
   uid,
   { enRestauracion, restaurarSiHaceFalta = true, techoMs = TECHO_DE_ESPERA_MS } = {},
 ) {

@@ -16,6 +16,8 @@ import { UID, resetLocalDB } from '@lib/db/__tests__/helpers.js'
 const doble = {
   resultado: { ok: true, escritos: 0, fusionados: 0 },
   remoto: null,
+  // El expediente remoto del onboarding, si lo hay: es lo que decide la puerta.
+  remotoOnboarding: null,
   llamadas: 0,
   // Si se pone, `restaurar` no contesta hasta que alguien llame a `soltar()`.
   soltar: null,
@@ -52,6 +54,19 @@ vi.mock('@lib/db/restaurar', () => ({
         })
       }
     }
+    if (doble.remotoOnboarding) {
+      const local = await shared.getOnboarding(uid)
+      if (local === null || !('updatedAt' in local)) {
+        await writePath({
+          uid,
+          path: `users/${uid}/shared/onboarding`,
+          collection: 'shared',
+          id: 'onboarding',
+          data: doble.remotoOnboarding,
+          sync: false,
+        })
+      }
+    }
     if (doble.resultado.ok) marcas.set(uid, 'ahora')
     return doble.resultado
   },
@@ -66,6 +81,7 @@ const PERFIL_REMOTO = { name: 'Alejandra', gender: 'f', updatedAt: '2026-09-01T1
 beforeEach(async () => {
   doble.resultado = { ok: true, escritos: 0, fusionados: 0 }
   doble.remoto = null
+  doble.remotoOnboarding = null
   doble.llamadas = 0
   doble.soltar = null
   marcas.clear()
@@ -333,6 +349,111 @@ describe('criterio 15: el velo tiene techo (D16)', () => {
     expect(r.restauracion).toBeNull()
     expect(r.quitarOyente).toBeNull()
     doble.soltar()
+  })
+})
+
+describe('DP-17.11: dos llamadas a la vez con el mismo uid son una', () => {
+  /** Espera a que el doble de `restaurar` esté parado, esperando que lo suelten. */
+  async function esperarAlDoble() {
+    while (typeof doble.soltar !== 'function') {
+      await new Promise((r) => setTimeout(r, 0))
+    }
+  }
+
+  const EXPEDIENTE_REMOTO = {
+    version: 2,
+    completedSteps: ['p1', 'p2', 'p2a', 'p3', 'p5', 'p6', 'p7', 'p8'],
+    currentStep: 'p8',
+    completedAt: '2026-09-01T10:05:00.000Z',
+    motivos: ['paz'],
+    motivoOtro: null,
+    updatedAt: '2026-09-01T10:05:00.000Z',
+  }
+
+  it('la segunda recibe la misma promesa: una restauración y una siembra como mucho', async () => {
+    doble.soltar = undefined
+    const primera = prepararArbol(CUENTA, { restaurarSiHaceFalta: true })
+    const segunda = prepararArbol(CUENTA, { restaurarSiHaceFalta: false })
+    expect(segunda).toBe(primera)
+
+    await esperarAlDoble()
+    doble.soltar()
+    const [r1, r2] = await Promise.all([primera, segunda])
+    expect(r1).toBe(r2)
+    expect(doble.llamadas).toBe(1)
+    expect(r1.sembrado).toBe(true)
+  })
+
+  it('criterio 19: local vacío, expediente remoto cerrado y doble montaje ⇒ sin onboarding en el primer arranque', async () => {
+    // El orden real de `ArranqueProvisional` bajo StrictMode: la primera con
+    // `restaurarSiHaceFalta: true`, la segunda con `false`, las dos en vuelo a
+    // la vez. Antes, la segunda sembraba mientras la primera bajaba y la puerta
+    // se decidía sobre la semilla.
+    doble.soltar = undefined
+    doble.remoto = PERFIL_REMOTO
+    doble.remotoOnboarding = EXPEDIENTE_REMOTO
+
+    const primera = prepararArbol(CUENTA, { restaurarSiHaceFalta: true })
+    const segunda = prepararArbol(CUENTA, { restaurarSiHaceFalta: false })
+    await esperarAlDoble()
+    doble.soltar()
+    const r = await segunda
+    await primera
+
+    expect(r.sembrado).toBe(false)
+    expect(await shared.onboardingPendiente(CUENTA)).toBe(false)
+    expect((await shared.getProfile(CUENTA)).name).toBe('Alejandra')
+    expect(await pendingCount(CUENTA)).toBe(0)
+  })
+
+  it('no es una caché: una llamada posterior vuelve a evaluar', async () => {
+    const primera = await prepararArbol(CUENTA)
+    expect(doble.llamadas).toBe(1)
+    expect(primera.sembrado).toBe(true)
+
+    // Con marca y árbol, la segunda evaluación no restaura (criterio 10) y no
+    // siembra, que es lo que dice que evaluó de verdad y no devolvió lo viejo.
+    const segunda = await prepararArbol(CUENTA)
+    expect(segunda).not.toBe(primera)
+    expect(doble.llamadas).toBe(1)
+    expect(segunda.sembrado).toBe(false)
+  })
+
+  it('tras un fallo también se retira la entrada: el reintento no recibe el fallo viejo', async () => {
+    doble.resultado = { ok: false, motivo: 'interrumpida' }
+    const primera = await prepararArbol(CUENTA)
+    expect(primera.restauracion.ok).toBe(false)
+
+    doble.resultado = { ok: true, escritos: 1, fusionados: 0 }
+    doble.remoto = PERFIL_REMOTO
+    const segunda = await prepararArbol(CUENTA)
+    expect(segunda.restauracion.ok).toBe(true)
+    expect(doble.llamadas).toBe(2)
+  })
+
+  it('dos uid distintos a la vez no se interfieren', async () => {
+    doble.soltar = undefined
+    const OTRA = 'XyZ987otraCuenta'
+    const a = prepararArbol(CUENTA)
+    const b = prepararArbol(OTRA)
+    expect(a).not.toBe(b)
+
+    // El doble guarda un único resolutor: la primera en llegar se queda
+    // esperando y la segunda pasa de largo. Lo que se vigila es que ninguna
+    // sea la promesa de la otra y que cada árbol acabe bajo su uid.
+    await esperarAlDoble()
+    doble.soltar()
+    await Promise.all([a, b])
+
+    expect(await shared.getProfile(CUENTA)).not.toBeNull()
+    expect(await shared.getProfile(OTRA)).not.toBeNull()
+    expect(doble.llamadas).toBe(2)
+  })
+
+  it('el guard de una sola restauración por sesión sigue en ArranqueProvisional', () => {
+    const fuente = readFileSync('src/components/ArranqueProvisional.jsx', 'utf8')
+    expect(fuente).toMatch(/arranqueEvaluado/)
+    expect(fuente).toMatch(/restaurarSiHaceFalta: primero/)
   })
 })
 
