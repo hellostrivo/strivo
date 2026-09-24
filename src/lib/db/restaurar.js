@@ -135,6 +135,17 @@ function marcar(uid) {
 // ─── El último resultado, por sesión ──────────────────────────────────────────
 // Lo consume el botón de reintentar de Perfil (§4.6). Se queda en memoria: un
 // fallo es un hecho de esta sesión, no del dispositivo.
+//
+// Y no necesita persistir, porque un fallo se reproduce solo: `bajar` devuelve
+// `ok: false` sin llamar a `marcar(uid)`, y `prepararArbol` (`lib/sesion.js`)
+// vuelve a restaurar mientras no haya marca, aunque el árbol local esté
+// entero. Guardar el resultado en disco sería una segunda copia de lo que la
+// ausencia de marca ya dice, y las dos envejecerían distinto. Lo fijan dos
+// pruebas: `restaurar.test.js` («no deja marca, cuenta como fallo y conserva
+// lo que ya bajó») y `sesion.test.js` («sin marca pero con árbol, se restaura
+// igual»).
+//
+// DP-17.13, cerrada el 24 de septiembre de 2026 sin cambio de código.
 
 const ultimos = new Map()
 
