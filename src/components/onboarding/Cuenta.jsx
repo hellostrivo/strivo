@@ -17,7 +17,7 @@ import { useState } from 'react'
 import Button from '@components/ui/Button'
 import { CampoLinea } from '@components/shared/Campo'
 import { copy } from '@copy'
-import { MOTIVOS } from '@lib/cuenta'
+import { MOTIVOS, PROVEEDORES_WEB } from '@lib/cuenta'
 
 export default function Cuenta({ textos, motivo, listo, onProveedor, onCrear, onSaltar }) {
   const [conCorreo, setConCorreo] = useState(false)
@@ -38,12 +38,18 @@ export default function Cuenta({ textos, motivo, listo, onProveedor, onCrear, on
         <p className="text-base text-on-surface">{textos.ready}</p>
       ) : (
         <div className="flex flex-col gap-3">
-          <Button variant="surface" fullWidth onClick={() => onProveedor('google')}>
-            {textos.google}
-          </Button>
-          <Button variant="surface" fullWidth onClick={() => onProveedor('apple')}>
-            {textos.apple}
-          </Button>
+          {/* Los proveedores que hay en web (DP-19.4): hoy solo Google. Apple
+              vuelve con SPEC_21, y su copy se queda donde está. */}
+          {PROVEEDORES_WEB.map((proveedor) => (
+            <Button
+              key={proveedor}
+              variant="surface"
+              fullWidth
+              onClick={() => onProveedor(proveedor)}
+            >
+              {textos[proveedor]}
+            </Button>
+          ))}
 
           {conCorreo ? (
             <div className="flex flex-col gap-3">

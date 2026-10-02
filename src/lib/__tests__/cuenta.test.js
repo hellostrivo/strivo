@@ -6,6 +6,7 @@
 // contestar el doble y comprueba la traducción a un motivo sin código.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { readFileSync } from 'fs'
 
 const instancia = { languageCode: null }
 const firebase = { auth: instancia }
@@ -217,5 +218,16 @@ describe('`nueva`: si la cuenta se acaba de crear', () => {
 describe('criterio 12: Apple no se ofrece en web (DP-19.4)', () => {
   it('la lista de proveedores web es solo Google', () => {
     expect(PROVEEDORES_WEB).toEqual(['google'])
+  })
+
+  it('P7 pinta sus botones desde la lista y no nombra a Apple', () => {
+    const p7 = readFileSync('src/components/onboarding/Cuenta.jsx', 'utf8')
+    expect(p7).toMatch(/PROVEEDORES_WEB\.map/)
+    expect(p7).not.toMatch(/'apple'|textos\.apple/)
+  })
+
+  it('P7 conserva su copy: el texto de Apple sigue ahí para SPEC_21', async () => {
+    const { copy } = await import('@copy')
+    expect(copy.diario.onboarding.p7.apple).toBe('Continuar con Apple')
   })
 })
