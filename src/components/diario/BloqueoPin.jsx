@@ -14,11 +14,19 @@
 // Sin límite de intentos ni bloqueo temporal (§5.8.2): no hay nada protegido
 // criptográficamente que un límite mejore, y castigar a quien se equivoca
 // escribiendo en su propio journal no tiene ningún sentido.
+//
+// **Con una cuenta de correo, verificarse es escribir su contraseña**
+// (SPEC_19.2, DP-19.6). El campo no está de antemano: aparece cuando la
+// verificación dice que hace falta (`pide-contrasena`), recibe el foco y el
+// mismo botón vuelve a intentar con lo escrito. **La contraseña vive solo en el
+// estado de este componente**: no va a ningún almacén, ni a la cola, ni a un
+// registro, y se olvida al salir del paso.
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { clsx } from 'clsx'
 import CuentaParaPin from './CuentaParaPin'
 import Button from '@components/ui/Button'
+import { CampoLinea } from '@components/shared/Campo'
 import { copy } from '@copy'
 import { MAX_DIGITOS, MIN_DIGITOS, esPinValido, soloDigitos } from '@/diario/pin'
 
@@ -49,9 +57,9 @@ function CampoPin({ value, onChange, etiqueta, id }) {
   )
 }
 
-function Nota({ children }) {
+function Nota({ children, id }) {
   return (
-    <p className="text-sm text-on-surface-soft" role="status">
+    <p id={id} className="text-sm text-on-surface-soft" role="status">
       {children}
     </p>
   )
@@ -66,13 +74,24 @@ export default function BloqueoPin({ modo, estado, acciones, onCerrar }) {
   const [codigo, setCodigo] = useState('')
   const [repetido, setRepetido] = useState('')
   const [nota, setNota] = useState(null)
+  // Solo con cuenta de correo, y solo después de que la verificación lo pida.
+  const [pideContrasena, setPideContrasena] = useState(false)
+  const [contrasena, setContrasena] = useState('')
+  const campoContrasena = useRef(null)
 
   const limpiar = (siguiente) => {
     setCodigo('')
     setRepetido('')
     setNota(null)
+    setContrasena('')
+    setPideContrasena(false)
     setPaso(siguiente)
   }
+
+  // Al aparecer, el foco va al campo: es lo único que queda por hacer.
+  useEffect(() => {
+    if (pideContrasena) campoContrasena.current?.focus()
+  }, [pideContrasena])
 
   const abrir = async () => {
     if (await acciones.desbloquear(codigo)) return
@@ -81,14 +100,22 @@ export default function BloqueoPin({ modo, estado, acciones, onCerrar }) {
   }
 
   const verificar = async () => {
-    const resultado = await acciones.reautenticar()
+    const resultado = await acciones.reautenticar(pideContrasena ? { contrasena } : undefined)
     if (resultado.ok) return limpiar('nuevo')
+    if (resultado.motivo === 'pide-contrasena') {
+      setPideContrasena(true)
+      return setNota(textos.recuperar.pideContrasena)
+    }
     setNota(
       {
         'sin-sesion': textos.recuperar.sinSesion,
         'sin-metodo': textos.recuperar.sinMetodo,
+        credenciales: textos.recuperar.credenciales,
+        'sin-conexion': copy.cuenta.error.sinConexion,
       }[resultado.motivo] ?? textos.recuperar.noVerificado,
     )
+    // Con un error del campo, el foco vuelve a él.
+    if (pideContrasena) campoContrasena.current?.focus()
     return undefined
   }
 
@@ -146,7 +173,23 @@ export default function BloqueoPin({ modo, estado, acciones, onCerrar }) {
             <h1 className="font-display text-lg text-on-surface">{textos.recuperar.titulo}</h1>
             <p className="text-base text-on-surface-soft">{textos.recuperar.lead}</p>
           </div>
-          {nota && <Nota>{nota}</Nota>}
+          {pideContrasena && (
+            <div className="flex flex-col gap-1">
+              <label htmlFor="pin-contrasena" className="text-sm text-on-surface-soft">
+                {textos.recuperar.contrasena}
+              </label>
+              <CampoLinea
+                ref={campoContrasena}
+                id="pin-contrasena"
+                type="password"
+                autoComplete="current-password"
+                value={contrasena}
+                onChange={(evento) => setContrasena(evento.target.value)}
+                aria-describedby={nota ? 'pin-recuperar-nota' : undefined}
+              />
+            </div>
+          )}
+          {nota && <Nota id="pin-recuperar-nota">{nota}</Nota>}
           <Button variant="surface" onClick={verificar}>
             {textos.recuperar.cta}
           </Button>

@@ -84,8 +84,11 @@ export function usePin(uid) {
       return resultado
     },
 
-    /** "Olvidé mi PIN": verifica la cuenta y deja fijar uno nuevo. */
-    reautenticar: () => pin.reautenticar(uid),
+    /**
+     * "Olvidé mi PIN": verifica la cuenta y deja fijar uno nuevo. Con cuenta de
+     * correo, la segunda llamada lleva la contraseña; no se guarda aquí.
+     */
+    reautenticar: (opciones) => pin.reautenticar(uid, opciones),
 
     reestablecer: async (codigo) => {
       const resultado = await pin.reestablecerPin(uid, codigo)

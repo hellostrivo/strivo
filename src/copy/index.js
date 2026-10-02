@@ -1323,6 +1323,12 @@ export const copy = {
             'Esta cuenta no tiene correo ni teléfono vinculados, así que no hay forma de verificarte.',
           noVerificado: 'No pudimos verificarte esta vez. Tu journal sigue donde estaba.',
           nuevo: 'Elige tu PIN nuevo',
+          // Con una cuenta de correo, verificarse es escribir su contraseña
+          // (SPEC_19.2, DP-19.6). Sin conexión se dice con la frase de Tu
+          // cuenta, `cuenta.error.sinConexion`: es el mismo tropiezo.
+          contrasena: 'Contraseña de tu cuenta',
+          pideContrasena: 'Escribe la contraseña de tu cuenta para verificarte.',
+          credenciales: 'Esa contraseña no coincide con la de tu cuenta.',
         },
 
         // RN-JR-PIN-02 — Nunca un PIN activo sobre una cuenta sin salida.

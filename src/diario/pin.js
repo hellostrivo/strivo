@@ -193,22 +193,30 @@ export async function desactivarPin(uid, pin) {
 /**
  * Reautentica contra la cuenta de Firebase.
  *
- * **Desviación anotada.** §5.8.2 describe la reautenticación como "enlace por
- * correo o código SMS, según el método vinculado". `src/lib/firebase.js` solo
- * configura Google y Apple como proveedores: en este repositorio no existe ni
- * autenticación por correo y contraseña ni por teléfono, así que la
- * reautenticación real disponible es la del proveedor vinculado. El método de
- * `shared/auth` sigue siendo el que decide **si** se puede tener PIN
- * (RN-JR-PIN-02); el proveedor decide **cómo** se verifica.
+ * **Cómo se verifica lo decide el proveedor de la cuenta.** §5.8.2 describe la
+ * reautenticación como "enlace por correo o código SMS, según el método
+ * vinculado"; lo que hay es la reautenticación del proveedor con el que se
+ * entró. El método de `shared/auth` sigue siendo el que decide **si** se puede
+ * tener PIN (RN-JR-PIN-02); el proveedor decide **cómo** se verifica:
  *
- * Mientras no exista el onboarding con sesión real —Fase 1 entra por
- * `SesionProvisional`, con un uid local— no hay sesión de Firebase que
+ *   - **Correo y contraseña** (`password`, SPEC_19.2, DP-19.6): se pide la
+ *     contraseña. Sin ella devuelve `pide-contrasena` —la pantalla muestra el
+ *     campo y vuelve a llamar con ella— y con ella reautentica con
+ *     `EmailAuthProvider.credential`. Es el camino de casi cualquier persona.
+ *     **La contraseña no se guarda, no se registra y no sale de aquí** más que
+ *     hacia Firebase: vive en el estado del componente que la pide.
+ *   - **Google** y **Apple**: por ventana emergente, como siempre.
+ *
+ * Sin sesión de Firebase —sin cuenta, o con la sesión vencida— no hay a quién
  * reautenticar y esto devuelve `sin-sesion`. Se dice tal cual en pantalla en
  * vez de fingir una verificación que no ocurrió.
  *
- * @returns {Promise<{ok: boolean, motivo?: 'sin-metodo'|'sin-sesion'|'no-verificado'}>}
+ * @param {string} uid
+ * @param {object} [opciones]
+ * @param {string} [opciones.contrasena] - solo con cuenta de correo.
+ * @returns {Promise<{ok: boolean, motivo?: 'sin-metodo'|'sin-sesion'|'pide-contrasena'|'credenciales'|'sin-conexion'|'no-verificado'}>}
  */
-export async function reautenticar(uid) {
+export async function reautenticar(uid, { contrasena } = {}) {
   if ((await metodoDeRecuperacion(uid)) === null) return { ok: false, motivo: 'sin-metodo' }
 
   try {
@@ -216,21 +224,47 @@ export async function reautenticar(uid) {
     // credencial de cuenta** (§7.7.1). No autentica contra ningún servidor, no
     // viaja por la red y no sirve para iniciar sesión. Que su módulo no
     // dependa de la capa de autenticación es esa misma frase, dicha en código.
-    const [{ auth, appleProvider, googleProvider }, { reauthenticateWithPopup }] =
-      await Promise.all([import('@/lib/firebase'), import('firebase/auth')])
+    const [
+      { auth, appleProvider, googleProvider },
+      { EmailAuthProvider, reauthenticateWithCredential, reauthenticateWithPopup },
+    ] = await Promise.all([import('@/lib/firebase'), import('firebase/auth')])
 
     const usuario = auth?.currentUser ?? null
     if (!usuario) return { ok: false, motivo: 'sin-sesion' }
 
     const proveedor = usuario.providerData?.[0]?.providerId
+    if (proveedor === 'password') {
+      if (!contrasena) return { ok: false, motivo: 'pide-contrasena' }
+      await reauthenticateWithCredential(
+        usuario,
+        EmailAuthProvider.credential(usuario.email, contrasena),
+      )
+      return { ok: true }
+    }
+
     await reauthenticateWithPopup(
       usuario,
       proveedor === 'apple.com' ? appleProvider : googleProvider,
     )
     return { ok: true }
-  } catch {
-    return { ok: false, motivo: 'no-verificado' }
+  } catch (error) {
+    return { ok: false, motivo: motivoDeReautenticacion(error) }
   }
+}
+
+/** Contraseña que no coincide: los tres códigos con que Firebase lo dice. */
+const CODIGOS_DE_CREDENCIALES = new Set([
+  'auth/wrong-password',
+  'auth/invalid-credential',
+  'auth/invalid-login-credentials',
+])
+
+/** Lo que puede salir mal al reautenticar, sin un solo código a la vista (RN-EST-04). */
+function motivoDeReautenticacion(error) {
+  const codigo = String(error?.code ?? '')
+  if (CODIGOS_DE_CREDENCIALES.has(codigo)) return 'credenciales'
+  if (codigo === 'auth/network-request-failed') return 'sin-conexion'
+  return 'no-verificado'
 }
 
 /**
