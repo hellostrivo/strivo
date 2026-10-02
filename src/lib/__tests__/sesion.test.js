@@ -1,5 +1,6 @@
 // src/lib/__tests__/sesion.test.js
-// Cómo se prepara el árbol al arrancar (SPEC_17A §4.4; criterios 10, 11, 12 y 14).
+// Qué sesión hay (SPEC_19.1 §4.1, criterio 1) y cómo se prepara el árbol al
+// arrancar (SPEC_17A §4.4; criterios 10, 11, 12 y 14).
 //
 // `restaurar` se sustituye por un doble que escribe en la base local lo que
 // se le diga y devuelve el resultado que se le diga: aquí no se prueba la
@@ -7,11 +8,12 @@
 // cuándo se siembra, y que la segunda nunca le gane a la primera.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { readFileSync } from 'fs'
+import { readdirSync, readFileSync, statSync } from 'fs'
+import { join } from 'path'
 
 import * as shared from '@lib/db/shared'
 import { pendingCount, writePath } from '@lib/db/local'
-import { UID, resetLocalDB } from '@lib/db/__tests__/helpers.js'
+import { resetLocalDB } from '@lib/db/__tests__/helpers.js'
 
 const doble = {
   resultado: { ok: true, escritos: 0, fusionados: 0 },
@@ -23,6 +25,22 @@ const doble = {
   soltar: null,
 }
 const marcas = new Map()
+
+// Firebase Auth de mentira para `leerSesionGuardada` y `escucharUsuario`.
+const firebase = { auth: null }
+const oyentesAuth = []
+vi.mock('../firebase.js', () => ({
+  get auth() {
+    return firebase.auth
+  },
+}))
+vi.mock('firebase/auth', () => ({
+  onAuthStateChanged: (auth, fn) => {
+    oyentesAuth.push(fn)
+    Promise.resolve().then(() => fn(auth.currentUser))
+    return () => oyentesAuth.splice(oyentesAuth.indexOf(fn), 1)
+  },
+}))
 
 vi.mock('@lib/db/restaurar', () => ({
   MOTIVOS: {
@@ -72,11 +90,21 @@ vi.mock('@lib/db/restaurar', () => ({
   },
 }))
 
-const { esUidDeCuenta, prepararArbol, reintentarAlVolverLaRed, TECHO_DE_ESPERA_MS } =
-  await import('../sesion.js')
+const {
+  ESTADOS_SESION,
+  escucharUsuario,
+  leerSesionGuardada,
+  prepararArbol,
+  reintentarAlVolverLaRed,
+  resolverSesion,
+  TECHO_DE_ESPERA_MS,
+} = await import('../sesion.js')
 
 const CUENTA = 'AbC123firebaseUid'
 const PERFIL_REMOTO = { name: 'Alejandra', gender: 'f', updatedAt: '2026-09-01T10:00:00.000Z' }
+
+/** La sesión es `conCuenta`: lo dice quien llama, no el uid (SPEC_19.1 §4.1). */
+const CON_CUENTA = { conCuenta: true }
 
 beforeEach(async () => {
   doble.resultado = { ok: true, escritos: 0, fusionados: 0 }
@@ -85,30 +113,131 @@ beforeEach(async () => {
   doble.llamadas = 0
   doble.soltar = null
   marcas.clear()
+  firebase.auth = null
+  oyentesAuth.length = 0
   await resetLocalDB()
 })
 
 afterEach(() => vi.unstubAllGlobals())
 
-describe('esUidDeCuenta (DP-17.7, provisional)', () => {
-  it('un uid que acuña el arranque no es una cuenta', () => {
-    expect(esUidDeCuenta('local-3f2a')).toBe(false)
-    expect(esUidDeCuenta(UID)).toBe(true)
-    expect(esUidDeCuenta(CUENTA)).toBe(true)
+describe('resolverSesion: una prueba por fila de la tabla de §3.1 (criterio 1)', () => {
+  const U = { uid: CUENTA, email: 'ale@ejemplo.com' }
+
+  it('fila 1: sin configurar, cualquier uid guardado, y es el vigente', () => {
+    expect(
+      resolverSesion({ configurado: false, usuario: null, uidGuardado: 'local-3f2a' }),
+    ).toEqual({ estado: 'sinConfigurar', uid: 'local-3f2a', requiereEntrada: null })
+    expect(resolverSesion({ configurado: false, usuario: null, uidGuardado: CUENTA })).toEqual({
+      estado: 'sinConfigurar',
+      uid: CUENTA,
+      requiereEntrada: null,
+    })
   })
 
-  it('nada, vacío o no-cadena tampoco lo es', () => {
-    expect(esUidDeCuenta('')).toBe(false)
-    expect(esUidDeCuenta(null)).toBe(false)
-    expect(esUidDeCuenta(undefined)).toBe(false)
-    expect(esUidDeCuenta(42)).toBe(false)
+  it('fila 2: usuario U y uid U, con cuenta', () => {
+    expect(resolverSesion({ configurado: true, usuario: U, uidGuardado: CUENTA })).toEqual({
+      estado: 'conCuenta',
+      uid: CUENTA,
+      requiereEntrada: null,
+    })
   })
 
-  it('lleva el comentario de deuda: SPEC_19 la sustituye por onAuthStateChanged', () => {
+  it('fila 3: usuario U y uid local, con cuenta tras entrar desde el local', () => {
+    expect(resolverSesion({ configurado: true, usuario: U, uidGuardado: 'local-3f2a' })).toEqual({
+      estado: 'conCuenta',
+      uid: CUENTA,
+      requiereEntrada: 'local-3f2a',
+    })
+  })
+
+  it('fila 3 también con otro uid de cuenta guardado', () => {
+    const r = resolverSesion({ configurado: true, usuario: U, uidGuardado: 'OtraCuenta9' })
+    expect(r).toEqual({ estado: 'conCuenta', uid: CUENTA, requiereEntrada: 'OtraCuenta9' })
+  })
+
+  it('fila 4: sin usuario y uid local, sin cuenta', () => {
+    expect(resolverSesion({ configurado: true, usuario: null, uidGuardado: 'local-3f2a' })).toEqual(
+      { estado: 'sinCuenta', uid: 'local-3f2a', requiereEntrada: null },
+    )
+  })
+
+  it('fila 5: sin usuario y uid de cuenta, vencida, y lo escrito sigue en su uid', () => {
+    expect(resolverSesion({ configurado: true, usuario: null, uidGuardado: CUENTA })).toEqual({
+      estado: 'vencida',
+      uid: CUENTA,
+      requiereEntrada: null,
+    })
+  })
+
+  it('los cuatro estados, y solo esos', () => {
+    expect(Object.values(ESTADOS_SESION).sort()).toEqual(
+      ['conCuenta', 'sinConfigurar', 'sinCuenta', 'vencida'].sort(),
+    )
+  })
+
+  it('el prefijo local- responde a quién inventó el uid, no a si hay cuenta', () => {
     const fuente = readFileSync('src/lib/sesion.js', 'utf8')
-    expect(fuente).toMatch(/PROVISIONAL/)
-    expect(fuente).toMatch(/DP-17\.7/)
-    expect(fuente).toMatch(/onAuthStateChanged/)
+    expect(fuente).toMatch(/¿Este uid lo inventó el teléfono\?/)
+    expect(fuente).toMatch(/No responde a "¿hay cuenta\?"/)
+  })
+})
+
+describe('criterio 11: esUidDeCuenta ya no existe', () => {
+  it('ningún archivo de src/ la llama ni la importa', () => {
+    const archivos = (dir) =>
+      readdirSync(dir).flatMap((n) => {
+        const ruta = join(dir, n)
+        return statSync(ruta).isDirectory() ? archivos(ruta) : [ruta]
+      })
+    const culpables = archivos('src')
+      .filter((r) => /\.(js|jsx)$/.test(r) && !r.endsWith('sesion.test.js'))
+      .filter((r) => /esUidDeCuenta\s*\(|import[^;]*esUidDeCuenta/.test(readFileSync(r, 'utf8')))
+    expect(culpables).toEqual([])
+  })
+})
+
+describe('leerSesionGuardada y escucharUsuario', () => {
+  it('sin configuración: no configurado y sin usuario', async () => {
+    expect(await leerSesionGuardada()).toEqual({ configurado: false, usuario: null })
+  })
+
+  it('espera a authStateReady y devuelve uid y correo, nada más', async () => {
+    let listo = false
+    firebase.auth = {
+      authStateReady: async () => {
+        listo = true
+      },
+      get currentUser() {
+        return listo ? { uid: CUENTA, email: 'ale@ejemplo.com', token: 'no' } : null
+      },
+    }
+    expect(await leerSesionGuardada()).toEqual({
+      configurado: true,
+      usuario: { uid: CUENTA, email: 'ale@ejemplo.com' },
+    })
+  })
+
+  it('sin authStateReady, espera a la primera emisión de onAuthStateChanged', async () => {
+    firebase.auth = { currentUser: null }
+    expect(await leerSesionGuardada()).toEqual({ configurado: true, usuario: null })
+    expect(oyentesAuth).toHaveLength(0)
+  })
+
+  it('escucharUsuario avisa con el usuario reducido y devuelve su desuscripción', async () => {
+    firebase.auth = { currentUser: { uid: CUENTA, email: null } }
+    const vistos = []
+    const quitar = await escucharUsuario((u) => vistos.push(u))
+    await new Promise((r) => setTimeout(r, 0))
+    expect(vistos).toEqual([{ uid: CUENTA, email: null }])
+    oyentesAuth[0](null)
+    expect(vistos[1]).toBeNull()
+    quitar()
+    expect(oyentesAuth).toHaveLength(0)
+  })
+
+  it('escucharUsuario sin configuración devuelve una desuscripción vacía', async () => {
+    const quitar = await escucharUsuario(() => {})
+    expect(typeof quitar).toBe('function')
   })
 })
 
@@ -120,6 +249,13 @@ describe('sin cuenta, la app arranca exactamente como hoy', () => {
     expect(r.sembrado).toBe(true)
     expect(r.quitarOyente).toBeNull()
     expect((await shared.getProfile('local-abc')).name).toBeNull()
+  })
+
+  it('un uid de cuenta sin sesión (vencida) no se restaura: solo se siembra si falta', async () => {
+    const r = await prepararArbol(CUENTA)
+    expect(doble.llamadas).toBe(0)
+    expect(r.restauracion).toBeNull()
+    expect(r.sembrado).toBe(true)
   })
 
   it('con árbol ya montado no siembra ni restaura', async () => {
@@ -135,7 +271,7 @@ describe('criterio 11: restaurar antes de sembrar', () => {
   it('local vacío y perfil remoto con nombre: el perfil local trae ese nombre, no el sembrado', async () => {
     doble.remoto = PERFIL_REMOTO
     const velo = []
-    const r = await prepararArbol(CUENTA, { enRestauracion: (a) => velo.push(a) })
+    const r = await prepararArbol(CUENTA, { conCuenta: true, enRestauracion: (a) => velo.push(a) })
 
     expect(doble.llamadas).toBe(1)
     expect(velo).toEqual([true, false])
@@ -145,7 +281,7 @@ describe('criterio 11: restaurar antes de sembrar', () => {
   })
 
   it('cuenta sin nada en la nube: se restaura, no baja nada, y entonces se siembra', async () => {
-    const r = await prepararArbol(CUENTA)
+    const r = await prepararArbol(CUENTA, CON_CUENTA)
     expect(doble.llamadas).toBe(1)
     expect(r.sembrado).toBe(true)
     expect((await shared.getProfile(CUENTA)).name).toBeNull()
@@ -157,7 +293,7 @@ describe('criterio 10: la marca y el árbol', () => {
   it('con marca y árbol, no se restaura', async () => {
     marcas.set(CUENTA, 'antes')
     await shared.initShared(CUENTA)
-    const r = await prepararArbol(CUENTA)
+    const r = await prepararArbol(CUENTA, CON_CUENTA)
     expect(doble.llamadas).toBe(0)
     expect(r.restauracion).toBeNull()
     expect(r.sembrado).toBe(false)
@@ -166,7 +302,7 @@ describe('criterio 10: la marca y el árbol', () => {
   it('con marca y árbol ausente —marca huérfana— se retira la marca y se restaura', async () => {
     marcas.set(CUENTA, 'de antes de borrar IndexedDB')
     doble.remoto = PERFIL_REMOTO
-    const r = await prepararArbol(CUENTA)
+    const r = await prepararArbol(CUENTA, CON_CUENTA)
     expect(doble.llamadas).toBe(1)
     expect(r.restauracion.ok).toBe(true)
     expect((await shared.getProfile(CUENTA)).name).toBe('Alejandra')
@@ -177,7 +313,7 @@ describe('criterio 10: la marca y el árbol', () => {
   it('sin marca pero con árbol, se restaura igual (la marca no es la única condición)', async () => {
     await shared.initShared(CUENTA)
     doble.remoto = PERFIL_REMOTO
-    const r = await prepararArbol(CUENTA)
+    const r = await prepararArbol(CUENTA, CON_CUENTA)
     expect(doble.llamadas).toBe(1)
     expect(r.sembrado).toBe(false)
   })
@@ -186,7 +322,7 @@ describe('criterio 10: la marca y el árbol', () => {
 describe('criterio 12: una restauración fallida no destruye el árbol remoto', () => {
   it('falla, se siembra detrás, y la cola no lleva ninguno de los cuatro shared/*', async () => {
     doble.resultado = { ok: false, motivo: 'interrumpida', escritos: 0, fusionados: 0 }
-    const r = await prepararArbol(CUENTA)
+    const r = await prepararArbol(CUENTA, CON_CUENTA)
     expect(r.restauracion.ok).toBe(false)
     expect(r.sembrado).toBe(true)
     expect(await pendingCount(CUENTA)).toBe(0)
@@ -195,7 +331,7 @@ describe('criterio 12: una restauración fallida no destruye el árbol remoto', 
 
   it('y el reintento posterior sí recupera el nombre por encima de la siembra', async () => {
     doble.resultado = { ok: false, motivo: 'interrumpida', escritos: 0, fusionados: 0 }
-    await prepararArbol(CUENTA)
+    await prepararArbol(CUENTA, CON_CUENTA)
     expect((await shared.getProfile(CUENTA)).name).toBeNull()
 
     doble.resultado = { ok: true, escritos: 0, fusionados: 1 }
@@ -207,23 +343,23 @@ describe('criterio 12: una restauración fallida no destruye el árbol remoto', 
 
   it('con cualquier motivo que no sea la red, no se pone oyente', async () => {
     doble.resultado = { ok: false, motivo: 'interrumpida', escritos: 0, fusionados: 0 }
-    expect((await prepararArbol(CUENTA)).quitarOyente).toBeNull()
+    expect((await prepararArbol(CUENTA, CON_CUENTA)).quitarOyente).toBeNull()
     doble.resultado = { ok: false, motivo: 'sin_configuracion', escritos: 0, fusionados: 0 }
-    expect((await prepararArbol(CUENTA)).quitarOyente).toBeNull()
+    expect((await prepararArbol(CUENTA, CON_CUENTA)).quitarOyente).toBeNull()
   })
 })
 
 describe('cambio de uid a mitad de sesión (D7)', () => {
   it('con restaurarSiHaceFalta en false no se restaura aunque sea una cuenta sin marca', async () => {
     await shared.initShared(CUENTA)
-    const r = await prepararArbol(CUENTA, { restaurarSiHaceFalta: false })
+    const r = await prepararArbol(CUENTA, { conCuenta: true, restaurarSiHaceFalta: false })
     expect(doble.llamadas).toBe(0)
     expect(r.restauracion).toBeNull()
     expect(r.sembrado).toBe(false)
   })
 
   it('y si por lo que fuera no hubiera árbol, se siembra sin restaurar', async () => {
-    const r = await prepararArbol(CUENTA, { restaurarSiHaceFalta: false })
+    const r = await prepararArbol(CUENTA, { conCuenta: true, restaurarSiHaceFalta: false })
     expect(doble.llamadas).toBe(0)
     expect(r.sembrado).toBe(true)
   })
@@ -245,7 +381,7 @@ describe('criterio 14: el reintento al volver la red', () => {
     const w = ventanaDeMentira()
     vi.stubGlobal('window', w)
     doble.resultado = { ok: false, motivo: 'sin_red', escritos: 0, fusionados: 0 }
-    const r = await prepararArbol(CUENTA)
+    const r = await prepararArbol(CUENTA, CON_CUENTA)
     expect(typeof r.quitarOyente).toBe('function')
     expect(w.cuantos()).toBe(1)
   })
@@ -254,7 +390,7 @@ describe('criterio 14: el reintento al volver la red', () => {
     const w = ventanaDeMentira()
     vi.stubGlobal('window', w)
     doble.resultado = { ok: false, motivo: 'sin_red', escritos: 0, fusionados: 0 }
-    await prepararArbol(CUENTA)
+    await prepararArbol(CUENTA, CON_CUENTA)
     expect(doble.llamadas).toBe(1)
 
     w.disparar('online')
@@ -271,7 +407,7 @@ describe('criterio 14: el reintento al volver la red', () => {
     const w = ventanaDeMentira()
     vi.stubGlobal('window', w)
     doble.resultado = { ok: false, motivo: 'sin_red', escritos: 0, fusionados: 0 }
-    const { quitarOyente } = await prepararArbol(CUENTA)
+    const { quitarOyente } = await prepararArbol(CUENTA, CON_CUENTA)
     quitarOyente()
     expect(w.cuantos()).toBe(0)
     w.disparar('online')
@@ -307,7 +443,11 @@ describe('criterio 15: el velo tiene techo (D16)', () => {
   it('si restaurar no contesta, el velo baja, se entra y se siembra', async () => {
     doble.soltar = undefined // no contesta hasta que se suelte
     const velo = []
-    const r = await prepararArbol(CUENTA, { enRestauracion: (a) => velo.push(a), techoMs: 20 })
+    const r = await prepararArbol(CUENTA, {
+      conCuenta: true,
+      enRestauracion: (a) => velo.push(a),
+      techoMs: 20,
+    })
 
     expect(velo).toEqual([true, false])
     expect(r.aTiempo).toBe(false)
@@ -322,7 +462,7 @@ describe('criterio 15: el velo tiene techo (D16)', () => {
   it('la restauración sigue por detrás y, si termina, marca y su perfil gana a la semilla', async () => {
     doble.soltar = undefined
     doble.remoto = PERFIL_REMOTO
-    await prepararArbol(CUENTA, { techoMs: 20 })
+    await prepararArbol(CUENTA, { conCuenta: true, techoMs: 20 })
     expect((await shared.getProfile(CUENTA)).name).toBeNull()
 
     doble.soltar()
@@ -335,7 +475,7 @@ describe('criterio 15: el velo tiene techo (D16)', () => {
   it('una restauración rápida no espera al techo y limpia el temporizador', async () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
     try {
-      const r = await prepararArbol(CUENTA, { techoMs: 15000 })
+      const r = await prepararArbol(CUENTA, { conCuenta: true, techoMs: 15000 })
       expect(r.aTiempo).toBe(true)
       expect(vi.getTimerCount()).toBe(0)
     } finally {
@@ -345,7 +485,7 @@ describe('criterio 15: el velo tiene techo (D16)', () => {
 
   it('el techo no es un umbral de fallo: no deja oyente ni resultado de error', async () => {
     doble.soltar = undefined
-    const r = await prepararArbol(CUENTA, { techoMs: 20 })
+    const r = await prepararArbol(CUENTA, { conCuenta: true, techoMs: 20 })
     expect(r.restauracion).toBeNull()
     expect(r.quitarOyente).toBeNull()
     doble.soltar()
@@ -372,8 +512,8 @@ describe('DP-17.11: dos llamadas a la vez con el mismo uid son una', () => {
 
   it('la segunda recibe la misma promesa: una restauración y una siembra como mucho', async () => {
     doble.soltar = undefined
-    const primera = prepararArbol(CUENTA, { restaurarSiHaceFalta: true })
-    const segunda = prepararArbol(CUENTA, { restaurarSiHaceFalta: false })
+    const primera = prepararArbol(CUENTA, { conCuenta: true, restaurarSiHaceFalta: true })
+    const segunda = prepararArbol(CUENTA, { conCuenta: true, restaurarSiHaceFalta: false })
     expect(segunda).toBe(primera)
 
     await esperarAlDoble()
@@ -393,8 +533,8 @@ describe('DP-17.11: dos llamadas a la vez con el mismo uid son una', () => {
     doble.remoto = PERFIL_REMOTO
     doble.remotoOnboarding = EXPEDIENTE_REMOTO
 
-    const primera = prepararArbol(CUENTA, { restaurarSiHaceFalta: true })
-    const segunda = prepararArbol(CUENTA, { restaurarSiHaceFalta: false })
+    const primera = prepararArbol(CUENTA, { conCuenta: true, restaurarSiHaceFalta: true })
+    const segunda = prepararArbol(CUENTA, { conCuenta: true, restaurarSiHaceFalta: false })
     await esperarAlDoble()
     doble.soltar()
     const r = await segunda
@@ -407,13 +547,13 @@ describe('DP-17.11: dos llamadas a la vez con el mismo uid son una', () => {
   })
 
   it('no es una caché: una llamada posterior vuelve a evaluar', async () => {
-    const primera = await prepararArbol(CUENTA)
+    const primera = await prepararArbol(CUENTA, CON_CUENTA)
     expect(doble.llamadas).toBe(1)
     expect(primera.sembrado).toBe(true)
 
     // Con marca y árbol, la segunda evaluación no restaura (criterio 10) y no
     // siembra, que es lo que dice que evaluó de verdad y no devolvió lo viejo.
-    const segunda = await prepararArbol(CUENTA)
+    const segunda = await prepararArbol(CUENTA, CON_CUENTA)
     expect(segunda).not.toBe(primera)
     expect(doble.llamadas).toBe(1)
     expect(segunda.sembrado).toBe(false)
@@ -421,12 +561,12 @@ describe('DP-17.11: dos llamadas a la vez con el mismo uid son una', () => {
 
   it('tras un fallo también se retira la entrada: el reintento no recibe el fallo viejo', async () => {
     doble.resultado = { ok: false, motivo: 'interrumpida' }
-    const primera = await prepararArbol(CUENTA)
+    const primera = await prepararArbol(CUENTA, CON_CUENTA)
     expect(primera.restauracion.ok).toBe(false)
 
     doble.resultado = { ok: true, escritos: 1, fusionados: 0 }
     doble.remoto = PERFIL_REMOTO
-    const segunda = await prepararArbol(CUENTA)
+    const segunda = await prepararArbol(CUENTA, CON_CUENTA)
     expect(segunda.restauracion.ok).toBe(true)
     expect(doble.llamadas).toBe(2)
   })
@@ -434,8 +574,8 @@ describe('DP-17.11: dos llamadas a la vez con el mismo uid son una', () => {
   it('dos uid distintos a la vez no se interfieren', async () => {
     doble.soltar = undefined
     const OTRA = 'XyZ987otraCuenta'
-    const a = prepararArbol(CUENTA)
-    const b = prepararArbol(OTRA)
+    const a = prepararArbol(CUENTA, CON_CUENTA)
+    const b = prepararArbol(OTRA, CON_CUENTA)
     expect(a).not.toBe(b)
 
     // El doble guarda un único resolutor: la primera en llegar se queda
@@ -462,13 +602,37 @@ describe('ArranqueProvisional usa la regla y no la copia', () => {
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/^\s*\/\/.*$/gm, '')
 
-  it('importa esUidDeCuenta y prepararArbol de lib/sesion', () => {
-    expect(fuente).toMatch(/import \{[^}]*esUidDeCuenta[^}]*\} from '@lib\/sesion'/)
+  it('importa resolverSesion y prepararArbol de lib/sesion', () => {
+    expect(fuente).toMatch(/import \{[^}]*resolverSesion[^}]*\} from '@lib\/sesion'/)
     expect(fuente).toMatch(/prepararArbol\(/)
   })
 
-  it('arranca la cola con el uid y devuelve su limpieza al efecto', () => {
-    expect(fuente).toMatch(/return startSync\(uid\)/)
+  it('arranca la cola solo con conCuenta y devuelve su limpieza al efecto', () => {
+    expect(fuente).toMatch(
+      /if \(estado !== ESTADOS_SESION\.conCuenta\) return undefined\s*return startSync\(uid\)/,
+    )
+  })
+
+  it('espera a Firebase antes de preparar el árbol, y le dice si hay cuenta', () => {
+    expect(fuente).toMatch(/leerSesionGuardada\(\)/)
+    expect(fuente).toMatch(/conCuenta: estado === ESTADOS_SESION\.conCuenta/)
+  })
+
+  it('sigue escuchando a Firebase mientras la app está montada', () => {
+    expect(fuente).toMatch(/escucharUsuario\(/)
+  })
+
+  it('ofrece la sesión por contexto y conserva la firma children(uid, cambiarUid)', () => {
+    expect(fuente).toMatch(/<ContextoSesion\.Provider value=\{sesion\}>/)
+    expect(fuente).toMatch(/children\(uid, cambiarUid\)/)
+  })
+
+  it('es el único que escribe strivo.uid.local', () => {
+    const otros = ['src/lib/sesion.js', 'src/lib/entradaCuenta.js', 'src/lib/salidaCuenta.js']
+    otros.forEach((ruta) =>
+      expect(readFileSync(ruta, 'utf8')).not.toMatch(/setItem\(\s*['"`]strivo\.uid\.local/),
+    )
+    expect(fuente.match(/localStorage\.setItem\(CLAVE_UID/g)).toHaveLength(2)
   })
 
   it('el velo lleva la frase de restauración y no una rueda', () => {

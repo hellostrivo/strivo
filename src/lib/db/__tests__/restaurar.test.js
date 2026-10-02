@@ -117,7 +117,10 @@ describe('criterio 1: nadie más lee de Firestore', () => {
       }
     }
     recorrer('src')
+    // `entradaCuenta.test.js` no lee de Firestore: monta el mismo doble que
+    // estas pruebas para que `entrarACuenta` restaure de verdad (SPEC_19.1).
     expect(encontrados.sort()).toEqual([
+      'src/lib/__tests__/entradaCuenta.test.js',
       'src/lib/db/__tests__/restaurar.test.js',
       'src/lib/db/restaurar.js',
     ])

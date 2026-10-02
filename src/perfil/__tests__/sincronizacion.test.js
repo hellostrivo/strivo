@@ -8,15 +8,35 @@
 // porque no hay DOM en el que montarlos.
 
 import { readFileSync } from 'fs'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { copy } from '@copy'
 import { BLOQUES } from '@/perfil/bloques'
-import { ESTADOS, estadoDe } from '@/perfil/useSincronizacion'
+import * as diario from '@/lib/db/diario'
+import { resetLocalDB } from '@/lib/db/__tests__/helpers.js'
+import { alTerminarRestauracion, olvidarResultados, restaurar } from '@/lib/db/restaurar'
+import { pendingCount } from '@/lib/db/local'
+import { cancelRetries, flush } from '@/lib/db/sync'
+import { ACUSES, ESTADOS, estadoDe, reintentarYMirar } from '@/perfil/useSincronizacion'
 
 const textos = copy.diario.perfil.sincronizacion
 const CUENTA = 'AbC123firebaseUid'
-const LOCAL = 'local-3f2a'
+
+// La sesión la dice Firebase desde SPEC_19.1, no el uid: estas pruebas pasan
+// el estado de sesión que daría `useSesion`.
+const CON = 'conCuenta'
+const SIN = 'sinCuenta'
+
+// Firestore de mentira para el reintento: un setDoc que se puede colgar.
+const nube = { colgar: false, soltar: null }
+vi.mock('@/lib/firebase', () => ({ db: { __fake: true } }))
+vi.mock('firebase/firestore', () => ({
+  doc: (_db, path) => ({ path }),
+  setDoc: async () => {
+    if (nube.colgar) await new Promise((resolve) => (nube.soltar = resolve))
+  },
+  deleteDoc: async () => {},
+}))
 
 function codigoDe(ruta) {
   return readFileSync(ruta, 'utf8')
@@ -67,7 +87,7 @@ describe('el bloque existe entero: identificador, copy y componente', () => {
 describe('estadoDe: cuatro estados y una prioridad', () => {
   it('sin cuenta manda sobre todo lo demás', () => {
     const r = estadoDe({
-      uid: LOCAL,
+      estadoSesion: SIN,
       enLinea: false,
       pendientes: 5,
       ultimaRestauracion: { ok: false },
@@ -77,21 +97,52 @@ describe('estadoDe: cuatro estados y una prioridad', () => {
     expect(r.puedeReintentar).toBe(false)
   })
 
+  it('con la sesión vencida dice sinCuenta: quien lo explica es Tu cuenta', () => {
+    const r = estadoDe({
+      estadoSesion: 'vencida',
+      enLinea: true,
+      pendientes: 3,
+      ultimaRestauracion: { ok: false },
+    })
+    expect(r.estado).toBe('sinCuenta')
+    expect(r.puedeReintentar).toBe(false)
+  })
+
+  it('sin configurar, también sinCuenta', () => {
+    const r = estadoDe({
+      estadoSesion: 'sinConfigurar',
+      enLinea: true,
+      pendientes: 0,
+      ultimaRestauracion: null,
+    })
+    expect(r.estado).toBe('sinCuenta')
+  })
+
   it('sin conexión, antes que pendiente', () => {
-    const r = estadoDe({ uid: CUENTA, enLinea: false, pendientes: 3, ultimaRestauracion: null })
+    const r = estadoDe({
+      estadoSesion: CON,
+      enLinea: false,
+      pendientes: 3,
+      ultimaRestauracion: null,
+    })
     expect(r.estado).toBe('sinConexion')
     expect(r.puedeReintentar).toBe(false)
   })
 
   it('pendiente cuando hay algo en la cola y hay red', () => {
-    const r = estadoDe({ uid: CUENTA, enLinea: true, pendientes: 2, ultimaRestauracion: null })
+    const r = estadoDe({
+      estadoSesion: CON,
+      enLinea: true,
+      pendientes: 2,
+      ultimaRestauracion: null,
+    })
     expect(r.estado).toBe('pendiente')
     expect(r.puedeReintentar).toBe(true)
   })
 
   it('al día cuando no queda nada', () => {
     const r = estadoDe({
-      uid: CUENTA,
+      estadoSesion: CON,
       enLinea: true,
       pendientes: 0,
       ultimaRestauracion: { ok: true },
@@ -103,7 +154,7 @@ describe('estadoDe: cuatro estados y una prioridad', () => {
 
   it('una restauración fallida ofrece reintentar aunque la cola esté vacía', () => {
     const r = estadoDe({
-      uid: CUENTA,
+      estadoSesion: CON,
       enLinea: true,
       pendientes: 0,
       ultimaRestauracion: { ok: false, motivo: 'interrumpida' },
@@ -115,7 +166,7 @@ describe('estadoDe: cuatro estados y una prioridad', () => {
 
   it('pero no sin red: volver a intentar sin red no es intentar nada', () => {
     const r = estadoDe({
-      uid: CUENTA,
+      estadoSesion: CON,
       enLinea: false,
       pendientes: 0,
       ultimaRestauracion: { ok: false, motivo: 'sin_red' },
@@ -125,13 +176,23 @@ describe('estadoDe: cuatro estados y una prioridad', () => {
   })
 
   it('sin resultado de restauración en la sesión no hay nada que reintentar', () => {
-    const r = estadoDe({ uid: CUENTA, enLinea: true, pendientes: 0, ultimaRestauracion: null })
+    const r = estadoDe({
+      estadoSesion: CON,
+      enLinea: true,
+      pendientes: 0,
+      ultimaRestauracion: null,
+    })
     expect(r.restauracionFallida).toBe(false)
     expect(r.puedeReintentar).toBe(false)
   })
 
   it('no devuelve el conteo: la pantalla no dice cuántas esperan (§4.6)', () => {
-    const r = estadoDe({ uid: CUENTA, enLinea: true, pendientes: 214, ultimaRestauracion: null })
+    const r = estadoDe({
+      estadoSesion: CON,
+      enLinea: true,
+      pendientes: 214,
+      ultimaRestauracion: null,
+    })
     expect(r).not.toHaveProperty('pendientes')
     expect(Object.keys(r).sort()).toEqual(['estado', 'puedeReintentar', 'restauracionFallida'])
   })
@@ -144,10 +205,10 @@ describe('estadoDe: cuatro estados y una prioridad', () => {
 
   it('solo devuelve estados que tienen texto', () => {
     const casos = [
-      { uid: LOCAL, enLinea: true, pendientes: 0 },
-      { uid: CUENTA, enLinea: false, pendientes: 0 },
-      { uid: CUENTA, enLinea: true, pendientes: 1 },
-      { uid: CUENTA, enLinea: true, pendientes: 0 },
+      { estadoSesion: SIN, enLinea: true, pendientes: 0 },
+      { estadoSesion: CON, enLinea: false, pendientes: 0 },
+      { estadoSesion: CON, enLinea: true, pendientes: 1 },
+      { estadoSesion: CON, enLinea: true, pendientes: 0 },
     ]
     casos.forEach((c) =>
       expect(ESTADOS).toContain(estadoDe({ ...c, ultimaRestauracion: null }).estado),
@@ -180,9 +241,18 @@ describe('el hook sondea y no se suscribe (D11)', () => {
     expect(hook).toMatch(/await flush\(uid\)/)
   })
 
-  it('usa la regla de cuenta de lib/sesion y no la copia', () => {
-    expect(hook).toMatch(/import \{ esUidDeCuenta \} from '@lib\/sesion'/)
-    expect(hook).not.toMatch(/'local-'/)
+  it('el hook usa reintentarYMirar y no una copia', () => {
+    expect(hook).toMatch(/reintentarYMirar\(uid, recalcular\)/)
+  })
+
+  it('la cuenta la dice la sesión, no el uid (SPEC_19.1 §4.10)', () => {
+    expect(hook).toMatch(/useSesion\(\)/)
+    expect(hook).toMatch(/ESTADOS_SESION\.conCuenta/)
+    expect(hook).not.toMatch(/'local-'|esUidDeCuenta/)
+  })
+
+  it('criterio 9: recalcula también cuando cambia el sello de restauración', () => {
+    expect(hook).toMatch(/\[recalcular, selloRestauracion\]/)
   })
 })
 
@@ -190,5 +260,95 @@ describe('sync.js no se modificó (D11, SPEC §2)', () => {
   it('sigue sin emitir nada: ni oyentes propios ni EventTarget', () => {
     const sync = codigoDe('src/lib/db/sync.js')
     expect(sync).not.toMatch(/EventTarget|dispatchEvent|onChange|suscri|subscribe/)
+  })
+})
+
+describe('criterio 9: reintentarYMirar espera de verdad (DP-17.15)', () => {
+  const T0 = '2026-09-18T12:00:00.000Z'
+
+  beforeEach(async () => {
+    nube.colgar = false
+    nube.soltar = null
+    olvidarResultados()
+    vi.stubGlobal('navigator', { onLine: true })
+    vi.stubGlobal('localStorage', {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+    })
+    await resetLocalDB()
+  })
+
+  afterEach(() => {
+    cancelRetries()
+    vi.unstubAllGlobals()
+  })
+
+  const mirarCon = (estadoSesion, pendientes) => async () =>
+    estadoDe({
+      estadoSesion,
+      enLinea: true,
+      pendientes: await pendientes(),
+      ultimaRestauracion: null,
+    })
+
+  it('con un vaciado en curso, espera a que termine antes de mirar', async () => {
+    await diario.saveMorningEntry(CUENTA, '2026-09-18', { action: 'x', updatedAt: T0 })
+    nube.colgar = true
+    const enMarcha = flush(CUENTA)
+    while (!nube.soltar) await new Promise((r) => setTimeout(r, 0))
+
+    const miradas = []
+    const mirar = async () => {
+      miradas.push('mirada')
+      return mirarCon(CON, () => pendingCount(CUENTA))()
+    }
+    const reintento = reintentarYMirar(CUENTA, mirar)
+    await new Promise((r) => setTimeout(r, 10))
+    expect(miradas).toEqual([])
+
+    nube.colgar = false
+    nube.soltar()
+    await enMarcha
+    expect(await reintento).toBeNull()
+    expect(miradas).toEqual(['mirada'])
+  })
+
+  it('si después sigue habiendo pendientes, el acuse es sinExito', async () => {
+    const acuse = await reintentarYMirar(
+      CUENTA,
+      mirarCon(CON, async () => 2),
+    )
+    expect(acuse).toBe(ACUSES.sinExito)
+  })
+
+  it('con éxito no hay acuse: el cambio de estado lo dice', async () => {
+    expect(
+      await reintentarYMirar(
+        CUENTA,
+        mirarCon(CON, async () => 0),
+      ),
+    ).toBeNull()
+  })
+
+  it('solo restaura si la última restauración falló', async () => {
+    const restauraciones = []
+    const quitar = alTerminarRestauracion((uid) => restauraciones.push(uid))
+
+    await reintentarYMirar(
+      CUENTA,
+      mirarCon(CON, async () => 0),
+    )
+    expect(restauraciones).toEqual([])
+
+    vi.stubGlobal('navigator', { onLine: false })
+    await restaurar(CUENTA) // falla por red y queda como último resultado
+    vi.stubGlobal('navigator', { onLine: true })
+    await reintentarYMirar(
+      CUENTA,
+      mirarCon(CON, async () => 0),
+    )
+    quitar()
+    expect(restauraciones).toEqual([CUENTA, CUENTA])
   })
 })

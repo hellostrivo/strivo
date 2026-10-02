@@ -80,3 +80,40 @@ export async function completarPresentacion(uid) {
     .updateOnboarding(uid, { tourCompletedAt: new Date().toISOString() })
     .catch(() => null)
 }
+
+/**
+ * Qué hace la puerta con una lectura de las dos mitades (SPEC_19.1 §4.3).
+ *
+ * Hay dos clases de lectura, y no valen lo mismo:
+ *
+ *   - **la del arranque o la de un uid nuevo** (`porSello: false`) se aplica
+ *     entera, como siempre: el onboarding si queda, la presentación si toca;
+ *   - **la que dispara el sello de restauración** (`porSello: true`) solo puede
+ *     sacar del onboarding. Si alguien está dentro y lo que bajó dice que ya lo
+ *     terminó, sale, y qué viene después lo decide `presentacionPendiente`
+ *     igual que en un arranque (desvío D7). Si no está dentro, nada visible
+ *     cambia: una relectura no mete a nadie en el onboarding desde las
+ *     secciones ni le reabre una presentación.
+ *
+ * `presentacionResuelta` protege lo que ya se decidió en esta sesión: una
+ * presentación cerrada no la reabre ninguna lectura.
+ *
+ * @returns {?{pendiente: boolean, presentando?: boolean}} `null` si no cambia
+ *   nada; si `presentando` no viene, la presentación se queda como está.
+ */
+export function aplicarLecturaDePuerta({
+  porSello,
+  enOnboarding,
+  onboarding,
+  presentacion,
+  presentacionResuelta,
+}) {
+  if (porSello) {
+    if (!enOnboarding || onboarding) return null
+    return presentacionResuelta
+      ? { pendiente: false }
+      : { pendiente: false, presentando: presentacion }
+  }
+  if (presentacionResuelta) return { pendiente: onboarding }
+  return { pendiente: onboarding, presentando: !onboarding && presentacion }
+}

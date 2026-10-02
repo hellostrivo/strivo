@@ -3,23 +3,28 @@
 //
 // Cuatro estados y una prioridad fija:
 //
-//   sinCuenta    — el uid es local (`esUidDeCuenta`). Manda sobre todo lo
-//                  demás: sin cuenta no hay nube que consultar.
+//   sinCuenta    — la sesión no es `conCuenta` (`useSesion`). Manda sobre todo
+//                  lo demás: sin cuenta no hay nube que consultar. Con la
+//                  sesión vencida también se dice esto: quien explica la
+//                  situación es el bloque Tu cuenta (SPEC_19.1 §4.10).
 //   sinConexion  — `navigator.onLine === false`.
 //   pendiente    — hay escrituras esperando a salir (`getPendingCount`).
 //   alDia        — el resto.
 //
 // **Es sondeo, no suscripción** (D11). `sync.js` no emite nada al vaciar la
-// cola y no se modifica: se pregunta al montar, al volver la red y al volver
-// la pestaña a primer plano. Sin sondeo por intervalo: una pantalla que
-// consulta cada segundo si ya está a salvo es una pantalla nerviosa.
+// cola: se pregunta al montar, al volver la red, al volver la pestaña a primer
+// plano y —desde SPEC_19.1— cada vez que termina una restauración del uid
+// vigente (`selloRestauracion`, DP-17.14). Sin sondeo por intervalo: una
+// pantalla que consulta cada segundo si ya está a salvo es una pantalla
+// nerviosa.
 //
 // La decisión —qué estado toca— es `estadoDe`, una función sin React, para
 // poder probarla sin navegador. El hook solo la llama cuando toca.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { flush, getPendingCount, restaurar, ultimoResultado } from '@/lib/db'
-import { esUidDeCuenta } from '@lib/sesion'
+import { flush, flushEnCurso, getPendingCount, restaurar, ultimoResultado } from '@/lib/db'
+import { ESTADOS_SESION } from '@lib/sesion'
+import { useSesion } from '@lib/useSesion'
 
 export const ESTADOS = Object.freeze(['sinCuenta', 'sinConexion', 'pendiente', 'alDia'])
 
@@ -32,14 +37,14 @@ export const ESTADOS = Object.freeze(['sinCuenta', 'sinConexion', 'pendiente', '
  * congelado en pantalla como si algo estuviera atorado (§4.6).
  *
  * @param {object} datos
- * @param {string} datos.uid
+ * @param {string} datos.estadoSesion - el de `useSesion`.
  * @param {boolean} datos.enLinea
  * @param {number} datos.pendientes
  * @param {?object} datos.ultimaRestauracion - lo que devolvió `ultimoResultado`.
  * @returns {{estado: string, restauracionFallida: boolean, puedeReintentar: boolean}}
  */
-export function estadoDe({ uid, enLinea, pendientes, ultimaRestauracion }) {
-  const conCuenta = esUidDeCuenta(uid)
+export function estadoDe({ estadoSesion, enLinea, pendientes, ultimaRestauracion }) {
+  const conCuenta = estadoSesion === ESTADOS_SESION.conCuenta
   let estado = 'alDia'
   if (!conCuenta) estado = 'sinCuenta'
   else if (!enLinea) estado = 'sinConexion'
@@ -57,24 +62,58 @@ function enLineaAhora() {
   return typeof navigator === 'undefined' || navigator.onLine !== false
 }
 
+/** Lo que el reintento puede decir después de intentarlo (DP-17.15). */
+export const ACUSES = Object.freeze({ sinExito: 'sinExito' })
+
+/**
+ * Vuelve a intentar lo que quedó y dice cómo salió: la restauración si la
+ * última falló, y vaciar la cola en cualquier caso. Después se vuelve a mirar
+ * con `mirar`, que devuelve lo de `estadoDe`.
+ *
+ * **Espera de verdad al resultado** (DP-17.15). Si ya había un vaciado en
+ * marcha —el de la vuelta de la red, el de la pestaña—, `flush` contesta
+ * `en_curso` sin hacer nada, y mirar la cola en ese instante diría "todavía
+ * no" de algo que estaba subiendo: se espera a que ese termine y entonces se
+ * mira. Si después todavía hay algo que reintentar —pendientes con red, o la
+ * restauración fallida—, devuelve `sinExito`; si no, `null`, porque el estado
+ * nuevo ya lo dice solo.
+ *
+ * Sin React, para poder probarla sin navegador.
+ *
+ * @returns {Promise<?string>}
+ */
+export async function reintentarYMirar(uid, mirar) {
+  if (ultimoResultado(uid)?.ok === false) await restaurar(uid)
+  const vaciado = await flush(uid)
+  if (vaciado.skipped === 'en_curso') await flushEnCurso()
+  const despues = await mirar()
+  return despues?.puedeReintentar ? ACUSES.sinExito : null
+}
+
 export function useSincronizacion(uid) {
+  const { estado: estadoSesion, selloRestauracion } = useSesion()
   const [estado, setEstado] = useState(() =>
-    estadoDe({ uid, enLinea: enLineaAhora(), pendientes: 0, ultimaRestauracion: null }),
+    estadoDe({ estadoSesion, enLinea: enLineaAhora(), pendientes: 0, ultimaRestauracion: null }),
   )
+  // `null`, o `sinExito` si el último reintento no dejó las cosas en su sitio.
+  // Con éxito no hay acuse aparte: el cambio de estado es el acuse.
+  const [acuse, setAcuse] = useState(null)
   const vivo = useRef(true)
 
   const recalcular = useCallback(async () => {
-    const pendientes = esUidDeCuenta(uid) ? await getPendingCount(uid) : 0
-    if (!vivo.current) return
-    setEstado(
-      estadoDe({
-        uid,
-        enLinea: enLineaAhora(),
-        pendientes,
-        ultimaRestauracion: ultimoResultado(uid),
-      }),
-    )
-  }, [uid])
+    const conCuenta = estadoSesion === ESTADOS_SESION.conCuenta
+    const pendientes = conCuenta ? await getPendingCount(uid) : 0
+    if (!vivo.current) return null
+    const siguiente = estadoDe({
+      estadoSesion,
+      enLinea: enLineaAhora(),
+      pendientes,
+      ultimaRestauracion: ultimoResultado(uid),
+    })
+    setEstado(siguiente)
+    if (!siguiente.puedeReintentar) setAcuse(null)
+    return siguiente
+  }, [uid, estadoSesion])
 
   useEffect(() => {
     vivo.current = true
@@ -94,17 +133,14 @@ export function useSincronizacion(uid) {
       window.removeEventListener('offline', recalcular)
       document.removeEventListener('visibilitychange', alVolverLaPestana)
     }
-  }, [recalcular])
+  }, [recalcular, selloRestauracion])
 
-  /**
-   * Vuelve a intentar lo que quedó: la restauración si la última falló, y
-   * vaciar la cola en cualquier caso. Después se vuelve a mirar.
-   */
+  /** El botón "Intentar de nuevo": ver `reintentarYMirar`. */
   const reintentar = useCallback(async () => {
-    if (ultimoResultado(uid)?.ok === false) await restaurar(uid)
-    await flush(uid)
-    await recalcular()
+    setAcuse(null)
+    const resultado = await reintentarYMirar(uid, recalcular)
+    if (vivo.current) setAcuse(resultado)
   }, [uid, recalcular])
 
-  return { ...estado, reintentar, recalcular }
+  return { ...estado, acuse, reintentar, recalcular }
 }

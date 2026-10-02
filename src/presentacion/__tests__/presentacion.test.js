@@ -427,8 +427,11 @@ describe('es la puerta, no una sección', () => {
     // Al crear una cuenta en P7 el uid cambia y la lectura de arranque se
     // repite: sin la guarda, cerrar la presentación en ese hueco la volvería a
     // abrir.
-    expect(app).toMatch(/presentacionResuelta/)
-    expect(app).toMatch(/if \(!presentacionResuelta\.current\) setPresentando\(/)
+    // Desde SPEC_19.1 la guarda la aplica `aplicarLecturaDePuerta`, que
+    // también decide la relectura por el sello (`puerta.test.js`).
+    expect(app).toMatch(/presentacionResuelta: presentacionResuelta\.current/)
+    const entrada = readFileSync('src/presentacion/entrada.js', 'utf8')
+    expect(entrada).toMatch(/if \(presentacionResuelta\) return \{ pendiente: onboarding \}/)
   })
 
   it('no monta ninguna sección ni la importa', () => {

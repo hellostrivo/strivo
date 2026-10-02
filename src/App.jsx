@@ -38,8 +38,9 @@ import TransicionLuz, { prefiereMenosMovimiento } from '@components/shared/Trans
 import NavStrivo from '@components/diario/NavStrivo'
 import BarraInferior from '@components/shared/BarraInferior'
 import { cruzarUmbral, umbralPendiente } from '@lib/umbralSesion'
-import { presentacionPendiente } from '@/presentacion/entrada'
+import { aplicarLecturaDePuerta, presentacionPendiente } from '@/presentacion/entrada'
 import { shared } from '@/lib/db'
+import { useSesion } from '@lib/useSesion'
 
 import Respiracion from '@/breathing/Respiracion'
 import Hoy from '@/pages/diario/Hoy'
@@ -127,21 +128,46 @@ function Entrada({ uid, onUid }) {
   // en vuelo la volvería a abrir.
   const presentacionResuelta = useRef(false)
 
+  // **La puerta se relee cuando termina una restauración** (SPEC_19.1 §4.3,
+  // DP-17.11). El velo de restauración tiene techo: si la bajada lo cruza, la
+  // puerta se decide sobre lo que hubiera en local —a veces, la semilla— y la
+  // persona aparece en el onboarding que ya hizo. Cuando la bajada termina por
+  // detrás, el sello cambia y esto vuelve a preguntar.
+  //
+  // Una relectura por el sello **solo puede sacar del onboarding**; una por
+  // cambio de uid es la del arranque otra vez y se aplica entera. La regla
+  // vive en `aplicarLecturaDePuerta` (`presentacion/entrada.js`), donde se
+  // prueba sin navegador.
+  const { selloRestauracion } = useSesion()
+  const pendienteActual = useRef(pendiente)
+  pendienteActual.current = pendiente
+  const uidLeido = useRef(null)
+
   useEffect(() => {
     let vigente = true
+    const porSello = pendienteActual.current !== null && uidLeido.current === uid
+    uidLeido.current = uid
     // Las dos mitades se preguntan a la vez: son dos lecturas del mismo
     // documento local y ninguna depende de la respuesta de la otra.
     Promise.all([shared.onboardingPendiente(uid), presentacionPendiente(uid)])
       .then(([onboarding, presentacion]) => {
         if (!vigente) return
-        setPendiente(onboarding)
-        if (!presentacionResuelta.current) setPresentando(!onboarding && presentacion)
+        const cambio = aplicarLecturaDePuerta({
+          porSello,
+          enOnboarding: pendienteActual.current === true,
+          onboarding,
+          presentacion,
+          presentacionResuelta: presentacionResuelta.current,
+        })
+        if (!cambio) return
+        setPendiente(cambio.pendiente)
+        if (cambio.presentando !== undefined) setPresentando(cambio.presentando)
       })
-      .catch(() => vigente && setPendiente(false))
+      .catch(() => vigente && !porSello && setPendiente(false))
     return () => {
       vigente = false
     }
-  }, [uid])
+  }, [uid, selloRestauracion])
 
   /** La presentación se da por pasada, se haya visto entera o se haya omitido. */
   const cerrarPresentacion = () => {
