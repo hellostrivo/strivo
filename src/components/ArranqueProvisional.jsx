@@ -72,7 +72,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { alTerminarRestauracion, startSync } from '@/lib/db'
+import { alTerminarRestauracion, hayMarcaDeRestauracion, startSync } from '@/lib/db'
 import {
   ESTADOS_SESION,
   escucharUsuario,
@@ -80,7 +80,12 @@ import {
   prepararArbol,
   resolverSesion,
 } from '@lib/sesion'
-import { entrarACuenta } from '@lib/entradaCuenta'
+import {
+  completarMudanzaPendiente,
+  entrarACuenta,
+  escucharMudanzasPendientes,
+  mudanzaPendiente,
+} from '@lib/entradaCuenta'
 import { SALIDA, comprobarSalida as comprobarCola, salirDeCuenta } from '@lib/salidaCuenta'
 import {
   MOTIVOS,
@@ -164,6 +169,10 @@ export default function ArranqueProvisional({ children }) {
   // de la restauración y las acciones del contexto.
   const uidVigente = useRef(uid)
 
+  // El correo de la sesión, para la mudanza que se complete por detrás.
+  const correoVigente = useRef(null)
+  correoVigente.current = usuario?.email ?? null
+
   // El oyente del reintento al volver la red, si la restauración falló por eso.
   // Se guarda para retirarlo al desmontar.
   const quitarOyenteRed = useRef(null)
@@ -224,6 +233,21 @@ export default function ArranqueProvisional({ children }) {
       })
       if (quitarOyente) quitarOyenteRed.current = quitarOyente
 
+      // Una entrada a esta cuenta dejó la mudanza aplazada y la restauración
+      // ya terminó bien en algún momento —la marca está—: se completa ahora,
+      // antes de pintar. Si la restauración acaba de correr aquí, el oyente de
+      // abajo ya la está haciendo y esto recibe la misma promesa.
+      if (
+        estado === ESTADOS_SESION.conCuenta &&
+        hayMarcaDeRestauracion(uid) &&
+        mudanzaPendiente(uid)
+      ) {
+        const mudanza = await completarMudanzaPendiente(uid, {
+          email: correoVigente.current,
+        }).catch(() => null)
+        if (mudanza && vigente) setSelloRestauracion((n) => n + 1)
+      }
+
       if (vigente) setListo(true)
     }
 
@@ -268,6 +292,20 @@ export default function ArranqueProvisional({ children }) {
     () =>
       alTerminarRestauracion((uidRestaurado) => {
         if (uidRestaurado === uidVigente.current) setSelloRestauracion((n) => n + 1)
+      }),
+    [],
+  )
+
+  // La mudanza aplazada de una entrada a cuenta se completa cuando una
+  // restauración de esa cuenta termina bien (F1). Al terminar, el sello sube
+  // para que la pantalla relea lo que acaba de llegar.
+  useEffect(
+    () =>
+      escucharMudanzasPendientes({
+        correo: () => correoVigente.current,
+        alMudar: (uidCuenta) => {
+          if (uidCuenta === uidVigente.current) setSelloRestauracion((n) => n + 1)
+        },
       }),
     [],
   )

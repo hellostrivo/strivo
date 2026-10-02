@@ -7,11 +7,12 @@
 // de cada colección— y no un doble que ya sabe la respuesta.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { readFileSync } from 'fs'
 
 import * as shared from '@lib/db/shared'
 import * as diario from '@lib/db/diario'
-import { listQueue } from '@lib/db/local'
-import { hayMarcaDeRestauracion } from '@lib/db/restaurar'
+import { borrarUid, claveDeMudanzaPendiente, listQueue } from '@lib/db/local'
+import { hayMarcaDeRestauracion, restaurar } from '@lib/db/restaurar'
 import { paths } from '@lib/db/schema'
 import { UID, resetLocalDB } from '@lib/db/__tests__/helpers.js'
 
@@ -22,7 +23,12 @@ const T1 = '2026-09-18T12:00:00.000Z'
 // ─── Firestore de mentira ─────────────────────────────────────────────────────
 
 const nube = new Map()
-const control = { fallar: false, colgar: false }
+// `colgar`: la lectura espera hasta que alguien llame a `soltar()`.
+const control = { fallar: false, colgar: false, esperando: [] }
+function soltar() {
+  control.colgar = false
+  control.esperando.splice(0).forEach((resolve) => resolve())
+}
 
 vi.mock('../firebase.js', () => ({ db: { __fake: true } }))
 vi.mock('firebase/firestore', () => {
@@ -32,7 +38,7 @@ vi.mock('firebase/firestore', () => {
     data: () => data,
   })
   const esperar = async () => {
-    if (control.colgar) await new Promise(() => {})
+    if (control.colgar) await new Promise((resolve) => control.esperando.push(resolve))
     if (control.fallar) throw new Error('sin permiso')
   }
   return {
@@ -58,7 +64,8 @@ vi.mock('firebase/firestore', () => {
   }
 })
 
-const { entrarACuenta } = await import('../entradaCuenta.js')
+const { completarMudanzaPendiente, entrarACuenta, escucharMudanzasPendientes, mudanzaPendiente } =
+  await import('../entradaCuenta.js')
 
 function enNube(sufijo, data) {
   nube.set(`users/${CUENTA}/${sufijo}`, data)
@@ -80,6 +87,7 @@ beforeEach(async () => {
   nube.clear()
   control.fallar = false
   control.colgar = false
+  control.esperando.length = 0
   vi.stubGlobal('localStorage', localStorageDeMentira())
   vi.stubGlobal('navigator', { onLine: true })
   await resetLocalDB()
@@ -166,41 +174,159 @@ describe('diario/*: gana lo más nuevo, y lo que pierde se conserva', () => {
   })
 })
 
-describe('si la restauración no termina, shared/* del origen no se muda', () => {
+describe('F1: si la restauración no termina bien, no se muda nada', () => {
   async function arbolAnonimo() {
     await shared.initShared(UID)
     await shared.updateProfile(UID, { name: 'Anónima' })
     await diario.saveMorningEntry(UID, '2026-09-18', { action: 'anónima', updatedAt: T1 })
   }
 
-  it('restauración fallida: shared se queda, el diario se muda, y no hay marca', async () => {
+  /** Espera a que el doble de Firestore tenga una lectura colgada. */
+  async function hastaQueCuelgue() {
+    while (control.esperando.length === 0) await new Promise((r) => setTimeout(r, 0))
+  }
+
+  /** Espera a que la mudanza aplazada termine (la clave se retira al final). */
+  async function hastaQueMude() {
+    while (mudanzaPendiente(CUENTA)) await new Promise((r) => setTimeout(r, 5))
+    await new Promise((r) => setTimeout(r, 5))
+  }
+
+  it('restauración fallida: ninguna fila del origen se muda ni se encola, y la clave queda puesta', async () => {
     control.fallar = true
     await arbolAnonimo()
+    const colaAntes = await rutas(UID)
 
     const r = await entrarACuenta(UID, CUENTA_INFO)
 
+    expect(r).toMatchObject({ uid: CUENTA, mudados: 0, conservados: 0, pendiente: true })
     expect(r.restauracion.ok).toBe(false)
-    expect(await shared.getProfile(CUENTA)).toBeNull()
+    expect(localStorage.getItem(claveDeMudanzaPendiente(CUENTA))).toBe(UID)
+    // Lo anónimo, intacto bajo su uid y con su cola.
     expect((await shared.getProfile(UID)).name).toBe('Anónima')
-    expect((await diario.getMorningEntry(CUENTA, '2026-09-18')).action).toBe('anónima')
-    expect(await rutas(CUENTA)).not.toContain(paths.sharedDoc(CUENTA, 'profile'))
+    expect((await diario.getMorningEntry(UID, '2026-09-18')).action).toBe('anónima')
+    expect(await rutas(UID)).toEqual(colaAntes)
+    // Y la cuenta no recibe ni una fila ni una entrada de cola, tampoco shared/auth.
+    expect(await diario.getMorningEntry(CUENTA, '2026-09-18')).toBeNull()
+    expect(await shared.getAuthRecord(CUENTA)).toBeNull()
+    expect(await rutas(CUENTA)).toEqual([])
     expect(hayMarcaDeRestauracion(CUENTA)).toBe(false)
   })
 
-  it('el techo cuenta como no terminada', async () => {
+  it('techo y bajada que termina bien después: la mudanza ocurre entonces, con la política completa', async () => {
+    enNube('shared/profile', { name: 'Alejandra', updatedAt: T0 })
+    enNube('diario/morningEntry/items/2026-09-18', { action: 'cuenta', updatedAt: T0 })
+    await arbolAnonimo() // mañana anónima T1, más nueva
+    const mudadas = []
+    const quitar = escucharMudanzasPendientes({ alMudar: (uid) => mudadas.push(uid) })
     control.colgar = true
-    await arbolAnonimo()
-    const velo = []
 
-    const r = await entrarACuenta(UID, CUENTA_INFO, {
-      techoMs: 20,
-      enRestauracion: (a) => velo.push(a),
-    })
+    const entrada = entrarACuenta(UID, CUENTA_INFO, { techoMs: 20 })
+    await hastaQueCuelgue()
+    const r = await entrada
+    expect(r).toMatchObject({ uid: CUENTA, restauracion: null, pendiente: true })
+    expect(await rutas(CUENTA)).toEqual([])
 
-    expect(r.restauracion).toBeNull()
-    expect(velo).toEqual([true, false])
-    expect(await shared.getProfile(CUENTA)).toBeNull()
+    soltar()
+    await hastaQueMude()
+    quitar()
+
+    expect(mudadas).toEqual([CUENTA])
+    // La mañana más nueva queda en local y en la cola.
     expect((await diario.getMorningEntry(CUENTA, '2026-09-18')).action).toBe('anónima')
+    expect(await rutas(CUENTA)).toContain(paths.diarioItem(CUENTA, 'morningEntry', '2026-09-18'))
+    // Y shared/* con la política completa: gana la cuenta.
+    expect((await shared.getProfile(CUENTA)).name).toBe('Alejandra')
+    expect(await rutas(CUENTA)).not.toContain(paths.sharedDoc(CUENTA, 'profile'))
+    expect((await shared.getAuthRecord(CUENTA)).email).toBeNull()
+  })
+
+  it('si la versión de la cuenta es la más nueva, es la que queda, y no se encola nada del origen', async () => {
+    enNube('diario/morningEntry/items/2026-09-18', { action: 'cuenta', updatedAt: T1 })
+    await diario.saveMorningEntry(UID, '2026-09-18', { action: 'anónima', updatedAt: T0 })
+    const quitar = escucharMudanzasPendientes()
+    control.colgar = true
+
+    const entrada = entrarACuenta(UID, CUENTA_INFO, { techoMs: 20 })
+    await hastaQueCuelgue()
+    await entrada
+    soltar()
+    await hastaQueMude()
+    quitar()
+
+    expect((await diario.getMorningEntry(CUENTA, '2026-09-18')).action).toBe('cuenta')
+    expect((await diario.getMorningEntry(UID, '2026-09-18')).action).toBe('anónima')
+    expect(await rutas(CUENTA)).not.toContain(
+      paths.diarioItem(CUENTA, 'morningEntry', '2026-09-18'),
+    )
+  })
+
+  it('una segunda restauración correcta no repite la mudanza', async () => {
+    control.fallar = true
+    await arbolAnonimo()
+    await entrarACuenta(UID, CUENTA_INFO)
+    const mudadas = []
+    const quitar = escucharMudanzasPendientes({ alMudar: (uid) => mudadas.push(uid) })
+
+    control.fallar = false
+    await restaurar(CUENTA)
+    await hastaQueMude()
+    await restaurar(CUENTA)
+    await new Promise((r) => setTimeout(r, 10))
+    quitar()
+
+    expect(mudadas).toEqual([CUENTA])
+    expect(mudanzaPendiente(CUENTA)).toBeNull()
+  })
+
+  it('una restauración fallida no dispara la mudanza pendiente', async () => {
+    control.fallar = true
+    await arbolAnonimo()
+    await entrarACuenta(UID, CUENTA_INFO)
+    const quitar = escucharMudanzasPendientes()
+    await restaurar(CUENTA)
+    await new Promise((r) => setTimeout(r, 10))
+    quitar()
+    expect(mudanzaPendiente(CUENTA)).toBe(UID)
+    expect(await diario.getMorningEntry(CUENTA, '2026-09-18')).toBeNull()
+  })
+
+  it('con la clave puesta y el origen sin filas, se retira sin hacer nada', async () => {
+    localStorage.setItem(claveDeMudanzaPendiente(CUENTA), 'local-vacio')
+    expect(await completarMudanzaPendiente(CUENTA)).toBeNull()
+    expect(mudanzaPendiente(CUENTA)).toBeNull()
+    expect(await shared.getAuthRecord(CUENTA)).toBeNull()
+  })
+
+  it('dos disparos a la vez son una sola mudanza', async () => {
+    await arbolAnonimo()
+    localStorage.setItem(claveDeMudanzaPendiente(CUENTA), UID)
+    const a = completarMudanzaPendiente(CUENTA)
+    const b = completarMudanzaPendiente(CUENTA)
+    expect(b).toBe(a)
+    expect(await a).toMatchObject({ mudados: expect.any(Number) })
+  })
+
+  it('una entrada que sí restaura retira la clave vieja que apuntaba al mismo origen', async () => {
+    await arbolAnonimo()
+    localStorage.setItem(claveDeMudanzaPendiente(CUENTA), UID)
+    const r = await entrarACuenta(UID, CUENTA_INFO)
+    expect(r.pendiente).toBe(false)
+    expect(mudanzaPendiente(CUENTA)).toBeNull()
+    expect((await diario.getMorningEntry(CUENTA, '2026-09-18')).action).toBe('anónima')
+  })
+
+  it('borrarUid (al salir) retira la clave de mudanza pendiente de ese uid, y solo esa', async () => {
+    localStorage.setItem(claveDeMudanzaPendiente(CUENTA), UID)
+    localStorage.setItem(claveDeMudanzaPendiente('OtraCuenta9'), UID)
+    await borrarUid(CUENTA)
+    expect(mudanzaPendiente(CUENTA)).toBeNull()
+    expect(mudanzaPendiente('OtraCuenta9')).toBe(UID)
+  })
+
+  it('la mudanza parcial sin shared/* ya no existe', () => {
+    const fuente = readFileSync('src/lib/entradaCuenta.js', 'utf8')
+    expect(fuente).not.toMatch(/sinTocarShared/)
   })
 })
 
@@ -217,7 +343,13 @@ describe('el resto del algoritmo', () => {
     enNube('shared/profile', { name: 'Alejandra', updatedAt: T0 })
     const velo = []
     const r = await entrarACuenta(CUENTA, CUENTA_INFO, { enRestauracion: (a) => velo.push(a) })
-    expect(r).toEqual({ uid: CUENTA, mudados: 0, conservados: 0, restauracion: null })
+    expect(r).toEqual({
+      uid: CUENTA,
+      mudados: 0,
+      conservados: 0,
+      restauracion: null,
+      pendiente: false,
+    })
     expect(velo).toEqual([])
     expect(await shared.getProfile(CUENTA)).toBeNull()
   })

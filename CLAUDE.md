@@ -662,7 +662,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**75 archivos de prueba · 2.014 casos · los seis comandos en verde.**
+**75 archivos de prueba · 2.023 casos · los seis comandos en verde.**
 
 ### Marca: el logo oficial y el video de apertura (25 ago 2026)
 
@@ -1301,13 +1301,27 @@ y sin red) y se cruza con `strivo.uid.local`:
 usa desde Tu perfil y al arrancar en la fila 3; en 19.2, también desde P7.
 
 1. **Restaurar primero**, con el techo de 15 s y la frase de restauración.
-2. **Mudar después, fila a fila** (`mudarUid` con `{ politica }`; la regla es `ganaOrigenAlMudar`,
-   en `conflictos.js`, hecha de `esSemilla` y `ganaRemoto`): en **`shared/*` gana la cuenta** salvo
-   que lo suyo sea semilla; en **`diario/*` y `breathing/*` gana lo más nuevo**. Si gana el origen,
-   reemplaza y se encola; si gana el destino, la fila del origen **se queda bajo su uid**.
-3. **Si la restauración no terminó** (sin red, interrumpida o techo), `shared/*` del origen no se
-   muda. La marca no se pone y el siguiente arranque restaura.
-4. Se anota el correo en `shared/auth`.
+2. **Mudar después, fila a fila, y solo si la restauración terminó bien** (`mudarUid` con
+   `{ politica }`; la regla es `ganaOrigenAlMudar`, en `conflictos.js`, hecha de `esSemilla` y
+   `ganaRemoto`): en **`shared/*` gana la cuenta** salvo que lo suyo sea semilla; en **`diario/*` y
+   `breathing/*` gana lo más nuevo**. Si gana el origen, reemplaza y se encola; si gana el destino,
+   la fila del origen **se queda bajo su uid**.
+3. Se anota el correo en `shared/auth`.
+
+**Si la restauración no terminó bien —fallo o techo—, no se muda nada** (F1, revisión del 1 oct).
+La primera versión mudaba todo menos `shared/*`, y eso perdía en la nube: contra un destino que
+todavía no había bajado, la mañana, la noche o el `dayState` de un día que la cuenta también tenía
+ganaban sin rival, se encolaban y `setDoc` sin `merge` pisaba en Firestore la versión de la cuenta
+aunque fuera más nueva; con el techo, la bajada tardía ganaba en local pero la cola ya guardaba la
+versión vieja. Ahora la mudanza **se aplaza**: se apunta `strivo.mudanzaPendiente.<uidCuenta>` =
+uid de origen, la sesión sigue con la cuenta y lo anónimo se queda bajo su uid, intacto —tampoco
+se escribe `shared/auth`—. Cuando una restauración de esa cuenta termina con `ok: true`
+(`escucharMudanzasPendientes`, sobre `alTerminarRestauracion`), o al arrancar si la marca ya
+existe, `completarMudanzaPendiente` muda con la política completa, anota el correo, retira la
+clave y sube el sello para que la pantalla relea. Una clave cuyo origen ya no tiene filas se
+retira sin hacer nada; una segunda restauración correcta no repite la mudanza. `borrarUid` retira
+la clave al salir. El nombre de la clave vive en `local.js` (`claveDeMudanzaPendiente`); no es el
+uid, así que no rompe la regla del único escritor de `strivo.uid.local`.
 
 **Residuo aceptado:** cuando dos versiones del mismo día chocan, la más vieja deja de verse; si era
 la anónima, sigue en IndexedDB bajo su uid. Es la regla que ya rige entre dos teléfonos.
@@ -1322,7 +1336,7 @@ añadirlos el documento se encola.
 vacía no se cierra sesión**: la confirmación explica que hay cosas sin subir y solo ofrece
 «Quedarme». `salirDeCuenta` vuelve a mirar la cola antes de tocar nada. Con la cola vacía:
 `signOut`, `borrarUid` (registros y cola del uid, `pinConfig` incluido, nunca otro uid),
-`olvidarUid` (marca y último resultado), uid local nuevo, siembra y vuelta a Hoy, donde aparece el
+`olvidarUid` (marca y último resultado), la mudanza pendiente hacia ese uid, uid local nuevo, siembra y vuelta a Hoy, donde aparece el
 onboarding. Las filas conservadas bajo uids anónimos antiguos no se tocan.
 
 **Tu perfil** gana el bloque **Tu cuenta**, entre horarios y sincronización: estado, entrar, crear,

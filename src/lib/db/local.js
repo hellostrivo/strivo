@@ -385,6 +385,32 @@ export async function mudarUid(desde, hacia, { politica = null } = {}) {
   return { mudados: mudadas.length, conservados }
 }
 
+// ─── La mudanza pendiente (SPEC_19.1, F1) ─────────────────────────────────────
+//
+// Cuando se entra a una cuenta y la restauración no termina bien, la mudanza
+// del árbol anónimo se aplaza hasta que una restauración termine: mudar contra
+// un destino que todavía no bajó dejaría ganar sin rival a las filas con fecha
+// y la cola las subiría encima de las de la cuenta. Mientras tanto, de qué uid
+// hay que mudar se apunta en `localStorage`, por cuenta. Es un hecho de este
+// teléfono —como la marca de restauración— y no viaja.
+//
+// El nombre de la clave vive aquí porque la escriben dos sitios: la entrada a
+// cuenta (`lib/entradaCuenta.js`) y `borrarUid`, que al salir la retira.
+
+/** La clave de `localStorage` que guarda el uid de origen de una mudanza pendiente. */
+export function claveDeMudanzaPendiente(uidCuenta) {
+  return `strivo.mudanzaPendiente.${uidCuenta}`
+}
+
+/** `localStorage`, o `null` donde no lo hay (pruebas, servidor, almacenamiento bloqueado). */
+export function almacenLocal() {
+  try {
+    return typeof localStorage === 'undefined' ? null : localStorage
+  } catch {
+    return null
+  }
+}
+
 /**
  * Borra del dispositivo todo lo de un uid: sus registros y su cola, en una
  * sola transacción (SPEC_19 §3.5, DP-19.1).
@@ -397,7 +423,9 @@ export async function mudarUid(desde, hacia, { politica = null } = {}) {
  * ese uid y nada más. Las filas que una entrada a cuenta dejó conservadas bajo
  * uids anónimos antiguos siguen donde estaban.
  *
- * La marca de restauración y el último resultado no viven aquí: los retira
+ * Retira también la mudanza pendiente hacia ese uid, si la había: con su árbol
+ * borrado no hay nada contra lo que mudar, y lo anónimo sigue bajo su uid. La
+ * marca de restauración y el último resultado no viven aquí: los retira
  * `olvidarUid` (`restaurar.js`), que es quien los conoce.
  *
  * @returns {Promise<{registros: number, cola: number}>}
@@ -414,6 +442,8 @@ export async function borrarUid(uid) {
   for (const ruta of rutas) await registros.delete(ruta)
   for (const seq of entradas) await cola.delete(seq)
   await tx.done
+
+  almacenLocal()?.removeItem(claveDeMudanzaPendiente(uid))
 
   return { registros: rutas.length, cola: entradas.length }
 }

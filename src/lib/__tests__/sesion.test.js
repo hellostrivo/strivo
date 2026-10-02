@@ -618,6 +618,13 @@ describe('ArranqueProvisional usa la regla y no la copia', () => {
     expect(fuente).toMatch(/conCuenta: estado === ESTADOS_SESION\.conCuenta/)
   })
 
+  it('F1: completa la mudanza aplazada al terminar una restauración y al arrancar con marca', () => {
+    expect(fuente).toMatch(/escucharMudanzasPendientes\(\{/)
+    expect(fuente).toMatch(/hayMarcaDeRestauracion\(uid\) &&\s*mudanzaPendiente\(uid\)/)
+    expect(fuente).toMatch(/completarMudanzaPendiente\(uid/)
+    expect(fuente).toMatch(/setSelloRestauracion\(\(n\) => n \+ 1\)/)
+  })
+
   it('sigue escuchando a Firebase mientras la app está montada', () => {
     expect(fuente).toMatch(/escucharUsuario\(/)
   })
