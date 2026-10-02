@@ -81,7 +81,7 @@ import { useOnboarding } from '@/onboarding/useOnboarding'
 import { alternar as alternarGenero } from '@/onboarding/genero'
 import { alternar as alternarMotivo } from '@/onboarding/motivos'
 import { pedirPermiso } from '@/onboarding/recordatorios'
-import { crearConCorreo, entrarConProveedor } from '@/onboarding/cuenta'
+import { crearConCorreo, entrarConProveedor } from '@lib/cuenta'
 
 const textos = copy.diario.onboarding
 

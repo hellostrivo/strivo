@@ -1,4 +1,4 @@
-// src/onboarding/cuenta.js
+// src/lib/cuenta.js
 // P7 — crear la cuenta, y llevarse lo escrito con ella.
 //
 // **La cuenta respalda; no es la puerta.** Se puede saltar, y saltarla no

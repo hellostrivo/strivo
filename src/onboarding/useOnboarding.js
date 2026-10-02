@@ -16,7 +16,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { shared } from '@/lib/db'
-import { adoptarArbol } from './cuenta.js'
+import { adoptarArbol } from '@lib/cuenta'
 import { generoDe, opcionDe } from './genero.js'
 import { anterior, retomarEn, siguiente } from './pasos.js'
 import { expedienteDe, motivoDesde, perfilDesde, RESPUESTAS_INICIALES } from './estado.js'

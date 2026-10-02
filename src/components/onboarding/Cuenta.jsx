@@ -17,7 +17,7 @@ import { useState } from 'react'
 import Button from '@components/ui/Button'
 import { CampoLinea } from '@components/shared/Campo'
 import { copy } from '@copy'
-import { MOTIVOS } from '@/onboarding/cuenta'
+import { MOTIVOS } from '@lib/cuenta'
 
 export default function Cuenta({ textos, motivo, listo, onProveedor, onCrear, onSaltar }) {
   const [conCorreo, setConCorreo] = useState(false)
