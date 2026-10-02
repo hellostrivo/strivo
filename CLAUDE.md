@@ -1,6 +1,6 @@
 # CLAUDE.md — Strivo
 
-**Última actualización:** 17 sep 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
+**Última actualización:** 1 oct 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
 **Blueprint (documento rector):** `/docs/blueprint/Strivo_Blueprint_de_Producto_v5_0_24-08-2026.md`
 **Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO.md`
 **Plan operativo del repliegue:** `/docs/Strivo_Plan_de_Separacion_Tecnica_v1_24-08-2026.md`
@@ -556,10 +556,12 @@ src/
 ├── styles/          globals.css + tokens-strivo.css
 ├── lib/
 │   ├── db/          schema · shared · diario · local · sync
+│   ├── cuenta · sesion · entradaCuenta · salidaCuenta · useSesion
+│   │                la sesión de Firebase, entrar y salir (SPEC_19.1)
 │   ├── respiracion/ motor de ritmo (lógica pura)
 │   └── audio/       síntesis
 ├── diario/          lógica de mañana, noche, journal, historial, PIN
-├── onboarding/      cómo se entra: pasos · catálogos · cuenta · estado
+├── onboarding/      cómo se entra: pasos · catálogos · estado
 ├── perfil/          bloques de Tu perfil y su estado
 ├── breathing/       la herramienta completa
 ├── components/
@@ -598,6 +600,11 @@ el componente.**
   1 (`estadoSueno.animoDerivado`), que hacían la misma cuenta con su propia copia del orden.
 - `src/lib/respiracion/` → el motor de ritmo. `ritmoRespiracion.js` es un envoltorio de compatibilidad.
 - `src/lib/umbralSesion.js` → el «ya se cruzó» del umbral, compartido por sus dos consumidores.
+- `src/lib/sesion.js` → `resolverSesion`: el **único** sitio que dice si hay cuenta, con la tabla
+  de SPEC_19 §3.1. Nadie más mira el prefijo `local-` para eso.
+- `src/lib/db/conflictos.js` → `ganaRemoto`, `esSemilla` y `ganaOrigenAlMudar`: qué gana cuando un
+  registro choca, al bajar de la nube y al entrar a una cuenta. La segunda regla está hecha de las
+  dos primeras, no copiada.
 - `src/diario/ventanaEdicion.js` → hasta cuándo se puede escribir en un día, y **el único sitio donde
   vive el 72** (`HORAS_DE_EDICION`). Lo leen el día, su estado de React, el Historial y la pantalla
   Hoy; hay una prueba que falla si alguno lo escribe a mano.
@@ -655,7 +662,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**69 archivos de prueba · 1.895 casos · los seis comandos en verde.**
+**75 archivos de prueba · 2.014 casos · los seis comandos en verde.**
 
 ### Marca: el logo oficial y el video de apertura (25 ago 2026)
 
@@ -1195,11 +1202,12 @@ olvidar. La instrucción completa está en `docs/specs/SPEC_17A_INSTRUCCION_EJEC
   Pasado el techo el velo baja y se entra; la restauración no se cancela, sigue por detrás y marca
   si termina. No es un umbral de fallo: una restauración lenta no pierde nada por cruzarlo. Nada
   bloquea a la persona.
-- **El disparo es provisional y es deuda: `esUidDeCuenta` (`src/lib/sesion.js`).** Hoy la única
-  señal de que hay cuenta es que el uid no empiece por `local-`. SPEC_19 la sustituye por
-  `onAuthStateChanged` y este helper desaparece con ella. Por eso la restauración se evalúa **solo
-  al montar**: el uid cambia en P7, a mitad del onboarding, y restaurar ahí obligaría a decidir tres
-  cosas sobre un recorrido que SPEC_19 va a rehacer (DP-19.5). **Y quien entra en P7 a una cuenta
+- **El disparo era provisional y ya no existe** (DP-17.7, cerrada en SPEC_19.1). Durante 17A la
+  única señal de que había cuenta era `esUidDeCuenta` —que el uid no empezara por `local-`—; desde
+  el 1 de octubre de 2026 lo dice Firebase, con `resolverSesion` (ver «Sesión real», abajo). La
+  restauración del arranque se sigue evaluando **solo al montar**: el uid cambia en P7, a mitad del
+  onboarding, y restaurar ahí obligaría a decidir tres cosas sobre un recorrido que 19.2 va a
+  rehacer (DP-19.5). **Y quien entra en P7 a una cuenta
   que ya tiene datos no los ve en esa sesión, y hasta el 18 de septiembre de 2026 además los
   perdía en la nube** (DP-17.10). Aquí decía «nada se pierde», y era falso: `mudarUid` garantizaba
   no pisar nada, pero esa garantía solo existía en local —es el `store.get(destino)` de su bucle—
@@ -1214,7 +1222,8 @@ olvidar. La instrucción completa está en `docs/specs/SPEC_17A_INSTRUCCION_EJEC
   llega hasta P8 **sigue pisando `shared/profile` y `shared/onboarding` en la nube** con lo que
   contestó —o con `name: null`, si lo saltó—. Eso es DP-19.5 y se resuelve donde se rehace la
   entrada. **Hasta entonces: no entrar por P7 con ninguna cuenta que tenga datos reales en la
-  nube, incluidas las de prueba.**
+  nube, incluidas las de prueba.** Desde 19.1 la forma segura de entrar a una cuenta existente es
+  Tu perfil.
   - **Y la puerta del onboarding se decidía sobre la semilla si la bajada llegaba tarde**
     (DP-17.11). Dos llamadas concurrentes a `prepararArbol` con el mismo uid —el doble montaje de
     `React.StrictMode`, siempre en desarrollo— se pisaban: la segunda veía el perfil ausente porque
@@ -1224,10 +1233,12 @@ olvidar. La instrucción completa está en `docs/specs/SPEC_17A_INSTRUCCION_EJEC
     tal cual; no es una caché, la entrada se retira al resolverse. **Se apoya en que la llamada en
     vuelo es siempre la que hace más** (`restaurarSiHaceFalta: true` primero), y está anotado en
     `sesion.js`. El caso del techo de 15 s —la bajada que cruza el techo y la puerta ya decidida—
-    sigue abierto y se decide en SPEC_19 con DP-19.5.
+    **se cerró en SPEC_19.1** con el sello de restauración: al terminar la bajada, la puerta se
+    relee y saca del onboarding a quien ya lo había hecho.
 - **La restauración es el único sitio del código autorizado a leer de Firestore.** `getDoc` y
-  `getDocs` aparecen solo en `src/lib/db/restaurar.js` y su prueba, y hay una prueba que recorre
-  `src/` entero para comprobarlo. La lista de rutas va escrita literal allí —el SDK web no enumera
+  `getDocs` aparecen solo en `src/lib/db/restaurar.js`, su prueba y el doble de
+  `entradaCuenta.test.js` —que monta el mismo Firestore de mentira para que `entrarACuenta`
+  restaure de verdad—, y hay una prueba que recorre `src/` entero para comprobarlo. La lista de rutas va escrita literal allí —el SDK web no enumera
   subcolecciones— y `diario/pinConfig` no está en ella a propósito. La bajada escribe por
   `local.writePath` con `sync: false` y sin validadores: los días de agosto traen campos que el
   modelo ya no admite escribir, y rechazarlos sería perder justo lo que esto viene a devolver.
@@ -1236,8 +1247,9 @@ olvidar. La instrucción completa está en `docs/specs/SPEC_17A_INSTRUCCION_EJEC
   basta**: las reglas de Firestore son uid-scoped y exigen `auth.currentUser` para ese uid, así que
   sin una sesión real de Firebase Auth `restaurar()` falla por permisos en silencio —`motivo:
   interrumpida`—, se siembra un árbol vacío y se acaba en el onboarding, que es justo el camino
-  que dispara DP-17.10. La sesión se consigue con `crearConCorreo` desde la consola, sin tocar el
-  árbol local ni llamar a `mudarUid`. La segunda era que **`deleteDatabase` no borraba con una
+  que dispara DP-17.10. Durante 17A la sesión se conseguía con `crearConCorreo` desde la consola;
+  desde 19.1 se entra desde Tu perfil, y con la sesión perdida el bloque dice `vencida` en vez de
+  fallar en silencio. La segunda era que **`deleteDatabase` no borraba con una
   conexión abierta**: se quedaba en `blocked` sin lanzar error, y las peticiones colgadas detrás
   congelaban cualquier transacción posterior de la página. **Desde DP-17.12 la conexión se suelta
   sola** —`getLocalDB` declara `blocking` y `terminated`—, así que borrar la base con la app
@@ -1250,6 +1262,83 @@ olvidar. La instrucción completa está en `docs/specs/SPEC_17A_INSTRUCCION_EJEC
   que «limpiar todo» ahí es ambiguo: se borra por nombre y se comprueba con `indexedDB.databases()`.
   El resultado se lee por dentro con `ultimoResultado(uid)` de `restaurar.js`, en vez de deducirlo
   de la pantalla.
+
+### Sesión real (SPEC_19.1, 1 oct 2026)
+
+Hasta aquí "hay cuenta" quería decir que el uid no empezaba por `local-`. Firebase guardaba su
+sesión —en web, en IndexedDB, por defecto— y nadie la escuchaba: con la sesión perdida y un uid de
+cuenta en `localStorage`, la cola y la restauración fallaban por permisos en silencio. No había
+forma de entrar fuera de P7, ni de salir, ni de recuperar la contraseña. La instrucción completa
+está en `docs/specs/INSTRUCCION_SPEC_19_1_SESION.md` (v1.1, con sus desvíos aprobados).
+
+**La sesión la dice Firebase, con una tabla y en un solo sitio** (`resolverSesion`,
+`src/lib/sesion.js`). Al arrancar se espera a la sesión guardada (`authStateReady`, lectura local
+y sin red) y se cruza con `strivo.uid.local`:
+
+| Firebase | `strivo.uid.local` | Estado | uid vigente |
+|---|---|---|---|
+| sin configurar | cualquiera | `sinConfigurar` | el guardado |
+| usuario U | U | `conCuenta` | U |
+| usuario U | `local-…` u otro uid | `conCuenta` tras entrar a la cuenta | U |
+| sin usuario | `local-…` | `sinCuenta` | el guardado |
+| sin usuario | uid de cuenta | `vencida` | el guardado |
+
+- **El prefijo `local-` sigue mirándose, y no responde a "¿hay cuenta?"**: responde a "¿este uid
+  lo inventó el teléfono?", que es lo que separa las dos últimas filas.
+- **La cola y la restauración solo corren en `conCuenta`.** En `vencida` nada se borra y nada se
+  bloquea: se lee y se escribe en local, lo escrito se encola y sube al volver a entrar.
+  `onAuthStateChanged` sigue escuchando con la app abierta; un usuario que desaparece sin que
+  nadie haya cerrado sesión deja el estado en `vencida`.
+- **`ArranqueProvisional` sigue siendo el único escritor de `strivo.uid.local`** y ofrece la
+  sesión por contexto (`useSesion`, `src/lib/useSesion.js`). No se fija persistencia en web.
+- **El sello de restauración** (`selloRestauracion`) cambia cada vez que termina una `restaurar()`
+  del uid vigente —también la que cruzó el techo y la del reintento al volver la red—; lo emite
+  `alTerminarRestauracion` (`restaurar.js`). `Entrada` relee la puerta con él y **solo puede
+  sacar del onboarding** (`aplicarLecturaDePuerta`, `presentacion/entrada.js`); el bloque de
+  sincronización se recalcula. Cierra el techo de DP-17.11 y DP-17.14.
+
+**Entrar a una cuenta que ya existía** (`entrarACuenta`, `src/lib/entradaCuenta.js`; DP-19.7). Se
+usa desde Tu perfil y al arrancar en la fila 3; en 19.2, también desde P7.
+
+1. **Restaurar primero**, con el techo de 15 s y la frase de restauración.
+2. **Mudar después, fila a fila** (`mudarUid` con `{ politica }`; la regla es `ganaOrigenAlMudar`,
+   en `conflictos.js`, hecha de `esSemilla` y `ganaRemoto`): en **`shared/*` gana la cuenta** salvo
+   que lo suyo sea semilla; en **`diario/*` y `breathing/*` gana lo más nuevo**. Si gana el origen,
+   reemplaza y se encola; si gana el destino, la fila del origen **se queda bajo su uid**.
+3. **Si la restauración no terminó** (sin red, interrumpida o techo), `shared/*` del origen no se
+   muda. La marca no se pone y el siguiente arranque restaura.
+4. Se anota el correo en `shared/auth`.
+
+**Residuo aceptado:** cuando dos versiones del mismo día chocan, la más vieja deja de verse; si era
+la anónima, sigue en IndexedDB bajo su uid. Es la regla que ya rige entre dos teléfonos.
+
+**Una cuenta recién creada no pasa por ahí**: `crearConCorreo` y `entrarConProveedor` devuelven
+`nueva` (este último con `getAdditionalUserInfo(...).isNewUser`), y con `nueva` se adopta el árbol
+como en P7. P7 ignora el campo. **`completedAt` y `tourCompletedAt` no se deshacen** en la fusión
+de `shared/onboarding`: si cualquier lado los trae, el resultado los conserva, y si hubo que
+añadirlos el documento se encola.
+
+**Salir** (`src/lib/salidaCuenta.js`, DP-19.1). Se intenta subir lo pendiente y **con la cola no
+vacía no se cierra sesión**: la confirmación explica que hay cosas sin subir y solo ofrece
+«Quedarme». `salirDeCuenta` vuelve a mirar la cola antes de tocar nada. Con la cola vacía:
+`signOut`, `borrarUid` (registros y cola del uid, `pinConfig` incluido, nunca otro uid),
+`olvidarUid` (marca y último resultado), uid local nuevo, siembra y vuelta a Hoy, donde aparece el
+onboarding. Las filas conservadas bajo uids anónimos antiguos no se tocan.
+
+**Tu perfil** gana el bloque **Tu cuenta**, entre horarios y sincronización: estado, entrar, crear,
+recuperar la contraseña (misma respuesta exista o no la cuenta) y salir, como vistas dentro del
+bloque y sin rutas nuevas. La confirmación es `components/shared/Confirmacion.jsx` (DP-19.2), que
+SPEC_24 reutilizará. **Apple no se ofrece en web** (`PROVEEDORES_WEB`, DP-19.4), ni en Perfil ni
+en P7. `cuenta.js` se mudó de `onboarding/` a `src/lib/` porque ya tiene tres consumidores.
+
+**La regla de seguridad sigue vigente hasta cerrar 19.2: no entrar por P7 con ninguna cuenta que
+tenga datos reales en la nube.** P7 todavía adopta el árbol sin restaurar y, al terminar, escribe
+`shared/profile` y `shared/onboarding` encima de los de la cuenta (DP-19.5). Desde 19.1, la forma
+segura de entrar a una cuenta existente es Tu perfil.
+
+**Lo que esto no hace:** no cambia el flujo de P7, no toca el PIN (`pin.js` sigue diciendo que no
+hay auth por correo; lo corrige 19.2, DP-19.6), no migra `signInWithPopup` (SPEC_21) y no borra
+cuentas (SPEC_24). Los criterios manuales M1–M9 los valida la fundadora contra `strivo-fe04f`.
 
 ### Divergencias conocidas entre el blueprint y el código
 

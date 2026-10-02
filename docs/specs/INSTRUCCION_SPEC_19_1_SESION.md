@@ -4,7 +4,7 @@
 **Rama:** `strivo` · **Commit de referencia:** `6c80b3f` (24 sep 2026)
 **Gobierna:** `docs/specs/SPEC_19_SESION_REAL_Y_CUENTA.md` (v2.1) + `docs/specs/SPEC_00B_CONVENCIONES_LANZAMIENTO.md` + `CLAUDE.md`
 **Alcance:** la entrega 19.1. La 19.2 (P7 con cuenta existente y PIN con correo) tiene instrucción propia y **no se toca aquí**.
-**Versión:** 1.0 — 1 oct 2026.
+**Versión:** 1.1 — 1 oct 2026. Añade a la §3 los desvíos aprobados tras la inspección del repo.
 
 ---
 
@@ -46,6 +46,24 @@ DP-19.1, 19.2, 19.3, 19.4, 19.7, DP-17.7, el techo de DP-17.11, DP-17.14, 17.15 
 | D4 | No hay componente de confirmación | Se crea uno mínimo |
 | D5 | `sesion.test.js:107` comprueba el comentario de deuda de `esUidDeCuenta` | Se reemplaza por la prueba del resolutor |
 | D6 | `pin.js` dice que no hay auth por correo en el repo | No se toca en 19.1; lo corrige 19.2 |
+
+### Desvíos aprobados el 1 oct 2026
+
+Reportados por Claude Code tras inspeccionar el repo y aprobados por la fundadora antes de codificar.
+
+| # | Desvío | Qué se hace |
+|---|---|---|
+| A1 | `borrarUid` no puede retirar la marca ni el último resultado sin un import circular (`restaurar.js` ya importa `local.js`) | `borrarUid` en `local.js` borra registros y cola; `olvidarUid` en `restaurar.js` retira la marca y el resultado de ese uid. Salir llama a las dos |
+| A2 | Esperar un `flush` en curso exige ver la promesa en vuelo, privada en `sync.js` | `flushEnCurso()` exportada, solo lectura. `flush` no cambia de comportamiento y las pruebas de `sync.js` pasan sin tocarlas |
+| A3 | El sello tiene que enterarse de restauraciones que nadie espera (la que cruzó el techo, la del reintento al volver la red, la de Perfil) | `alTerminarRestauracion(fn)` en `restaurar.js`: devuelve la desuscripción, avisa también con fallo, y un oyente que lance no rompe `restaurar` ni a los demás |
+| A4 | Con política, vaciar entera la cola del origen perdería las subidas pendientes de lo conservado si el origen es una cuenta vencida | Con política, se retiran solo las entradas de lo que se mudó. Sin política, igual que hoy |
+| A5 | `completedAt` en `aplicar`: la instrucción solo encolaba cuando gana lo local | También se encola cuando gana lo remoto y solo el local traía el hecho |
+| A6 | Salir necesita saber si hay pendientes antes de abrir el diálogo | `comprobarSalida()` y luego `salir()`, que vuelve a comprobar la cola |
+| A7 | `onTerminado` siempre abre la presentación | Al salir del onboarding por el sello, lo decide `presentacionPendiente`, como en un arranque |
+| A8 | `cuenta.js` tiene tres consumidores fuera del onboarding | Se mueve a `src/lib/cuenta.js` en un commit propio, sin cambios de comportamiento |
+| A9 | Desde Perfil hay que distinguir cuenta nueva de existente | `crearConCorreo` y `entrarConProveedor` devuelven `nueva` (el segundo con `getAdditionalUserInfo(resultado)?.isNewUser`). P7 lo ignora |
+
+Aprobado también: el velo al entrar desde Perfil vuelve a `#/perfil` y no aparece si el inicio de sesión falla (el formulario conserva el correo y muestra el error); `resolverSesion` mira el prefijo `local-` con el comentario de que responde a «¿este uid lo inventó el teléfono?» y no a «¿hay cuenta?»; y se reutilizan `p7.google` y `p7.create`.
 
 ---
 
