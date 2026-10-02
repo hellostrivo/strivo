@@ -25,9 +25,16 @@
 // **El bloque de sincronización (SPEC_17A §4.6) no lo contradice**: no dice
 // nada de la persona, dice dónde está lo suyo. Su estado se anuncia con texto
 // en un contenedor `aria-live`, nunca solo con un punto de color, y el botón
-// de volver a intentar aparece solo cuando hay algo que intentar.
+// de volver a intentar aparece solo cuando hay algo que intentar. Si el
+// reintento no consigue nada, lo dice en la misma región, en voz baja; si lo
+// consigue, el estado nuevo es el acuse (DP-17.15).
+//
+// **Tu cuenta (SPEC_19.1)** va antes de la sincronización: primero quién eres
+// para la nube, después dónde está lo tuyo. Tiene vistas propias —entrar,
+// crear, recuperar, salir— y por eso vive en su componente (`TuCuenta`).
 
 import Bloque from './Bloque'
+import TuCuenta from './TuCuenta'
 import Button from '@components/ui/Button'
 import { CampoLinea } from '@components/shared/Campo'
 import { ListaDeChips } from '@components/shared/Chips'
@@ -100,6 +107,8 @@ export default function Perfil({ uid }) {
       </div>
     ),
 
+    cuenta: () => <TuCuenta />,
+
     sincronizacion: () => (
       <div className="flex flex-col gap-4">
         {/* El estado, con texto y en voz baja. Sin cuántas esperan a salir:
@@ -112,6 +121,11 @@ export default function Perfil({ uid }) {
           {sincronizacion.restauracionFallida && (
             <p className="text-sm text-on-surface-soft leading-relaxed">
               {copy.shared.restauracion.error}
+            </p>
+          )}
+          {sincronizacion.acuse && (
+            <p className="text-sm text-on-surface-soft leading-relaxed">
+              {textos.sincronizacion.reintento[sincronizacion.acuse]}
             </p>
           )}
         </div>

@@ -45,25 +45,39 @@ function codigoDe(ruta) {
 }
 
 describe('el bloque existe entero: identificador, copy y componente', () => {
-  it('está declarado, y al final', () => {
+  it('está declarado, al final y justo detrás de Tu cuenta', () => {
     expect(BLOQUES[BLOQUES.length - 1]).toBe('sincronizacion')
+    expect(BLOQUES[BLOQUES.length - 2]).toBe('cuenta')
   })
 
   it('su copy es el del §5, cerrado', () => {
+    // SPEC_19.1 §4 reemplaza `alDia` y `shared.restauracion.error`, y añade
+    // `reintento.sinExito` (DP-17.15, DP-17.16).
     expect(textos).toEqual({
       titulo: 'Dónde vive lo que escribes',
       hint: 'Lo tuyo se guarda aquí primero y se respalda después.',
-      alDia: 'Todo guardado',
+      alDia: 'Lo de este teléfono está guardado en tu cuenta.',
       pendiente: 'Guardando',
       sinConexion: 'Sin conexión. Se guardará cuando vuelva.',
       sinCuenta: 'Sin cuenta, lo escrito vive solo en este teléfono.',
       reintentar: 'Intentar de nuevo',
+      reintento: {
+        sinExito: 'Lo intentamos y todavía no se pudo. Seguiremos solos cuando haya conexión.',
+      },
     })
     expect(copy.shared.restauracion).toEqual({
       enCurso: 'Recuperando lo que escribiste.',
-      error: 'No pudimos recuperar todo ahora. Nada se perdió y lo intentaremos de nuevo.',
+      error:
+        'Lo que ya tenías en tu cuenta todavía no termina de llegar a este teléfono. Nada se perdió y lo intentaremos de nuevo.',
       reintentar: 'Intentar de nuevo',
     })
+  })
+
+  it('el acuse del reintento se dice en la región aria-live, sin cifras', () => {
+    const pantalla = codigoDe('src/components/perfil/Perfil.jsx')
+    expect(pantalla).toMatch(/textos\.sincronizacion\.reintento\[sincronizacion\.acuse\]/)
+    const region = pantalla.slice(pantalla.indexOf('aria-live="polite"'))
+    expect(region.indexOf('sincronizacion.acuse')).toBeLessThan(region.indexOf('</div>'))
   })
 
   it('cada estado tiene su texto, y ninguno lleva urgencia ni exclamación', () => {

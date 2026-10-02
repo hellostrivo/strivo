@@ -16,11 +16,13 @@
 // hablarte y cómo son tus días. Lo que llegue después —cuenta, plan,
 // suscripción— va detrás: son gestiones, no eres tú.
 //
-// `sincronizacion` es el primero de esos (SPEC_17A §4.6): dónde vive lo que
-// escribes y si ya está a salvo. Va al final por lo de arriba.
+// `cuenta` (SPEC_19.1) y `sincronizacion` (SPEC_17A §4.6) son los primeros de
+// esos: quién eres para la nube, y después dónde vive lo que escribes y si ya
+// está a salvo. Van al final por lo de arriba, y en ese orden porque el
+// segundo depende del primero.
 
 /** Los bloques que hay hoy, en el orden en que se ven. */
-export const BLOQUES = Object.freeze(['nombre', 'genero', 'horarios', 'sincronizacion'])
+export const BLOQUES = Object.freeze(['nombre', 'genero', 'horarios', 'cuenta', 'sincronizacion'])
 
 /** ¿Es un bloque del perfil? */
 export function es(id) {

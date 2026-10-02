@@ -14,6 +14,67 @@
 // al pintar con `resolveGender` de `src/copy/gender.js` (§3.6.5). Ningún
 // componente lee `.m` ni `.f` (RN-GEN-01).
 
+// ─── Tu cuenta (SPEC_19.1 §4) ────────────────────────────────────────────────
+// Va en `copy.cuenta` y se declara aquí arriba porque Tu perfil lo necesita
+// también en `copy.diario.perfil.cuenta`: cada bloque del perfil tiene su
+// texto bajo `perfil`, y esa costura no se rompe por un bloque. Es el mismo
+// objeto en los dos sitios, no una copia.
+//
+// **P7 conserva su copy y aquí no se repite.** "Continuar con Google" y
+// "Crear cuenta" se leen de `copy.diario.onboarding.p7` (`google`, `create`):
+// dicen lo mismo, y dos copias del mismo botón se separan en cuanto alguien
+// edite una.
+//
+// Ningún texto lleva género, signo de exclamación ni código de error. El de
+// recuperar es el mismo exista o no la cuenta: decir "ese correo no tiene
+// cuenta" es contarle a cualquiera qué correos la tienen.
+const CUENTA = {
+  bloque: {
+    titulo: 'Tu cuenta',
+  },
+  estado: {
+    sinCuenta: 'Sin cuenta. Puedes crear una cuando quieras.',
+    conCuenta: '{correo}',
+    vencida:
+      'La sesión se cerró en este teléfono. Lo que escribiste sigue aquí; entra de nuevo para que se respalde.',
+    sinConfigurar: 'Las cuentas no están disponibles en esta versión.',
+  },
+  acciones: {
+    entrar: 'Entrar a mi cuenta',
+    crear: 'Crear una cuenta',
+    salir: 'Cerrar sesión',
+  },
+  formulario: {
+    tituloEntrar: 'Entrar',
+    tituloCrear: 'Crear una cuenta',
+    correo: 'Correo',
+    contrasena: 'Contraseña',
+    entrar: 'Entrar',
+    olvide: 'Olvidé mi contraseña',
+    volver: 'Volver',
+  },
+  recuperar: {
+    titulo: 'Recuperar acceso',
+    texto: 'Te enviaremos un enlace para elegir una contraseña nueva.',
+    boton: 'Enviarme un enlace',
+    enviado: 'Si ese correo tiene una cuenta, recibirás un enlace en unos minutos.',
+  },
+  salir: {
+    titulo: 'Cerrar sesión',
+    texto:
+      'Lo que escribiste está guardado en tu cuenta y vuelve cuando entres. De este teléfono se quita todo, también el PIN del journal.',
+    pendiente:
+      'Hay cosas que todavía no llegan a tu cuenta. Cuando vuelva la conexión podrás cerrar sesión sin perder nada.',
+    confirmar: 'Cerrar sesión',
+    cancelar: 'Quedarme',
+  },
+  error: {
+    credenciales: 'Ese correo y esa contraseña no coinciden.',
+    sinConexion: 'Sin conexión. Inténtalo cuando vuelva.',
+    generico: 'Algo no salió bien. Inténtalo de nuevo en un momento.',
+  },
+}
+
 export const copy = {
   // ─── Generales ───────────────────────────────────────────────────────────
   appName: 'Strivo',
@@ -1387,19 +1448,34 @@ export const copy = {
         sleepLabel: 'Me duermo a las',
       },
 
+      // SPEC_19.1 — Tu cuenta: estado, entrar, crear, salir y recuperar. Su
+      // texto vive en `copy.cuenta`; aquí está el mismo objeto, para que el
+      // bloque tenga su título donde lo tienen todos.
+      cuenta: CUENTA.bloque,
+
       // SPEC_17A §4.6 — Dónde vive lo que escribes. Cuatro estados que se
       // dicen con texto y nunca solo con un punto de color. Ninguno es una
       // alarma: sin cuenta no es un problema, es un hecho; sin conexión se
       // guardará cuando vuelva; y `pendiente` no es una cuenta atrás, es un
       // "está en camino".
+      //
+      // SPEC_19.1 (DP-17.16): `alDia` habla de la subida —lo de este teléfono
+      // ya está en la cuenta— y la bajada tiene su propia frase en
+      // `shared.restauracion.error`. Antes "Todo guardado" convivía con "no
+      // pudimos recuperar todo" y las dos parecían decir cosas opuestas de lo
+      // mismo. `reintento.sinExito` es el acuse del botón cuando no se pudo
+      // (DP-17.15); con éxito, el cambio de estado es el acuse.
       sincronizacion: {
         titulo: 'Dónde vive lo que escribes',
         hint: 'Lo tuyo se guarda aquí primero y se respalda después.',
-        alDia: 'Todo guardado',
+        alDia: 'Lo de este teléfono está guardado en tu cuenta.',
         pendiente: 'Guardando',
         sinConexion: 'Sin conexión. Se guardará cuando vuelva.',
         sinCuenta: 'Sin cuenta, lo escrito vive solo en este teléfono.',
         reintentar: 'Intentar de nuevo',
+        reintento: {
+          sinExito: 'Lo intentamos y todavía no se pudo. Seguiremos solos cuando haya conexión.',
+        },
       },
     },
 
@@ -1478,7 +1554,8 @@ export const copy = {
     // la sesión no terminó. Ningún código de error a la vista (RN-EST-04).
     restauracion: {
       enCurso: 'Recuperando lo que escribiste.',
-      error: 'No pudimos recuperar todo ahora. Nada se perdió y lo intentaremos de nuevo.',
+      error:
+        'Lo que ya tenías en tu cuenta todavía no termina de llegar a este teléfono. Nada se perdió y lo intentaremos de nuevo.',
       reintentar: 'Intentar de nuevo',
     },
 
@@ -1759,6 +1836,10 @@ export const copy = {
         'Todavía no guardas ninguna. Cuando encuentres un ritmo que te acomode, guárdalo aquí.',
     },
   },
+
+  // ─── Tu cuenta (SPEC_19.1) ────────────────────────────────────────────────
+  // Ver la nota de `CUENTA`, arriba del todo.
+  cuenta: CUENTA,
 
   // ─── Errores y recuperación ───────────────────────────────────────────────
   errors: {
