@@ -8,7 +8,16 @@
 
 import { describe, expect, it } from 'vitest'
 
-import { CAMPO_DE_MARCA, campoDeMarca, esSemilla, ganaRemoto, marcaDe } from '../conflictos.js'
+import {
+  CAMPO_DE_MARCA,
+  HECHOS_DEL_EXPEDIENTE,
+  campoDeMarca,
+  esExpediente,
+  esSemilla,
+  ganaRemoto,
+  hechosQueFaltan,
+  marcaDe,
+} from '../conflictos.js'
 
 const T0 = '2026-09-17T12:00:00.000Z'
 const T1 = '2026-09-17T13:00:00.000Z'
@@ -254,5 +263,30 @@ describe('esSemilla: ausente e ilegible no son lo mismo (DP-17.10)', () => {
     expect(ganaRemoto('shared', { updatedAt: 'ayer' }, remoto)).toBe(
       esSemilla('shared', { updatedAt: 'ayer' }),
     )
+  })
+})
+
+describe('hechosQueFaltan: los hechos del expediente no se deshacen (SPEC_19.2 §4.3)', () => {
+  it('son dos, y solo el expediente los tiene', () => {
+    expect(HECHOS_DEL_EXPEDIENTE).toEqual(['completedAt', 'tourCompletedAt'])
+    expect(esExpediente('shared', 'onboarding')).toBe(true)
+    expect(esExpediente('shared', 'profile')).toBe(false)
+    expect(esExpediente('diario/morningEntry', 'onboarding')).toBe(false)
+  })
+
+  it('devuelve lo que el perdedor trae y al ganador le falta', () => {
+    expect(
+      hechosQueFaltan({ completedAt: null }, { completedAt: T0, tourCompletedAt: T1 }),
+    ).toEqual({ completedAt: T0, tourCompletedAt: T1 })
+    expect(hechosQueFaltan({}, { tourCompletedAt: T1 })).toEqual({ tourCompletedAt: T1 })
+  })
+
+  it('no toca lo que el ganador ya trae, aunque sea distinto', () => {
+    expect(hechosQueFaltan({ completedAt: T1 }, { completedAt: T0 })).toEqual({})
+  })
+
+  it('un perdedor sin hechos, o sin documento, no aporta nada', () => {
+    expect(hechosQueFaltan({ completedAt: null }, { completedAt: null })).toEqual({})
+    expect(hechosQueFaltan({ completedAt: null }, null)).toEqual({})
   })
 })

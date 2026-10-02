@@ -16,6 +16,7 @@ import * as shared from '../shared.js'
 import * as diario from '../diario.js'
 import { initUserTree } from '../index.js'
 import { listQueue, mudarUid, pendingCount, readPath, writePath } from '../local.js'
+import { ganaOrigenAlMudar } from '../conflictos.js'
 import { cancelRetries, flush } from '../sync.js'
 import { paths } from '../schema.js'
 import { UID, resetLocalDB } from './helpers.js'
@@ -209,6 +210,109 @@ describe('criterio 6: sembrar → mudar → flush, de punta a punta con dobles',
     expect(resultado.sent).toBe(1)
     expect(escrituras.map((e) => e.path)).toEqual([paths.sharedDoc(CUENTA, 'profile')])
     expect(escrituras[0].data.name).toBe('Alejandra')
+    expect(await pendingCount(CUENTA)).toBe(0)
+  })
+})
+
+describe('SPEC_19.2 §4.3: completedAt no se deshace al mudar con política', () => {
+  const T1 = '2026-09-18T12:00:00.000Z'
+  const politica = ganaOrigenAlMudar
+
+  /** Un expediente bajo un uid, sin encolar: lo que importa es qué hace la mudanza. */
+  function expediente(uid, data) {
+    return writePath({
+      uid,
+      path: paths.sharedDoc(uid, 'onboarding'),
+      collection: 'shared',
+      id: 'onboarding',
+      data: { version: 3, currentStep: null, completedSteps: [], ...data },
+      sync: false,
+    })
+  }
+
+  it('gana la cuenta, pero el origen traía completedAt: la cuenta lo conserva y se encola', async () => {
+    await expediente(CUENTA, { currentStep: 'p3', completedAt: null, updatedAt: T0 })
+    await expediente(UID, {
+      currentStep: 'p8',
+      completedAt: T1,
+      tourCompletedAt: T1,
+      updatedAt: T1,
+    })
+
+    const { mudados, conservados } = await mudarUid(UID, CUENTA, { politica })
+
+    const cuenta = await readPath(paths.sharedDoc(CUENTA, 'onboarding'))
+    expect(mudados).toBe(0)
+    expect(conservados).toBe(1)
+    // Lo demás es de la cuenta: solo se añaden los dos hechos.
+    expect(cuenta.currentStep).toBe('p3')
+    expect(cuenta.updatedAt).toBe(T0)
+    expect(cuenta.completedAt).toBe(T1)
+    expect(cuenta.tourCompletedAt).toBe(T1)
+    expect(await rutas(CUENTA)).toEqual([paths.sharedDoc(CUENTA, 'onboarding')])
+    // Y la fila del origen sigue bajo su uid, intacta.
+    expect((await readPath(paths.sharedDoc(UID, 'onboarding'))).currentStep).toBe('p8')
+  })
+
+  it('gana la cuenta y ya traía sus hechos: no se toca ni se encola', async () => {
+    await expediente(CUENTA, { completedAt: T0, tourCompletedAt: T0, updatedAt: T0 })
+    await expediente(UID, { completedAt: T1, updatedAt: T1 })
+
+    await mudarUid(UID, CUENTA, { politica })
+
+    const cuenta = await readPath(paths.sharedDoc(CUENTA, 'onboarding'))
+    expect(cuenta.completedAt).toBe(T0)
+    expect(await pendingCount(CUENTA)).toBe(0)
+  })
+
+  it('el origen gana sobre un expediente sin marca que traía completedAt: se lo lleva', async () => {
+    // Un expediente sin `updatedAt` cuenta como semilla, aunque diga que terminó.
+    await expediente(CUENTA, { completedAt: T0 })
+    await expediente(UID, { currentStep: 'p5', completedAt: null, updatedAt: T1 })
+
+    const { mudados } = await mudarUid(UID, CUENTA, { politica })
+
+    const cuenta = await readPath(paths.sharedDoc(CUENTA, 'onboarding'))
+    expect(mudados).toBe(1)
+    expect(cuenta.currentStep).toBe('p5')
+    expect(cuenta.completedAt).toBe(T0)
+    expect(await rutas(CUENTA)).toEqual([paths.sharedDoc(CUENTA, 'onboarding')])
+  })
+
+  it('el perfil no se fusiona por campo: solo el expediente tiene hechos', async () => {
+    await writePath({
+      uid: CUENTA,
+      path: paths.sharedDoc(CUENTA, 'profile'),
+      collection: 'shared',
+      id: 'profile',
+      data: { name: 'Alejandra', updatedAt: T0 },
+      sync: false,
+    })
+    await writePath({
+      uid: UID,
+      path: paths.sharedDoc(UID, 'profile'),
+      collection: 'shared',
+      id: 'profile',
+      data: { name: 'Prueba', completedAt: T1, updatedAt: T1 },
+      sync: false,
+    })
+
+    await mudarUid(UID, CUENTA, { politica })
+
+    expect(await readPath(paths.sharedDoc(CUENTA, 'profile'))).toEqual({
+      name: 'Alejandra',
+      updatedAt: T0,
+    })
+    expect(await pendingCount(CUENTA)).toBe(0)
+  })
+
+  it('sin política, nada cambia: el destino gana entero y no se encola', async () => {
+    await expediente(CUENTA, { completedAt: null, updatedAt: T0 })
+    await expediente(UID, { completedAt: T1, updatedAt: T1 })
+
+    await mudarUid(UID, CUENTA)
+
+    expect((await readPath(paths.sharedDoc(CUENTA, 'onboarding'))).completedAt).toBeNull()
     expect(await pendingCount(CUENTA)).toBe(0)
   })
 })

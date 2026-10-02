@@ -34,7 +34,7 @@
 
 import { readPath, writePath } from './local.js'
 import { assertUid } from './schema.js'
-import { ganaRemoto } from './conflictos.js'
+import { esExpediente, ganaRemoto, hechosQueFaltan } from './conflictos.js'
 
 // ─── Qué se baja ──────────────────────────────────────────────────────────────
 //
@@ -271,25 +271,6 @@ async function bajar(uid, cuenta) {
 }
 
 /**
- * Los hechos del expediente que no se deshacen (SPEC_19 §3.7): haber terminado
- * el onboarding y haber visto la presentación. Si cualquiera de los dos lados
- * lo trae, el resultado lo conserva.
- */
-const HECHOS_DEL_EXPEDIENTE = Object.freeze(['completedAt', 'tourCompletedAt'])
-
-/**
- * Lo que el perdedor sabe y al ganador le falta: los hechos del expediente que
- * el perdedor trae no nulos y el ganador trae nulos o no trae.
- */
-function hechosQueFaltan(ganador, perdedor) {
-  const faltan = {}
-  for (const campo of HECHOS_DEL_EXPEDIENTE) {
-    if (perdedor?.[campo] != null && ganador?.[campo] == null) faltan[campo] = perdedor[campo]
-  }
-  return faltan
-}
-
-/**
  * Un documento remoto contra lo que hay en su ruta. Regla 1 si no hay nada;
  * `ganaRemoto` si lo hay. **Sin validadores y sin cola**: ver la cabecera.
  *
@@ -302,6 +283,8 @@ function hechosQueFaltan(ganador, perdedor) {
  * atrás en ningún sitio del producto, así que la fusión tampoco puede dársela.
  * Gana quien gane, el documento conserva `completedAt` y `tourCompletedAt` si
  * alguno de los dos lados los trae; el resto de campos son los del ganador.
+ * La regla vive en `conflictos.js` (`hechosQueFaltan`), que es también donde
+ * la lee la mudanza al entrar a una cuenta.
  *
  * Y cuando hubo que añadir uno, el resultado **se encola**: ya no es lo que hay
  * en la nube —le falta o le sobra ese hecho— y sin subirlo la nube seguiría
@@ -318,7 +301,7 @@ async function aplicar({ uid, path, coleccion, id, data }, cuenta) {
 
   const gana = ganaRemoto(coleccion, local, data)
 
-  if (coleccion === 'shared' && id === 'onboarding') {
+  if (esExpediente(coleccion, id)) {
     const faltan = gana ? hechosQueFaltan(data, local) : hechosQueFaltan(local, data)
     if (Object.keys(faltan).length > 0) {
       const ganador = gana ? data : local

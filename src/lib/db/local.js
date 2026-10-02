@@ -11,7 +11,7 @@
 
 import { openDB } from 'idb'
 import { assertUid, StrivoDataError, ERROR_CODES } from './schema.js'
-import { esSemilla } from './conflictos.js'
+import { esExpediente, esSemilla, hechosQueFaltan } from './conflictos.js'
 
 const DB_NAME = 'strivo'
 const DB_VERSION = 1
@@ -333,6 +333,28 @@ const SIN_SINCRONIZAR = /\/diario\/pinConfig$/
  * destino, se conserva el origen, se vacía su cola— y la semilla no sube en
  * ninguno de los dos casos (DP-17.10).
  *
+ * ─── Los hechos del expediente, también al mudar (SPEC_19.2 §4.3) ───────────
+ *
+ * Con política, `shared/onboarding` no se decide solo por la fila entera: si
+ * el que pierde trae `completedAt` o `tourCompletedAt` y el que gana no, el
+ * resultado se los lleva (`hechosQueFaltan`, la misma regla que aplica la
+ * bajada). El caso que lo pide es el de una cuenta que empezó el onboarding en
+ * otro teléfono y lo terminó en una sesión anónima de este: gana el expediente
+ * de la cuenta, y sin esto el hecho se perdería y la puerta volvería a abrir.
+ *
+ * La política sigue siendo booleana —decide **qué fila** queda— y esto es lo
+ * que se hace después con la que queda, dentro de la misma transacción:
+ *
+ *   - si se queda el destino y le faltan hechos, se completa y **se encola**:
+ *     ya no es lo que había en la nube, y sin subirlo la nube seguiría diciendo
+ *     que el onboarding no se terminó. La fila del origen sigue bajo su uid;
+ *   - si se muda el origen encima de un destino que traía un hecho —un
+ *     expediente sin marca, que cuenta como semilla—, la fila mudada se lo
+ *     lleva.
+ *
+ * Sin política no se aplica: ahí el destino no existe (una cuenta recién
+ * creada) o gana siempre, y su comportamiento no cambia.
+ *
  * @param {string} desde
  * @param {string} hacia
  * @param {object} [opciones]
@@ -351,6 +373,7 @@ export async function mudarUid(desde, hacia, { politica = null } = {}) {
   const tx = db.transaction(STORE_RECORDS, 'readwrite')
   const store = tx.objectStore(STORE_RECORDS)
   const mudadas = []
+  const completadas = []
   let conservados = 0
 
   for (const fila of origen) {
@@ -360,13 +383,23 @@ export async function mudarUid(desde, hacia, { politica = null } = {}) {
     const muda = politica
       ? politica(fila.collection, fila.data, existente ? existente.data : null)
       : !existente
+    const conHechos = Boolean(politica && existente && esExpediente(fila.collection, fila.id))
     if (!muda) {
       conservados += 1
+      const faltan = conHechos ? hechosQueFaltan(existente.data, fila.data) : {}
+      if (Object.keys(faltan).length > 0) {
+        const data = { ...existente.data, ...faltan }
+        await store.put({ ...existente, data })
+        completadas.push({ path: destino, collection: existente.collection, data })
+      }
       continue
     }
-    await store.put({ ...fila, path: destino, uid: hacia })
+    const data = conHechos
+      ? { ...fila.data, ...hechosQueFaltan(fila.data, existente.data) }
+      : fila.data
+    await store.put({ ...fila, path: destino, uid: hacia, data })
     await store.delete(fila.path)
-    mudadas.push({ desde: fila.path, path: destino, collection: fila.collection, data: fila.data })
+    mudadas.push({ desde: fila.path, path: destino, collection: fila.collection, data })
   }
   await tx.done
 
@@ -375,7 +408,7 @@ export async function mudarUid(desde, hacia, { politica = null } = {}) {
     if (politica && !rutasMudadas.has(entrada.path)) continue
     await dequeue(entrada.seq)
   }
-  for (const fila of mudadas) {
+  for (const fila of [...mudadas, ...completadas]) {
     if (SIN_SINCRONIZAR.test(fila.path)) continue
     // Una semilla no sube tampoco después de mudarse (DP-17.10, ver arriba).
     if (esSemilla(fila.collection, fila.data)) continue

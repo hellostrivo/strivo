@@ -134,6 +134,41 @@ export function esSemilla(coleccion, data) {
   return data?.[campo] == null
 }
 
+// ─── Los hechos que no se deshacen (SPEC_19 §3.7) ─────────────────────────────
+//
+// Las reglas de arriba eligen un documento entero, y en `shared/onboarding` eso
+// podía deshacer un hecho: un expediente más nuevo con `completedAt: null` le
+// ganaba a otro que decía que el onboarding ya se terminó, y la puerta volvía
+// a abrirse a quien ya había entrado. Terminar el onboarding y ver la
+// presentación no tienen vuelta atrás en ningún sitio del producto, así que
+// ninguna fusión puede dársela: **gane quien gane, el resultado los conserva**.
+//
+// Lo aplican dos sitios —la bajada (`restaurar.aplicar`) y la mudanza con
+// política (`mudarUid`, SPEC_19.2 §4.3)— y los dos preguntan aquí: una regla,
+// un sitio. Es la única fusión por campo de toda la capa de datos.
+
+/** Los hechos del expediente: haber terminado el onboarding y haber visto la presentación. */
+export const HECHOS_DEL_EXPEDIENTE = Object.freeze(['completedAt', 'tourCompletedAt'])
+
+/** ¿Es esta fila el expediente del onboarding, el único documento con hechos? */
+export function esExpediente(coleccion, id) {
+  return coleccion === 'shared' && id === 'onboarding'
+}
+
+/**
+ * Lo que el perdedor sabe y al ganador le falta: los hechos del expediente que
+ * el perdedor trae no nulos y el ganador trae nulos o no trae.
+ *
+ * @returns {object} los campos que hay que añadir al ganador; vacío si ninguno.
+ */
+export function hechosQueFaltan(ganador, perdedor) {
+  const faltan = {}
+  for (const campo of HECHOS_DEL_EXPEDIENTE) {
+    if (perdedor?.[campo] != null && ganador?.[campo] == null) faltan[campo] = perdedor[campo]
+  }
+  return faltan
+}
+
 /**
  * Al entrar a una cuenta desde otro uid, ¿se muda esta fila del origen encima
  * de lo que haya en el destino? (SPEC_19 §3.4, DP-19.7)
