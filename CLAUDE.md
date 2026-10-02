@@ -662,7 +662,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**75 archivos de prueba · 2.023 casos · los seis comandos en verde.**
+**75 archivos de prueba · 2.034 casos · los seis comandos en verde.**
 
 ### Marca: el logo oficial y el video de apertura (25 ago 2026)
 
@@ -1322,6 +1322,25 @@ clave y sube el sello para que la pantalla relea. Una clave cuyo origen ya no ti
 retira sin hacer nada; una segunda restauración correcta no repite la mudanza. `borrarUid` retira
 la clave al salir. El nombre de la clave vive en `local.js` (`claveDeMudanzaPendiente`); no es el
 uid, así que no rompe la regla del único escritor de `strivo.uid.local`.
+
+**Con la mudanza pendiente, la puerta se lee en el árbol de origen** (F2). La sesión ya está en
+el uid de la cuenta, cuyo árbol es la semilla —`completedAt: null`—, y leer ahí mandaba al
+onboarding a quien estaba en Tu perfil; terminarlo otra vez subía un perfil y un expediente
+sellados encima de los de la cuenta (DP-19.5). `leerPuerta` (`presentacion/entrada.js`) es el
+único sitio que decide de qué árbol se lee la puerta: el de origen mientras `mudanzaPendiente`
+devuelva uno con expediente, el de la cuenta en cuanto la mudanza se completa y el sello la
+relee. `onboardingPendiente` y `presentacionPendiente` no cambiaron de contrato.
+
+**Y si se aplazó por falta de red, se reintenta al volver** (F3). `reintentarEntradaAlVolverLaRed`
+deja el mismo oyente de un solo intento que pone `prepararArbol`, solo con `pendiente` y motivo
+`sin_red` —con el techo no hace falta: la bajada sigue y avisa sola—. Si ese intento termina bien,
+el oyente de mudanzas completa lo pendiente. `ArranqueProvisional` lo pone en las dos entradas
+(al arrancar y desde Perfil), uno a la vez, y lo retira al desmontar y al salir.
+
+**Residuo de F2 que conviene saber:** si el origen **no** tenía `completedAt` —una sesión anónima
+a medias de onboarding, que solo llega aquí por la fila 3 del arranque—, el onboarding se muestra
+como sin cuenta, pero escribe bajo el uid de la cuenta, que es el de la sesión. Es el mismo riesgo
+de DP-19.5 y se cierra en 19.2, donde se rehace P7.
 
 **Residuo aceptado:** cuando dos versiones del mismo día chocan, la más vieja deja de verse; si era
 la anónima, sigue en IndexedDB bajo su uid. Es la regla que ya rige entre dos teléfonos.

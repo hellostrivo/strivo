@@ -26,6 +26,7 @@
 // terminó su recorrido.
 
 import { shared } from '@/lib/db'
+import { mudanzaPendiente } from '@lib/entradaCuenta'
 
 /**
  * La versión del recorrido a partir de la cual terminarlo lleva a la
@@ -79,6 +80,34 @@ export async function completarPresentacion(uid) {
   return shared
     .updateOnboarding(uid, { tourCompletedAt: new Date().toISOString() })
     .catch(() => null)
+}
+
+/**
+ * Lee la puerta: si queda onboarding y si queda presentación, en ese orden.
+ *
+ * **Con una mudanza pendiente, la puerta se lee en el árbol de origen** (F2,
+ * SPEC_19.1). Al entrar a una cuenta con la restauración a medias, la mudanza
+ * se aplaza y la sesión pasa al uid de la cuenta, cuyo árbol es todavía la
+ * semilla: `completedAt: null`. Leer ahí mandaba al onboarding a quien estaba
+ * en Tu perfil, y terminarlo otra vez subía un perfil y un expediente sellados
+ * que pisaban los de la cuenta en la nube (DP-19.5). Mientras la mudanza no
+ * se haga, lo que esa persona ya contestó vive en el origen, y es ahí donde se
+ * pregunta. Cuando se completa, la clave se retira, el sello sube y la
+ * siguiente lectura es la de la cuenta.
+ *
+ * Si el origen ya no tiene expediente —se mudó o se borró, y la clave todavía
+ * no se ha retirado—, se lee la cuenta, como siempre.
+ *
+ * `onboardingPendiente` y `presentacionPendiente` no cambian de contrato: lo
+ * único que se decide aquí es a qué uid se les pregunta.
+ *
+ * @returns {Promise<[boolean, boolean]>}
+ */
+export async function leerPuerta(uid) {
+  const origen = mudanzaPendiente(uid)
+  const conOrigen = origen && (await shared.getOnboarding(origen).catch(() => null)) !== null
+  const desde = conOrigen ? origen : uid
+  return Promise.all([shared.onboardingPendiente(desde), presentacionPendiente(desde)])
 }
 
 /**

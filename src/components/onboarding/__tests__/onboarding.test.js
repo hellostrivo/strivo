@@ -331,8 +331,13 @@ describe('el onboarding se interpone una sola vez', () => {
   const contenedorDelRecorrido = codigoDe('src/components/onboarding/Onboarding.jsx')
 
   it('lo decide el árbol de datos, no una marca del navegador', () => {
-    expect(app).toMatch(/onboardingPendiente\(uid\)/)
+    // Desde F2 (SPEC_19.1) la lectura es `leerPuerta`, que solo elige de qué
+    // árbol se lee —el de la cuenta, o el de origen con la mudanza pendiente—
+    // y pregunta a `onboardingPendiente`, que sigue mirando `completedAt`.
+    expect(app).toMatch(/leerPuerta\(uid\)/)
     expect(app).not.toMatch(/localStorage/)
+    const puerta = readFileSync('src/presentacion/entrada.js', 'utf8')
+    expect(puerta).toMatch(/shared\.onboardingPendiente\(desde\)/)
   })
 
   it('al terminar entrega el uid definitivo, que puede no ser con el que empezó', () => {

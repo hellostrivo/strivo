@@ -85,6 +85,7 @@ import {
   entrarACuenta,
   escucharMudanzasPendientes,
   mudanzaPendiente,
+  reintentarEntradaAlVolverLaRed,
 } from '@lib/entradaCuenta'
 import { SALIDA, comprobarSalida as comprobarCola, salirDeCuenta } from '@lib/salidaCuenta'
 import {
@@ -124,7 +125,7 @@ async function resolverArranque(uidGuardado, enRestauracion) {
   const { uid, requiereEntrada } = resolverSesion({ configurado, usuario, uidGuardado })
   if (!requiereEntrada) return { configurado, usuario, uid, entro: false }
   const entrada = await entrarACuenta(requiereEntrada, usuario, { enRestauracion })
-  return { configurado, usuario, uid: entrada.uid, entro: true }
+  return { configurado, usuario, uid: entrada.uid, entro: true, entrada }
 }
 
 /**
@@ -173,9 +174,19 @@ export default function ArranqueProvisional({ children }) {
   const correoVigente = useRef(null)
   correoVigente.current = usuario?.email ?? null
 
-  // El oyente del reintento al volver la red, si la restauración falló por eso.
-  // Se guarda para retirarlo al desmontar.
+  // El oyente del reintento al volver la red, si la restauración —la del
+  // arranque, o la de una entrada a cuenta (F3)— falló por eso. Uno a la vez:
+  // poner otro retira el anterior. Se retira también al desmontar y al salir.
   const quitarOyenteRed = useRef(null)
+  const ponerOyenteRed = useCallback((quitar) => {
+    if (!quitar) return
+    quitarOyenteRed.current?.()
+    quitarOyenteRed.current = quitar
+  }, [])
+  const retirarOyenteRed = useCallback(() => {
+    quitarOyenteRed.current?.()
+    quitarOyenteRed.current = null
+  }, [])
 
   /** El único sitio que escribe `strivo.uid.local`, además de `uidLocal`. */
   const fijarUid = useCallback((nuevo) => {
@@ -197,6 +208,7 @@ export default function ArranqueProvisional({ children }) {
     arranque.current.then((r) => {
       if (!vigente) return
       entroAlArrancar.current = r.entro
+      if (r.entro) ponerOyenteRed(reintentarEntradaAlVolverLaRed(r.entrada, r.usuario.uid))
       if (r.uid !== uidVigente.current) fijarUid(r.uid)
       setConfigurado(r.configurado)
       setUsuario(r.usuario)
@@ -231,7 +243,7 @@ export default function ArranqueProvisional({ children }) {
         enRestauracion: primero ? (activa) => vigente && setRestaurando(activa) : undefined,
         restaurarSiHaceFalta: primero && !entroAlArrancar.current,
       })
-      if (quitarOyente) quitarOyenteRed.current = quitarOyente
+      ponerOyenteRed(quitarOyente)
 
       // Una entrada a esta cuenta dejó la mudanza aplazada y la restauración
       // ya terminó bien en algún momento —la marca está—: se completa ahora,
@@ -337,7 +349,9 @@ export default function ArranqueProvisional({ children }) {
         nuevo = await adoptarArbol(origen, datos)
       } else {
         setCambiando(true)
-        nuevo = (await entrarACuenta(origen, datos, { enRestauracion: setRestaurando })).uid
+        const entrada = await entrarACuenta(origen, datos, { enRestauracion: setRestaurando })
+        ponerOyenteRed(reintentarEntradaAlVolverLaRed(entrada, cuenta.uid))
+        nuevo = entrada.uid
       }
       if (nuevo !== cuenta.uid) {
         setCambiando(false)
@@ -349,7 +363,7 @@ export default function ArranqueProvisional({ children }) {
       setCambiando(false)
       return { ok: true }
     },
-    [fijarUid],
+    [fijarUid, ponerOyenteRed],
   )
 
   const entrar = useCallback(
@@ -389,6 +403,7 @@ export default function ArranqueProvisional({ children }) {
     }
 
     setCambiando(true)
+    retirarOyenteRed()
     const r = await salirDeCuenta(origen)
     if (!r.ok) {
       setCambiando(false)
@@ -401,7 +416,7 @@ export default function ArranqueProvisional({ children }) {
     navegar('/hoy', { replace: true })
     setCambiando(false)
     return r
-  }, [fijarUid, navegar])
+  }, [fijarUid, navegar, retirarOyenteRed])
 
   const sesion = useMemo(
     () => ({

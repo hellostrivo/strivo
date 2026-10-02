@@ -46,10 +46,16 @@
 // vieja deja de verse. Si era la anónima, sigue en IndexedDB bajo su uid. Es
 // la misma regla que ya rige entre dos teléfonos con la misma cuenta.
 
-import { alTerminarRestauracion, mudarUid, restaurar, shared } from './db/index.js'
+import {
+  MOTIVOS_RESTAURACION,
+  alTerminarRestauracion,
+  mudarUid,
+  restaurar,
+  shared,
+} from './db/index.js'
 import { almacenLocal, claveDeMudanzaPendiente } from './db/local.js'
 import { ganaOrigenAlMudar } from './db/conflictos.js'
-import { TECHO_DE_ESPERA_MS, conTecho } from './sesion.js'
+import { TECHO_DE_ESPERA_MS, conTecho, reintentarAlVolverLaRed } from './sesion.js'
 
 // ─── La mudanza pendiente ─────────────────────────────────────────────────────
 
@@ -146,6 +152,24 @@ export function escucharMudanzasPendientes({ correo = () => null, alMudar } = {}
         // La clave sigue puesta: la siguiente restauración lo vuelve a intentar.
       })
   })
+}
+
+/**
+ * Si una entrada quedó aplazada **por falta de red**, deja un reintento para
+ * cuando vuelva (F3), igual que hace `prepararArbol` con la restauración del
+ * arranque: un solo evento, un solo intento, sin temporizador. Si ese intento
+ * termina bien, `escucharMudanzasPendientes` completa la mudanza.
+ *
+ * Con cualquier otro motivo no: volver la red no arreglaría nada. Y con el
+ * techo tampoco —`restauracion` es `null`—, porque la bajada sigue en marcha y
+ * avisará ella sola al terminar.
+ *
+ * @returns {?(() => void)} la función que retira el oyente, o `null`.
+ */
+export function reintentarEntradaAlVolverLaRed(entrada, uidCuenta, correr) {
+  if (!entrada?.pendiente) return null
+  if (entrada.restauracion?.motivo !== MOTIVOS_RESTAURACION.sinRed) return null
+  return reintentarAlVolverLaRed(uidCuenta, correr)
 }
 
 // ─── La entrada ───────────────────────────────────────────────────────────────

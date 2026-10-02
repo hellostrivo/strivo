@@ -4,9 +4,12 @@
 // comprueba la fuente, porque no hay DOM en el que montarla.
 
 import { readFileSync } from 'fs'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { aplicarLecturaDePuerta } from '../entrada.js'
+import * as shared from '@/lib/db/shared'
+import { claveDeMudanzaPendiente } from '@/lib/db/local'
+import { resetLocalDB } from '@/lib/db/__tests__/helpers.js'
+import { aplicarLecturaDePuerta, leerPuerta } from '../entrada.js'
 
 const base = { presentacionResuelta: false }
 
@@ -102,5 +105,73 @@ describe('Entrada usa la regla y relee con el sello', () => {
 
   it('presentacionResuelta sigue protegiendo la presentación ya vista', () => {
     expect(app).toMatch(/presentacionResuelta: presentacionResuelta\.current/)
+  })
+})
+
+describe('F2: con la mudanza pendiente, la puerta se lee en el árbol de origen', () => {
+  const CUENTA = 'AbC123firebaseUid'
+  const ORIGEN = 'local-3f2a'
+  const HECHO = '2026-09-01T10:00:00.000Z'
+
+  function localStorageDeMentira() {
+    const m = new Map()
+    return {
+      getItem: (k) => (m.has(k) ? m.get(k) : null),
+      setItem: (k, v) => m.set(k, String(v)),
+      removeItem: (k) => m.delete(k),
+    }
+  }
+
+  beforeEach(async () => {
+    vi.stubGlobal('localStorage', localStorageDeMentira())
+    await resetLocalDB()
+    // La cuenta, como queda tras una entrada aplazada: la semilla.
+    await shared.initShared(CUENTA)
+  })
+
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('origen con completedAt: ni onboarding ni presentación', async () => {
+    await shared.initShared(ORIGEN, {
+      onboarding: { version: 3, completedAt: HECHO, tourCompletedAt: HECHO },
+    })
+    localStorage.setItem(claveDeMudanzaPendiente(CUENTA), ORIGEN)
+
+    expect(await leerPuerta(CUENTA)).toEqual([false, false])
+    // La semilla de la cuenta, leída a secas, habría mandado al onboarding.
+    expect(await shared.onboardingPendiente(CUENTA)).toBe(true)
+  })
+
+  it('origen sin completedAt: el onboarding se muestra, igual que sin cuenta', async () => {
+    await shared.initShared(ORIGEN)
+    localStorage.setItem(claveDeMudanzaPendiente(CUENTA), ORIGEN)
+    expect(await leerPuerta(CUENTA)).toEqual([true, false])
+  })
+
+  it('mudanza completada (clave retirada): la puerta se lee contra la cuenta', async () => {
+    await shared.initShared(ORIGEN, {
+      onboarding: { version: 3, completedAt: HECHO, tourCompletedAt: HECHO },
+    })
+    localStorage.setItem(claveDeMudanzaPendiente(CUENTA), ORIGEN)
+    expect(await leerPuerta(CUENTA)).toEqual([false, false])
+
+    localStorage.removeItem(claveDeMudanzaPendiente(CUENTA))
+    expect(await leerPuerta(CUENTA)).toEqual([true, false])
+  })
+
+  it('si el origen ya no tiene expediente, se lee la cuenta', async () => {
+    localStorage.setItem(claveDeMudanzaPendiente(CUENTA), 'local-que-ya-no-esta')
+    expect(await leerPuerta(CUENTA)).toEqual([true, false])
+  })
+
+  it('sin mudanza pendiente, es la lectura de siempre', async () => {
+    await shared.updateOnboarding(CUENTA, { completedAt: HECHO, version: 3 })
+    expect(await leerPuerta(CUENTA)).toEqual([false, true])
+  })
+
+  it('Entrada lee la puerta con leerPuerta y no con una copia', () => {
+    const app = readFileSync('src/App.jsx', 'utf8')
+    expect(app).toMatch(/leerPuerta\(uid\)/)
+    expect(app).not.toMatch(/mudanzaPendiente/)
   })
 })

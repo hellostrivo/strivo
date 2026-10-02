@@ -38,8 +38,7 @@ import TransicionLuz, { prefiereMenosMovimiento } from '@components/shared/Trans
 import NavStrivo from '@components/diario/NavStrivo'
 import BarraInferior from '@components/shared/BarraInferior'
 import { cruzarUmbral, umbralPendiente } from '@lib/umbralSesion'
-import { aplicarLecturaDePuerta, presentacionPendiente } from '@/presentacion/entrada'
-import { shared } from '@/lib/db'
+import { aplicarLecturaDePuerta, leerPuerta } from '@/presentacion/entrada'
 import { useSesion } from '@lib/useSesion'
 
 import Respiracion from '@/breathing/Respiracion'
@@ -148,8 +147,10 @@ function Entrada({ uid, onUid }) {
     const porSello = pendienteActual.current !== null && uidLeido.current === uid
     uidLeido.current = uid
     // Las dos mitades se preguntan a la vez: son dos lecturas del mismo
-    // documento local y ninguna depende de la respuesta de la otra.
-    Promise.all([shared.onboardingPendiente(uid), presentacionPendiente(uid)])
+    // documento local y ninguna depende de la respuesta de la otra. De qué
+    // árbol —el de la cuenta, o el de origen si su mudanza está pendiente— lo
+    // decide `leerPuerta` (F2).
+    leerPuerta(uid)
       .then(([onboarding, presentacion]) => {
         if (!vigente) return
         const cambio = aplicarLecturaDePuerta({

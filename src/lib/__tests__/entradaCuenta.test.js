@@ -64,8 +64,13 @@ vi.mock('firebase/firestore', () => {
   }
 })
 
-const { completarMudanzaPendiente, entrarACuenta, escucharMudanzasPendientes, mudanzaPendiente } =
-  await import('../entradaCuenta.js')
+const {
+  completarMudanzaPendiente,
+  entrarACuenta,
+  escucharMudanzasPendientes,
+  mudanzaPendiente,
+  reintentarEntradaAlVolverLaRed,
+} = await import('../entradaCuenta.js')
 
 function enNube(sufijo, data) {
   nube.set(`users/${CUENTA}/${sufijo}`, data)
@@ -358,5 +363,84 @@ describe('el resto del algoritmo', () => {
     const velo = []
     await entrarACuenta(UID, CUENTA_INFO, { enRestauracion: (a) => velo.push(a) })
     expect(velo).toEqual([true, false])
+  })
+})
+
+describe('F3: una entrada aplazada por falta de red reintenta al volver la red', () => {
+  function ventanaDeMentira() {
+    const oyentes = new Map()
+    return {
+      addEventListener: (tipo, fn) => oyentes.set(fn, tipo),
+      removeEventListener: (_tipo, fn) => oyentes.delete(fn),
+      disparar: (tipo) =>
+        [...oyentes.entries()].filter(([, t]) => t === tipo).forEach(([fn]) => fn()),
+      cuantos: () => oyentes.size,
+    }
+  }
+
+  const aplazada = (motivo) => ({ pendiente: true, restauracion: { ok: false, motivo } })
+
+  it('solo con pendiente y motivo sin_red deja un oyente', () => {
+    const w = ventanaDeMentira()
+    vi.stubGlobal('window', w)
+    expect(typeof reintentarEntradaAlVolverLaRed(aplazada('sin_red'), CUENTA)).toBe('function')
+    expect(w.cuantos()).toBe(1)
+  })
+
+  it('con otro motivo, con el techo o sin entrada aplazada, no', () => {
+    const w = ventanaDeMentira()
+    vi.stubGlobal('window', w)
+    expect(reintentarEntradaAlVolverLaRed(aplazada('interrumpida'), CUENTA)).toBeNull()
+    expect(
+      reintentarEntradaAlVolverLaRed({ pendiente: true, restauracion: null }, CUENTA),
+    ).toBeNull()
+    expect(
+      reintentarEntradaAlVolverLaRed({ pendiente: false, restauracion: null }, CUENTA),
+    ).toBeNull()
+    expect(w.cuantos()).toBe(0)
+  })
+
+  it('al volver la red restaura una vez y, si termina bien, la mudanza pendiente se completa', async () => {
+    const w = ventanaDeMentira()
+    vi.stubGlobal('window', w)
+    await shared.initShared(UID)
+    await diario.saveMorningEntry(UID, '2026-09-18', { action: 'anónima', updatedAt: T1 })
+    const quitarMudanzas = escucharMudanzasPendientes()
+
+    vi.stubGlobal('navigator', { onLine: false })
+    const entrada = await entrarACuenta(UID, CUENTA_INFO)
+    expect(entrada).toMatchObject({ pendiente: true, restauracion: { motivo: 'sin_red' } })
+    reintentarEntradaAlVolverLaRed(entrada, CUENTA)
+    expect(w.cuantos()).toBe(1)
+
+    vi.stubGlobal('navigator', { onLine: true })
+    w.disparar('online')
+    while (mudanzaPendiente(CUENTA)) await new Promise((r) => setTimeout(r, 5))
+    await new Promise((r) => setTimeout(r, 5))
+    quitarMudanzas()
+
+    expect(w.cuantos()).toBe(0)
+    expect((await diario.getMorningEntry(CUENTA, '2026-09-18')).action).toBe('anónima')
+    expect(hayMarcaDeRestauracion(CUENTA)).toBe(true)
+  })
+
+  it('quitar el oyente antes de que vuelva la red no dispara nada', () => {
+    const w = ventanaDeMentira()
+    vi.stubGlobal('window', w)
+    const corridas = []
+    const quitar = reintentarEntradaAlVolverLaRed(aplazada('sin_red'), CUENTA, (u) =>
+      corridas.push(u),
+    )
+    quitar()
+    w.disparar('online')
+    expect(corridas).toEqual([])
+  })
+
+  it('ArranqueProvisional lo pone en las dos entradas y lo retira al desmontar y al salir', () => {
+    const fuente = readFileSync('src/components/ArranqueProvisional.jsx', 'utf8')
+    expect(fuente.match(/ponerOyenteRed\(reintentarEntradaAlVolverLaRed\(/g)).toHaveLength(2)
+    expect(fuente).toMatch(/useEffect\(\(\) => \(\) => quitarOyenteRed\.current\?\.\(\), \[\]\)/)
+    const salir = fuente.slice(fuente.indexOf('const salir = useCallback'))
+    expect(salir.indexOf('retirarOyenteRed()')).toBeLessThan(salir.indexOf('salirDeCuenta('))
   })
 })
