@@ -133,3 +133,34 @@ export function esSemilla(coleccion, data) {
   if (campo === null) return false
   return data?.[campo] == null
 }
+
+/**
+ * Al entrar a una cuenta desde otro uid, ¿se muda esta fila del origen encima
+ * de lo que haya en el destino? (SPEC_19 §3.4, DP-19.7)
+ *
+ * Es la política que `entrarACuenta` le pasa a `mudarUid`, y está hecha de las
+ * dos reglas que ya existían —no de una tercera—:
+ *
+ *   - **`shared/*` → gana la cuenta.** Una fila del origen solo entra si en el
+ *     destino no hay nada o lo que hay es semilla (`esSemilla`). Lo contestado
+ *     en una sesión anónima no reemplaza el perfil, el género, los horarios ni
+ *     el expediente de quien ya usaba esa cuenta, por nuevo que sea.
+ *   - **Lo demás → gana lo más nuevo**, que es la regla de 17A entre dos
+ *     teléfonos con la misma cuenta. El origen hace de "remoto" frente al
+ *     destino: `ganaRemoto(coleccion, destino, origen)`. Empate, marca del
+ *     origen ausente o ilegible, o colección sin campo de marca: se queda el
+ *     destino, y la fila del origen sigue bajo su uid.
+ *
+ * Que sean las mismas funciones y no una copia es lo que garantiza que entrar
+ * desde Perfil y bajar de la nube decidan igual el mismo choque.
+ *
+ * @param {string} coleccion - la etiqueta local de la fila.
+ * @param {object} origen - `data` de la fila que se quiere mudar.
+ * @param {?object} destino - `data` de lo que hay en la ruta de destino, o `null`.
+ * @returns {boolean} `true` si la fila del origen se muda.
+ */
+export function ganaOrigenAlMudar(coleccion, origen, destino) {
+  if (destino == null) return true
+  if (coleccion === 'shared') return esSemilla(coleccion, destino)
+  return ganaRemoto(coleccion, destino, origen)
+}

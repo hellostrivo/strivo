@@ -17,6 +17,7 @@ import { dequeue, listQueue, markQueueAttempt, pendingCount } from './local.js'
 const RETRY_BACKOFF_MS = [2000, 8000, 30000, 120000]
 
 let flushing = false
+let enCurso = null
 let retryTimer = null
 let listenersAttached = false
 
@@ -55,6 +56,10 @@ export async function flush(uid = null) {
   }
 
   flushing = true
+  let terminar
+  enCurso = new Promise((resolve) => {
+    terminar = resolve
+  })
   let sent = 0
   try {
     const queue = await listQueue(uid)
@@ -77,9 +82,27 @@ export async function flush(uid = null) {
     }
   } finally {
     flushing = false
+    enCurso = null
+    terminar()
   }
 
   return { sent, pending: await pendingCount(uid) }
+}
+
+/**
+ * El vaciado que está en marcha ahora mismo, o `null` si no hay ninguno.
+ *
+ * **Solo lectura** (SPEC_19.1, desvío D2): no cambia lo que hace `flush` ni lo
+ * que devuelve. Existe para quien recibió `skipped: 'en_curso'` y necesita
+ * saber cuándo termina ese otro vaciado antes de mirar la cola —el botón de
+ * "Intentar de nuevo" de Tu perfil, que si no diría "todavía no se pudo" de
+ * algo que estaba subiendo en ese momento—. La promesa resuelve siempre, haya
+ * salido bien o mal el envío, y sin valor: lo que importa después es la cola.
+ *
+ * @returns {?Promise<void>}
+ */
+export function flushEnCurso() {
+  return enCurso
 }
 
 function scheduleRetry(attempts, uid) {

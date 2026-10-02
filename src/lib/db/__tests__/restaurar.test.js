@@ -11,12 +11,14 @@ import { join } from 'path'
 
 import * as shared from '../shared.js'
 import * as diario from '../diario.js'
-import { pendingCount, readCollection, readPath, writePath } from '../local.js'
+import { listQueue, pendingCount, readCollection, readPath, writePath } from '../local.js'
 import {
   MOTIVOS,
   TAMANO_PAGINA,
+  alTerminarRestauracion,
   hayMarcaDeRestauracion,
   olvidarResultados,
+  olvidarUid,
   restaurar,
   retirarMarcaDeRestauracion,
   ultimoResultado,
@@ -439,5 +441,132 @@ describe('sin localStorage disponible', () => {
     const r = await restaurar(UID)
     expect(r.ok).toBe(true)
     expect(hayMarcaDeRestauracion(UID)).toBe(false)
+  })
+})
+
+// ─── SPEC_19.1 ────────────────────────────────────────────────────────────────
+
+describe('criterio 4 (19.1): completedAt no se deshace en la fusión de shared/onboarding', () => {
+  const expediente = (extra) => ({
+    version: 2,
+    completedSteps: ['p1'],
+    currentStep: 'p2',
+    completedAt: null,
+    ...extra,
+  })
+
+  async function expedienteLocal(data) {
+    await writePath({
+      uid: UID,
+      path: `users/${UID}/shared/onboarding`,
+      collection: 'shared',
+      id: 'onboarding',
+      data,
+      sync: false,
+    })
+  }
+
+  it('gana lo local por marca, pero la nube traía completedAt: se conserva y se encola', async () => {
+    await expedienteLocal(expediente({ updatedAt: T1 }))
+    enNube('shared/onboarding', expediente({ completedAt: T0, currentStep: 'p8', updatedAt: T0 }))
+
+    await restaurar(UID)
+    const r = await shared.getOnboarding(UID)
+    expect(r.completedAt).toBe(T0)
+    // El resto es lo local, que ganó.
+    expect(r.currentStep).toBe('p2')
+    expect(r.updatedAt).toBe(T1)
+    expect(await shared.onboardingPendiente(UID)).toBe(false)
+    expect((await listQueue(UID)).map((e) => e.path)).toEqual([`users/${UID}/shared/onboarding`])
+  })
+
+  it('gana la nube por marca, pero solo lo local traía completedAt: se conserva y se encola', async () => {
+    await expedienteLocal(expediente({ completedAt: T0, updatedAt: T0 }))
+    enNube('shared/onboarding', expediente({ currentStep: 'p5', updatedAt: T1 }))
+
+    const res = await restaurar(UID)
+    const r = await shared.getOnboarding(UID)
+    expect(r.completedAt).toBe(T0)
+    expect(r.currentStep).toBe('p5')
+    expect(res.fusionados).toBe(1)
+    expect(await pendingCount(UID)).toBe(1)
+  })
+
+  it('tourCompletedAt tampoco se deshace', async () => {
+    await expedienteLocal(expediente({ completedAt: T0, tourCompletedAt: T0, updatedAt: T0 }))
+    enNube('shared/onboarding', expediente({ completedAt: T0, updatedAt: T1 }))
+    await restaurar(UID)
+    expect((await shared.getOnboarding(UID)).tourCompletedAt).toBe(T0)
+  })
+
+  it('si los dos lados coinciden en el hecho, la bajada sigue sin encolar nada', async () => {
+    await expedienteLocal(expediente({ completedAt: T0, updatedAt: T0 }))
+    enNube('shared/onboarding', expediente({ completedAt: T0, currentStep: 'p8', updatedAt: T1 }))
+    await restaurar(UID)
+    expect((await shared.getOnboarding(UID)).currentStep).toBe('p8')
+    expect(await pendingCount(UID)).toBe(0)
+  })
+
+  it('la fusión por campo es solo de shared/onboarding: una mañana sigue eligiendo entera', async () => {
+    await diario.saveMorningEntry(UID, '2026-09-01', { action: 'local', updatedAt: T0 })
+    enNube('diario/morningEntry/items/2026-09-01', { completedAt: T0, updatedAt: T1 })
+    await diario.saveMorningEntry(UID, '2026-09-02', {
+      action: 'local',
+      completedAt: T0,
+      updatedAt: T1,
+    })
+    enNube('diario/morningEntry/items/2026-09-02', { action: 'remoto', updatedAt: T0 })
+    await restaurar(UID)
+    expect(await diario.getMorningEntry(UID, '2026-09-01')).not.toHaveProperty('action')
+    expect((await diario.getMorningEntry(UID, '2026-09-02')).action).toBe('local')
+  })
+})
+
+describe('alTerminarRestauracion (DP-17.11 techo, DP-17.14)', () => {
+  it('avisa al terminar, con el uid y el resultado, también si falla', async () => {
+    const avisos = []
+    const quitar = alTerminarRestauracion((uid, r) => avisos.push([uid, r.ok]))
+    await restaurar(UID)
+    vi.stubGlobal('navigator', { onLine: false })
+    await restaurar(UID)
+    quitar()
+    expect(avisos).toEqual([
+      [UID, true],
+      [UID, false],
+    ])
+  })
+
+  it('desuscribirse deja de avisar', async () => {
+    const avisos = []
+    const quitar = alTerminarRestauracion(() => avisos.push(1))
+    quitar()
+    await restaurar(UID)
+    expect(avisos).toEqual([])
+  })
+
+  it('un oyente que lanza no rompe la restauración ni a los demás', async () => {
+    const avisos = []
+    const quitarRoto = alTerminarRestauracion(() => {
+      throw new Error('roto')
+    })
+    const quitarBueno = alTerminarRestauracion(() => avisos.push('ok'))
+    await expect(restaurar(UID)).resolves.toMatchObject({ ok: true })
+    quitarRoto()
+    quitarBueno()
+    expect(avisos).toEqual(['ok'])
+    expect(hayMarcaDeRestauracion(UID)).toBe(true)
+  })
+})
+
+describe('olvidarUid', () => {
+  it('retira la marca y el último resultado de ese uid, y solo de ese', async () => {
+    const OTRO = 'otraCuenta'
+    await restaurar(UID)
+    await restaurar(OTRO)
+    olvidarUid(UID)
+    expect(hayMarcaDeRestauracion(UID)).toBe(false)
+    expect(ultimoResultado(UID)).toBeNull()
+    expect(hayMarcaDeRestauracion(OTRO)).toBe(true)
+    expect(ultimoResultado(OTRO)).not.toBeNull()
   })
 })

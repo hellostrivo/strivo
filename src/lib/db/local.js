@@ -310,11 +310,36 @@ const SIN_SINCRONIZAR = /\/diario\/pinConfig$/
  * Las entradas de la cola del uid viejo se retiran, porque apuntan a rutas que
  * ninguna sesión autenticada podrá escribir.
  *
+ * ─── Con política (SPEC_19 §3.4) ─────────────────────────────────────────────
+ *
+ * Entrar a una cuenta que ya tiene datos no puede quedarse con "gana el
+ * destino" a secas: una mañana escrita en la sesión anónima más nueva que la
+ * que bajó de la nube tiene que poder ganar. Para eso existe `politica`, una
+ * función `(coleccion, origen, destino|null) => boolean` que decide fila a
+ * fila si el origen se muda —encima del destino, si lo hay— o se conserva
+ * bajo su uid. La de entrar a una cuenta es `ganaOrigenAlMudar`
+ * (`conflictos.js`); esta función no sabe qué reglas son, solo las aplica.
+ *
+ * Con política cambian dos cosas y ninguna más:
+ *
+ *   - la política también decide cuando el destino está vacío (es lo que
+ *     permite no mudar `shared/*` si la restauración no terminó);
+ *   - de la cola del origen se retiran **solo las entradas de lo que se
+ *     mudó**. Si el origen es una cuenta vencida, lo conservado sigue siendo
+ *     suyo y su subida pendiente también: retirarla sería perder lo que esa
+ *     cuenta todavía no recibió.
+ *
+ * **Sin política, el comportamiento es exactamente el de antes** —gana el
+ * destino, se conserva el origen, se vacía su cola— y la semilla no sube en
+ * ninguno de los dos casos (DP-17.10).
+ *
  * @param {string} desde
  * @param {string} hacia
+ * @param {object} [opciones]
+ * @param {(coleccion: string, origen: object, destino: ?object) => boolean} [opciones.politica]
  * @returns {Promise<{mudados: number, conservados: number}>}
  */
-export async function mudarUid(desde, hacia) {
+export async function mudarUid(desde, hacia, { politica = null } = {}) {
   assertUid(desde)
   assertUid(hacia)
   if (desde === hacia) return { mudados: 0, conservados: 0 }
@@ -331,17 +356,25 @@ export async function mudarUid(desde, hacia) {
   for (const fila of origen) {
     if (!fila.path.startsWith(prefijo)) continue
     const destino = `users/${hacia}/${fila.path.slice(prefijo.length)}`
-    if (await store.get(destino)) {
+    const existente = await store.get(destino)
+    const muda = politica
+      ? politica(fila.collection, fila.data, existente ? existente.data : null)
+      : !existente
+    if (!muda) {
       conservados += 1
       continue
     }
     await store.put({ ...fila, path: destino, uid: hacia })
     await store.delete(fila.path)
-    mudadas.push({ path: destino, collection: fila.collection, data: fila.data })
+    mudadas.push({ desde: fila.path, path: destino, collection: fila.collection, data: fila.data })
   }
   await tx.done
 
-  for (const entrada of await listQueue(desde)) await dequeue(entrada.seq)
+  const rutasMudadas = new Set(mudadas.map((fila) => fila.desde))
+  for (const entrada of await listQueue(desde)) {
+    if (politica && !rutasMudadas.has(entrada.path)) continue
+    await dequeue(entrada.seq)
+  }
   for (const fila of mudadas) {
     if (SIN_SINCRONIZAR.test(fila.path)) continue
     // Una semilla no sube tampoco después de mudarse (DP-17.10, ver arriba).
@@ -350,6 +383,39 @@ export async function mudarUid(desde, hacia) {
   }
 
   return { mudados: mudadas.length, conservados }
+}
+
+/**
+ * Borra del dispositivo todo lo de un uid: sus registros y su cola, en una
+ * sola transacción (SPEC_19 §3.5, DP-19.1).
+ *
+ * Es lo que hace cerrar sesión, y solo se llama con la cola ya vacía: quien lo
+ * llama se ha asegurado antes de que todo subió. `pinConfig` se va con lo demás
+ * —es un registro más del uid— y el copy de salir lo dice.
+ *
+ * **Nunca toca otro uid**: recorre el índice `byUser` de los dos almacenes con
+ * ese uid y nada más. Las filas que una entrada a cuenta dejó conservadas bajo
+ * uids anónimos antiguos siguen donde estaban.
+ *
+ * La marca de restauración y el último resultado no viven aquí: los retira
+ * `olvidarUid` (`restaurar.js`), que es quien los conoce.
+ *
+ * @returns {Promise<{registros: number, cola: number}>}
+ */
+export async function borrarUid(uid) {
+  assertUid(uid)
+  const db = await getLocalDB()
+  const tx = db.transaction([STORE_RECORDS, STORE_SYNC_QUEUE], 'readwrite')
+  const registros = tx.objectStore(STORE_RECORDS)
+  const cola = tx.objectStore(STORE_SYNC_QUEUE)
+
+  const rutas = await registros.index('byUser').getAllKeys(uid)
+  const entradas = await cola.index('byUser').getAllKeys(uid)
+  for (const ruta of rutas) await registros.delete(ruta)
+  for (const seq of entradas) await cola.delete(seq)
+  await tx.done
+
+  return { registros: rutas.length, cola: entradas.length }
 }
 
 // ─── Cola de sincronización ───────────────────────────────────────────────────

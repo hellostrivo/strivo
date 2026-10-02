@@ -26,11 +26,13 @@ export {
   toDateKey,
 } from './dates.js'
 
-export { closeLocalDB, getLocalDB, mudarUid, pendingCount } from './local.js'
-export { flush, getPendingCount, listPending, startSync } from './sync.js'
+export { borrarUid, closeLocalDB, getLocalDB, mudarUid, pendingCount } from './local.js'
+export { flush, flushEnCurso, getPendingCount, listPending, startSync } from './sync.js'
 export {
   MOTIVOS as MOTIVOS_RESTAURACION,
+  alTerminarRestauracion,
   hayMarcaDeRestauracion,
+  olvidarUid,
   restaurar,
   retirarMarcaDeRestauracion,
   ultimoResultado,

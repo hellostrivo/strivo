@@ -19,7 +19,10 @@
 //     escribe el código de la app, no para lo que baja de la nube de su
 //     propio dueño.
 //   - **Toda escritura va con `sync: false`.** Sin esto, restaurar dispararía
-//     una resubida completa de todo lo que acaba de bajar.
+//     una resubida completa de todo lo que acaba de bajar. La única excepción
+//     es `shared/onboarding` cuando hubo que conservar un `completedAt` que la
+//     nube no tenía (ver `aplicar`): ese documento ya no es lo que bajó, y la
+//     nube tiene que enterarse.
 //   - **Nunca pisa algo local que no pueda demostrar más viejo.** Documento a
 //     documento pregunta a `conflictos.js` (las tres reglas del §2): ruta que
 //     no existe aquí se escribe; ruta que existe se escribe solo si lo remoto
@@ -159,6 +162,51 @@ export function olvidarResultados() {
   ultimos.clear()
 }
 
+/**
+ * Olvida todo lo que este teléfono sabe de la restauración de un uid: la marca
+ * y el último resultado. Lo llama cerrar sesión, después de `borrarUid`
+ * (`local.js`): una marca sin árbol detrás sería una marca huérfana, y un
+ * resultado de una sesión cerrada no le dice nada a la siguiente. Solo ese uid.
+ */
+export function olvidarUid(uid) {
+  retirarMarcaDeRestauracion(uid)
+  ultimos.delete(uid)
+}
+
+// ─── Aviso al terminar ────────────────────────────────────────────────────────
+//
+// Una restauración puede terminar cuando ya nadie la espera: la que cruzó el
+// techo de 15 s, la del reintento al volver la red, la del botón de Perfil.
+// La puerta del onboarding y el bloque de sincronización tienen que enterarse
+// para releerse (DP-17.11, DP-17.14), y este es el único sitio por el que
+// pasan todas. Avisa con éxito y con fallo: un fallo también cambia lo que el
+// bloque de sincronización tiene que decir.
+
+const oyentes = new Set()
+
+/**
+ * Suscribe una función a cada restauración que termine, con `(uid, resultado)`.
+ *
+ * Un oyente que lance no rompe la restauración ni a los demás oyentes: el aviso
+ * es un efecto lateral, y lo escrito ya está escrito.
+ *
+ * @returns {() => void} la desuscripción.
+ */
+export function alTerminarRestauracion(fn) {
+  oyentes.add(fn)
+  return () => oyentes.delete(fn)
+}
+
+function avisar(uid, resultado) {
+  for (const fn of [...oyentes]) {
+    try {
+      fn(uid, resultado)
+    } catch {
+      // Ver arriba: un oyente roto no es asunto de la restauración.
+    }
+  }
+}
+
 // ─── La restauración ──────────────────────────────────────────────────────────
 
 /**
@@ -176,6 +224,7 @@ export async function restaurar(uid) {
 
   const resultado = await bajar(uid, cuenta)
   ultimos.set(uid, resultado)
+  avisar(uid, resultado)
   return resultado
 }
 
@@ -222,8 +271,42 @@ async function bajar(uid, cuenta) {
 }
 
 /**
+ * Los hechos del expediente que no se deshacen (SPEC_19 §3.7): haber terminado
+ * el onboarding y haber visto la presentación. Si cualquiera de los dos lados
+ * lo trae, el resultado lo conserva.
+ */
+const HECHOS_DEL_EXPEDIENTE = Object.freeze(['completedAt', 'tourCompletedAt'])
+
+/**
+ * Lo que el perdedor sabe y al ganador le falta: los hechos del expediente que
+ * el perdedor trae no nulos y el ganador trae nulos o no trae.
+ */
+function hechosQueFaltan(ganador, perdedor) {
+  const faltan = {}
+  for (const campo of HECHOS_DEL_EXPEDIENTE) {
+    if (perdedor?.[campo] != null && ganador?.[campo] == null) faltan[campo] = perdedor[campo]
+  }
+  return faltan
+}
+
+/**
  * Un documento remoto contra lo que hay en su ruta. Regla 1 si no hay nada;
  * `ganaRemoto` si lo hay. **Sin validadores y sin cola**: ver la cabecera.
+ *
+ * **`shared/onboarding` es la única fusión por campo de toda la bajada**, y es
+ * a propósito. Las reglas del §2 eligen un documento entero, y aquí eso podía
+ * deshacer un hecho: un expediente local más nuevo —un paso de P7 en otro
+ * teléfono, un `currentStep` cualquiera— con `completedAt: null` le ganaba al
+ * remoto que decía que el onboarding ya se terminó, y la puerta volvía a
+ * abrirse a quien ya había entrado. Terminar el onboarding no tiene vuelta
+ * atrás en ningún sitio del producto, así que la fusión tampoco puede dársela.
+ * Gana quien gane, el documento conserva `completedAt` y `tourCompletedAt` si
+ * alguno de los dos lados los trae; el resto de campos son los del ganador.
+ *
+ * Y cuando hubo que añadir uno, el resultado **se encola**: ya no es lo que hay
+ * en la nube —le falta o le sobra ese hecho— y sin subirlo la nube seguiría
+ * diciendo lo contrario. Pasa en los dos sentidos: gana lo local y el hecho
+ * venía de la nube, o gana la nube y el hecho solo lo tenía este teléfono.
  */
 async function aplicar({ uid, path, coleccion, id, data }, cuenta) {
   const local = await readPath(path)
@@ -232,7 +315,20 @@ async function aplicar({ uid, path, coleccion, id, data }, cuenta) {
     cuenta.escritos += 1
     return
   }
-  if (ganaRemoto(coleccion, local, data)) {
+
+  const gana = ganaRemoto(coleccion, local, data)
+
+  if (coleccion === 'shared' && id === 'onboarding') {
+    const faltan = gana ? hechosQueFaltan(data, local) : hechosQueFaltan(local, data)
+    if (Object.keys(faltan).length > 0) {
+      const ganador = gana ? data : local
+      await writePath({ uid, path, collection: coleccion, id, data: { ...ganador, ...faltan } })
+      if (gana) cuenta.fusionados += 1
+      return
+    }
+  }
+
+  if (gana) {
     await writePath({ uid, path, collection: coleccion, id, data, sync: false })
     cuenta.fusionados += 1
   }
