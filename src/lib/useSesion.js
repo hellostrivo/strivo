@@ -17,6 +17,9 @@
 //                        restauración del uid vigente, con éxito o sin él.
 //                        Quien tenga que releerse al bajar algo lo pone en las
 //                        dependencias de su efecto (DP-17.11, DP-17.14).
+//   conectarCuenta     — lleva la sesión a una cuenta ya abierta en Firebase:
+//                        P7 la usa con el resultado de crear o entrar
+//                        (SPEC_19.2). Es el mismo camino que usa Tu perfil.
 //   entrar, crear, entrarConGoogle, comprobarSalida, salir — las acciones.
 
 import { createContext, useContext } from 'react'

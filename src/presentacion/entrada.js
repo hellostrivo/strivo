@@ -26,7 +26,7 @@
 // terminó su recorrido.
 
 import { shared } from '@/lib/db'
-import { mudanzaPendiente } from '@lib/entradaCuenta'
+import { arbolDeEntrada } from '@lib/entradaCuenta'
 
 /**
  * La versión del recorrido a partir de la cual terminarlo lleva a la
@@ -75,11 +75,21 @@ export async function presentacionPendiente(uid) {
  * `lib/db/sync`: si la red no está, no se pierde y no se muestra ningún error
  * (RN-EST-05). Un tropiezo tampoco vuelve a abrir la presentación: quien la
  * acaba de cerrar entra igual.
+ *
+ * **Se escribe en el árbol de la entrada, no en el de la sesión** (SPEC_19.2,
+ * E2). Si alguien termina el onboarding con la mudanza a una cuenta todavía
+ * pendiente, el árbol de la cuenta es la semilla: sellar ahí `tourCompletedAt`
+ * y encolarlo reemplazaría en la nube el expediente de esa cuenta por uno con
+ * `completedAt: null`. Se escribe en el origen, como el resto del recorrido, y
+ * llega a la cuenta con la mudanza, que no deja que un hecho se deshaga.
  */
 export async function completarPresentacion(uid) {
-  return shared
-    .updateOnboarding(uid, { tourCompletedAt: new Date().toISOString() })
-    .catch(() => null)
+  try {
+    const arbol = await arbolDeEntrada(uid)
+    return await shared.updateOnboarding(arbol, { tourCompletedAt: new Date().toISOString() })
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -99,14 +109,14 @@ export async function completarPresentacion(uid) {
  * no se ha retirado—, se lee la cuenta, como siempre.
  *
  * `onboardingPendiente` y `presentacionPendiente` no cambian de contrato: lo
- * único que se decide aquí es a qué uid se les pregunta.
+ * único que se decide aquí es a qué uid se les pregunta, y esa regla vive en
+ * `arbolDeEntrada` (`lib/entradaCuenta.js`) desde SPEC_19.2, porque la leen
+ * también el recorrido y la presentación al escribir.
  *
  * @returns {Promise<[boolean, boolean]>}
  */
 export async function leerPuerta(uid) {
-  const origen = mudanzaPendiente(uid)
-  const conOrigen = origen && (await shared.getOnboarding(origen).catch(() => null)) !== null
-  const desde = conOrigen ? origen : uid
+  const desde = await arbolDeEntrada(uid)
   return Promise.all([shared.onboardingPendiente(desde), presentacionPendiente(desde)])
 }
 

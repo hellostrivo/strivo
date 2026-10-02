@@ -6,31 +6,59 @@
 // tecla: cerrar la app a mitad del nombre no pierde el nombre, y volver a
 // abrirla retoma en el paso donde estaba (RN-09).
 //
-// **El uid puede cambiar a mitad del recorrido.** Si en P7 se crea una cuenta,
-// el árbol se muda al uid de Firebase y a partir de ahí se escribe allí. Por
-// eso el uid vive en una referencia y no en una constante capturada: una
-// escritura posterior a la mudanza que fuera al uid viejo escribiría en un
-// árbol que ya nadie lee.
+// **El árbol puede no ser el de la sesión** (SPEC_19.2). Si en P7 se crea una
+// cuenta nueva, el árbol entero se muda a ella y el uid de la sesión cambia:
+// a partir de ahí se escribe allí. Si se entra a una cuenta que ya existía, la
+// sesión pasa por `entrarACuenta` —restaurar primero, mudar después— y este
+// recorrido se desmonta bajo el velo; el que se monta al volver sigue en el
+// paso siguiente a P7 (`traspaso.js`) o no se monta, si la cuenta ya lo había
+// terminado. Y mientras la mudanza a esa cuenta esté pendiente, todo se lee y
+// se escribe bajo el uid de origen: dónde, lo decide `escritura.js`.
+//
+// **P7 entra por la sesión, como Tu perfil** (`conectar`, que es
+// `pasarACuenta` de `ArranqueProvisional`): un solo camino a la cuenta, y un
+// solo escritor de `strivo.uid.local`. Este hook ya no cambia el uid de nadie.
 //
 // Aquí no hay copy y no hay colores: esto decide qué se guarda y cuándo.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { shared } from '@/lib/db'
-import { adoptarArbol } from '@lib/cuenta'
-import { generoDe, opcionDe } from './genero.js'
-import { anterior, retomarEn, siguiente } from './pasos.js'
-import { expedienteDe, motivoDesde, perfilDesde, RESPUESTAS_INICIALES } from './estado.js'
-import { quedanActivados } from './recordatorios.js'
+import { generoDe } from './genero.js'
+import { anterior, siguiente } from './pasos.js'
+import { RESPUESTAS_INICIALES, expedienteDe } from './estado.js'
+import {
+  escribirMotivo,
+  escribirPaso,
+  escribirPerfil,
+  escribirRecordatorios,
+  leerRecorrido,
+  releerSiCambioElArbol,
+  respuestasDe,
+  terminarRecorrido,
+} from './escritura.js'
+import { conectarConTraspaso, retomarTrasCuenta } from './traspaso.js'
 
 /** §5.6 — El mismo retraso que el resto del producto: 800 ms sin teclear. */
 export const RETRASO_AUTOGUARDADO = 800
 
-export function useOnboarding(uid, { onUid } = {}) {
+/**
+ * @param {string} uid - el uid de la sesión.
+ * @param {object} [opciones]
+ * @param {(cuenta: object) => Promise<{ok: boolean, motivo?: string}>} [opciones.conectar]
+ *   - lleva la sesión a la cuenta de P7 (`conectarCuenta` de `useSesion`).
+ * @param {number} [opciones.sello] - el sello de restauración: si al cambiar
+ *   cambió también el árbol de la entrada, se recargan las respuestas (E4).
+ */
+export function useOnboarding(uid, { conectar, sello = 0 } = {}) {
   const [respuestas, setRespuestas] = useState(RESPUESTAS_INICIALES)
   const [paso, setPaso] = useState(null)
   const [cargando, setCargando] = useState(true)
+  const [motivoCuenta, setMotivoCuenta] = useState(null)
 
-  const uidActual = useRef(uid)
+  // El uid de la sesión y el árbol del que salieron las respuestas. Viven en
+  // referencias porque las escrituras en fila se resuelven después del render
+  // que las pidió, y tienen que ir a donde está la sesión entonces.
+  const uidSesion = useRef(uid)
+  const cargado = useRef(null)
   const vivo = useRef(true)
   const recorridos = useRef([])
   const temporizador = useRef(null)
@@ -38,7 +66,7 @@ export function useOnboarding(uid, { onUid } = {}) {
   const cola = useRef(Promise.resolve())
 
   useEffect(() => {
-    uidActual.current = uid
+    uidSesion.current = uid
   }, [uid])
 
   useEffect(() => {
@@ -66,7 +94,7 @@ export function useOnboarding(uid, { onUid } = {}) {
    * red no es un error visible (RN-EST-05).
    */
   const guardarPerfil = useCallback(
-    (valores) => enFila(() => shared.updateProfile(uidActual.current, perfilDesde(valores))),
+    (valores) => enFila(() => escribirPerfil(uidSesion.current, cargado.current, valores)),
     [enFila],
   )
 
@@ -85,23 +113,18 @@ export function useOnboarding(uid, { onUid } = {}) {
     let vigente = true
 
     async function cargar() {
-      const [perfil, expediente] = await Promise.all([
-        shared.getProfile(uid).catch(() => null),
-        shared.getOnboarding(uid).catch(() => null),
-      ])
+      const { carga, perfil, expediente } = await leerRecorrido(uid)
       if (!vigente) return
 
+      cargado.current = carga
       recorridos.current = expediente?.completedSteps ?? []
-      setRespuestas((previas) => ({
-        ...previas,
-        nombre: perfil?.name ?? previas.nombre,
-        genero: opcionDe(perfil?.gender),
-        despertar: perfil?.wakeTime ?? previas.despertar,
-        dormir: perfil?.sleepTime ?? previas.dormir,
-        motivos: expediente?.motivos ?? previas.motivos,
-        motivoOtro: expediente?.motivoOtro ?? previas.motivoOtro,
-      }))
-      setPaso(retomarEn(expediente?.currentStep))
+      setRespuestas((previas) => respuestasDe(perfil, expediente, previas))
+      // Lo que dejó dicho el recorrido de antes del velo, si lo hubo. Se toma
+      // aquí, al aplicar, y no al empezar a leer: el doble montaje de
+      // `StrictMode` lanza dos cargas y solo la vigente puede gastarlo.
+      const retomar = retomarTrasCuenta(uid, expediente?.currentStep)
+      setPaso(retomar.paso)
+      setMotivoCuenta(retomar.motivo)
       setCargando(false)
     }
 
@@ -110,6 +133,28 @@ export function useOnboarding(uid, { onUid } = {}) {
       vigente = false
     }
   }, [uid])
+
+  // **La mudanza pendiente se completó con el recorrido abierto** (E4). La
+  // cuenta ganó, así que sus respuestas son las que valen: se recargan, y el
+  // paso se queda donde está. Solo si el árbol cambió —el sello sube con cada
+  // restauración que termina, y la mayoría no cambian nada de esto—. Lo que
+  // estuviera a medio teclear era una respuesta sobre el árbol que perdió y no
+  // se guarda.
+  useEffect(() => {
+    if (!sello) return undefined
+    let vigente = true
+    releerSiCambioElArbol(uid, cargado.current).then((nueva) => {
+      if (!vigente || !nueva) return
+      clearTimeout(temporizador.current)
+      temporizador.current = null
+      pendiente.current = null
+      cargado.current = nueva.carga
+      setRespuestas(respuestasDe(nueva.perfil, nueva.expediente, RESPUESTAS_INICIALES))
+    })
+    return () => {
+      vigente = false
+    }
+  }, [uid, sello])
 
   // ─── Respuestas ─────────────────────────────────────────────────────────
 
@@ -141,17 +186,12 @@ export function useOnboarding(uid, { onUid } = {}) {
 
   const guardarMotivo = useCallback(
     (valores) =>
-      enFila(() => shared.updateOnboarding(uidActual.current, motivoDesde(valores ?? respuestas))),
+      enFila(() => escribirMotivo(uidSesion.current, cargado.current, valores ?? respuestas)),
     [enFila, respuestas],
   )
 
   const guardarRecordatorios = useCallback(
-    (estado) =>
-      enFila(() =>
-        shared.updatePreferences(uidActual.current, {
-          remindersEnabled: quedanActivados(estado),
-        }),
-      ),
+    (estado) => enFila(() => escribirRecordatorios(uidSesion.current, cargado.current, estado)),
     [enFila],
   )
 
@@ -171,10 +211,7 @@ export function useOnboarding(uid, { onUid } = {}) {
       recorridos.current = expedienteDe(destino, recorridos.current).completedSteps
       setPaso(destino)
       enFila(() =>
-        shared.updateOnboarding(uidActual.current, {
-          ...expedienteDe(destino, recorridos.current),
-          ...motivoDesde(valores),
-        }),
+        escribirPaso(uidSesion.current, cargado.current, destino, recorridos.current, valores),
       )
     },
     [enFila],
@@ -192,44 +229,56 @@ export function useOnboarding(uid, { onUid } = {}) {
   }, [guardarAhora, ir, paso, respuestas])
 
   /**
-   * La cuenta de P7: el árbol se muda y la sesión sigue con el uid nuevo.
-   * Si la mudanza no sale, `adoptarArbol` devuelve el uid de siempre y el
-   * recorrido continúa igual: nada de lo escrito se pierde por esto.
+   * La cuenta de P7, por la sesión (§4.1).
+   *
+   * Antes de conectar se vacía todo lo que está por escribir —lo tecleado y la
+   * fila entera—: lo que esté en vuelo tiene que caer en el árbol de antes, no
+   * a mitad de una mudanza (E6).
+   *
+   * Con una cuenta que ya existía, la sesión pasa por el velo y este recorrido
+   * se desmonta; lo que tenga que saber el siguiente se le deja dicho
+   * (`traspaso.js`): el paso que sigue a P7 si todo fue bien, el motivo si la
+   * mudanza falló. Si al volver este recorrido sigue montado —una cuenta nueva,
+   * o la misma cuenta de la sesión, que no pasan por el velo—, lo aplica él.
+   *
+   * @returns {Promise<{ok: boolean, motivo?: string}>}
    */
-  const adoptarCuenta = useCallback(
+  const conectarCuenta = useCallback(
     async (cuenta) => {
       await guardarAhora()
-      const nuevo = await adoptarArbol(uidActual.current, cuenta)
-      uidActual.current = nuevo
-      onUid?.(nuevo)
-      return nuevo
+      await cola.current
+
+      const r = await conectarConTraspaso(uidSesion.current, cuenta, conectar, () => vivo.current)
+      // La mudanza ya está hecha: lo siguiente que se escriba va a la cuenta
+      // aunque el uid nuevo todavía no haya llegado por props.
+      if (r.ok && cuenta.nueva) uidSesion.current = cuenta.uid
+      if (r.paso) setPaso(r.paso)
+      return r
     },
-    [guardarAhora, onUid],
+    [conectar, guardarAhora],
   )
 
   /**
-   * Termina el recorrido. `completedAt` es lo único que decide que el
-   * onboarding está hecho, así que se escribe **aquí y en ningún otro sitio**
-   * (RN-DB-09). Se escribe también el perfil entero: quien llegó saltándolo
-   * todo tiene el mismo derecho a un perfil escrito que quien contestó.
+   * Termina el recorrido. Lo que se escribe y dónde está en
+   * `terminarRecorrido` (`escritura.js`); aquí solo se vacía antes lo que
+   * estuviera a medio teclear.
    */
   const terminar = useCallback(async () => {
     await guardarAhora()
-    await guardarPerfil(respuestas)
-    await guardarMotivo(respuestas)
     await enFila(() =>
-      shared.updateOnboarding(uidActual.current, {
-        ...expedienteDe(paso, recorridos.current),
-        completedAt: new Date().toISOString(),
+      terminarRecorrido(uidSesion.current, cargado.current, {
+        respuestas,
+        paso,
+        recorridos: recorridos.current,
       }),
     )
-    return uidActual.current
-  }, [enFila, guardarAhora, guardarMotivo, guardarPerfil, paso, respuestas])
+  }, [enFila, guardarAhora, paso, respuestas])
 
   return {
     respuestas,
     paso,
     cargando,
+    motivoCuenta,
     genero: generoDe(respuestas.genero),
     acciones: {
       responder,
@@ -237,7 +286,7 @@ export function useOnboarding(uid, { onUid } = {}) {
       retroceder,
       guardarMotivo,
       guardarRecordatorios,
-      adoptarCuenta,
+      conectarCuenta,
       terminar,
     },
   }

@@ -340,10 +340,13 @@ describe('el onboarding se interpone una sola vez', () => {
     expect(puerta).toMatch(/shared\.onboardingPendiente\(desde\)/)
   })
 
-  it('al terminar entrega el uid definitivo, que puede no ser con el que empezó', () => {
-    // Si en P7 se creó una cuenta, el árbol se mudó y la sesión sigue con el
-    // uid nuevo: el que llega aquí es ese.
-    expect(app).toMatch(/onTerminado=\{\(uidFinal\) => \{[\s\S]{0,120}onUid\(uidFinal\)/)
+  it('al terminar avisa y nada más: el uid lo cambia solo la sesión (SPEC_19.2)', () => {
+    // Si en P7 se entró a una cuenta, la sesión ya cambió el uid y `Entrada` lo
+    // recibió por props. El recorrido no entrega uno ni pide cambiarlo.
+    expect(app).toMatch(/onTerminado=\{\(\) => \{/)
+    expect(app).not.toMatch(/onUid|cambiarUid/)
+    expect(contenedorDelRecorrido).not.toMatch(/onUid/)
+    expect(readFileSync('src/onboarding/useOnboarding.js', 'utf8')).not.toMatch(/onUid/)
   })
 
   it('mientras se averigua no gira ninguna rueda (RN-EST-02)', () => {

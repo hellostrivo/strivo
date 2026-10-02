@@ -73,9 +73,7 @@ const RUTA_RESPIRACION = '/respiracion'
 export default function App() {
   return (
     <HashRouter>
-      <ArranqueProvisional>
-        {(uid, cambiarUid) => <Entrada uid={uid} onUid={cambiarUid} />}
-      </ArranqueProvisional>
+      <ArranqueProvisional>{(uid) => <Entrada uid={uid} />}</ArranqueProvisional>
     </HashRouter>
   )
 }
@@ -106,7 +104,7 @@ export default function App() {
  * ya está gastado (RN-LU-MAN-02). Es el motivo de que ese contador viva en
  * `lib/umbralSesion` y no dentro de ninguna pantalla.
  */
-function Entrada({ uid, onUid }) {
+function Entrada({ uid }) {
   const [pendiente, setPendiente] = useState(null)
 
   // La segunda mitad de la entrada: las cuatro tarjetas que cuentan qué hay
@@ -193,16 +191,14 @@ function Entrada({ uid, onUid }) {
   // Aquí es donde termina el recorrido de entrada y empieza el producto, y es
   // la única línea que hay que mover el día que el onboarding se sustituya por
   // otro: la presentación no la monta el recorrido, la monta quien decide por
-  // dónde se entra. `onTerminado` entrega el uid definitivo —que puede no ser
-  // con el que se empezó, si en P7 se creó una cuenta— y a partir de ahí lo que
-  // toca es la presentación, no Hoy.
+  // dónde se entra. Al terminar, lo que toca es la presentación, no Hoy. El
+  // uid no viaja con el aviso: desde SPEC_19.2 lo cambia solo la sesión, y si
+  // en P7 se entró a una cuenta, este componente ya lo recibió por props.
   if (pendiente) {
     return (
       <Onboarding
         uid={uid}
-        onUid={onUid}
-        onTerminado={(uidFinal) => {
-          onUid(uidFinal)
+        onTerminado={() => {
           setPendiente(false)
           setPresentando(true)
         }}

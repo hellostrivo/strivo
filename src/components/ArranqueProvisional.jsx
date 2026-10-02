@@ -24,11 +24,12 @@
 // abre la app. El nombre lo pregunta el onboarding (P2), y el árbol recién
 // sembrado es exactamente lo que ese recorrido viene a rellenar.
 //
-// **El uid puede cambiar mientras la app está abierta.** Si el onboarding crea
-// una cuenta en P7, el árbol se muda al uid de Firebase y la sesión sigue con
-// el nuevo. Desde SPEC_19.1 también cambia al entrar o salir desde Tu perfil. Por eso el uid es estado y no una constante, y por eso quien lo
-// guarda en `localStorage` es este archivo y solo este: dos sitios escribiendo
-// esa clave son dos sesiones distintas al siguiente arranque.
+// **El uid puede cambiar mientras la app está abierta**: al entrar a una cuenta
+// en P7 o desde Tu perfil, y al salir. Por eso el uid es estado y no una
+// constante, y por eso quien lo guarda en `localStorage` es este archivo y
+// solo este: dos sitios escribiendo esa clave son dos sesiones distintas al
+// siguiente arranque. Desde SPEC_19.2 nadie más pide cambiarlo: P7 y Tu perfil
+// entran los dos por `pasarACuenta` (`conectarCuenta` en el contexto).
 //
 // **Desde SPEC_17A también arranca la nube, en las dos direcciones.** Con una
 // cuenta pone en marcha la cola de subida (`startSync`) y, antes de sembrar
@@ -60,9 +61,10 @@
 // escribe: P7, entrar desde Perfil y salir pasan todos por aquí.
 //
 // **La restauración del arranque se evalúa una sola vez por sesión, al
-// montar**: si el uid cambia en P7, la cola se rearranca con el nuevo y no se
-// restaura (D7, DP-19.5). Entrar desde Perfil sí baja lo de la cuenta, pero lo
-// hace `entrarACuenta`, antes de cambiar de uid.
+// montar.** Entrar después a una cuenta que ya existía —desde P7 o desde Tu
+// perfil— también baja lo de esa cuenta, pero lo hace `entrarACuenta`, antes de
+// cambiar de uid. Una cuenta recién creada no tiene nada que bajar: adopta el
+// árbol y la cola se rearranca con el uid nuevo.
 //
 // **Por qué no se retira:** sin él no hay uid ni sesión, y la app no arranca.
 // Sigue siendo un andamio.
@@ -131,7 +133,7 @@ async function resolverArranque(uidGuardado, enRestauracion) {
 /**
  * El estado con la app abierta. Es la tabla de siempre, con un matiz: un
  * usuario de Firebase con otro uid vigente es el instante entre iniciar sesión
- * y mudar el árbol —P7 inicia sesión y después adopta—, así que mientras el
+ * y mudar el árbol —P7 y Tu perfil inician sesión y después mudan—, así que mientras el
  * uid no cambie manda el uid, como si no hubiera usuario.
  */
 function estadoVivo(configurado, usuario, uid) {
@@ -194,12 +196,6 @@ export default function ArranqueProvisional({ children }) {
     uidVigente.current = nuevo
     setUid(nuevo)
   }, [])
-
-  /** La sesión pasa a otro uid: el de la cuenta que acaba de crearse en P7. */
-  const cambiarUid = (nuevo) => {
-    if (!nuevo || nuevo === uid) return
-    fijarUid(nuevo)
-  }
 
   // ─── Al montar: qué sesión hay ──────────────────────────────────────────
   useEffect(() => {
@@ -324,13 +320,15 @@ export default function ArranqueProvisional({ children }) {
 
   useEffect(() => () => quitarOyenteRed.current?.(), [])
 
-  // ─── Entrar, crear y salir (Tu perfil) ──────────────────────────────────
+  // ─── Entrar, crear y salir (P7 y Tu perfil) ─────────────────────────────
 
   /**
-   * Con la cuenta ya abierta en Firebase, lleva la sesión a ella.
+   * Con la cuenta ya abierta en Firebase, lleva la sesión a ella. Es el único
+   * camino a una cuenta: Tu perfil lo usa por `entrar`, `crear` y
+   * `entrarConGoogle`, y P7 por `conectarCuenta` (SPEC_19.2).
    *
    * La misma cuenta que estaba vencida solo recupera la sesión. Una cuenta
-   * recién creada adopta el árbol como en P7. Una que ya existía pasa por
+   * recién creada adopta el árbol (`adoptarArbol`). Una que ya existía pasa por
    * `entrarACuenta`, con el velo y la frase de restauración. Si la mudanza
    * falla, la sesión se queda en el uid de siempre y se dice con la frase
    * genérica: lo escrito sigue donde estaba.
@@ -424,6 +422,7 @@ export default function ArranqueProvisional({ children }) {
       estado,
       correo: estado === ESTADOS_SESION.conCuenta ? (usuario?.email ?? null) : null,
       selloRestauracion,
+      conectarCuenta: pasarACuenta,
       entrar,
       crear,
       entrarConGoogle,
@@ -435,6 +434,7 @@ export default function ArranqueProvisional({ children }) {
       estado,
       usuario,
       selloRestauracion,
+      pasarACuenta,
       entrar,
       crear,
       entrarConGoogle,
@@ -473,7 +473,5 @@ export default function ArranqueProvisional({ children }) {
     )
   }
 
-  return (
-    <ContextoSesion.Provider value={sesion}>{children(uid, cambiarUid)}</ContextoSesion.Provider>
-  )
+  return <ContextoSesion.Provider value={sesion}>{children(uid)}</ContextoSesion.Provider>
 }

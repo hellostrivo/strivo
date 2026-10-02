@@ -629,9 +629,13 @@ describe('ArranqueProvisional usa la regla y no la copia', () => {
     expect(fuente).toMatch(/escucharUsuario\(/)
   })
 
-  it('ofrece la sesión por contexto y conserva la firma children(uid, cambiarUid)', () => {
+  it('ofrece la sesión por contexto, y a sus hijos solo el uid (SPEC_19.2, E3)', () => {
+    // `cambiarUid` se retiró: P7 entra por `conectarCuenta`, que es el mismo
+    // `pasarACuenta` de Tu perfil. Nadie fuera de aquí pide cambiar el uid.
     expect(fuente).toMatch(/<ContextoSesion\.Provider value=\{sesion\}>/)
-    expect(fuente).toMatch(/children\(uid, cambiarUid\)/)
+    expect(fuente).toMatch(/children\(uid\)/)
+    expect(fuente).not.toMatch(/cambiarUid/)
+    expect(fuente).toMatch(/conectarCuenta: pasarACuenta/)
   })
 
   it('es el único que escribe strivo.uid.local', () => {

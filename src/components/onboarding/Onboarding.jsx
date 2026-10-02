@@ -51,6 +51,17 @@
 // cuando la luz se va, lo de detrás ya está ahí. Con "reducir movimiento" no se
 // monta (RN-VIS-05).
 //
+// ─── P7: un solo camino a la cuenta (SPEC_19.2) ──────────────────────────────
+//
+// La cuenta de P7 entra por la sesión —`conectarCuenta`, el mismo
+// `pasarACuenta` que usa Tu perfil— y no por un camino propio del onboarding.
+// Una cuenta **nueva** adopta el árbol como siempre: P7 dice "Tu cuenta está
+// lista." y el recorrido sigue a P8. Una cuenta **que ya existía** pasa por
+// `entrarACuenta`, con el velo y la frase de restauración: si ya había
+// terminado el onboarding, la puerta lo dice al volver y esta pieza no se
+// vuelve a montar; si no, el recorrido continúa en el paso siguiente a P7. Lo
+// contestado en la sesión no reemplaza lo de la cuenta (DP-19.5).
+//
 // ─── Nada bloquea ────────────────────────────────────────────────────────────
 //
 // Ningún control lleva `disabled`, `required` ni `aria-invalid`. "Continuar"
@@ -82,6 +93,7 @@ import { alternar as alternarGenero } from '@/onboarding/genero'
 import { alternar as alternarMotivo } from '@/onboarding/motivos'
 import { pedirPermiso } from '@/onboarding/recordatorios'
 import { crearConCorreo, entrarConProveedor } from '@lib/cuenta'
+import { useSesion } from '@lib/useSesion'
 
 const textos = copy.diario.onboarding
 
@@ -98,8 +110,12 @@ function hayUmbral() {
   return !prefiereMenosMovimiento() && umbralPendiente('diario')
 }
 
-export default function Onboarding({ uid, onUid, onTerminado }) {
-  const { respuestas, paso, cargando, genero, acciones } = useOnboarding(uid, { onUid })
+export default function Onboarding({ uid, onTerminado }) {
+  const { conectarCuenta, selloRestauracion } = useSesion()
+  const { respuestas, paso, cargando, motivoCuenta, genero, acciones } = useOnboarding(uid, {
+    conectar: conectarCuenta,
+    sello: selloRestauracion,
+  })
 
   // El umbral de entrada, una vez por sesión y compartido con el resto de la
   // app. No espera a que cargue el recorrido —para eso es un velo— y **nace
@@ -122,23 +138,27 @@ export default function Onboarding({ uid, onUid, onTerminado }) {
     acciones.guardarRecordatorios(estado)
   }
 
-  const entrarCon = async (proveedor) => {
-    const resultado = await entrarConProveedor(proveedor)
+  /**
+   * Con la sesión de Firebase abierta, la lleva a la cuenta. "Tu cuenta está
+   * lista." es solo de la cuenta nueva: con una que ya existía, este paso se
+   * desmonta bajo el velo y lo que viene después lo decide la puerta.
+   */
+  const conectar = async (resultado) => {
     if (!resultado.ok) return setCuenta({ listo: false, motivo: resultado.motivo })
-    await acciones.adoptarCuenta(resultado)
-    setCuenta({ listo: true, motivo: null })
+    const r = await acciones.conectarCuenta(resultado)
+    if (!r.ok) return setCuenta({ listo: false, motivo: r.motivo })
+    if (resultado.nueva) setCuenta({ listo: true, motivo: null })
+    return undefined
   }
 
-  const crearCuenta = async (correo, contrasena) => {
-    const resultado = await crearConCorreo(correo, contrasena)
-    if (!resultado.ok) return setCuenta({ listo: false, motivo: resultado.motivo })
-    await acciones.adoptarCuenta(resultado)
-    setCuenta({ listo: true, motivo: null })
-  }
+  const entrarCon = async (proveedor) => conectar(await entrarConProveedor(proveedor))
+
+  const crearCuenta = async (correo, contrasena) =>
+    conectar(await crearConCorreo(correo, contrasena))
 
   const entrar = async () => {
-    const definitivo = await acciones.terminar()
-    onTerminado(definitivo)
+    await acciones.terminar()
+    onTerminado()
   }
 
   const pantallas = {
@@ -194,7 +214,7 @@ export default function Onboarding({ uid, onUid, onTerminado }) {
     [PASOS.cuenta]: () => (
       <CuentaPaso
         textos={textos.p7}
-        motivo={cuenta.motivo}
+        motivo={cuenta.motivo ?? motivoCuenta}
         listo={cuenta.listo}
         onProveedor={entrarCon}
         onCrear={crearCuenta}

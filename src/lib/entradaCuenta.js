@@ -130,6 +130,53 @@ export function completarMudanzaPendiente(uidCuenta, { email = null } = {}) {
   return promesa
 }
 
+// ─── El árbol de la entrada (SPEC_19.2 §4.2) ──────────────────────────────────
+//
+// Mientras una mudanza está pendiente, la sesión ya es la de la cuenta pero lo
+// que esa persona contestó vive todavía bajo el uid de origen. La puerta del
+// onboarding (F2 de 19.1), el propio recorrido y la presentación tienen que
+// leer y escribir **en el mismo árbol**, o el recorrido no es coherente
+// consigo mismo; y escribir en el de la cuenta subiría un perfil y un
+// expediente sellados encima de los que la cuenta tiene en la nube (DP-19.5).
+// La regla vive aquí, junto a la mudanza que la hace necesaria.
+
+/**
+ * ¿De qué uid se lee y en qué uid se escribe la entrada —onboarding y
+ * presentación— de esta sesión?
+ *
+ * El de origen mientras haya mudanza pendiente hacia esta cuenta y el origen
+ * conserve su expediente; si no, el de la sesión. Un origen sin expediente es
+ * una clave que todavía no se ha retirado de un árbol que ya se mudó o se
+ * borró, y ahí la respuesta es la cuenta.
+ *
+ * **Primero espera a la mudanza en curso de esa cuenta, y solo después
+ * decide.** Si no, una escritura podría decidir "origen" justo antes de que la
+ * mudanza lea sus filas y caer allí después: un `completedAt` así se quedaría
+ * en el origen, la cuenta no lo recibiría y la puerta volvería a abrirse en el
+ * siguiente arranque. Y como decidir lee la base —el expediente del origen—,
+ * una mudanza que **empiece mientras se decide** obliga a decidir otra vez:
+ * por eso es un bucle y no una sola espera. Entre la última comprobación y la
+ * escritura de quien llama no hay más que microtareas, y una mudanza solo
+ * arranca desde el aviso de una restauración, que llega en otra tarea.
+ *
+ * No hay ciclo: la mudanza no pregunta nunca por el árbol de la entrada.
+ *
+ * @param {string} uid - el uid de la sesión.
+ * @returns {Promise<string>}
+ */
+export async function arbolDeEntrada(uid) {
+  for (;;) {
+    const enCurso = EN_CURSO.get(uid)
+    if (enCurso) await enCurso.catch(() => {})
+
+    const origen = mudanzaPendiente(uid)
+    const conOrigen =
+      origen && origen !== uid && (await shared.getOnboarding(origen).catch(() => null)) !== null
+
+    if (!EN_CURSO.has(uid)) return conOrigen ? origen : uid
+  }
+}
+
 /**
  * Escucha las restauraciones que terminan y completa la mudanza pendiente de
  * la cuenta restaurada, si la tiene. La monta `ArranqueProvisional` mientras la
