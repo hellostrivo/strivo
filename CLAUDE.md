@@ -604,7 +604,12 @@ el componente.**
   de SPEC_19 §3.1. Nadie más mira el prefijo `local-` para eso.
 - `src/lib/db/conflictos.js` → `ganaRemoto`, `esSemilla` y `ganaOrigenAlMudar`: qué gana cuando un
   registro choca, al bajar de la nube y al entrar a una cuenta. La segunda regla está hecha de las
-  dos primeras, no copiada.
+  dos primeras, no copiada. También `hechosQueFaltan`: los hechos del expediente que ninguna
+  fusión deshace, leídos por la bajada y por la mudanza (SPEC_19.2).
+- `src/lib/entradaCuenta.js` → `arbolDeEntrada`: en qué árbol leen y escriben la puerta, el
+  onboarding y la presentación mientras una mudanza esté pendiente (SPEC_19.2).
+- `src/onboarding/escritura.js` → qué lee y qué escribe el recorrido, y dónde. El hook decide
+  cuándo; esto, dónde.
 - `src/diario/ventanaEdicion.js` → hasta cuándo se puede escribir en un día, y **el único sitio donde
   vive el 72** (`HORAS_DE_EDICION`). Lo leen el día, su estado de React, el Historial y la pantalla
   Hoy; hay una prueba que falla si alguno lo escribe a mano.
@@ -662,7 +667,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**75 archivos de prueba · 2.034 casos · los seis comandos en verde.**
+**77 archivos de prueba · 2.083 casos · los seis comandos en verde.**
 
 ### Marca: el logo oficial y el video de apertura (25 ago 2026)
 
@@ -1205,9 +1210,8 @@ olvidar. La instrucción completa está en `docs/specs/SPEC_17A_INSTRUCCION_EJEC
 - **El disparo era provisional y ya no existe** (DP-17.7, cerrada en SPEC_19.1). Durante 17A la
   única señal de que había cuenta era `esUidDeCuenta` —que el uid no empezara por `local-`—; desde
   el 1 de octubre de 2026 lo dice Firebase, con `resolverSesion` (ver «Sesión real», abajo). La
-  restauración del arranque se sigue evaluando **solo al montar**: el uid cambia en P7, a mitad del
-  onboarding, y restaurar ahí obligaría a decidir tres cosas sobre un recorrido que 19.2 va a
-  rehacer (DP-19.5). **Y quien entra en P7 a una cuenta
+  restauración del arranque se sigue evaluando **solo al montar**; entrar en P7 a una cuenta que
+  ya existía baja lo suyo por `entrarACuenta` desde SPEC_19.2. **Y quien entra en P7 a una cuenta
   que ya tiene datos no los ve en esa sesión, y hasta el 18 de septiembre de 2026 además los
   perdía en la nube** (DP-17.10). Aquí decía «nada se pierde», y era falso: `mudarUid` garantizaba
   no pisar nada, pero esa garantía solo existía en local —es el `store.get(destino)` de su bucle—
@@ -1220,10 +1224,9 @@ olvidar. La instrucción completa está en `docs/specs/SPEC_17A_INSTRUCCION_EJEC
   principio:** terminar el recorrido escribe el perfil entero y el expediente con `completedAt`,
   los dos sellados y bajo el uid de la cuenta, así que quien entra por P7 a una cuenta con datos y
   llega hasta P8 **sigue pisando `shared/profile` y `shared/onboarding` en la nube** con lo que
-  contestó —o con `name: null`, si lo saltó—. Eso es DP-19.5 y se resuelve donde se rehace la
-  entrada. **Hasta entonces: no entrar por P7 con ninguna cuenta que tenga datos reales en la
-  nube, incluidas las de prueba.** Desde 19.1 la forma segura de entrar a una cuenta existente es
-  Tu perfil.
+  contestó —o con `name: null`, si lo saltó—. Eso era DP-19.5, y **se cerró en SPEC_19.2** (ver
+  «Cuenta existente en P7», abajo): P7 entra por el mismo camino que Tu perfil y la regla de
+  seguridad que prohibía usarlo con una cuenta con datos ya no rige.
   - **Y la puerta del onboarding se decidía sobre la semilla si la bajada llegaba tarde**
     (DP-17.11). Dos llamadas concurrentes a `prepararArbol` con el mismo uid —el doble montaje de
     `React.StrictMode`, siempre en desarrollo— se pisaban: la segunda veía el perfil ausente porque
@@ -1298,7 +1301,7 @@ y sin red) y se cruza con `strivo.uid.local`:
   sincronización se recalcula. Cierra el techo de DP-17.11 y DP-17.14.
 
 **Entrar a una cuenta que ya existía** (`entrarACuenta`, `src/lib/entradaCuenta.js`; DP-19.7). Se
-usa desde Tu perfil y al arrancar en la fila 3; en 19.2, también desde P7.
+usa desde Tu perfil, desde P7 (desde SPEC_19.2) y al arrancar en la fila 3.
 
 1. **Restaurar primero**, con el techo de 15 s y la frase de restauración.
 2. **Mudar después, fila a fila, y solo si la restauración terminó bien** (`mudarUid` con
@@ -1326,10 +1329,10 @@ uid, así que no rompe la regla del único escritor de `strivo.uid.local`.
 **Con la mudanza pendiente, la puerta se lee en el árbol de origen** (F2). La sesión ya está en
 el uid de la cuenta, cuyo árbol es la semilla —`completedAt: null`—, y leer ahí mandaba al
 onboarding a quien estaba en Tu perfil; terminarlo otra vez subía un perfil y un expediente
-sellados encima de los de la cuenta (DP-19.5). `leerPuerta` (`presentacion/entrada.js`) es el
-único sitio que decide de qué árbol se lee la puerta: el de origen mientras `mudanzaPendiente`
-devuelva uno con expediente, el de la cuenta en cuanto la mudanza se completa y el sello la
-relee. `onboardingPendiente` y `presentacionPendiente` no cambiaron de contrato.
+sellados encima de los de la cuenta (DP-19.5). De qué árbol se lee lo decide `arbolDeEntrada`
+(`lib/entradaCuenta.js`, desde SPEC_19.2; antes vivía en `leerPuerta`): el de origen mientras
+`mudanzaPendiente` devuelva uno con expediente, el de la cuenta en cuanto la mudanza se completa y
+el sello la relee. `onboardingPendiente` y `presentacionPendiente` no cambiaron de contrato.
 
 **Y si se aplazó por falta de red, se reintenta al volver** (F3). `reintentarEntradaAlVolverLaRed`
 deja el mismo oyente de un solo intento que pone `prepararArbol`, solo con `pendiente` y motivo
@@ -1337,19 +1340,14 @@ deja el mismo oyente de un solo intento que pone `prepararArbol`, solo con `pend
 el oyente de mudanzas completa lo pendiente. `ArranqueProvisional` lo pone en las dos entradas
 (al arrancar y desde Perfil), uno a la vez, y lo retira al desmontar y al salir.
 
-**Residuo de F2 que conviene saber:** si el origen **no** tenía `completedAt` —una sesión anónima
-a medias de onboarding, que solo llega aquí por la fila 3 del arranque—, el onboarding se muestra
-como sin cuenta, pero escribe bajo el uid de la cuenta, que es el de la sesión. Es el mismo riesgo
-de DP-19.5 y se cierra en 19.2, donde se rehace P7.
-
 **Residuo aceptado:** cuando dos versiones del mismo día chocan, la más vieja deja de verse; si era
 la anónima, sigue en IndexedDB bajo su uid. Es la regla que ya rige entre dos teléfonos.
 
 **Una cuenta recién creada no pasa por ahí**: `crearConCorreo` y `entrarConProveedor` devuelven
 `nueva` (este último con `getAdditionalUserInfo(...).isNewUser`), y con `nueva` se adopta el árbol
-como en P7. P7 ignora el campo. **`completedAt` y `tourCompletedAt` no se deshacen** en la fusión
-de `shared/onboarding`: si cualquier lado los trae, el resultado los conserva, y si hubo que
-añadirlos el documento se encola.
+(`adoptarArbol`). Desde SPEC_19.2, P7 también lo usa. **`completedAt` y `tourCompletedAt` no se
+deshacen** en la fusión de `shared/onboarding`: si cualquier lado los trae, el resultado los
+conserva, y si hubo que añadirlos el documento se encola. Desde 19.2 vale también al mudar.
 
 **Salir** (`src/lib/salidaCuenta.js`, DP-19.1). Se intenta subir lo pendiente y **con la cola no
 vacía no se cierra sesión**: la confirmación explica que hay cosas sin subir y solo ofrece
@@ -1364,14 +1362,75 @@ bloque y sin rutas nuevas. La confirmación es `components/shared/Confirmacion.j
 SPEC_24 reutilizará. **Apple no se ofrece en web** (`PROVEEDORES_WEB`, DP-19.4), ni en Perfil ni
 en P7. `cuenta.js` se mudó de `onboarding/` a `src/lib/` porque ya tiene tres consumidores.
 
-**La regla de seguridad sigue vigente hasta cerrar 19.2: no entrar por P7 con ninguna cuenta que
-tenga datos reales en la nube.** P7 todavía adopta el árbol sin restaurar y, al terminar, escribe
-`shared/profile` y `shared/onboarding` encima de los de la cuenta (DP-19.5). Desde 19.1, la forma
-segura de entrar a una cuenta existente es Tu perfil.
+**Lo que esto no hizo** (lo hizo 19.2, abajo): cambiar el flujo de P7 y tocar el PIN. Tampoco
+migra `signInWithPopup` (SPEC_21) ni borra cuentas (SPEC_24). Los criterios manuales M1–M9 los
+validó la fundadora contra `strivo-fe04f` (adenda del 1 oct 2026).
 
-**Lo que esto no hace:** no cambia el flujo de P7, no toca el PIN (`pin.js` sigue diciendo que no
-hay auth por correo; lo corrige 19.2, DP-19.6), no migra `signInWithPopup` (SPEC_21) y no borra
-cuentas (SPEC_24). Los criterios manuales M1–M9 los valida la fundadora contra `strivo-fe04f`.
+### Cuenta existente en P7 y PIN con correo (SPEC_19.2, oct 2026)
+
+Cierra DP-19.5 y DP-19.6, y con ellas **la regla de seguridad de P7, que se retira**: entrar por
+P7 a una cuenta con datos reales ya no pisa nada en la nube. La instrucción completa está en
+`docs/specs/INSTRUCCION_SPEC_19_2_CUENTA_EXISTENTE.md`.
+
+**Un solo camino a la cuenta.** P7 entra por `conectarCuenta`, que es el mismo `pasarACuenta` de
+Tu perfil (`ArranqueProvisional`). Una cuenta **nueva** adopta el árbol, P7 dice «Tu cuenta está
+lista.» y el recorrido sigue a P8. Una cuenta **que ya existía** pasa por `entrarACuenta`, con el
+velo y la frase de restauración, y el velo desmonta el onboarding:
+
+- si la cuenta ya lo había terminado, `Entrada` se monta de nuevo, lee la puerta entera y sale a
+  Hoy; la presentación la decide `presentacionPendiente`, como en un arranque;
+- si no, el recorrido sigue **en el paso siguiente a P7**, no en el `currentStep` de la cuenta. Lo
+  lleva un traspaso **en memoria** (`onboarding/traspaso.js`), porque escribir el paso bajo la
+  cuenta tocaría su expediente en la nube para algo que es solo navegación. Residuo aceptado:
+  recargar en P8 retoma desde el `currentStep` guardado. Si la mudanza misma falla, el traspaso
+  lleva el aviso al recorrido que se monta con el uid de origen.
+
+`adoptarCuenta`, `onUid` y `cambiarUid` se retiraron: `ArranqueProvisional` ofrece a sus hijos solo
+el uid, y nadie fuera de él pide cambiarlo. `onTerminado` ya no entrega un uid.
+
+**Con la mudanza pendiente, la entrada lee y escribe bajo el origen.** Si la restauración de la
+cuenta no termina, la sesión ya es la cuenta pero lo contestado sigue bajo el uid de origen. La
+puerta, el recorrido entero —responder, motivo, avisos, paso y `terminar`— y la presentación leen
+y escriben en el árbol que decide `arbolDeEntrada`. Cuando la mudanza se completa, en `shared/*`
+gana la cuenta y lo del origen se conserva bajo su uid. Aplica igual al onboarding que monta la
+fila 3 del arranque, y con eso se cierra el residuo de F2 de 19.1. Tres cosas lo sostienen:
+
+- **`arbolDeEntrada` espera antes a la mudanza en curso de esa cuenta** (la promesa de
+  `EN_CURSO`) y, como decidir lee la base, vuelve a decidir si una mudanza empezó mientras tanto.
+  Sin eso, un `terminar` lanzado con la mudanza en vuelo dejaba `completedAt` en el origen y la
+  puerta volvía a abrirse al siguiente arranque. Hay una prueba que retiene la mudanza a medio
+  camino y que falla sin la espera.
+- **Lo contestado no cambia de árbol** (`onboarding/escritura.js`): las respuestas leídas de un
+  origen solo se escriben en ese origen. `completedAt` y el paso sí siguen al árbol.
+- **Las respuestas se recargan solo si cambia el árbol**, no con cada sello de restauración
+  (`releerSiCambioElArbol`). Lo que estuviera a medio teclear sobre el árbol que perdió no se
+  guarda.
+
+Lo que decide dónde se escribe está fuera del hook, en `escritura.js` y `traspaso.js`, porque las
+pruebas corren sin navegador y es justo lo que hay que poder probar.
+
+**`completedAt` no se deshace tampoco al mudar.** `hechosQueFaltan` salió de `restaurar.js` a
+`conflictos.js` y la usan la bajada y `mudarUid` con política. Si gana la cuenta y el origen traía
+`completedAt` o `tourCompletedAt`, la cuenta los conserva y el expediente se encola. Si gana el
+origen sobre un expediente sin marca que traía un hecho, la fila mudada se lo lleva. La política
+sigue siendo booleana, y sin política nada cambia.
+
+**PIN con cuenta de correo** (DP-19.6). `reautenticar(uid, { contrasena })`:
+
+- con proveedor `password` y sin contraseña devuelve `pide-contrasena`; con ella reautentica con
+  `EmailAuthProvider.credential`;
+- `wrong-password`, `invalid-credential` e `invalid-login-credentials` se cuentan como
+  `credenciales`; la falta de red, como `sin-conexion`; lo demás, como `no-verificado`;
+- Google y Apple, por ventana emergente como siempre.
+
+En `BloqueoPin`, el campo de contraseña aparece solo tras `pide-contrasena`, con foco y el error
+por `aria-describedby`, y el mismo botón vuelve a intentar. **La contraseña vive solo en el
+estado del componente.** Firebase se sigue cargando dentro de la función: el PIN no depende de la
+capa de autenticación. Sin conexión reutiliza `cuenta.error.sinConexion`.
+
+**Lo que esto no hace:** Apple, redirect u OAuth nativo (SPEC_21), Face ID (SPEC_23), borrar
+cuenta (SPEC_24), verificación o cambio de correo, ni la prueba intermitente de `journal.test.js`.
+Los criterios manuales N1–N5 los valida la fundadora contra `strivo-fe04f`.
 
 ### Divergencias conocidas entre el blueprint y el código
 
