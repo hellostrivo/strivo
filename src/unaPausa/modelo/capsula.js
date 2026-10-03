@@ -13,7 +13,7 @@
 /**
  * Los nueve estados de una cápsula, en el orden del recorrido editorial.
  * `rechazada` es una salida lateral, no un paso más: va al final de la lista y
- * fuera del orden (`estados.js`, `nivelDe`).
+ * fuera del orden (`estados.js`, `ORDEN` y `desde`).
  *
  * `publicada` y `archivada` existen en el tipo porque Fase B los escribirá. **En
  * Fase A no se escriben, se derivan**: una cápsula `programada` cuya semana

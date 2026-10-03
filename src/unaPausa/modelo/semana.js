@@ -7,7 +7,7 @@
 // depender de la zona del proceso, que en un teléfono es la de quien lo lleva,
 // en el build es la del servidor y en esta máquina es, por casualidad, la misma
 // de Monterrey —que es justo la forma en que un error así pasaría inadvertido—.
-// Una prueba de repo lo impone (`__tests__/sinHoraLocal.test.js`).
+// Una prueba de repo lo impone (`__tests__/fronteras.test.js`).
 //
 // Las claves `AAAA-MM-DD` se suman y se comparan como días enteros contados
 // desde 1970-01-01 en UTC, que no tiene saltos de horario. Monterrey no tiene

@@ -202,11 +202,13 @@ describe('el resto de las reglas desde en_revision', () => {
     )
   })
 
-  it('una sola pregunta, que termina en «?» y cabe en 140 caracteres', () => {
+  it('una sola pregunta, que abre con «¿», termina en «?» y cabe en 140 caracteres', () => {
     expect(faltas(revision({ journalPrompt: '¿Qué noté? ¿Y qué más?' }))).toEqual([
       'pregunta.forma',
     ])
     expect(faltas(revision({ journalPrompt: 'Qué noté hoy.' }))).toEqual(['pregunta.forma'])
+    expect(faltas(revision({ journalPrompt: 'Qué me ocupa hoy?' }))).toEqual(['pregunta.forma'])
+    expect(faltas(revision({ journalPrompt: 'Y hoy, ¿qué me ocupa?' }))).toEqual([])
     expect(faltas(revision({ journalPrompt: `¿${'a'.repeat(139)}?` }))).toEqual(['pregunta.forma'])
     expect(faltas(revision({ journalPrompt: `¿${'á'.repeat(138)}?` }))).toEqual([])
     expect(faltas(revision({ journalPrompt: undefined }))).toEqual([])

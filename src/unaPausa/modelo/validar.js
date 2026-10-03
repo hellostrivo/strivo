@@ -211,10 +211,12 @@ function revisarContenido(c, faltas) {
   if (!vacio(c.journalPrompt)) {
     const pregunta = texto(c.journalPrompt).trim()
     const cuenta = (signo) => pregunta.split(signo).length - 1
+    // Una pregunta en español abre y cierra: «Qué me ocupa hoy?» no está bien
+    // escrita, aunque termine en «?».
     const bienFormada =
       pregunta.endsWith('?') &&
       cuenta('?') === 1 &&
-      cuenta('¿') <= 1 &&
+      cuenta('¿') === 1 &&
       [...pregunta].length <= MAX_CARACTERES_DE_PREGUNTA
     if (!bienFormada) faltas.push({ codigo: 'pregunta.forma', campo: 'journalPrompt' })
   }
