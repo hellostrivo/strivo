@@ -22,3 +22,23 @@
   for = "/index.html"
   [headers.values]
     Cache-Control = "no-cache"  # HTML siempre fresco
+
+# El canal de vista previa de Una pausa (DP-28.16). Va después de la regla de
+# `/*`, que es la caché de producción de la app y no se toca: Netlify no combina
+# dos Cache-Control —`/index.html` sale solo con no-cache—, y con este orden da
+# igual si gana la regla más específica o la última. En producción no existe
+# `/una-pausa/`: el canal de producción lo sirve el sitio de `canal/`.
+[[headers]]
+  for = "/una-pausa/*"
+  [headers.values]
+    Cache-Control = "public, max-age=300"
+
+# Solo los deploys de rama ven la cápsula piloto: su build genera además un
+# `feed.json` propio, servido en el mismo origen, y la app lo lee de
+# VITE_URL_CANAL (28.3). El build de producción de arriba no cambia, y el canal
+# de producción nunca incluye la piloto.
+[context.branch-deploy]
+  command = "npm run build:vista-previa"
+
+[context.branch-deploy.environment]
+  VITE_URL_CANAL = "/una-pausa/feed.json"

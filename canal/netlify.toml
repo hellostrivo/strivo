@@ -1,0 +1,25 @@
+# canal/netlify.toml
+# El sitio del canal de Una pausa (DP-28.3): un segundo sitio de Netlify, desde
+# este mismo repo, que publica `feed.json` y sus portadas y nada más. Se crea
+# con «Package directory = canal» y la base en la raíz: Netlify lee primero
+# este archivo, y el comando corre en la raíz del repo.
+#
+# Si el script falla, falla el build y Netlify conserva el deploy anterior: la
+# app sigue leyendo el canal de la semana pasada. El build de la app no cambia.
+
+[build]
+  command = "node scripts/publicar-pausa.js --salida canal/dist"
+  publish = "canal/dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Caché corta, CORS abierto: el contenido es público, el mismo para todos y no
+# lleva credenciales. Enumerar orígenes no protege nada y se rompe con cada
+# origen nuevo (la app, Capacitor, los deploys de rama, localhost).
+[[headers]]
+  for = "/una-pausa/*"
+  [headers.values]
+    Cache-Control                = "public, max-age=300"
+    Access-Control-Allow-Origin  = "*"
+    X-Content-Type-Options       = "nosniff"
