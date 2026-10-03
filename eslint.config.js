@@ -12,6 +12,7 @@
 //   Respiración  `breathing/`           la herramienta
 //   onboarding   `onboarding/`          cómo se entra, una vez y antes de todo
 //   presentación `presentacion/`        qué hay dentro, una vez y justo detrás
+//   Una pausa    `unaPausa/`            la cápsula de la semana (SPEC_28)
 //   neutral      `lib/respiracion/`     el motor de ritmo, que no conoce a nadie
 //
 // Antes el mapa tenía tres partes, porque había dos espacios que no podían
@@ -99,6 +100,17 @@ const PRESENTACION_FILES = [
   'src/presentacion/**/*.{js,jsx}',
   'src/components/presentacion/**/*.{js,jsx}',
 ]
+
+// SPEC_28 §3.1 — Una pausa tiene la misma frontera que Respiración, y desde
+// antes de tener pantalla: no lee el diario ni Respiración. Lo que necesite de
+// ellos —a dónde lleva su invitación, dónde volver— le llegará por props desde
+// `App.jsx`, que es quien enruta. Su modelo además lo cargan scripts de Node,
+// así que cualquier dependencia de una sección la arrastraría fuera de la app.
+const UNA_PAUSA =
+  'Una pausa no lee el diario ni Respiración (SPEC_28 §3.1). Lo que necesite ' +
+  'de una sección, que llegue por props desde App.jsx.'
+
+const UNA_PAUSA_FILES = ['src/unaPausa/**/*.{js,jsx}']
 
 const BREATHING_FILES = [
   'src/breathing/**/*.{js,jsx}',
@@ -243,6 +255,23 @@ export default [
             { group: DIARIO_MODULES, message: PRESENTACION },
             { group: BREATHING_MODULES, message: PRESENTACION },
             { group: DB_ENTRYPOINT, importNames: ['diario'], message: PRESENTACION },
+          ],
+        },
+      ],
+    },
+  },
+
+  // ─── Una pausa no es de ninguna sección ──────────────────────────────────────
+  {
+    files: UNA_PAUSA_FILES,
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            { group: DIARIO_MODULES, message: UNA_PAUSA },
+            { group: BREATHING_MODULES, message: UNA_PAUSA },
+            { group: DB_ENTRYPOINT, importNames: ['diario'], message: UNA_PAUSA },
           ],
         },
       ],
