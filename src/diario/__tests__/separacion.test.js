@@ -92,6 +92,12 @@ describe('el diario no sabe nada de hábitos (§C2.6, revisión 25 ago)', () => 
     // tiene ruta, no la alcanza ningún enlace, y `eslint.config.js` le prohíbe
     // importar el diario y Respiración igual que al onboarding. Lo que sabe de
     // cada sección es un nombre, una frase del copy y un dibujo propio.
+    //
+    // **`unaPausa` se suma el 3 de octubre de 2026**, en la rama `una-pausa`
+    // (SPEC_28). Es la cápsula de la semana, y no un segundo producto: va
+    // fuera de `diario/` porque no escribe en el árbol de nadie —lee un canal
+    // de contenido común a todos— y `eslint.config.js` le prohíbe importar el
+    // diario y Respiración, con la misma frontera que tiene Respiración.
     expect(carpetasDe('src')).toEqual([
       'assets',
       'breathing',
@@ -106,6 +112,7 @@ describe('el diario no sabe nada de hábitos (§C2.6, revisión 25 ago)', () => 
       'presentacion',
       'styles',
       'tokens',
+      'unaPausa',
     ])
     // El onboarding no añade página: no se enruta, se interpone. `App.jsx`
     // monta uno u otro y no hay URL que lleve a él.
