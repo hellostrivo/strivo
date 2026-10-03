@@ -289,17 +289,21 @@ export function codigoDeSalida({ faltas }, { vistaPrevia = false } = {}) {
 }
 
 /**
- * Lee, valida y, si no hay nada que rompa, escribe el canal en
- * `<salida>/una-pausa/`.
+ * Lee y revisa sin escribir nada: las cápsulas, el conjunto y las portadas.
+ * Es la mitad de `publicar` que no toca la salida, y la usa también el
+ * recordatorio del miércoles para saber si el canal del lunes se podría
+ * construir. **Qué rompe se decide aquí y solo aquí**: `faltas` son las que
+ * romperían el canal de producción; `avisos`, lo demás.
  *
- * `faltas` son siempre las que romperían el canal de producción, también en la
- * vista previa: ahí no rompen, pero siguen siendo lo que son. `ok` dice si el
- * canal se escribió.
+ * No depende del reloj: ninguna regla del validador mira la hora del build,
+ * así que lo que rompe hoy rompe igual el lunes si nadie lo toca.
  *
- * @param {{raiz?: string, salida: string, ahora?: Date|number|string, vistaPrevia?: boolean}} opciones
- * @returns {{ok: boolean, faltas: object[], avisos: object[], canal: object}}
+ * @param {{raiz?: string}} [opciones]
+ * @returns {{faltas: object[], avisos: object[], portadas: Set<string>, capsulas: object[]}}
+ *   `portadas`: los `coverAsset` con archivo presente y válido. `capsulas`: las
+ *   que pueden entrar al canal, sin las de archivos mal nombrados.
  */
-export function publicar({ raiz = RAIZ, salida, ahora = new Date(), vistaPrevia = false }) {
+export function revisar({ raiz = RAIZ } = {}) {
   const { leidas, descartadas, faltas } = leerCapsulas(raiz)
   const avisos = []
 
@@ -334,11 +338,24 @@ export function publicar({ raiz = RAIZ, salida, ahora = new Date(), vistaPrevia 
     destino.push(...problemas.map((p) => ({ archivo, ...p })))
   }
 
-  const canal = generarCanal(
-    leidas.map((l) => l.capsula),
-    ahora,
-    { vistaPrevia, portadas },
-  )
+  return { faltas, avisos, portadas, capsulas: leidas.map((l) => l.capsula) }
+}
+
+/**
+ * Revisa y, si no hay nada que rompa, escribe el canal en
+ * `<salida>/una-pausa/`.
+ *
+ * `faltas` son siempre las que romperían el canal de producción, también en la
+ * vista previa: ahí no rompen, pero siguen siendo lo que son. `ok` dice si el
+ * canal se escribió.
+ *
+ * @param {{raiz?: string, salida: string, ahora?: Date|number|string, vistaPrevia?: boolean}} opciones
+ * @returns {{ok: boolean, faltas: object[], avisos: object[], canal: object}}
+ */
+export function publicar({ raiz = RAIZ, salida, ahora = new Date(), vistaPrevia = false }) {
+  const { faltas, avisos, portadas, capsulas } = revisar({ raiz })
+
+  const canal = generarCanal(capsulas, ahora, { vistaPrevia, portadas })
   const ok = codigoDeSalida({ faltas }, { vistaPrevia }) === 0
 
   if (ok) {

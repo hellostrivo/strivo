@@ -1,6 +1,7 @@
 # El recordatorio editorial de Una pausa (DP-28.12): los miércoles a las 09:00
-# de Monterrey, si el lunes siguiente no tiene una cápsula `programada` válida,
-# abre un issue que dice qué pasará ese lunes. GitHub lo manda por correo.
+# de Monterrey, si el lunes siguiente no tiene una cápsula `programada` válida
+# o si ese lunes el canal no se podría construir (DP-28.23), abre un issue que
+# dice qué pasará y qué lo impide. GitHub lo manda por correo.
 #
 # **Inerte hasta la fusión** (DP-28.17): GitHub solo ejecuta Actions
 # programadas desde la rama por defecto. Corre cuando `strivo` lo sea.

@@ -702,7 +702,7 @@ rama de resguardo está creada y congelada, la rama activa es `strivo`, y el có
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
 **77 archivos de prueba · 2.083 casos · los seis comandos en verde.** En la rama `una-pausa`, tras
-SPEC_28.1: **84 archivos · 2.498 casos**; tras SPEC_28.2: **90 archivos · 2.725 casos**.
+SPEC_28.1: **84 archivos · 2.498 casos**; tras SPEC_28.2: **90 archivos · 2.733 casos**.
 
 ### Marca: el logo oficial y el video de apertura (25 ago 2026)
 
@@ -1686,8 +1686,10 @@ y escribe `feed.json`, y los dos sitios de Netlify que lo sirven. La instrucció
   usuaria. Hay frase para cada código del modelo y del script, y una prueba lo comprueba.
 - **Los dos workflows están escritos e inertes hasta que `strivo` sea la rama por defecto**
   (DP-28.17): `publicar-pausa.yml` (lunes 06:05 UTC, al build hook del canal) y
-  `recordatorio-pausa.yml` (miércoles 15:00 UTC, abre un issue si el lunes siguiente no tiene una
-  `programada` válida). GitHub solo ejecuta Actions programadas desde la rama por defecto, que hoy
+  `recordatorio-pausa.yml` (miércoles 15:00 UTC, abre un issue «Una pausa: revisar el lunes
+  AAAA-MM-DD» si el lunes siguiente no tiene una `programada` válida **o si ese lunes el canal no
+  se podría construir**, con una línea por falta; DP-28.23). Qué rompe el canal lo decide
+  `revisar`, en `publicar-pausa.js`, y el recordatorio la llama: la regla no se copia. GitHub solo ejecuta Actions programadas desde la rama por defecto, que hoy
   es `main`. Hasta la fusión, el sitio del canal publica desde `una-pausa` y se reconstruye a mano.
 - **Reglas nuevas del modelo:** `id.forma` (siempre, también sin id), `portada.nombre` (con
   `coverAsset`, en cualquier estado: el script lo usa como ruta), `plazo.programada-tarde` (no se
