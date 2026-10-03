@@ -226,7 +226,7 @@ export function lineaDe({ archivo, campo, codigo }) {
  * @param {string} raiz
  * @returns {{leidas: {archivo: string, capsula: object}[], descartadas: {archivo: string, capsula: object}[], faltas: object[]}}
  */
-export function leerCapsulas(raiz) {
+export function leerCapsulas(raiz = RAIZ) {
   const dir = join(raiz, CAPSULAS)
   const nombres = existsSync(dir)
     ? readdirSync(dir)

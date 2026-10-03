@@ -1,0 +1,54 @@
+# El recordatorio editorial de Una pausa (DP-28.12): los miércoles a las 09:00
+# de Monterrey, si el lunes siguiente no tiene una cápsula `programada` válida,
+# abre un issue que dice qué pasará ese lunes. GitHub lo manda por correo.
+#
+# **Inerte hasta la fusión** (DP-28.17): GitHub solo ejecuta Actions
+# programadas desde la rama por defecto. Corre cuando `strivo` lo sea.
+#
+# No instala nada: el script solo usa el modelo de `src/unaPausa/modelo/`, que
+# no tiene dependencias. Un issue por lunes: si ya hay uno abierto con el mismo
+# título, no se abre otro.
+name: Recordatorio de Una pausa
+
+on:
+  schedule:
+    # Miércoles 15:00 UTC = 09:00 en Monterrey.
+    - cron: '0 15 * * 3'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  recordatorio:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Mirar el lunes que viene
+        run: node scripts/recordatorio-pausa.js > recordatorio.json
+
+      - name: Abrir el issue si hace falta
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if [ "$(jq -r '.hace_falta' recordatorio.json)" != "true" ]; then
+            jq -r '.cuerpo' recordatorio.json
+            exit 0
+          fi
+          titulo="$(jq -r '.titulo' recordatorio.json)"
+          abiertos="$(gh issue list --state open --limit 200 --json title \
+            | jq --arg t "$titulo" '[.[] | select(.title == $t)] | length')"
+          if [ "$abiertos" != "0" ]; then
+            echo "Ya hay un issue abierto: $titulo"
+            exit 0
+          fi
+          jq -r '.cuerpo' recordatorio.json > cuerpo.md
+          gh issue create --title "$titulo" --body-file cuerpo.md

@@ -1,0 +1,35 @@
+# El lunes de Una pausa (SPEC_28 §3.1): reconstruye el sitio del canal a las
+# 00:05 de Monterrey, para que la cápsula de la semana entre en feed.json.
+#
+# **Inerte hasta la fusión** (DP-28.17). GitHub solo ejecuta Actions
+# programadas —y las que se lanzan a mano— desde la rama por defecto, que hoy
+# es `main`. Este archivo entra a `strivo` con la fusión y corre cuando `strivo`
+# sea la rama por defecto; hasta entonces, el sitio del canal se reconstruye a
+# mano desde Netlify.
+#
+# Si el contenido no pasa, falla el build del sitio del canal y Netlify
+# conserva el deploy anterior. Este workflow solo llama al build hook.
+name: Publicar Una pausa
+
+on:
+  schedule:
+    # Lunes 06:05 UTC = 00:05 en Monterrey, que no tiene horario de verano.
+    - cron: '5 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reconstruir el sitio del canal
+        env:
+          BUILD_HOOK: ${{ secrets.NETLIFY_BUILD_HOOK_CANAL }}
+        run: |
+          if [ -z "$BUILD_HOOK" ]; then
+            echo "::error::Falta el secreto NETLIFY_BUILD_HOOK_CANAL: es el build hook del sitio del canal, en Netlify → Site configuration → Build hooks."
+            exit 1
+          fi
+          curl --fail --silent --show-error --request POST --data '{}' "$BUILD_HOOK"
