@@ -1,7 +1,7 @@
 // SPEC_28.1 §4.6 — el validador.
 import { describe, expect, it } from 'vitest'
 import { contarPalabras } from '../../../lib/palabras.js'
-import { EXENCION_UNA_PAUSA, esValida, validar } from '../validar.js'
+import { EXENCION_UNA_PAUSA, esValida, validar, validarConjunto } from '../validar.js'
 import { enEstado, programada, reserva } from './capsulas.js'
 
 const faltas = (c) => validar(c).faltas.map((f) => f.codigo)
@@ -302,7 +302,7 @@ describe('la forma del archivo, en cualquier estado', () => {
       'campo.desconocido keyFinding',
     ])
     const f = { ...programada().sources[0], url: 'https://x.org' }
-    expect(conCampo(validar({ status: 'borrador', sources: [f] }).faltas)).toEqual([
+    expect(conCampo(validar({ id: 'x', status: 'borrador', sources: [f] }).faltas)).toEqual([
       'campo.desconocido sources[0].url',
     ])
     expect(
@@ -314,32 +314,36 @@ describe('la forma del archivo, en cualquier estado', () => {
   })
 
   it('fechas mal escritas y semanas que no empiezan en lunes', () => {
-    expect(conCampo(validar({ status: 'borrador', weekStart: '2026-12-8' }).faltas)).toEqual([
+    const borrador = { id: 'x', status: 'borrador' }
+    expect(conCampo(validar({ ...borrador, weekStart: '2026-12-8' }).faltas)).toEqual([
       'fecha.forma weekStart',
     ])
-    expect(conCampo(validar({ status: 'borrador', weekStart: '2026-12-08' }).faltas)).toEqual([
+    expect(conCampo(validar({ ...borrador, weekStart: '2026-12-08' }).faltas)).toEqual([
       'semana.no-es-lunes weekStart',
     ])
-    expect(
-      conCampo(validar({ status: 'borrador', generatedAt: '2026-10-20 10:00' }).faltas),
-    ).toEqual(['fecha.forma generatedAt'])
+    expect(conCampo(validar({ ...borrador, generatedAt: '2026-10-20 10:00' }).faltas)).toEqual([
+      'fecha.forma generatedAt',
+    ])
   })
 })
 
 describe('borrador y rechazada: solo el léxico', () => {
   it.each(['borrador', 'rechazada'])('%s incompleta no da faltas de contenido', (status) => {
-    expect(validar({ status, title: 'A medias' })).toEqual({ faltas: [], avisos: [] })
+    expect(validar({ id: 'a-medias', status, title: 'A medias' })).toEqual({
+      faltas: [],
+      avisos: [],
+    })
   })
 
   it.each(['borrador', 'rechazada'])('%s sí da faltas de léxico', (status) => {
-    expect(faltas({ status, title: 'Calma!', opening: 'Una terapia.' })).toEqual([
+    expect(faltas({ id: 'x', status, title: 'Calma!', opening: 'Una terapia.' })).toEqual([
       'lexico.exclamacion',
       'lexico.terapia',
     ])
   })
 
   it('un tema calendarizado no pasa por el léxico todavía', () => {
-    expect(validar({ status: 'tema_calendarizado', theme: 'Calma!' })).toEqual({
+    expect(validar({ id: 'x', status: 'tema_calendarizado', theme: 'Calma!' })).toEqual({
       faltas: [],
       avisos: [],
     })
@@ -362,7 +366,114 @@ describe('códigos, no frases (RN-TEC-02)', () => {
   })
 
   it('aguanta una entrada que no es una cápsula', () => {
-    expect(faltas(null)).toEqual(['estado.desconocido'])
-    expect(faltas('hola')).toEqual(['estado.desconocido'])
+    expect(faltas(null)).toEqual(['id.forma', 'estado.desconocido'])
+    expect(faltas('hola')).toEqual(['id.forma', 'estado.desconocido'])
+  })
+})
+
+describe('SPEC_28.2 §4.2: el id y la portada tienen forma, en cualquier estado', () => {
+  it.each([undefined, '', 'Hacer-espacio', 'hacer_espacio', 'hacer--espacio', '-hacer', 'hacer-'])(
+    'id %j da id.forma',
+    (id) => {
+      expect(conCampo(validar({ ...programada(), id }).faltas)).toEqual(['id.forma id'])
+      expect(faltas({ id, status: 'borrador' })).toEqual(['id.forma'])
+    },
+  )
+
+  it('minúsculas, cifras y guiones sueltos pasan', () => {
+    expect(faltas({ ...programada(), id: 'hacer-espacio-2' })).toEqual([])
+  })
+
+  it.each(['../secreto.webp', 'portadas/espacio.webp', 'espacio.jpg', 'Espacio.webp', 'espacio'])(
+    'coverAsset %j da portada.nombre, también en un borrador',
+    (coverAsset) => {
+      expect(conCampo(validar({ ...programada(), coverAsset }).faltas)).toEqual([
+        'portada.nombre coverAsset',
+      ])
+      expect(faltas({ id: 'x', status: 'borrador', coverAsset })).toEqual(['portada.nombre'])
+    },
+  )
+
+  it('sin coverAsset no hay nada que nombrar', () => {
+    expect(faltas({ id: 'x', status: 'borrador' })).toEqual([])
+    expect(faltas(revision({ coverAsset: undefined }))).toEqual([])
+  })
+})
+
+describe('SPEC_28.2 §4.2: la piloto no ocupa semana (5.2)', () => {
+  const piloto = (cambios = {}) => revision({ piloto: true, weekStart: null, ...cambios })
+
+  it('sin semana pasa, en revisión y aprobada', () => {
+    expect(faltas(piloto())).toEqual([])
+    expect(faltas(piloto({ status: 'aprobada' }))).toEqual([])
+  })
+
+  it('es lo único que se le exime: con semana, los plazos le rigen', () => {
+    expect(
+      faltas(
+        piloto({
+          status: 'prevalidada',
+          weekStart: '2026-12-07',
+          prevalidatedAt: '2026-11-20T10:00:00-06:00',
+        }),
+      ),
+    ).toEqual(['plazo.cuatro-semanas'])
+  })
+})
+
+describe('SPEC_28.2 criterio 7: programar antes de que empiece la semana', () => {
+  const prog = (scheduledAt) => programada('2026-10-12', { scheduledAt })
+
+  it('el lunes 00:00:01 de Monterrey da la falta; 00:00:00, no', () => {
+    expect(conCampo(validar(prog('2026-10-12T00:00:01-06:00')).faltas)).toEqual([
+      'plazo.programada-tarde scheduledAt',
+    ])
+    expect(faltas(prog('2026-10-12T00:00:00-06:00'))).toEqual([])
+  })
+
+  it('el instante es el de Monterrey, no el de la marca', () => {
+    expect(faltas(prog('2026-10-12T06:00:00Z'))).toEqual([])
+    expect(faltas(prog('2026-10-12T06:00:01Z'))).toEqual(['plazo.programada-tarde'])
+  })
+
+  it('solo rige desde programada', () => {
+    const tarde = prog('2026-10-13T10:00:00-06:00')
+    expect(faltas(enEstado(tarde, 'aprobada'))).toEqual([])
+  })
+})
+
+describe('SPEC_28.2 criterio 5: validarConjunto', () => {
+  it('dos programadas en la misma semana chocan, y se nombran las dos', () => {
+    const a = programada('2026-12-07', { id: 'a' })
+    const b = programada('2026-12-07', { id: 'b' })
+    const c = programada('2026-12-14', { id: 'c' })
+    expect(validarConjunto([a, c, b])).toEqual({
+      faltas: [
+        { codigo: 'conjunto.choque', campo: 'a' },
+        { codigo: 'conjunto.choque', campo: 'b' },
+      ],
+    })
+  })
+
+  it('ni la piloto ni lo que no está programado choca', () => {
+    const a = programada('2026-12-07', { id: 'a' })
+    expect(validarConjunto([a, programada('2026-12-07', { id: 'p', piloto: true })])).toEqual({
+      faltas: [],
+    })
+    expect(
+      validarConjunto([a, enEstado(programada('2026-12-07', { id: 'b' }), 'aprobada')]),
+    ).toEqual({ faltas: [] })
+  })
+
+  it('dos con el mismo id', () => {
+    const a = programada('2026-12-07', { id: 'a' })
+    expect(validarConjunto([a, { id: 'a', status: 'borrador' }])).toEqual({
+      faltas: [{ codigo: 'conjunto.id-repetido', campo: 'a' }],
+    })
+  })
+
+  it('aguanta lo que no es una lista de cápsulas', () => {
+    expect(validarConjunto(null)).toEqual({ faltas: [] })
+    expect(validarConjunto([null, 'x', {}, { id: '' }])).toEqual({ faltas: [] })
   })
 })

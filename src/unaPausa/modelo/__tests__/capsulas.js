@@ -31,7 +31,7 @@ export function programada(weekStart = '2026-12-07', cambios = {}) {
         reviewed: true,
       },
     ],
-    coverAsset: 'portadas/espacio.webp',
+    coverAsset: 'espacio.webp',
     coverAltText: 'Una taza sobre una mesa, junto a una ventana con luz de tarde.',
     generatedWithAi: true,
     generatedAt: marca(restarDias(weekStart, 40)),

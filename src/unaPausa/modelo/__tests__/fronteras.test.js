@@ -23,8 +23,10 @@ describe('criterio 2: nadie en Una pausa lee la hora local', () => {
 
   it('la prueba ve los archivos que tiene que ver', () => {
     expect(fuentes('src/unaPausa').sort()).toEqual([
+      'src/unaPausa/modelo/canal.js',
       'src/unaPausa/modelo/capsula.js',
       'src/unaPausa/modelo/estados.js',
+      'src/unaPausa/modelo/portada.js',
       'src/unaPausa/modelo/semana.js',
       'src/unaPausa/modelo/validar.js',
       'src/unaPausa/modelo/vigente.js',
@@ -53,12 +55,16 @@ describe('criterio 12: lógica pura, cargable desde Node', () => {
       const { lunesDe } = await import('./src/unaPausa/modelo/semana.js')
       const { puedeTransitar } = await import('./src/unaPausa/modelo/estados.js')
       const { URL_CANAL } = await import('./src/unaPausa/modelo/capsula.js')
+      const { generarCanal } = await import('./src/unaPausa/modelo/canal.js')
+      const { revisarPortada } = await import('./src/unaPausa/modelo/portada.js')
       console.log(JSON.stringify({
-        faltas: validar({ status: 'borrador', title: 'Calma!' }).faltas,
+        faltas: validar({ id: 'calma', status: 'borrador', title: 'Calma!' }).faltas,
         vigente: capsulaVigente([], '2026-10-12T00:00:00-06:00'),
         lunes: lunesDe('2026-10-11T23:59:59-06:00'),
         ia: puedeTransitar('borrador', 'en_revision', 'ia'),
         canal: URL_CANAL,
+        feed: generarCanal([], '2026-10-11T23:59:59-06:00'),
+        portada: revisarPortada(new Uint8Array(4)),
       }))
     `
     const salida = execFileSync(process.execPath, ['--input-type=module', '-e', script], {
@@ -71,6 +77,8 @@ describe('criterio 12: lógica pura, cargable desde Node', () => {
       lunes: '2026-10-05',
       ia: false,
       canal: 'https://contenido.hellostrivo.com/una-pausa/feed.json',
+      feed: { formato: 1, semana: '2026-10-05', vigente: null, archivo: [] },
+      portada: [{ codigo: 'portada.formato', campo: 'coverAsset' }],
     })
   })
 })

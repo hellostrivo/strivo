@@ -13,6 +13,11 @@
 // siempre.
 //
 // Los avisos no bloquean: los decide la editora.
+//
+// `validarConjunto` mira lo que ninguna cápsula ve sola: dos con el mismo id, o
+// dos programadas en la misma semana. `CODIGOS` es el catálogo de todo lo que
+// el modelo puede devolver, para que quien pone las frases no se deje ninguno;
+// una prueba de repo saca los literales de estos archivos y comprueba que están.
 
 import { AMPLIADO, CLINICO, FORBIDDEN } from '../../lib/lexico.js'
 import { contarPalabras } from '../../lib/palabras.js'
@@ -24,11 +29,13 @@ import {
   SECCIONES_REVISABLES,
 } from './capsula.js'
 import { coherente, desde } from './estados.js'
+import { CODIGOS_DE_PORTADA } from './portada.js'
 import {
   esClave,
   esLunes,
   esMarca,
   fechaEnZona,
+  instanteEnZona,
   limiteValidacionFinal,
   restarDias,
 } from './semana.js'
@@ -48,6 +55,19 @@ export const EXENCION_UNA_PAUSA = Object.freeze(['ansiedad', 'estres'])
 const MAX_PALABRAS = 320
 const MAX_HALLAZGOS = 3
 const MAX_CARACTERES_DE_PREGUNTA = 140
+
+/**
+ * El id es el nombre del archivo (`<id>.json`) y será una ruta de la app
+ * (`/una-pausa/:id`): minúsculas, cifras y guiones sueltos.
+ */
+export const FORMA_DE_ID = /^[a-z0-9]+(-[a-z0-9]+)*$/
+
+/**
+ * `coverAsset` es el nombre de un archivo de `contenido/una-pausa/portadas/`, y
+ * el script del canal lo copia de ahí. Sin carpetas ni puntos de más: un
+ * `../algo` publicaría cualquier archivo del repo.
+ */
+export const FORMA_DE_PORTADA = /^[a-z0-9]+(-[a-z0-9]+)*\.webp$/
 
 /** Lo que cuenta como lectura: las fuentes no. */
 const CAMPOS_DE_LECTURA = [
@@ -132,6 +152,13 @@ function trozos(capsula, campos) {
 }
 
 function revisarForma(c, faltas) {
+  // Siempre, también sin id: una cápsula sin id no tiene archivo ni ruta.
+  if (typeof c.id !== 'string' || !FORMA_DE_ID.test(c.id)) {
+    faltas.push({ codigo: 'id.forma', campo: 'id' })
+  }
+  if (!vacio(c.coverAsset) && !FORMA_DE_PORTADA.test(String(c.coverAsset))) {
+    faltas.push({ codigo: 'portada.nombre', campo: 'coverAsset' })
+  }
   for (const campo of Object.keys(c)) {
     if (!CAMPOS.includes(campo)) faltas.push({ codigo: 'campo.desconocido', campo })
   }
@@ -185,7 +212,9 @@ function revisarContenido(c, faltas) {
     if (vacio(c[campo])) faltas.push({ codigo: 'texto.falta', campo })
   }
 
-  if (vacio(c.weekStart) && c.reserva !== true) {
+  // La piloto no ocupa ninguna semana: solo se ve en la vista previa (DP-28.16).
+  // Es lo único que se le exime; si trae semana, los plazos le rigen igual.
+  if (vacio(c.weekStart) && c.reserva !== true && c.piloto !== true) {
     faltas.push({ codigo: 'semana.falta', campo: 'weekStart' })
   }
 
@@ -273,6 +302,16 @@ function revisarAprobacion(c, faltas) {
   }
 }
 
+function revisarProgramacion(c, faltas) {
+  // Programar es decir qué se publica un lunes, y se dice antes de que llegue:
+  // una semana que ya empezó no se programa hacia atrás (límite de Fase A).
+  if (esLunes(c.weekStart) && esMarca(c.scheduledAt)) {
+    if (Date.parse(c.scheduledAt) > instanteEnZona(c.weekStart)) {
+      faltas.push({ codigo: 'plazo.programada-tarde', campo: 'scheduledAt' })
+    }
+  }
+}
+
 /** Sin repetir la misma falta en el mismo campo. */
 function unicas(lista) {
   const vistas = new Set()
@@ -298,6 +337,7 @@ export function validar(capsula) {
   if (desde(estado, 'en_revision')) revisarContenido(c, faltas)
   if (desde(estado, 'prevalidada')) revisarPrevalidacion(c, faltas)
   if (desde(estado, 'aprobada')) revisarAprobacion(c, faltas)
+  if (desde(estado, 'programada')) revisarProgramacion(c, faltas)
 
   faltas.push(...coherente(c))
 
@@ -308,3 +348,84 @@ export function validar(capsula) {
 export function esValida(capsula) {
   return validar(capsula).faltas.length === 0
 }
+
+/**
+ * Lo que solo se ve mirando todas las cápsulas a la vez. `campo` es el id de la
+ * cápsula afectada: un choque nombra a las dos.
+ * @param {object[]} capsulas
+ * @returns {{faltas: {codigo: string, campo: string}[]}}
+ */
+export function validarConjunto(capsulas) {
+  const lista = (Array.isArray(capsulas) ? capsulas : []).filter(
+    (c) => c !== null && typeof c === 'object' && !vacio(c.id),
+  )
+  const faltas = []
+
+  const vecesPorId = new Map()
+  for (const { id } of lista) vecesPorId.set(id, (vecesPorId.get(id) ?? 0) + 1)
+  for (const [id, veces] of vecesPorId) {
+    if (veces > 1) faltas.push({ codigo: 'conjunto.id-repetido', campo: id })
+  }
+
+  // Dos programadas en la misma semana. La piloto no ocupa semana.
+  const programadas = lista.filter(
+    (c) => c.status === 'programada' && c.piloto !== true && !vacio(c.weekStart),
+  )
+  for (const c of programadas) {
+    if (programadas.some((otra) => otra !== c && otra.weekStart === c.weekStart)) {
+      faltas.push({ codigo: 'conjunto.choque', campo: c.id })
+    }
+  }
+
+  return { faltas: unicas(faltas) }
+}
+
+/** Los ids de las promesas, para quien pone una frase a cada `promesa.<id>`. */
+export const IDS_DE_PROMESA = Object.freeze(PROMESAS.map((p) => p.id))
+
+/**
+ * Las dos familias de códigos que se forman con un id: `lexico.<id>` (los ids
+ * de `lib/lexico.js`) y `promesa.<id>` (`IDS_DE_PROMESA`).
+ */
+export const PREFIJOS = Object.freeze(['lexico.', 'promesa.'])
+
+/**
+ * Todo código fijo que el modelo puede devolver: el validador, la coherencia
+ * de estados, el conjunto y la portada. `lexico.exclamacion` va aquí porque no
+ * es una regla de `lexico.js`.
+ */
+export const CODIGOS = Object.freeze([
+  'estado.desconocido',
+  'estado.derivado-en-fase-a',
+  'estado.reserva-con-semana',
+  'estado.generado-sin-fecha',
+  'estado.editora-desconocida',
+  'estado.revision-incompleta',
+  'estado.revision-antes-de-generar',
+  'estado.sin-aprobar',
+  'estado.sin-programar',
+  'id.forma',
+  'campo.desconocido',
+  'fecha.forma',
+  'semana.no-es-lunes',
+  'semana.falta',
+  'lexico.exclamacion',
+  'atenuacion.falta',
+  'texto.falta',
+  'hallazgos.cantidad',
+  'practica.incompleta',
+  'pregunta.forma',
+  'fuentes.falta',
+  'fuentes.incompleta',
+  'fuentes.doi',
+  'fuentes.sin-revisar',
+  'lectura.larga',
+  'portada.falta',
+  'portada.nombre',
+  'plazo.cuatro-semanas',
+  'plazo.validacion-final',
+  'plazo.programada-tarde',
+  'conjunto.id-repetido',
+  'conjunto.choque',
+  ...CODIGOS_DE_PORTADA,
+])
