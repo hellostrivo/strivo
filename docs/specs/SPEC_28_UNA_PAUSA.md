@@ -3,7 +3,9 @@
 **Para:** la fundadora (decisiones) y, entrega por entrega, Claude Code (ejecución)
 **Rama de trabajo propuesta:** `una-pausa`, creada desde `strivo` en `1aa5e87` (2 oct 2026)
 **Gobierna junto con:** `SPEC_00B` + `CLAUDE.md` + el brief de «Una pausa» del 3 oct 2026
-**Versión:** 0.3 — 3 oct 2026. Cierra DP-28.0 a 28.4. La entrega 28.1 tiene instrucción propia: `INSTRUCCION_SPEC_28_1_MODELO.md`.
+**Versión:** 0.4 — 3 oct 2026. Cierra DP-28.0 a 28.4, 28.12, 28.16, 28.17 y 28.21; abre DP-28.20. Cada entrega tiene instrucción propia: `INSTRUCCION_SPEC_28_1_MODELO.md`, `INSTRUCCION_SPEC_28_2_CANAL.md`.
+
+> **Cambios desde 0.3:** el canal lo construye un segundo sitio de Netlify y la vista previa sale solo en los deploys de rama de la app; el build de producción de la app no cambia (§3.1). Hasta la fusión no hay cron (DP-28.17). DP-28.12, 28.16, 28.17 y 28.21 cerradas; DP-28.20, abierta (§5). 28.2 reescrita según su instrucción (§7).
 
 > **Cambios desde 0.1:** DP-28.0, 28.1, 28.2, 28.3 y 28.4 cerradas (§5). Corrección a H11: el repo solo aplica el léxico clínico al copy de Respiración. Excepción léxica temporal para Una pausa (DP-28.13). Portadas fotorrealistas: requisitos técnicos en §4 y dos decisiones nuevas (DP-28.14, 28.15). La rama se trabaja en un *worktree* aparte (§8).
 
@@ -68,21 +70,29 @@ Se resuelven con decisión tuya, no por implementación:
 ### 3.1 Fase A — sin backend, publicación por tu push
 
 ```
-contenido/una-pausa/            ← fuente: un .json por cápsula + portadas
+contenido/una-pausa/              ← fuente: un .json por cápsula + portadas
         │  (tú cambias el estado y haces push; la IA solo escribe borradores)
         ▼
-scripts/publicar-pausa.js       ← valida TODAS las cápsulas y genera el canal
-        │  falla el build si una cápsula aprobada no pasa las reglas
+scripts/publicar-pausa.js         ← valida TODAS las cápsulas y genera el canal
+        │  falla si una aprobada o programada no pasa las reglas
+        │
+        ├─────────────────────────────────────┐
+        ▼                                     ▼
+sitio del canal (canal/netlify.toml)    deploys de rama de la app (branch-deploy)
+canal/dist/una-pausa/feed.json          dist/una-pausa/feed.json ← la piloto como vigente
+canal/dist/una-pausa/portadas/*.webp    vista previa, mismo origen; nunca falla (DP-28.21)
+        │  hasta la fusión: publica desde una-pausa y se reconstruye a mano
+        │  tras la fusión: Action los lunes 06:05 UTC (00:05 en Monterrey) → build hook
         ▼
-dist/una-pausa/feed.json        ← solo lo publicado: semana vigente + archivo
-dist/una-pausa/portadas/*.webp
-        │  GitHub Action, lunes 06:05 UTC (00:05 en Monterrey) → build hook de Netlify
-        ▼
-https://<dominio>/una-pausa/feed.json   ← lo lee la app con fetch(), no Firestore
+https://contenido.hellostrivo.com/una-pausa/feed.json   ← lo lee la app con fetch(), no Firestore
         │
         ▼
-src/unaPausa/  (módulo nuevo)   ← lector, caché local propia, pantallas
+src/unaPausa/  (módulo nuevo)     ← lector, caché local propia, pantallas
 ```
+
+- **Dos sitios de Netlify, desde el mismo repo** (DP-28.3). El de la app no cambia su build de producción ni gana el dominio `contenido`. El del canal se crea con *Package directory* = `canal`, solo construye el canal y sirve `/una-pausa/*` con `Cache-Control: public, max-age=300` y `Access-Control-Allow-Origin: *`: el contenido es público, el mismo para todos y no lleva credenciales.
+- **Vista previa solo en los deploys de rama de la app** (DP-28.16): `npm run build:vista-previa` corre el script después de `vite build`, con `--vista-previa`, y la app leerá `VITE_URL_CANAL`. El canal de producción nunca incluye la piloto.
+- **Sin cron hasta la fusión** (DP-28.17). Los dos workflows —el build hook del lunes y el recordatorio del miércoles— se escribieron en 28.2 y quedan inertes hasta que `strivo` sea la rama por defecto.
 
 - **«Publicada» no se escribe: se deriva.** Una cápsula `programada` cuyo `weekStart` ya llegó en `America/Monterrey` es la publicada. El build del lunes la incluye; antes no existe en el canal. Nada futuro viaja al teléfono.
 - **La reserva:** si la semana no tiene cápsula programada válida, el canal sirve la cápsula de reserva aprobada más antigua sin usar; si no hay, conserva la última publicada. Nunca un borrador.
@@ -156,9 +166,13 @@ Las marcadas **⛔** bloquean la entrega indicada.
 | **DP-28.9** | Regla editorial: ¿«revisar y modificar» o «revisar»? ¿Validación «el miércoles» o «a más tardar el miércoles»? | «Revisar cada sección» (marca por sección, no edición forzada) y «a más tardar el miércoles previo, 23:59 Monterrey». | 28.1 |
 | **DP-28.10** | ¿«Date una pausa» se muestra si no hay ninguna cápsula conocida (primer arranque sin red)? | Se oculta hasta que haya una en caché o en red. Con la reserva, eso solo pasa la primera vez. | 28.4 |
 | **DP-28.11** | ¿La presentación gana una quinta tarjeta? | Sí, si DP-28.0 dice 1.0; se escribe con la cápsula piloto. | 28.3 |
-| **DP-28.12** | Recordatorio editorial del miércoles en Fase A. | Una GitHub Action los miércoles que abre un issue si el lunes siguiente no tiene cápsula `aprobada`; GitHub te lo manda por correo. Sin proveedor nuevo. | 28.2 |
+| **DP-28.12** ✅ | Recordatorio editorial del miércoles en Fase A. | **Cerrada 3 oct (adenda de 28.1):** una GitHub Action los miércoles abre un issue si el lunes siguiente no tiene una cápsula `programada` válida; el cuerpo dice qué pasará ese lunes —la reserva que entra, la que se repite o ninguna—. GitHub lo manda por correo. Corre solo cuando `strivo` sea la rama por defecto (DP-28.17); hasta entonces, los plazos los lleva la fundadora (prevalidación de la cápsula del 7 dic: 9 nov). | — |
 | **DP-28.13** | Alcance de la exención léxica. Decidido: «estrés» y «ansiedad» se permiten en Una pausa y los criterios se revisan al terminar la piloto. Abierto: ¿solo esas dos palabras, o también sus derivadas («ansioso», «estresante»)? | Solo las dos, con sus plurales. El resto de `CLINICO` («terapia», «síntoma», «tratamiento», «cura», «trastorno», «pánico») sigue fuera. La exención vive en una constante y caduca con la adenda de la piloto. | 28.1 |
 | **DP-28.14** | ¿Las fotografías pueden mostrar personas? | Sin rostros reconocibles: manos, siluetas de espaldas, paisajes, objetos, luz. Un rostro fotorrealista inventado en una app íntima se lee como una persona real que no dio permiso. | 28.5 |
+| **DP-28.16** ✅ | Vista previa de la piloto. | **Cerrada 3 oct (adenda de 28.1):** **vista previa solo en los deploys de rama de la app.** En ese contexto el build genera además un `feed.json` propio, servido en el mismo origen, con la piloto como vigente. La app lee la URL del canal de una variable de build cuyo valor por defecto es `URL_CANAL`. El canal de producción nunca incluye la piloto. | — |
+| **DP-28.17** ✅ | Cuándo corren los workflows. | **Cerrada 3 oct (adenda de 28.1):** **hasta la fusión, sin cron:** no hay público, el sitio del canal publica desde `una-pausa` y se reconstruye a mano cuando haga falta. **Con la fusión**, los workflows entran en `strivo` y el sitio del canal pasa a publicar desde `strivo`. **`strivo` tiene que ser la rama por defecto de GitHub antes del 7 dic**: GitHub solo ejecuta Actions programadas desde la rama por defecto, que hoy es `main`. La promoción se decide en el proyecto de lanzamiento. | — |
+| **DP-28.20** | Antes de la primera `programada`, ¿cubre una reserva una semana vacía? | **Abierta.** Hoy no: el calendario empieza en la primera programada que ya llegó, así que si la cápsula del 7 dic no está `programada`, ese lunes no hay ninguna aunque haya reservas aprobadas. El recordatorio del miércoles lo dice así. Se decide fuera de 28.2. | — |
+| **DP-28.21** ✅ | ¿Puede el contenido tumbar un deploy de rama? | **Cerrada 3 oct:** no. Con `--vista-previa` el script sale siempre con 0; las faltas se imprimen como avisos y el canal deja fuera lo inválido. Sin `--vista-previa`, una falta en una `aprobada` o `programada` rompe el build. Tras la fusión, `branch-deploy` corre en los deploys de revisión del lanzamiento, y el contenido editorial no puede tumbarlos. Lo decide `codigoDeSalida`, exportada y probada. | — |
 | **DP-28.15** | **El repo es público**, así que `contenido/una-pausa/` deja leer en GitHub los borradores, el calendario y las fuentes antes de publicarse. La app nunca los muestra; GitHub sí. | Aceptarlo en Fase A (no es dato personal) y no escribir correos ni nombres completos en `reviewedBy`/`approvedBy`: se usa el identificador `fundadora`. Hacer el repo privado es una decisión aparte que afecta a todo el proyecto. | 28.1 |
 
 ---
@@ -206,19 +220,21 @@ Una SPEC a la vez, como siempre. Cada una se convierte en instrucción para Clau
 
 #### SPEC_28.2 — Canal de publicación · ~6 h
 
-**Ubicación:** `contenido/una-pausa/capsulas/*.json`, `contenido/una-pausa/portadas/`, `scripts/publicar-pausa.js`, `package.json` (`build` llama al script antes de `vite build`), `netlify.toml`, `.github/workflows/publicar-pausa.yml`, `.github/workflows/recordatorio-pausa.yml`.
+**Ubicación:** `src/unaPausa/modelo/` (nuevos: `canal.js`, `portada.js`; amplía `validar.js`), `scripts/publicar-pausa.js`, `scripts/recordatorio-pausa.js`, `contenido/una-pausa/capsulas/` y `contenido/una-pausa/portadas/` (vacías), `canal/netlify.toml` (nuevo), `netlify.toml` (solo el contexto `branch-deploy` y la cabecera de `/una-pausa/*`), `package.json` (`canal`, `build:vista-previa`; **`build` no cambia**), `.github/workflows/publicar-pausa.yml`, `.github/workflows/recordatorio-pausa.yml`. Pruebas en `src/unaPausa/__tests__/`. Instrucción: `INSTRUCCION_SPEC_28_2_CANAL.md`.
 
 **Actual:** no hay canal; `netlify.toml` cachea todo un año (H9).
-**Esperado:** el script valida todas las cápsulas con 28.1, falla si alguna `aprobada` o `programada` no pasa, y escribe `dist/una-pausa/feed.json` con la vigente y el archivo (solo publicadas, de la más reciente a la más antigua). `netlify.toml` sirve `/una-pausa/*` con `Cache-Control: public, max-age=300` y `Access-Control-Allow-Origin` para el origen de Capacitor. Una Action los lunes 06:05 UTC dispara el build hook; otra los miércoles abre el issue de DP-28.12.
+**Esperado:** el script valida todas las cápsulas con 28.1, el conjunto (`validarConjunto`) y las portadas desde `prevalidada` (`revisarPortada`), falla si algo `aprobada` o `programada` no pasa, y escribe `feed.json` con la vigente y el archivo (solo publicadas, de la más reciente a la más antigua), con una **lista blanca** de campos (`canal.js`). Lo construye el **sitio del canal**; el build de producción de la app no genera nada del canal. La **vista previa** la genera un comando aparte que solo usa el contexto `branch-deploy` (DP-28.16) y nunca falla (DP-28.21). `/una-pausa/*` sale con `Cache-Control: public, max-age=300` y `Access-Control-Allow-Origin: *`. Las dos Actions —lunes 06:05 UTC al build hook, miércoles 15:00 UTC al issue de DP-28.12— se escriben y quedan inertes hasta la fusión (DP-28.17).
 
 **Criterios:**
-1. Con una cápsula `programada` para el 12 oct, un build simulado el domingo 11 oct 23:59 Monterrey no la incluye; el lunes 12 00:00 sí.
-2. Ningún campo de una cápsula no publicada aparece en `feed.json` (prueba sobre la salida, no sobre el código).
-3. Con la semana sin cápsula, el canal sirve la reserva y la marca como usada; sin reserva, repite la anterior.
-4. Una cápsula `aprobada` con «ansiedad» en un hallazgo rompe el build con un mensaje que nombra el archivo y el campo.
-5. `curl -I` sobre `feed.json` en el deploy de la rama muestra el `Cache-Control` corto, no `immutable`.
+1. Con una cápsula `programada` para el 12 oct, un build simulado el domingo 11 oct 23:59:59 Monterrey no la incluye; el lunes 12 00:00:00 sí.
+2. Ningún campo de una cápsula no publicada aparece en `feed.json`, ni ningún campo fuera de la lista blanca, ni `reviewed` (prueba sobre la salida, con centinelas). En `portadas/` no hay archivo de ninguna no publicada.
+3. Con la semana sin cápsula, el canal sirve la reserva; la siguiente, sin reserva libre, repite la anterior. **En Fase A la reserva no se marca:** su uso se deriva, determinista, en `calendarioEfectivo`, y se comprueba sobre la salida.
+4. Una cápsula `aprobada` con «terapia» en un hallazgo rompe el build con un mensaje que nombra el archivo, el campo y el código. *(«ansiedad» la exime DP-28.13.)* En `borrador`, solo avisa.
+5. `scheduledAt` después del lunes 00:00 de Monterrey de su semana da `plazo.programada-tarde`. Dos programadas en la misma semana, dos ids iguales, un archivo mal nombrado o que no es JSON, dan su falta.
+6. Una portada que no es WebP, que no mide 1600 × 1200 o que pasa de 250 000 bytes rompe en una `aprobada` y avisa en una `prevalidada`.
+7. `npm run build` no deja nada en `dist/una-pausa/`; `curl -I` sobre `feed.json` en el deploy de la rama muestra el `Cache-Control` corto, no `immutable`.
 
-**Roza:** nada se bloquea (si el script falla, falla el build y Netlify conserva el deploy anterior: la app sigue con el canal de la semana pasada). **Requiere DP-28.3** y que actives el deploy de ramas en Netlify para validar en tu teléfono sin tocar producción.
+**Roza:** nada se bloquea (si el script falla, falla el build del sitio del canal y Netlify conserva el deploy anterior: la app sigue con el canal de la semana pasada; el trabajo editorial a medias solo avisa). **Requiere DP-28.3** y que actives los deploys de rama del sitio de la app para validar en tu teléfono sin tocar producción.
 
 #### SPEC_28.3 — La sección · ~10 h
 

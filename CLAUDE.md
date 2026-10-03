@@ -1,6 +1,6 @@
 # CLAUDE.md — Strivo
 
-**Última actualización:** 3 oct 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding · en la rama `una-pausa`, el modelo de Una pausa (SPEC_28.1)
+**Última actualización:** 3 oct 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding · en la rama `una-pausa`, el modelo y el canal de Una pausa (SPEC_28.1 y 28.2)
 **Blueprint (documento rector):** `/docs/blueprint/Strivo_Blueprint_de_Producto_v5_0_24-08-2026.md`
 **Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO.md`
 **Plan operativo del repliegue:** `/docs/Strivo_Plan_de_Separacion_Tecnica_v1_24-08-2026.md`
@@ -576,6 +576,10 @@ src/
 │   ├── perfil/      la pantalla de cuenta y su marco de bloque
 │   └── diario/      NavStrivo · manana/ · noche/ · journal · historial
 └── pages/diario/    Hoy · Journal · Historial
+
+contenido/una-pausa/ capsulas/<id>.json · portadas/<nombre>.webp  (rama `una-pausa`)
+canal/               netlify.toml del sitio del canal; construye canal/dist (SPEC_28.2)
+scripts/             lint-copy · lint-contraste · publicar-pausa · recordatorio-pausa
 ```
 
 **Reglas de arquitectura, impuestas por `eslint.config.js` y por pruebas, no por convención:**
@@ -645,7 +649,14 @@ el componente.**
   `diario/` en SPEC_28.1; `diario/palabras.js` la reexporta.
 - `src/unaPausa/modelo/` → **el único sitio de las reglas editoriales de Una pausa**: la forma de
   una cápsula, sus estados y quién la mueve, la semana de Monterrey, qué toca mostrar y qué le falta
-  a una cápsula para avanzar. Lo leerán el script del canal, la pantalla y el servidor de Fase B.
+  a una cápsula —o al conjunto— para avanzar. Lo leen el script del canal y lo leerán la pantalla y
+  el servidor de Fase B. `CODIGOS` es el catálogo de lo que puede devolver, y una prueba de repo saca
+  los literales de las fuentes para que no se quede atrás.
+- `src/unaPausa/modelo/canal.js` → **la forma de `feed.json`**, con su lista blanca
+  (`CAMPOS_PUBLICOS`, `CAMPOS_PUBLICOS_DE_FUENTE`) y la vista previa. Lo escribe el script, lo leerá
+  la app en 28.3 y lo escribirá igual el servidor de Fase B.
+- `src/unaPausa/modelo/portada.js` → si un archivo de portada es lo que DP-28.4 pide (`PORTADA`:
+  WebP, 1600 × 1200, 250 000 bytes). Recibe bytes, no rutas: leer el archivo es del script.
 
 **Pila:** React + Vite (PWA) · IndexedDB local + Firestore para sync · Firebase Auth · Netlify con
 publicación automática · Vitest.
@@ -671,6 +682,17 @@ comillas simples, ancho 100). **El CSS y `design-tokens.json` quedan fuera a pro
 los hexes a minúsculas**, que es justo lo que rompe la comprobación de que cada hex de marca aparece
 literal en el manual.
 
+**Fuera de los seis, en la rama `una-pausa`** (SPEC_28.2):
+
+```bash
+npm run canal -- --salida /tmp/canal   # el canal de Una pausa: valida y escribe feed.json
+npm run build:vista-previa             # el build de los deploys de rama: la app y su canal con la piloto
+```
+
+`npm run canal` es lo que corre el sitio del canal y lo que dice qué le falta a una cápsula: cada
+línea nombra el archivo, el campo y el código. Admite `--vista-previa` y `--ahora <ISO 8601>` para
+simular un build a mano.
+
 ---
 
 ## 13. Estado actual
@@ -680,7 +702,7 @@ rama de resguardo está creada y congelada, la rama activa es `strivo`, y el có
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
 **77 archivos de prueba · 2.083 casos · los seis comandos en verde.** En la rama `una-pausa`, tras
-SPEC_28.1: **84 archivos · 2.498 casos**.
+SPEC_28.1: **84 archivos · 2.498 casos**; tras SPEC_28.2: **90 archivos · 2.725 casos**.
 
 ### Marca: el logo oficial y el video de apertura (25 ago 2026)
 
@@ -1569,7 +1591,7 @@ tocó: ni un archivo, ni un cherry-pick, ni una línea de copy.
 **Qué es.** Una cápsula por semana —un tema, lo que dice la evidencia con sus fuentes, una
 invitación y una pregunta— que se publica los lunes a las 00:00 de Monterrey y es la misma para
 todos. Será la sexta sección; entra en 1.0 solo si está terminada y gusta a tiempo (DP-28.0, corte
-el 9 de noviembre). La SPEC es `docs/specs/SPEC_28_UNA_PAUSA.md` (v0.3) y cada entrega tiene su
+el 9 de noviembre). La SPEC es `docs/specs/SPEC_28_UNA_PAUSA.md` (v0.4) y cada entrega tiene su
 instrucción.
 
 **Vive solo en esta rama.** Se trabaja en el worktree `../strivo-una-pausa`, y nada llega a `strivo`
@@ -1598,7 +1620,8 @@ sin ruta, sin copy y sin canal. Sus imports son relativos y con extensión, porq
 - `vigente.js` — qué cápsula ocupa cada semana: la programada; si no hay, la reserva aprobada más
   antigua sin usar; si no queda, la de la semana anterior. **Una reserva solo cubre semanas cuyo
   lunes llega después de su aprobación**, para que aprobar una hoy no rellene el pasado. Dos
-  programadas en la misma semana se desempatan por id; detectar el choque es de 28.2.
+  programadas en la misma semana se desempatan por id, y desde 28.2 `validarConjunto` da el choque
+  como falta.
 
 **La frontera.** `src/unaPausa/**` no importa nada de `diario/` ni de `breathing/`, con el mismo
 mecanismo de `eslint.config.js` que protege a Respiración, y desde antes de tener pantalla. Por eso
@@ -1633,8 +1656,48 @@ reservas; una regla que cambia —una constante de plazo, o la exención cuando 
 juzgar las cápsulas ya publicadas, y la que deje de pasar sale del calendario y del archivo. Las
 dos cosas están escritas como pruebas («límites de Fase A», `vigente.test.js`) y sin resolver.
 
-**Lo que esto no hizo:** el canal y `feed.json` (28.2), la pestaña y la sección (28.3) —y con ella
-la enmienda de RN-NAV-01/02—, los accesos desde Hoy (28.4) ni ninguna cápsula (28.5).
+**28.2 es el canal** (3 oct 2026): un script que lee `contenido/una-pausa/`, valida con el modelo
+y escribe `feed.json`, y los dos sitios de Netlify que lo sirven. La instrucción es
+`docs/specs/INSTRUCCION_SPEC_28_2_CANAL.md`.
+
+- **Dos sitios, desde el mismo repo** (DP-28.3). El de la app **no cambia su build de producción**:
+  `npm run build` sigue siendo `vite build` y no genera nada del canal. El del canal se crea con
+  *Package directory* = `canal`, lee `canal/netlify.toml`, corre `scripts/publicar-pausa.js` en la
+  raíz y publica `canal/dist`, con `max-age=300` y CORS abierto en `/una-pausa/*`. Su dominio será
+  `contenido.hellostrivo.com`.
+- **La vista previa vive solo en el contexto `branch-deploy` del sitio de la app** (DP-28.16):
+  `npm run build:vista-previa` corre el script después de `vite build` —que vacía `dist/`— con
+  `--vista-previa`, y la piloto que pase `validar` desde `en_revision` va como vigente. **La piloto
+  nunca sale de ahí**: el sitio del canal no pasa `--vista-previa` y `vigente.js` la deja fuera de
+  todo calendario, así que el canal de producción no puede incluirla. La app leerá
+  `VITE_URL_CANAL` en 28.3.
+- **Con `--vista-previa` el script sale siempre con 0** (DP-28.21): las faltas se imprimen como
+  avisos y el canal deja fuera lo inválido. Tras la fusión, `branch-deploy` corre en los deploys de
+  revisión del lanzamiento, y el contenido editorial no puede tumbarlos. Lo decide
+  `codigoDeSalida`.
+- **Sin `--vista-previa`, el contenido inválido rompe el build y el sitio del canal conserva el
+  deploy anterior**: una falta en una `aprobada` o `programada`, de conjunto, de archivo o de su
+  portada. La app sigue con el canal de la semana pasada. Los borradores, `en_revision` y
+  `prevalidada` solo avisan.
+- **La lista blanca** (`canal.js`): un campo que no esté en `CAMPOS_PUBLICOS` no sale, aunque
+  mañana se añada al modelo; de las fuentes no sale `reviewed`, y nada editorial llega a la app. Una
+  portada que no se copia tampoco se nombra.
+- **Los mensajes para la editora viven en el script**, no en `src/copy`: la editora no es la persona
+  usuaria. Hay frase para cada código del modelo y del script, y una prueba lo comprueba.
+- **Los dos workflows están escritos e inertes hasta que `strivo` sea la rama por defecto**
+  (DP-28.17): `publicar-pausa.yml` (lunes 06:05 UTC, al build hook del canal) y
+  `recordatorio-pausa.yml` (miércoles 15:00 UTC, abre un issue si el lunes siguiente no tiene una
+  `programada` válida). GitHub solo ejecuta Actions programadas desde la rama por defecto, que hoy
+  es `main`. Hasta la fusión, el sitio del canal publica desde `una-pausa` y se reconstruye a mano.
+- **Reglas nuevas del modelo:** `id.forma` (siempre, también sin id), `portada.nombre` (con
+  `coverAsset`, en cualquier estado: el script lo usa como ruta), `plazo.programada-tarde` (no se
+  programa una semana que ya empezó) y la piloto exenta de `semana.falta` y de nada más.
+- **Abierto, DP-28.20:** antes de la primera `programada`, una reserva no cubre ninguna semana. Si
+  la cápsula del 7 dic no está programada, ese lunes no hay ninguna, y el recordatorio lo dice así.
+
+**Lo que esto no hizo:** la pestaña y la sección (28.3) —y con ella la enmienda de RN-NAV-01/02,
+la lectura del canal, la caché `strivo-contenido` y `VITE_URL_CANAL` en el código—, los accesos
+desde Hoy (28.4) ni ninguna cápsula (28.5).
 
 ---
 
