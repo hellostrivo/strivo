@@ -1,6 +1,6 @@
 # CLAUDE.md — Strivo
 
-**Última actualización:** 1 oct 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
+**Última actualización:** 3 oct 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding · en la rama `una-pausa`, el modelo de Una pausa (SPEC_28.1)
 **Blueprint (documento rector):** `/docs/blueprint/Strivo_Blueprint_de_Producto_v5_0_24-08-2026.md`
 **Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO.md`
 **Plan operativo del repliegue:** `/docs/Strivo_Plan_de_Separacion_Tecnica_v1_24-08-2026.md`
@@ -174,7 +174,9 @@ muestra tal cual, entre comillas (RN-GEN-03).
 > **Ojo con `lint-copy.js`.** Algunas palabras prohibidas son vocabulario legítimo en un catálogo
 > emocional («Con ansiedad» en el Journal) o maquinaria interna. El script comprueba el léxico
 > clínico sobre el *namespace* que corresponde, no sobre todo `src/`, y **no revisa `__tests__`**:
-> una prueba que comprueba que el léxico prohibido no aparece tiene que poder nombrarlo.
+> una prueba que comprueba que el léxico prohibido no aparece tiene que poder nombrarlo. **Las listas
+> no viven en el script** desde SPEC_28.1: están en `src/lib/lexico.js`, que el script importa y
+> revisa solo en su prosa, porque sus datos son los propios patrones.
 
 ---
 
@@ -559,11 +561,14 @@ src/
 │   ├── cuenta · sesion · entradaCuenta · salidaCuenta · useSesion
 │   │                la sesión de Firebase, entrar y salir (SPEC_19.1)
 │   ├── respiracion/ motor de ritmo (lógica pura)
+│   ├── lexico · palabras
+│   │                el léxico de la voz y qué es una palabra (SPEC_28.1)
 │   └── audio/       síntesis
 ├── diario/          lógica de mañana, noche, journal, historial, PIN
 ├── onboarding/      cómo se entra: pasos · catálogos · estado
 ├── perfil/          bloques de Tu perfil y su estado
 ├── breathing/       la herramienta completa
+├── unaPausa/        la cápsula de la semana — hoy solo modelo/ (SPEC_28, rama `una-pausa`)
 ├── components/
 │   ├── shared/      Simbolo · TransicionLuz · Campo · Chips · pildora · BarraInferior
 │   ├── ui/          primitivas
@@ -634,6 +639,13 @@ el componente.**
 - `src/perfil/bloques.js` → qué bloques tiene Tu perfil y en qué orden. Añadir uno es un
   identificador aquí, un texto en el copy y un componente; hay una prueba que falla si falta alguno
   de los tres.
+- `src/lib/lexico.js` → `FORBIDDEN`, `CLINICO` y `AMPLIADO`: el léxico que la voz no usa, con un
+  `id` por regla. Lo leen `lint-copy.js` (las dos primeras) y el validador de Una pausa (las tres).
+- `src/lib/palabras.js` → qué es una palabra, contarlas y recortar a un número de ellas. Subió de
+  `diario/` en SPEC_28.1; `diario/palabras.js` la reexporta.
+- `src/unaPausa/modelo/` → **el único sitio de las reglas editoriales de Una pausa**: la forma de
+  una cápsula, sus estados y quién la mueve, la semana de Monterrey, qué toca mostrar y qué le falta
+  a una cápsula para avanzar. Lo leerán el script del canal, la pantalla y el servidor de Fase B.
 
 **Pila:** React + Vite (PWA) · IndexedDB local + Firestore para sync · Firebase Auth · Netlify con
 publicación automática · Vitest.
@@ -667,7 +679,8 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**77 archivos de prueba · 2.083 casos · los seis comandos en verde.**
+**77 archivos de prueba · 2.083 casos · los seis comandos en verde.** En la rama `una-pausa`, tras
+SPEC_28.1: **84 archivos · 2.498 casos**.
 
 ### Marca: el logo oficial y el video de apertura (25 ago 2026)
 
@@ -1120,7 +1133,7 @@ y `recognized` siguen siendo listas de texto, se leen igual y ninguna entrada an
   respuesta que quería ser un párrafo se cortaba a la vista. El tope es **por respuesta y en
   palabras** —tres respuestas son tres veces cuatrocientas— y vive en `LIMITES.*.palabras`
   (`filas.js`), junto a cuántas respuestas caben; lo aplica `escribirEn`, no la pantalla. Contar
-  y recortar palabras es de `src/diario/palabras.js`: una palabra es un trozo entre espacios con al
+  y recortar palabras es de `src/lib/palabras.js` (vivía en `diario/` hasta SPEC_28.1): una palabra es un trozo entre espacios con al
   menos una letra o cifra Unicode, así que «café,» cuenta una y una raya suelta no cuenta.
   - **Al tope, lo que no cabe se rechaza tal cual; lo que llega de golpe se recorta a
     cuatrocientas.** La primera versión recortaba siempre, y tecleando se vio que el recorte tiraba
@@ -1550,6 +1563,78 @@ tocó: ni un archivo, ni un cherry-pick, ni una línea de copy.
     noche y una respiración no duran lo mismo.
 - **El recorrido no se ha probado en teléfono real**, como el resto del producto. La pregunta que
   ninguna prueba contesta es si las ocho pantallas se sienten breves o se sienten un trámite.
+
+### Una pausa — rama `una-pausa` (SPEC_28, oct 2026)
+
+**Qué es.** Una cápsula por semana —un tema, lo que dice la evidencia con sus fuentes, una
+invitación y una pregunta— que se publica los lunes a las 00:00 de Monterrey y es la misma para
+todos. Será la sexta sección; entra en 1.0 solo si está terminada y gusta a tiempo (DP-28.0, corte
+el 9 de noviembre). La SPEC es `docs/specs/SPEC_28_UNA_PAUSA.md` (v0.3) y cada entrega tiene su
+instrucción.
+
+**Vive solo en esta rama.** Se trabaja en el worktree `../strivo-una-pausa`, y nada llega a `strivo`
+hasta que la fundadora decida fusionarlo. **La rama no sigue a ninguna remota, a propósito**:
+seguía a `origin/strivo`, y un `git push` a secas habría publicado ahí. Los push van siempre con
+ruta explícita, `git push origin una-pausa:revision-28-N`.
+
+**28.1 es el modelo y nada más** (3 oct 2026): lógica pura en `src/unaPausa/modelo/`, sin pantalla,
+sin ruta, sin copy y sin canal. Sus imports son relativos y con extensión, porque los scripts de
+28.2 lo cargarán con `import()` desde Node, sin Vite; hay una prueba que lo carga así.
+
+- `capsula.js` — la forma (`WeeklyCapsule`), los nueve estados, las secciones revisables,
+  `EDITORAS` —solo el identificador `fundadora`: el repo es público y nunca va un correo ni un
+  nombre (DP-28.15)— y `URL_CANAL`.
+- `semana.js` — la semana de Monterrey con `Intl` y la zona IANA. **Ningún archivo de
+  `src/unaPausa/` usa los métodos locales de `Date`**, y una prueba de repo lo impone: esta máquina
+  vive en Monterrey, que es justo donde un error así no se vería. Las pruebas cambian la zona del
+  proceso a UTC, Tokio y Kiritimati y comprueban que cambió.
+- `estados.js` — la tabla de transiciones de SPEC_28 §4.1 como datos: lo que no lista no se puede,
+  y la IA solo llega a `borrador`. `coherente` es lo único que Fase A comprueba: que el estado
+  declarado trae sus campos. **`publicada` y `archivada` no se escriben en Fase A, se derivan**; un
+  archivo que los declare es una falta.
+- `validar.js` — `{ faltas, avisos }` con **códigos, nunca frases**: el texto para la editora lo
+  pone el script del canal. Un borrador o una rechazada solo pasan por el léxico; desde
+  `en_revision` se exige todo.
+- `vigente.js` — qué cápsula ocupa cada semana: la programada; si no hay, la reserva aprobada más
+  antigua sin usar; si no queda, la de la semana anterior. **Una reserva solo cubre semanas cuyo
+  lunes llega después de su aprobación**, para que aprobar una hoy no rellene el pasado. Dos
+  programadas en la misma semana se desempatan por id; detectar el choque es de 28.2.
+
+**La frontera.** `src/unaPausa/**` no importa nada de `diario/` ni de `breathing/`, con el mismo
+mecanismo de `eslint.config.js` que protege a Respiración, y desde antes de tener pantalla. Por eso
+`contarPalabras` subió a `src/lib/palabras.js`: la lectura de una cápsula se cuenta con la misma
+regla que el diario, y una segunda copia envejecería distinta.
+
+**El léxico.** Vive en `src/lib/lexico.js` con tres listas. `lint-copy.js` sigue leyendo dos
+—`FORBIDDEN` y `CLINICO`— y su salida no cambió con el movimiento. `AMPLIADO` lo lee **solo** el
+validador: depresión, salud mental, diagnóstico, «tienes que» y «debes» dan falta; meta, progreso y
+pendiente, aviso. Las reglas nuevas no usan `\b`, que en JavaScript solo conoce ASCII aunque lleve
+la bandera `u`: miran letras y cifras Unicode a los dos lados, sobre el texto normalizado a NFC.
+
+- **Exención temporal** (`EXENCION_UNA_PAUSA`, en `validar.js` y no junto a las listas: es una
+  decisión de esta sección). «Estrés» y «ansiedad», con sus plurales, se permiten en el texto de
+  una cápsula; sus derivados («estresante», «ansioso») no. **Caduca con la adenda de la cápsula
+  piloto.** Los títulos de las fuentes no pasan por el léxico: se citan como son.
+
+**Provisional, en una constante cada uno** (DP-28.9): la revisión es una marca por sección
+(`REVISION_POR_SECCION`, un interruptor) y la validación final es a más tardar el miércoles previo,
+23:59:59 en Monterrey (`LIMITE_VALIDACION_FINAL`). «Revisar y modificar» no se puede comprobar en
+Fase A —haría falta ver la versión anterior— y queda para Fase B.
+
+**Claude Code no cambia nunca `status`, `reviewedBy`, `reviewedSections`, `prevalidatedAt`,
+`approvedBy`, `approvedAt` ni `scheduledAt` de ninguna cápsula.** Esos campos los escribe la
+fundadora, y en Fase A son —con su push— la única garantía de que la IA no publica: el validador
+los exige, pero no puede saber quién los escribió. La barrera dura llega con el servidor de Fase B.
+
+**No se cambia una constante editorial ni se añade una cápsula con semana pasada sin revisar el
+archivo.** En Fase A la historia no se guarda en ningún sitio: el calendario se recalcula entero
+cada vez. Una cápsula nueva con una semana que ya pasó ocupa esa semana hacia atrás y corre las
+reservas; una regla que cambia —una constante de plazo, o la exención cuando caduque— vuelve a
+juzgar las cápsulas ya publicadas, y la que deje de pasar sale del calendario y del archivo. Las
+dos cosas están escritas como pruebas («límites de Fase A», `vigente.test.js`) y sin resolver.
+
+**Lo que esto no hizo:** el canal y `feed.json` (28.2), la pestaña y la sección (28.3) —y con ella
+la enmienda de RN-NAV-01/02—, los accesos desde Hoy (28.4) ni ninguna cápsula (28.5).
 
 ---
 
