@@ -154,19 +154,25 @@ export default function Respiracion({
   }
 
   return (
-    <section className="flex min-h-screen flex-col items-center justify-between gap-8 px-5 pb-12 pt-6">
-      <header className="flex w-full flex-col items-center gap-2 text-center">
+    // Cabe entera en la ventana que de verdad se ve (3 oct 2026). Medía
+    // `min-h-screen` —`100vh`, que en un teléfono incluye la barra del
+    // navegador— y repartía con `justify-between`: el título quedaba pegado
+    // arriba y «Activar el sonido» y «Salir» por debajo del borde. Ahora mide
+    // `alto-pantalla` y lo agrupa todo en el centro. Si una pantalla muy baja
+    // no lo contiene, se desplaza por dentro en vez de recortar (RN-VIS-06).
+    <section className="alto-pantalla flex flex-col items-center justify-center gap-10 overflow-y-auto px-5 pt-safe pb-safe">
+      <header className="flex w-full max-w-sm flex-col items-center gap-2 text-center">
         <h1 className="font-display text-lg text-on-surface">{textos.titulo}</h1>
         <p className="text-sm text-on-surface-soft">{textos.lead}</p>
       </header>
 
-      <div className="flex flex-col items-center gap-8">
+      <div className="flex flex-col items-center gap-10">
         {/* Sin cuenta atrás y sin números: el copy de fase es la única señal
             textual (§5.1.2). */}
         <span
           ref={circulo}
           aria-hidden="true"
-          className="circulo-respiracion h-40 w-40 rounded-full"
+          className="circulo-respiracion aspect-square h-[min(10rem,24dvh)] shrink-0 rounded-full"
         />
 
         {/* RN-AUD-05 — El sonido nunca sustituye a la señal visual, y esta
@@ -177,7 +183,7 @@ export default function Respiracion({
       </div>
 
       {/* Orden de foco de §5.1.2: iniciar/pausar → silenciar → saltar. */}
-      <div className="flex w-full flex-col items-center gap-3">
+      <div className="flex w-full max-w-sm flex-col items-center gap-3">
         <Button
           fullWidth
           variant="surface"
@@ -187,7 +193,7 @@ export default function Respiracion({
           {corriendo ? textos.pausar : empezado ? textos.seguir : textos.empezar}
         </Button>
 
-        <div className="flex w-full items-center justify-between gap-3">
+        <div className="flex w-full items-center justify-center gap-6">
           <button
             type="button"
             onClick={alternarSonido}
