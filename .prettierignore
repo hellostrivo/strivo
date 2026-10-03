@@ -15,3 +15,7 @@ docs/blueprint
 
 # Los tokens son datos, no código: el orden y los comentarios son del manual.
 src/tokens/design-tokens.json
+
+# El léxico está alineado por columnas, como los tokens: es lo que deja leer de
+# un vistazo qué regla dice qué (SPEC_28.1).
+src/lib/lexico.js
