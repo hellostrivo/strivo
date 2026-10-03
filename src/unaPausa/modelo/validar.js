@@ -52,9 +52,10 @@ import {
  */
 export const EXENCION_UNA_PAUSA = Object.freeze(['ansiedad', 'estres'])
 
-const MAX_PALABRAS = 320
-const MAX_HALLAZGOS = 3
-const MAX_CARACTERES_DE_PREGUNTA = 140
+// Exportados para que los mensajes del canal los digan sin copiarlos.
+export const MAX_PALABRAS = 320
+export const MAX_HALLAZGOS = 3
+export const MAX_CARACTERES_DE_PREGUNTA = 140
 
 /**
  * El id es el nombre del archivo (`<id>.json`) y será una ruta de la app
