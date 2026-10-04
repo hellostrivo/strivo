@@ -24,6 +24,7 @@ import {
   assertUid,
   paths,
   validateDayState,
+  validateFraseAsignada,
   validateJournalEntry,
 } from './schema.js'
 
@@ -214,6 +215,59 @@ export async function savePinConfig(uid, pinConfig) {
 export async function clearPinConfig(uid) {
   assertUid(uid)
   await deletePath({ uid, path: paths.diarioDoc(uid, 'pinConfig'), sync: PIN_SYNC })
+}
+
+// ─── frasesDelDia (SPEC_28) ───────────────────────────────────────────────────
+// La frase que ya se le asignó a un día, por huella de preferencias. Es lo que
+// hace que una ampliación o un reordenamiento del catálogo no cambie lo que ya
+// se vio: el selector solo decide los días que todavía no tienen asignación.
+//
+// **Nunca sale del dispositivo**, como el PIN: el id de la frase delata qué
+// referencias eligió alguien. Se escribe con `sync: false` y `local.js`
+// reconoce la ruta para no encolarla ni al mudar el árbol.
+//
+// Una asignación por (fecha, huella) y no una por fecha: cambiar de
+// preferencias resuelve la frase de hoy otra vez para la huella nueva y **no
+// toca** la que ya estaba registrada para la anterior. Si alguien vuelve a su
+// elección de antes, vuelve también su frase de hoy.
+
+const FRASES_SYNC = false
+
+/** El id del registro: la fecha y la huella, que juntas son la clave. */
+export function idDeFraseAsignada(fecha, huella) {
+  return `${fecha}~${huella}`
+}
+
+function fraseAsignadaSpec(uid, fecha, huella) {
+  const id = idDeFraseAsignada(fecha, huella)
+  return {
+    uid,
+    path: paths.diarioItem(uid, 'frasesDelDia', id),
+    collection: COLLECTIONS.frasesDelDia,
+    id,
+  }
+}
+
+export async function getFraseAsignada(uid, fecha, huella) {
+  assertUid(uid)
+  assertDateKey(fecha, 'fecha')
+  assertId(huella, 'huella')
+  return readPath(fraseAsignadaSpec(uid, fecha, huella).path)
+}
+
+export async function saveFraseAsignada(uid, asignada) {
+  assertUid(uid)
+  validateFraseAsignada(asignada)
+  return writePath({
+    ...fraseAsignadaSpec(uid, asignada.fecha, asignada.huella),
+    data: asignada,
+    sync: FRASES_SYNC,
+  })
+}
+
+export async function listFrasesAsignadas(uid) {
+  assertUid(uid)
+  return readCollection(uid, COLLECTIONS.frasesDelDia)
 }
 
 // ─── Árbol de un usuario nuevo ────────────────────────────────────────────────

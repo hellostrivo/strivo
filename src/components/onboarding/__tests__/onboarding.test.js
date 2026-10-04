@@ -169,12 +169,14 @@ describe('nada bloquea (RN-02, no-negociable 1)', () => {
   })
 })
 
-describe('el indicador cuenta siete y el sub-paso no se pinta', () => {
-  it('el copy dice "Paso {n} de {total}" y el total son siete', () => {
+describe('el indicador cuenta ocho y los sub-pasos no se pintan', () => {
+  it('el copy dice "Paso {n} de {total}" y el total son ocho', () => {
+    // Ocho desde SPEC_28: las referencias de las frases suman un paso; la
+    // elección de las afinidades es un sub-paso y no cuenta.
     expect(textos.nav.progressTemplate).toBe('Paso {n} de {total}')
-    expect(TOTAL).toBe(7)
-    expect(CONTADOS).toHaveLength(7)
-    expect(ORDEN).toHaveLength(8)
+    expect(TOTAL).toBe(8)
+    expect(CONTADOS).toHaveLength(8)
+    expect(ORDEN).toHaveLength(10)
   })
 
   it('el total sale de la lista y no de un número escrito en el copy', () => {

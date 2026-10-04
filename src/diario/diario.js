@@ -23,7 +23,9 @@
 // una frase fija y, si acaso, devuelve una de las cosas que se reconocieron.
 
 import { diario, shared, strivoDateKey } from '@/lib/db'
-import { fraseDelDia } from '@/content/frases-del-dia'
+import { leerPreferencias } from '@/referencias/almacen'
+import { huellaDe } from '@/referencias/preferencias'
+import { elegirFrase, resolverAsignacion } from './fraseDelDia.js'
 import { hayAlgoEscrito } from './manana.js'
 import { animoDeNoche, hayAlgoEscrito as hayAlgoDeNoche } from './noche.js'
 import { sumarDias } from './fechas.js'
@@ -70,6 +72,58 @@ export async function animoBajoReciente(uid, fecha) {
 
   if (animos.length === 0) return false
   return animos.every((animo) => ANIMOS_BAJOS.includes(animo))
+}
+
+/**
+ * La frase de un día para esta persona, ya asignada o recién elegida
+ * (SPEC_28 §11).
+ *
+ * **Lo que ya se asignó manda.** Una asignación guardada para esta fecha y
+ * esta huella de preferencias se devuelve tal cual, aunque el catálogo haya
+ * crecido o cambiado de orden: el pasado no se reescribe. Solo se elige —y se
+ * guarda— lo que todavía no tiene asignación.
+ *
+ * **Dos excepciones, y las dos protegen a la persona:** una frase que el
+ * catálogo retiró deja de mostrarse, y una que no es apta con ánimo bajo
+ * tampoco se muestra si el ánimo reciente lo es. En los dos casos se vuelve a
+ * elegir y la elección nueva ocupa su sitio.
+ *
+ * Cambiar de preferencias cambia la huella, y con ella la frase de hoy; la de
+ * la huella anterior no se toca, así que volver a la elección de antes
+ * devuelve también la frase de antes.
+ *
+ * **Nada de esto puede impedir que se pinte el día.** Leer o guardar la
+ * asignación puede fallar —es IndexedDB— y entonces se devuelve la frase
+ * elegida sin guardarla. La preferencia ilegible vale `sin_definir`.
+ */
+export async function fraseAsignada(uid, fecha, { animoBajo = false } = {}) {
+  const preferencias = await leerPreferencias(uid)
+  const huella = huellaDe(preferencias)
+
+  let previa = null
+  try {
+    previa = resolverAsignacion(await diario.getFraseAsignada(uid, fecha, huella))
+  } catch {
+    previa = null
+  }
+  if (previa && (!animoBajo || previa.aptaConAnimoBajo)) return previa
+
+  const frase = elegirFrase(fecha, preferencias, { animoBajoReciente: animoBajo })
+  if (!frase) return null
+  try {
+    await diario.saveFraseAsignada(uid, {
+      phraseId: frase.id,
+      fecha,
+      huella,
+      catalogoVersion: frase.catalogoVersion,
+      asignadaEn: new Date().toISOString(),
+    })
+  } catch {
+    // Sin guardar, la frase sigue siendo la misma al volver: la elección es
+    // determinista. Lo único que se pierde es la protección contra un cambio
+    // futuro del catálogo, y eso no vale un error en pantalla.
+  }
+  return frase
 }
 
 /**
@@ -142,7 +196,9 @@ export async function cargarDia(uid, fechaPedida = null) {
     // salieron, para no repetirlas (§5 y §6). No se lee ni una palabra de lo
     // que se escribió en ellas.
     noches,
-    frase: fraseDelDia(fecha, { animoBajoReciente: animoBajo }),
+    // La misma para la Mañana y la Noche: depende de la fecha, de las
+    // preferencias de referencias y de lo que ya se asignó (SPEC_28).
+    frase: await fraseAsignada(uid, fecha, { animoBajo }),
   }
 }
 

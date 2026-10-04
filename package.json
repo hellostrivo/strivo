@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "format": "prettier --write \"src/**/*.{js,jsx}\"",
     "lint:contraste": "node scripts/lint-contraste.js",
+    "validar:frases": "node scripts/validar-frases.js",
     "format:check": "prettier --check \"src/**/*.{js,jsx}\""
   },
   "dependencies": {

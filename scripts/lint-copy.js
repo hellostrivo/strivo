@@ -70,7 +70,22 @@ const CLINICO = [
 // donde una comprobación por línea sería aproximada, se recorre el módulo ya
 // construido y se revisa lo que toca. La prosa del archivo —sus comentarios—
 // sigue revisándose línea a línea: lo que escribimos nosotros no se exime.
-const POR_ENTRADA = new Set(['src/content/frases-del-dia.js'])
+//
+// El catálogo v2 (SPEC_28) se revisa igual: su texto de citas se exime por
+// tipo y todo lo demás —originales y atribuciones— pasa por el léxico. Las
+// reglas editoriales propias del catálogo, más estrictas que estas, las
+// aplica `scripts/validar-frases.js`.
+const POR_ENTRADA = new Set([
+  'src/content/frases-del-dia.js',
+  'src/content/frases-v2/universal.js',
+  'src/content/frases-v2/secular.js',
+  'src/content/frases-v2/espiritual.js',
+  'src/content/frases-v2/cristianismo.js',
+  'src/content/frases-v2/budismo.js',
+  'src/content/frases-v2/hinduismo.js',
+  'src/content/frases-v2/estoicismo.js',
+  'src/content/frases-v2/citas.js',
+])
 
 // Extensiones a revisar (excluye assets, binarios, etc.)
 const EXTENSIONS = ['.js', '.jsx', '.ts', '.tsx', '.json', '.md']
@@ -81,6 +96,12 @@ const EXTENSIONS = ['.js', '.jsx', '.ts', '.tsx', '.json', '.md']
 // es el copy que alguien va a leer en pantalla.
 const EXCLUDE_DIRS = ['node_modules', 'dist', '.git', 'scripts', '__tests__']
 
+// Archivos que nombran el léxico prohibido para poder hacerlo cumplir, por la
+// misma razón que `__tests__`: el validador del catálogo de frases (SPEC_28)
+// tiene que escribir «debería» en una expresión regular para encontrarlo.
+// No contiene copy: ninguna de sus cadenas llega a una pantalla.
+const NOMBRAN_EL_LEXICO = new Set(['src/content/frases-v2/validacion.js'])
+
 let issues = 0
 
 function esComentario(linea) {
@@ -89,6 +110,7 @@ function esComentario(linea) {
 }
 
 function checkFile(filePath) {
+  if (NOMBRAN_EL_LEXICO.has(filePath)) return
   const content = readFileSync(filePath, 'utf8')
   const lines   = content.split('\n')
   const soloProsa = POR_ENTRADA.has(filePath)
@@ -176,6 +198,9 @@ if (copy.respiracion === undefined) {
 
 const { FRASES, revisablesDe } = await import('../src/content/frases-del-dia.js')
 checkFrases(FRASES, revisablesDe)
+
+const v2 = await import('../src/content/frases-v2/index.js')
+checkFrases(v2.FRASES_V2, v2.revisablesDe)
 
 if (issues === 0) {
   console.log('✅ strivo-voice: léxico limpio. Todo en orden.\n')

@@ -1,6 +1,12 @@
 // src/content/frases-del-dia.js
 // Repertorio de frases del día (§5.3, Bloque 1 · RN-HOY-02).
 //
+// **Legado desde SPEC_28 (4 oct 2026).** La app ya no elige de aquí: el
+// repertorio vigente es `content/frases-v2/` y lo elige `diario/fraseDelDia.js`.
+// Este archivo se conserva sin cambios para resolver una asignación de la
+// versión 1, si alguna existiera (`resolverAsignacion`). No se borra hasta que
+// esa compatibilidad deje de hacer falta.
+//
 // Va en `content/` y no dentro del componente ni dentro de la spec: es material
 // editorial, crece con el tiempo y se revisa aparte del código que lo pinta.
 //

@@ -32,9 +32,15 @@
 // **Tu cuenta (SPEC_19.1)** va antes de la sincronización: primero quién eres
 // para la nube, después dónde está lo tuyo. Tiene vistas propias —entrar,
 // crear, recuperar, salir— y por eso vive en su componente (`TuCuenta`).
+//
+// **Personaliza tus frases (SPEC_28)** tiene también vistas propias —resumen,
+// las dos preguntas del onboarding y las fuentes— y vive en `TusFrases`. Es la
+// invitación para quien terminó el onboarding antes de que existieran esas
+// preguntas: nada se le muestra al abrir la app.
 
 import Bloque from './Bloque'
 import TuCuenta from './TuCuenta'
+import TusFrases from './TusFrases'
 import Button from '@components/ui/Button'
 import { CampoLinea } from '@components/shared/Campo'
 import { ListaDeChips } from '@components/shared/Chips'
@@ -106,6 +112,8 @@ export default function Perfil({ uid }) {
         </label>
       </div>
     ),
+
+    frases: () => <TusFrases uid={uid} />,
 
     cuenta: () => <TuCuenta />,
 
