@@ -361,7 +361,8 @@ describe('criterio 8 y DP-28.21: la vista previa', () => {
     expect(r.ok).toBe(true)
     expect(canal.vigente.id).toBe('piloto')
     expect(canal.vigente.portada.src).toBe('portadas/espacio.webp')
-    expect(canal.archivo.map((e) => e.id)).toEqual(['c-2026-12-14'])
+    // DP-28.19: la piloto también entra en el archivo de la vista previa.
+    expect(canal.archivo.map((e) => e.id)).toEqual(['c-2026-12-14', 'piloto'])
   })
 
   it('una piloto en borrador, no', () => {

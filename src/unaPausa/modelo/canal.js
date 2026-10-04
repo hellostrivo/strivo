@@ -14,7 +14,7 @@
 import { desde } from './estados.js'
 import { validar } from './validar.js'
 import { archivo, calendarioEfectivo, capsulaVigente } from './vigente.js'
-import { lunesDe } from './semana.js'
+import { lunesDe, restarDias } from './semana.js'
 
 export const FORMATO_CANAL = 1
 
@@ -102,12 +102,27 @@ function pilotoDeVistaPrevia(capsulas) {
 }
 
 /**
+ * El archivo de la vista previa con la piloto dentro (DP-28.19): la misma
+ * cápsula, con la semana anterior a la del canal como fecha, en su sitio de la
+ * más reciente a la más antigua. **Si comparte fecha con una publicada, va
+ * detrás**: la piloto nunca desplaza una publicación de verdad. Las claves
+ * `YYYY-MM-DD` se comparan como texto, que es comparar fechas.
+ */
+function conPiloto(archivo, piloto) {
+  const sitio = archivo.findIndex((e) => (e.publicadaEl ?? '') < piloto.publicadaEl)
+  if (sitio === -1) return [...archivo, piloto]
+  return [...archivo.slice(0, sitio), piloto, ...archivo.slice(sitio)]
+}
+
+/**
  * El canal de la semana de `ahora`.
  *
  * Con `vistaPrevia` —solo en los deploys de rama de la app (DP-28.16)— la
  * piloto válida va como vigente, con la semana del canal como fecha, y la
- * vigente calculada pasa a encabezar el archivo. Sin ella, la piloto no
- * aparece nunca: `vigente.js` ya la deja fuera.
+ * vigente calculada pasa a encabezar el archivo. **La piloto entra además en
+ * el archivo** (DP-28.19), para recorrer en el teléfono el camino entero
+ * —vigente, archivo, detalle— antes de que exista ninguna publicada. Sin
+ * `vistaPrevia`, la piloto no aparece nunca: `vigente.js` ya la deja fuera.
  *
  * @param {object[]} capsulas
  * @param {Date|number|string} ahora
@@ -135,7 +150,10 @@ export function generarCanal(capsulas, ahora, { vistaPrevia = false, portadas = 
       formato: FORMATO_CANAL,
       semana,
       vigente: entrada(piloto, semana, conArchivo),
-      archivo: [vigente, ...anteriores].filter(Boolean).map(publicada),
+      archivo: conPiloto(
+        [vigente, ...anteriores].filter(Boolean).map(publicada),
+        entrada(piloto, restarDias(semana, 7), conArchivo),
+      ),
     }
   }
 

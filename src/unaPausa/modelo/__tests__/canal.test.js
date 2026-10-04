@@ -144,13 +144,15 @@ describe('criterio 8: la vista previa (DP-28.16)', () => {
     const canal = generarCanal(capsulas, ahora, { vistaPrevia: true })
     expect(canal.vigente.id).toBe('piloto')
     expect(canal.vigente.publicadaEl).toBe('2026-12-14')
-    expect(ids(canal.archivo)).toEqual(['c-2026-12-14', 'c-2026-12-07'])
+    // DP-28.19: la piloto también en el archivo, con la semana anterior. Comparte
+    // fecha con `c-2026-12-07` y va detrás: no desplaza una publicada.
+    expect(ids(canal.archivo)).toEqual(['c-2026-12-14', 'c-2026-12-07', 'piloto'])
   })
 
   it('en revisión también, si pasa validar', () => {
     const canal = generarCanal([piloto('piloto', 'en_revision')], ahora, { vistaPrevia: true })
     expect(canal.vigente.id).toBe('piloto')
-    expect(canal.archivo).toEqual([])
+    expect(ids(canal.archivo)).toEqual(['piloto'])
   })
 
   it('una piloto en borrador, inválida o rechazada, no', () => {
@@ -167,6 +169,34 @@ describe('criterio 8: la vista previa (DP-28.16)', () => {
   it('con dos, gana el id menor', () => {
     const canal = generarCanal([piloto('pb'), piloto('pa')], ahora, { vistaPrevia: true })
     expect(canal.vigente.id).toBe('pa')
+  })
+
+  it('DP-28.19: en el archivo, la misma cápsula con la semana del canal menos 7 días', () => {
+    const canal = generarCanal([piloto('piloto', 'en_revision')], ahora, {
+      vistaPrevia: true,
+      portadas: ['espacio.webp'],
+    })
+    const [enArchivo] = canal.archivo
+    expect(enArchivo.publicadaEl).toBe('2026-12-07')
+    // Sin inventar nada: lo único que cambia es la fecha.
+    expect({ ...enArchivo, publicadaEl: null }).toEqual({ ...canal.vigente, publicadaEl: null })
+  })
+
+  it('DP-28.19: en su sitio, de la más reciente a la más antigua', () => {
+    const capsulas = [programada('2026-11-30'), programada('2026-12-14'), piloto()]
+    const canal = generarCanal(capsulas, lunes('2026-12-21', '09:00:00'), { vistaPrevia: true })
+    expect(canal.archivo.map((e) => [e.id, e.publicadaEl])).toEqual([
+      ['c-2026-12-14', '2026-12-14'],
+      ['piloto', '2026-12-14'],
+      ['c-2026-11-30', '2026-11-30'],
+    ])
+    const otra = generarCanal(capsulas, lunes('2026-12-28', '09:00:00'), { vistaPrevia: true })
+    // Una semana después la piloto es la más reciente, y va delante.
+    expect(otra.archivo.map((e) => [e.id, e.publicadaEl])).toEqual([
+      ['piloto', '2026-12-21'],
+      ['c-2026-12-14', '2026-12-14'],
+      ['c-2026-11-30', '2026-11-30'],
+    ])
   })
 
   it('sin vistaPrevia, la piloto no aparece en ningún sitio', () => {
