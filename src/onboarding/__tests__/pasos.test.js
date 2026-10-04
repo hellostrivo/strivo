@@ -1,5 +1,5 @@
 // src/onboarding/__tests__/pasos.test.js
-// El recorrido: siete pasos, un sub-paso y ningún hueco.
+// El recorrido: ocho pasos, dos sub-pasos y ningún hueco (SPEC_28).
 //
 // Lo que estas pruebas custodian no es el orden por el orden: es que el género
 // siga sin contar en el indicador. Un día alguien va a querer "arreglar" que
@@ -26,10 +26,10 @@ import {
   siguiente,
 } from '../pasos.js'
 
-describe('los siete pasos y su sub-paso', () => {
-  it('el recorrido son ocho pantallas en un orden fijo', () => {
-    expect(ORDEN).toEqual(['p1', 'p2', 'p2a', 'p3', 'p5', 'p6', 'p7', 'p8'])
-    expect(ORDEN).toHaveLength(8)
+describe('los ocho pasos y sus dos sub-pasos', () => {
+  it('el recorrido son diez pantallas en un orden fijo', () => {
+    expect(ORDEN).toEqual(['p1', 'p2', 'p2a', 'p3', 'p5', 'p5r', 'p5ra', 'p6', 'p7', 'p8'])
+    expect(ORDEN).toHaveLength(10)
   })
 
   it('la identidad central salió del recorrido y no queda de ella ni el hueco', () => {
@@ -41,26 +41,47 @@ describe('los siete pasos y su sub-paso', () => {
     expect(indicadorDe('p4')).toBeNull()
   })
 
-  it('el indicador cuenta siete, y el género no está entre ellos', () => {
-    expect(TOTAL).toBe(7)
+  it('el indicador cuenta ocho, y ni el género ni las afinidades están entre ellos', () => {
+    expect(TOTAL).toBe(8)
     expect(CONTADOS).not.toContain(PASOS.genero)
-    expect(CONTADOS).toHaveLength(7)
+    expect(CONTADOS).not.toContain(PASOS.afinidades)
+    expect(CONTADOS).toHaveLength(8)
   })
 
-  it('el género es el único sub-paso', () => {
-    expect(esSubPaso(PASOS.genero)).toBe(true)
-    ORDEN.filter((paso) => paso !== PASOS.genero).forEach((paso) =>
+  it('el género y las afinidades son los dos únicos sub-pasos', () => {
+    const subPasos = [PASOS.genero, PASOS.afinidades]
+    subPasos.forEach((paso) => expect(esSubPaso(paso)).toBe(true))
+    ORDEN.filter((paso) => !subPasos.includes(paso)).forEach((paso) =>
       expect(esSubPaso(paso)).toBe(false),
     )
+  })
+
+  it('las referencias van detrás de los horarios y delante de los avisos', () => {
+    expect(siguiente(PASOS.horarios)).toBe(PASOS.referencias)
+    expect(indicadorDe(PASOS.referencias).n).toBe(5)
+    expect(indicadorDe(PASOS.recordatorios).n).toBe(6)
+    expect(indicadorDe(PASOS.afinidades)).toBeNull()
+  })
+
+  it('las afinidades solo se recorren con «Quiero elegir referencias»', () => {
+    const guiadas = { referenciasModo: 'guiadas' }
+    expect(siguiente(PASOS.referencias, guiadas)).toBe(PASOS.afinidades)
+    expect(siguiente(PASOS.afinidades, guiadas)).toBe(PASOS.recordatorios)
+    expect(anterior(PASOS.recordatorios, guiadas)).toBe(PASOS.afinidades)
+    for (const modo of [null, 'seculares', 'espirituales_generales', 'sin_definir']) {
+      const respuestas = { referenciasModo: modo }
+      expect(siguiente(PASOS.referencias, respuestas)).toBe(PASOS.recordatorios)
+      expect(anterior(PASOS.recordatorios, respuestas)).toBe(PASOS.referencias)
+    }
   })
 
   it('en el sub-paso no hay número que enseñar', () => {
     expect(indicadorDe(PASOS.genero)).toBeNull()
   })
 
-  it('los números van del uno al siete, sin saltarse ninguno', () => {
-    expect(CONTADOS.map((paso) => indicadorDe(paso).n)).toEqual([1, 2, 3, 4, 5, 6, 7])
-    CONTADOS.forEach((paso) => expect(indicadorDe(paso).total).toBe(7))
+  it('los números van del uno al ocho, sin saltarse ninguno', () => {
+    expect(CONTADOS.map((paso) => indicadorDe(paso).n)).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+    CONTADOS.forEach((paso) => expect(indicadorDe(paso).total).toBe(8))
   })
 
   it('el número lo da la posición, no el nombre: los horarios son el 4 y se llaman p5', () => {
@@ -83,8 +104,12 @@ describe('moverse por el recorrido', () => {
     expect(siguiente(PASOS.cierre)).toBeNull()
   })
 
-  it('atrás deshace exactamente lo que hizo continuar', () => {
-    ORDEN.slice(1).forEach((paso) => expect(siguiente(anterior(paso))).toBe(paso))
+  it('atrás deshace exactamente lo que hizo continuar, con y sin el sub-paso condicional', () => {
+    for (const respuestas of [{ referenciasModo: 'guiadas' }, { referenciasModo: 'seculares' }]) {
+      ORDEN.slice(1)
+        .filter((paso) => paso !== PASOS.afinidades || respuestas.referenciasModo === 'guiadas')
+        .forEach((paso) => expect(siguiente(anterior(paso, respuestas), respuestas)).toBe(paso))
+    }
   })
 
   it('un paso que no existe no rompe la navegación', () => {
@@ -119,6 +144,8 @@ describe('la versión del recorrido', () => {
     // que distingue a quien lo terminó con la presentación de las secciones
     // detrás de quien lo terminó antes de que existiera, y de eso depende que a
     // nadie que ya entró le aparezca de golpe (`presentacion/entrada.js`).
-    expect(VERSION).toBe(3)
+    //
+    // Subió a 4 el 4 de octubre de 2026 con las referencias de las frases.
+    expect(VERSION).toBe(4)
   })
 })

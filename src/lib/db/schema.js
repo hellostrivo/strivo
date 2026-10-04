@@ -176,6 +176,24 @@ export const FIELDS = Object.freeze({
   ]),
   dayState: Object.freeze(['mood', 'updatedAt']),
   pinConfig: Object.freeze(['salt', 'hash', 'iterations', 'algorithm', 'enabled']),
+
+  // ─── Frases personalizadas (SPEC_28, 4 oct 2026) ──────────────────────────
+  // Los dos registros **nunca salen del dispositivo**, igual que `pinConfig`:
+  // se escriben con `sync: false`, `local.js` los reconoce por la ruta para no
+  // encolarlos nunca (ni al mudar el árbol) y `restaurar.js` no los baja.
+  //
+  // `frases` es la preferencia de referencias que alguien eligió. Es un dato
+  // sensible —dice qué tradición religiosa, espiritual o filosófica quiere
+  // encontrar— y por eso guarda lo mínimo: el modo, los identificadores de
+  // afinidad, la versión del catálogo de preferencias y el sello de la casa.
+  // Ni texto libre, ni motivos, ni inferencias. Va en `shared/` porque la
+  // escriben el onboarding y Tu perfil y la lee el diario; no va en `profile`
+  // porque el perfil sí sube a la nube.
+  frases: Object.freeze(['modo', 'afinidades', 'version', 'updatedAt']),
+  // La frase que ya se le asignó a un día, para una huella de preferencias.
+  // Es lo que impide que ampliar o reordenar el catálogo cambie el pasado. La
+  // huella es un hash: el registro no repite en claro qué se eligió.
+  fraseAsignada: Object.freeze(['phraseId', 'fecha', 'huella', 'catalogoVersion', 'asignadaEn']),
 })
 
 // ─── Rutas (§C5.2) ────────────────────────────────────────────────────────────
@@ -196,6 +214,7 @@ export const COLLECTIONS = Object.freeze({
   morningEntry: 'diario/morningEntry',
   nightRitual: 'diario/nightRitual',
   dayState: 'diario/dayState',
+  frasesDelDia: 'diario/frasesDelDia',
   diarioDoc: 'diario',
 })
 
@@ -288,6 +307,32 @@ export function validateOnboarding(onboarding) {
 export function validatePreferences(preferences) {
   assertFields(preferences, FIELDS.preferences, 'shared/preferences')
   return preferences
+}
+
+/**
+ * La preferencia de frases (SPEC_28). Los identificadores **no se validan
+ * aquí**, por lo mismo que los motivos del onboarding: el catálogo vive en
+ * `src/referencias/` y repetirlo serían dos listas. Lo que es de esta capa es
+ * la forma.
+ */
+export function validateFrases(frases) {
+  assertFields(frases, FIELDS.frases, 'shared/frases')
+  if (frases.modo !== undefined && typeof frases.modo !== 'string') {
+    throw new StrivoDataError(ERROR_CODES.FIELD_TYPE, 'frases.modo: se esperaba una cadena.')
+  }
+  if (frases.afinidades !== undefined && !Array.isArray(frases.afinidades)) {
+    throw new StrivoDataError(ERROR_CODES.FIELD_TYPE, 'frases.afinidades: se esperaba un arreglo.')
+  }
+  return frases
+}
+
+/** La asignación de una frase a un día (SPEC_28). */
+export function validateFraseAsignada(asignada) {
+  assertFields(asignada, FIELDS.fraseAsignada, 'diario/frasesDelDia')
+  assertDateKey(asignada.fecha, 'fraseAsignada.fecha')
+  assertId(asignada.phraseId, 'fraseAsignada.phraseId')
+  assertId(asignada.huella, 'fraseAsignada.huella')
+  return asignada
 }
 
 export function validateJournalEntry(entry) {

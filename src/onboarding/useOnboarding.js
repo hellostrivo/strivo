@@ -30,6 +30,7 @@ import {
   escribirPaso,
   escribirPerfil,
   escribirRecordatorios,
+  escribirReferencias,
   leerRecorrido,
   releerSiCambioElArbol,
   respuestasDe,
@@ -113,12 +114,12 @@ export function useOnboarding(uid, { conectar, sello = 0 } = {}) {
     let vigente = true
 
     async function cargar() {
-      const { carga, perfil, expediente } = await leerRecorrido(uid)
+      const { carga, perfil, expediente, referencias } = await leerRecorrido(uid)
       if (!vigente) return
 
       cargado.current = carga
       recorridos.current = expediente?.completedSteps ?? []
-      setRespuestas((previas) => respuestasDe(perfil, expediente, previas))
+      setRespuestas((previas) => respuestasDe(perfil, expediente, previas, referencias))
       // Lo que dejó dicho el recorrido de antes del velo, si lo hubo. Se toma
       // aquí, al aplicar, y no al empezar a leer: el doble montaje de
       // `StrictMode` lanza dos cargas y solo la vigente puede gastarlo.
@@ -149,7 +150,9 @@ export function useOnboarding(uid, { conectar, sello = 0 } = {}) {
       temporizador.current = null
       pendiente.current = null
       cargado.current = nueva.carga
-      setRespuestas(respuestasDe(nueva.perfil, nueva.expediente, RESPUESTAS_INICIALES))
+      setRespuestas(
+        respuestasDe(nueva.perfil, nueva.expediente, RESPUESTAS_INICIALES, nueva.referencias),
+      )
     })
     return () => {
       vigente = false
@@ -190,6 +193,16 @@ export function useOnboarding(uid, { conectar, sello = 0 } = {}) {
     [enFila, respuestas],
   )
 
+  /**
+   * Las referencias de las frases (SPEC_28): se guardan al tocar, como todo
+   * toque, y solo en el dispositivo. Reciben las respuestas ya actualizadas
+   * porque el estado de React todavía no las tiene en este mismo toque.
+   */
+  const guardarReferencias = useCallback(
+    (valores) => enFila(() => escribirReferencias(uidSesion.current, cargado.current, valores)),
+    [enFila],
+  )
+
   const guardarRecordatorios = useCallback(
     (estado) => enFila(() => escribirRecordatorios(uidSesion.current, cargado.current, estado)),
     [enFila],
@@ -219,12 +232,14 @@ export function useOnboarding(uid, { conectar, sello = 0 } = {}) {
 
   const avanzar = useCallback(async () => {
     await guardarAhora()
-    ir(siguiente(paso), respuestas)
+    // Las respuestas deciden qué pasos tocan: el de las afinidades solo se
+    // recorre si se eligió «Quiero elegir referencias» (SPEC_28).
+    ir(siguiente(paso, respuestas), respuestas)
   }, [guardarAhora, ir, paso, respuestas])
 
   const retroceder = useCallback(async () => {
     await guardarAhora()
-    const destino = anterior(paso)
+    const destino = anterior(paso, respuestas)
     if (destino) ir(destino, respuestas)
   }, [guardarAhora, ir, paso, respuestas])
 
@@ -285,6 +300,7 @@ export function useOnboarding(uid, { conectar, sello = 0 } = {}) {
       avanzar,
       retroceder,
       guardarMotivo,
+      guardarReferencias,
       guardarRecordatorios,
       conectarCuenta,
       terminar,

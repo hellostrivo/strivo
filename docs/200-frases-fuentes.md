@@ -1,3 +1,7 @@
+> **Legado (4 oct 2026).** Este documento es la fuente del repertorio v1 (`src/content/frases-del-dia.js`),
+> que la app ya no elige: se conserva para resolver asignaciones antiguas. El repertorio vigente y el
+> expediente de sus citas están en `docs/frases-v2-fuentes.md` (SPEC_28).
+
 # 200 textos para Strivo: 100 frases originales + 100 citas textuales
 
 ## Conclusión de viabilidad jurídica

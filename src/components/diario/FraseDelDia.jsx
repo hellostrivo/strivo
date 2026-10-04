@@ -29,12 +29,21 @@
 // suelto que el del resto de la pantalla: lo que se lee despacio se compone
 // despacio.
 //
-// **Quién lo dijo va debajo, siempre.** El repertorio tiene dos tipos de
-// entrada y la diferencia no es de catálogo, es de quién habla: una cita
-// reproduce a alguien —y va entrecomillada, con las mismas «» que la palabra
-// propia en el resto del producto— y una versión propia la firma Strivo, así
-// que va sin comillas. Las comillas salen del copy y no del JSX: son la marca
-// de estar citando, no un adorno de maquetación.
+// **Quién lo dijo va debajo, y solo cuando lo dijo alguien** (SPEC_28, 4 oct
+// 2026). El repertorio tiene dos tipos de entrada y la diferencia no es de
+// catálogo, es de quién habla: una cita reproduce a alguien —y va
+// entrecomillada, con las mismas «» que la palabra propia en el resto del
+// producto, y con autor, obra y ubicación debajo— y una original es voz de
+// Strivo, así que va sin comillas **y sin pie**. Hasta la versión 2 las
+// originales firmaban «Versión Strivo inspirada en…»; ya no: una idea que
+// inspiró una frase no convierte a nadie en su autor, y un `figcaption` vacío
+// anunciaría al lector de pantalla una atribución que no existe. Las comillas
+// salen del copy y no del JSX: son la marca de estar citando, no un adorno de
+// maquetación.
+//
+// **La tarjeta no dice qué referencias eligió nadie.** Ni etiqueta, ni insignia,
+// ni enlace a Tu perfil: es aire, y quien la mira desde el hombro de otra
+// persona no tiene por qué enterarse de qué tradición le habla.
 //
 // **La atribución es una segunda voz, no una segunda línea del mismo texto.**
 // Baja un escalón de cuerpo, suelta la cursiva y pide el color secundario de la
@@ -63,6 +72,7 @@ export default function FraseDelDia({ frase }) {
 
   const textos = copy.diario.hoy.frase
   const esCita = frase.tipo === 'cita'
+  const atribuida = esCita && typeof frase.atribucion === 'string' && frase.atribucion !== ''
 
   return (
     <figure
@@ -76,10 +86,12 @@ export default function FraseDelDia({ frase }) {
       >
         {esCita ? interpolate(textos.citaTemplate, { texto: frase.texto }) : frase.texto}
       </blockquote>
-      <figcaption className="mt-3 text-sm not-italic text-on-surface-soft">
-        <span className="sr-only">{textos.atribucionLabel}</span>
-        {frase.atribucion}
-      </figcaption>
+      {atribuida && (
+        <figcaption className="mt-3 text-sm not-italic text-on-surface-soft">
+          <span className="sr-only">{textos.atribucionLabel}</span>
+          {frase.atribucion}
+        </figcaption>
+      )}
     </figure>
   )
 }

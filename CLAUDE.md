@@ -1,6 +1,6 @@
 # CLAUDE.md — Strivo
 
-**Última actualización:** 1 oct 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
+**Última actualización:** 4 oct 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
 **Blueprint (documento rector):** `/docs/blueprint/Strivo_Blueprint_de_Producto_v5_0_24-08-2026.md`
 **Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO.md`
 **Plan operativo del repliegue:** `/docs/Strivo_Plan_de_Separacion_Tecnica_v1_24-08-2026.md`
@@ -56,7 +56,7 @@ Strivo
 │
 └── barra inferior — lo que ya pasó, y tú
     ├── /historial     calendario → día completo
-    └── /perfil        nombre · género · horarios
+    └── /perfil        nombre · género · horarios · frases · cuenta · sincronización
 ```
 
 **El reparto es la decisión, no la maquetación** (26 ago 2026). Arriba, bajo el símbolo, lo que se
@@ -299,7 +299,10 @@ shared/ {
   // `completedAt` es la única marca de que el onboarding terminó; `motivos` y
   // `motivoOtro` son la respuesta de P3, que se da una vez y no vuelve a mutar.
   onboarding:  { version, completedSteps, currentStep, completedAt,
-                 motivos[], motivoOtro }
+                 motivos[], motivoOtro },
+  // SPEC_28 — SOLO LOCAL: nunca se encola, ni al mudar, ni se restaura.
+  // Sin documento es `sin_definir`. Restablecer lo borra.
+  frases:      { modo, afinidades[], version, updatedAt }
 }
 
 diario/ {
@@ -319,7 +322,10 @@ diario/ {
                           closingFeelings[], closingFeelingOther, release },
 
   journal/{entryId}:    { date, text, emotions[], otherText, createdAt, updatedAt },
-  pinConfig:            { salt, hash, iterations, algorithm, enabled }
+  pinConfig:            { salt, hash, iterations, algorithm, enabled },
+  // SPEC_28 — SOLO LOCAL. La frase ya asignada a un día para una huella de
+  // preferencias: lo que impide que ampliar el catálogo cambie el pasado.
+  frasesDelDia/{fecha}~{huella}: { phraseId, fecha, huella, catalogoVersion, asignadaEn }
 }
 
 breathing/ {
@@ -551,7 +557,8 @@ cualquiera de estas es un defecto**, aunque todo esté en verde:
 ```
 src/
 ├── copy/            biblioteca central de texto  ← todo string visible sale de aquí
-├── content/         repertorios de frases (apertura y del día)
+├── content/         repertorios de frases: apertura, día v1 (legado) y frases-v2/ (SPEC_28)
+├── referencias/     territorio neutral: qué referencias se eligen para las frases (SPEC_28)
 ├── tokens/          design-tokens.json
 ├── styles/          globals.css + tokens-strivo.css
 ├── lib/
@@ -582,7 +589,8 @@ src/
 | **RN-TEC-04** | **`breathing/` no importa nada de `diario/` y viceversa.** |
 | **RN-TEC-05** | **`components/shared/` no importa nada específico de una sección.** Lo que necesiten llega **por props**. |
 | **RN-TEC-06** | **`onboarding/` no importa `diario/` ni `breathing/`.** Corre antes de la app, una sola vez, y todo lo que escribe vive en `shared/`. No se enruta: se interpone. |
-| **RN-TEC-07** | **`perfil/` tampoco.** Es gestión de cuenta, no una sección del refugio: lo único que toca es `shared/profile`. Sí lee el catálogo de género del onboarding, y eso es deliberado: es un campo del perfil, no un paso de un recorrido, y dos copias del mismo catálogo se separan en cuanto alguien edite una. |
+| **RN-TEC-07** | **`perfil/` tampoco.** Es gestión de cuenta, no una sección del refugio: toca `shared/profile` y, desde SPEC_28, `shared/frases` (por `src/referencias/almacen.js`). Sí lee el catálogo de género del onboarding, y eso es deliberado: es un campo del perfil, no un paso de un recorrido, y dos copias del mismo catálogo se separan en cuanto alguien edite una. |
+| **RN-TEC-08** | **`referencias/` y `content/` son neutrales** (SPEC_28): los leen el onboarding, Tu perfil y el diario, y no importan ni `diario/` ni `breathing/`. Lo impone `eslint.config.js`. |
 
 Esa última regla es la que da forma a media base de código: `TransicionLuz` recibe su tema desde
 `globals.css` y no por props de sección; `Respiracion` (la de la sección) recibe `base` y `salida`
@@ -631,6 +639,13 @@ el componente.**
   sitio que sabe que el género no gasta número.
 - `src/onboarding/genero.js` → las cuatro opciones, los tres valores del modelo y el camino de
   vuelta (`opcionDe`). Lo leen el onboarding y Tu perfil.
+- `src/referencias/preferencias.js` → los modos y afinidades de las frases, su normalización, el
+  perfil que resulta (`perfilDeFrases`) y su huella. Lo leen el onboarding, Tu perfil y el diario.
+- `src/diario/fraseDelDia.js` → qué frase le toca a un día (`elegirFrase`); `diario.js`
+  (`fraseAsignada`) la guarda y respeta lo ya asignado. Las reglas editoriales del catálogo viven
+  en `src/content/frases-v2/validacion.js` y las comparten el script y las pruebas.
+- `src/lib/db/local.js` → `esRutaLocal`: las rutas que nunca salen del dispositivo (PIN, preferencia
+  de frases y asignaciones). `enqueue` las rechaza siempre.
 - `src/perfil/bloques.js` → qué bloques tiene Tu perfil y en qué orden. Añadir uno es un
   identificador aquí, un texto en el copy y un componente; hay una prueba que falla si falta alguno
   de los tres.
@@ -653,6 +668,9 @@ npm run test            # suite completa
 npm run build           # construcción de producción
 ```
 
+Y desde SPEC_28, **`npm run validar:frases`**: metadatos, voz, marcas de referencia, duplicados,
+expedientes de las citas y cobertura de 500 por perfil. Falla si un perfil baja de 500.
+
 `npm run format` ya se puede correr: `.prettierrc` reproduce el estilo del repo (sin punto y coma,
 comillas simples, ancho 100). **El CSS y `design-tokens.json` quedan fuera a propósito**
 (`.prettierignore`): prettier colapsa la alineación por columnas de los bloques de tokens y **pasa
@@ -667,7 +685,31 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**77 archivos de prueba · 2.083 casos · los seis comandos en verde.**
+**81 archivos de prueba · 2.149 casos · los seis comandos y `validar:frases` en verde.**
+
+### Frases del día personalizadas (SPEC_28, 4 oct 2026)
+
+La instrucción completa y sus decisiones están en `docs/specs/SPEC_28_FRASES_PERSONALIZADAS.md`.
+
+- **Catálogo v2** en `src/content/frases-v2/`: 1 000 originales aprobadas en siete audiencias
+  (universal, secular, espiritual general y cuatro tradiciones) y 25 citas candidatas en
+  `pendiente_revision`. **El selector solo ve las aprobadas.** Cada perfil ve 500 o más y 100 por
+  tema. **Solo se añade al final de cada lista**: el id de una original sale de su posición.
+- **Las originales van sin comillas y sin pie**; ya no firman «Versión Strivo inspirada en…». Las
+  citas, entre «», con «Autor · Obra, ubicación», y solo con expediente en
+  `docs/frases-v2-fuentes.md` y dos firmas (editorial y jurídica).
+- **Selector:** tema por día, ciclo por tema intercalado por audiencia y ordenado por hash del id,
+  desfase por perfil. 500 días sin repetir; con ánimo bajo, calma en lugar de esfuerzo y ninguna
+  repetición antes de 100 días. La asignación se guarda por (fecha, huella).
+- **Onboarding:** `p5r` (paso, cuenta) y `p5ra` (sub-paso, solo con «Quiero elegir referencias»).
+  Ocho pasos y dos sub-pasos; `VERSION = 4`. **Tu perfil:** bloque «Personaliza tus frases».
+- **La preferencia es sensible y vive solo en este dispositivo**: salir de la cuenta o reinstalar
+  la devuelve a `sin_definir`. Está anotado como consecuencia asumida.
+- **`separacion.test.js` busca `\britual`**: «espiritual» contiene «ritual».
+
+**Pendiente de esto:** revisión editorial de las 1 000 originales por la propietaria del producto;
+aprobar citas hasta el 25–35 % (hoy 0 %; hinduismo sin ninguna fuente en dominio público en
+México); revisión legal del aviso de privacidad y de la exportación (SPEC_24); verlo en un teléfono.
 
 ### Marca: el logo oficial y el video de apertura (25 ago 2026)
 
@@ -1470,7 +1512,7 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
   pide. **No es una regresión de este cambio**: el `.svg` del logo y las once fuentes de Inter
   tampoco lo están —workbox solo precachea `js`, `css` y `html`—, así que meter el `.mp4` es una
   decisión sobre los assets en general y no sobre este archivo.
-- **Las frases están sin revisar editorialmente:** ~100 de apertura y ~60 del día. Pasan §3.3 con
+- **Las frases están sin revisar editorialmente:** ~100 de apertura y las 1 000 del día v2 (SPEC_28). Pasan §3.3 con
   prueba automática; **qué se le dice a alguien al abrir la app es del propietario del producto**, no
   de quien programa. El objetivo del blueprint son 120+ frases del día (B-2).
 - **Los catálogos emocionales nuevos y las ideas de acción están sin revisar editorialmente.** Las
@@ -1520,6 +1562,8 @@ entra en la cuenta del indicador, igual que la pausa opcional de la Mañana no e
 | P3 | Motivo | «¿Qué te gustaría encontrar aquí?»: paz, avance, escucha, sueño, espacio, otro |
 | ~~P4~~ | ~~Identidad central~~ | **Retirado el 1 de septiembre de 2026**, con su pantalla, su copy, su módulo y su bloque del Perfil |
 | P5 | Horarios | Despertar / dormir |
+| P5R | Referencias de las frases | SPEC_28. Una opción de cuatro; se salta |
+| P5RA | Afinidades | Sub-paso, solo con «Quiero elegir referencias». Varias; «Omitir por ahora» |
 | P6 | Recordatorios | Dos avisos al día, opcional |
 | P7 | Crear cuenta | Google · Apple · correo, con opción de saltar |
 | P8 | Cierre | «Bienvenida, Alejandra» —el saludo en el género elegido— y el botón de entrar |

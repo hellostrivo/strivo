@@ -14,6 +14,47 @@
 // al pintar con `resolveGender` de `src/copy/gender.js` (§3.6.5). Ningún
 // componente lee `.m` ni `.f` (RN-GEN-01).
 
+// ─── Referencias de las frases (SPEC_28 §5–§6) ────────────────────────────────
+// Las dos preguntas que personalizan las frases del día. Se declaran aquí
+// arriba porque se hacen en dos sitios —el onboarding (`p5r`, `p5ra`) y Tu
+// perfil (`perfil.frases`)— **con los mismos textos**: dos copias de la misma
+// pregunta se separan en cuanto alguien edite una. Es el mismo objeto en los
+// dos sitios, no una copia.
+//
+// **Es una preferencia de contenido, no una declaración de identidad.** Nada
+// pregunta «¿en qué crees?» y ninguna opción obliga a declararse religioso,
+// espiritual ni ateo. Las dos preguntas se saltan sin explicaciones.
+//
+// Los identificadores viven en `src/referencias/preferencias.js` (`MODOS`,
+// `AFINIDADES`); aquí solo está cómo se dicen.
+const REFERENCIAS = {
+  modo: {
+    titulo: 'Haz tuyas tus frases',
+    apoyo:
+      'Si te hace sentido, podemos considerar referencias espirituales, religiosas o filosóficas. Es opcional y puedes cambiarlo cuando quieras.',
+    pregunta: '¿Qué tipo de referencias te gustaría encontrar?',
+    opciones: {
+      guiadas: 'Quiero elegir referencias',
+      espirituales_generales: 'Espirituales, sin una tradición específica',
+      seculares: 'Prefiero frases seculares',
+      sin_definir: 'Prefiero decidir después',
+    },
+  },
+  afinidades: {
+    titulo: 'Elige tus referencias',
+    apoyo:
+      'Puedes elegir más de una. Esto solo orienta las referencias que pueden aparecer en tus frases.',
+    pregunta: '¿Qué referencias te gustaría considerar?',
+    opciones: {
+      cristianismo: 'Cristianismo',
+      budismo: 'Budismo',
+      hinduismo: 'Hinduismo',
+      estoicismo: 'Estoicismo',
+    },
+    omitir: 'Omitir por ahora',
+  },
+}
+
 // ─── Tu cuenta (SPEC_19.1 §4) ────────────────────────────────────────────────
 // Va en `copy.cuenta` y se declara aquí arriba porque Tu perfil lo necesita
 // también en `copy.diario.perfil.cuenta`: cada bloque del perfil tiene su
@@ -185,6 +226,13 @@ export const copy = {
         wakeLabel: 'Me despierto a las',
         sleepLabel: 'Me duermo a las',
       },
+
+      // SPEC_28 — Las referencias de las frases. Dos pantallas: la primera es
+      // un paso y cuenta en el indicador; la segunda es un sub-paso —solo la
+      // ve quien eligió «Quiero elegir referencias»— y, como el género, no
+      // gasta número. Los textos son los de Tu perfil (`REFERENCIAS`, arriba).
+      p5r: REFERENCIAS.modo,
+      p5ra: REFERENCIAS.afinidades,
 
       // El aviso se pide, no se da por hecho. Las tres salidas —concedido,
       // denegado, sin soporte— se cuentan sin culpar al dispositivo y sin
@@ -1452,6 +1500,60 @@ export const copy = {
         hint: 'Para acompañarte a tu ritmo, no al de la app.',
         wakeLabel: 'Me despierto a las',
         sleepLabel: 'Me duermo a las',
+      },
+
+      // SPEC_28 — Las referencias de las frases del día. Las dos preguntas son
+      // las del onboarding, con sus mismos textos (`preguntas`). El bloque
+      // cuenta qué se eligió con palabras, deja cambiarlo y borrarlo, y abre
+      // una vista estática con el criterio editorial y las fuentes de las
+      // citas. **No hay nada de esto en la tarjeta de Hoy**: la frase sigue
+      // siendo aire.
+      //
+      // Borrar la elección pide confirmación, pero en voz baja: no destruye
+      // nada escrito, y la frase de mañana será igual de buena.
+      frases: {
+        titulo: 'Personaliza tus frases',
+        hint: 'Elige qué referencias, si alguna, te gustaría encontrar en tus frases diarias.',
+        nota: 'Usamos esta elección solo para seleccionar tus frases. Puedes cambiarla o borrarla cuando quieras.',
+        elegir: 'Elegir mis referencias',
+        cambiar: 'Cambiar mis referencias',
+        listo: 'Listo',
+        actualLabel: 'Tu elección',
+        actual: {
+          ninguna:
+            'Todavía no elegiste. Por ahora tus frases no traen referencias religiosas, espirituales ni filosóficas.',
+          guiadasTemplate: 'Referencias de {lista}.',
+          guiadasSinElegir: 'Quieres elegir referencias, y todavía no hay ninguna elegida.',
+          espirituales_generales: 'Espirituales, sin una tradición específica.',
+          seculares: 'Frases seculares.',
+          sin_definir:
+            'Decidirlo después. Por ahora, frases sin referencias religiosas, espirituales ni filosóficas.',
+        },
+        // Para unir la lista de afinidades: «Budismo, Hinduismo y Estoicismo».
+        lista: { separador: ', ', ultimo: ' y ' },
+        preguntas: REFERENCIAS,
+        restablecer: 'Borrar mi elección',
+        confirmar: {
+          titulo: '¿Borrar tu elección?',
+          texto:
+            'Tus frases dejarán de traer referencias religiosas, espirituales o filosóficas. Puedes elegir de nuevo cuando quieras.',
+          si: 'Borrar',
+          no: 'Mantenerla',
+        },
+        borrada: 'Tu elección se borró.',
+        fuentes: {
+          abrir: 'Fuentes de las frases',
+          cerrar: 'Ocultar las fuentes',
+          titulo: 'De dónde salen tus frases',
+          criterio: [
+            'La mayoría de las frases las escribe Strivo. Se muestran sin comillas y sin firma, aunque alguna idea antigua las haya inspirado.',
+            'Una cita va entre comillas y con su autor, su obra y su ubicación. Solo se muestra si el texto se cotejó con una edición concreta y su uso está revisado.',
+            'Nada se elige con inteligencia artificial ni con conexión: las frases están en la app y se eligen por la fecha y por lo que tú elegiste.',
+          ],
+          citasTitulo: 'Citas que pueden aparecer',
+          sinCitas:
+            'Por ahora todas las frases son redacción de Strivo. Cuando se aprueben citas, aquí verás su autor, su obra y su ubicación.',
+        },
       },
 
       // SPEC_19.1 — Tu cuenta: estado, entrar, crear, salir y recuperar. Su

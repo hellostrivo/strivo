@@ -6,13 +6,14 @@
 //
 // Este módulo no importa el de la rama del diario, ni al revés.
 
-import { readPath, writePath, writePathIfAbsent, mergePath } from './local.js'
+import { deletePath, readPath, writePath, writePathIfAbsent, mergePath } from './local.js'
 import {
   COLLECTIONS,
   FIELDS,
   assertFields,
   assertUid,
   paths,
+  validateFrases,
   validateOnboarding,
   validatePreferences,
   validateProfile,
@@ -142,6 +143,35 @@ export async function updatePreferences(uid, patch) {
 }
 
 // ─── onboarding ───────────────────────────────────────────────────────────────
+
+// ─── Preferencia de frases (SPEC_28) ──────────────────────────────────────────
+// **Nunca sale del dispositivo**: se escribe con `sync: false`, `local.js` la
+// reconoce por la ruta y `restaurar.js` no la baja. Es una preferencia
+// sensible y la minimización empieza por no tenerla en la nube. La
+// consecuencia, asumida y documentada en la SPEC: reinstalar la app o salir de
+// la cuenta la devuelve a `sin_definir`, y Tu perfil la deja volver a elegir.
+//
+// No se siembra: un árbol sin este documento es exactamente `sin_definir`, y
+// sembrarlo inventaría una respuesta que nadie dio.
+
+const FRASES_SYNC = false
+
+export async function getFrasesPreferencias(uid) {
+  assertUid(uid)
+  return readPath(paths.sharedDoc(uid, 'frases'))
+}
+
+export async function saveFrasesPreferencias(uid, frases) {
+  assertUid(uid)
+  validateFrases(frases)
+  return writePath({ ...docSpec(uid, 'frases'), data: sellar(frases), sync: FRASES_SYNC })
+}
+
+/** Restablecer es borrar: sin documento, la preferencia vuelve a `sin_definir`. */
+export async function clearFrasesPreferencias(uid) {
+  assertUid(uid)
+  await deletePath({ uid, path: paths.sharedDoc(uid, 'frases'), sync: FRASES_SYNC })
+}
 
 export async function getOnboarding(uid) {
   assertUid(uid)

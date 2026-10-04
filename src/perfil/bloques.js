@@ -22,7 +22,16 @@
 // segundo depende del primero.
 
 /** Los bloques que hay hoy, en el orden en que se ven. */
-export const BLOQUES = Object.freeze(['nombre', 'genero', 'horarios', 'cuenta', 'sincronizacion'])
+// `frases` (SPEC_28) va detrás de los horarios: cierra lo que la app sabe de
+// ti antes de pasar a dónde vive lo tuyo (cuenta y sincronización).
+export const BLOQUES = Object.freeze([
+  'nombre',
+  'genero',
+  'horarios',
+  'frases',
+  'cuenta',
+  'sincronizacion',
+])
 
 /** ¿Es un bloque del perfil? */
 export function es(id) {

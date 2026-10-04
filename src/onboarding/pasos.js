@@ -1,7 +1,7 @@
 // src/onboarding/pasos.js
 // El recorrido del onboarding: qué pasos hay, en qué orden y cuáles cuentan.
 //
-// **Siete pasos y un sub-paso.** El género (P2A) no es un paso: es una pregunta
+// **Ocho pasos y dos sub-pasos** (SPEC_28, 4 oct 2026). El género (P2A) no es un paso: es una pregunta
 // que cuelga del nombre, para saber cómo hablarle a quien acaba de escribirlo.
 // Por eso no entra en la cuenta del indicador — la misma razón por la que la
 // pausa opcional de la mañana no entra en la suya (RN-MAN-02): un total que
@@ -30,8 +30,12 @@
  * la versión sube igualmente porque es lo que distingue a quien terminó con la
  * presentación delante de quien terminó antes de que existiera. De eso depende
  * que a nadie que ya entró le aparezca de golpe (`presentacion/entrada.js`).
+ * 4 — entran las referencias de las frases (SPEC_28): un paso nuevo detrás de
+ * los horarios (`p5r`) y su sub-paso (`p5ra`). Quien terminó con una versión
+ * anterior no lo vuelve a ver: el recorrido no se repite, y la invitación vive
+ * en Tu perfil. Sube la versión para saber a quién se le preguntó.
  */
-export const VERSION = 3
+export const VERSION = 4
 
 /** Los identificadores estables. Es lo que se anota en `completedSteps`. */
 export const PASOS = Object.freeze({
@@ -40,6 +44,8 @@ export const PASOS = Object.freeze({
   genero: 'p2a',
   motivo: 'p3',
   horarios: 'p5',
+  referencias: 'p5r',
+  afinidades: 'p5ra',
   recordatorios: 'p6',
   cuenta: 'p7',
   cierre: 'p8',
@@ -55,10 +61,33 @@ export const PASOS = Object.freeze({
  * silenciosa (RN-DB-04). El número que se ve en pantalla lo calcula
  * `indicadorDe` a partir de la posición, no del nombre.
  */
-export const ORDEN = Object.freeze(['p1', 'p2', 'p2a', 'p3', 'p5', 'p6', 'p7', 'p8'])
+export const ORDEN = Object.freeze(['p1', 'p2', 'p2a', 'p3', 'p5', 'p5r', 'p5ra', 'p6', 'p7', 'p8'])
 
-/** Los que cuentan para el indicador. El sub-paso no está y no va a estar. */
-export const CONTADOS = Object.freeze(['p1', 'p2', 'p3', 'p5', 'p6', 'p7', 'p8'])
+/**
+ * Los que cuentan para el indicador. Los sub-pasos no están y no van a estar.
+ *
+ * **Las referencias (`p5r`) van detrás de los horarios** y antes de los avisos:
+ * cierran lo que se pregunta sobre ti antes de pasar a lo que la app hace
+ * (avisar, respaldar). La elección de las afinidades (`p5ra`) es un sub-paso
+ * por la misma razón que el género: no está en la ruta de todo el mundo —solo
+ * de quien eligió «Quiero elegir referencias»— y un total que cambia de una
+ * persona a otra deja de orientar.
+ */
+export const CONTADOS = Object.freeze(['p1', 'p2', 'p3', 'p5', 'p5r', 'p6', 'p7', 'p8'])
+
+/**
+ * Los pasos que solo se recorren con cierta respuesta. Cada uno dice, con las
+ * respuestas delante, si toca. Lo que no está aquí toca siempre.
+ */
+const CONDICIONES = Object.freeze({
+  p5ra: (respuestas) => respuestas?.referenciasModo === 'guiadas',
+})
+
+/** ¿Este paso se recorre con estas respuestas? */
+export function toca(id, respuestas) {
+  const condicion = CONDICIONES[id]
+  return condicion ? condicion(respuestas) : true
+}
 
 /** Lo que dice el indicador: "Paso {n} de {total}". */
 export const TOTAL = CONTADOS.length
@@ -95,18 +124,25 @@ export function indicadorDe(id) {
   return posicion === -1 ? null : { n: posicion + 1, total: TOTAL }
 }
 
-/** El siguiente, o `null` si este era el último. */
-export function siguiente(id) {
+/**
+ * El siguiente que toca, o `null` si este era el último. Sin respuestas, un
+ * paso condicional se salta: no se pregunta lo que no se sabe si toca.
+ */
+export function siguiente(id, respuestas = null) {
   const posicion = ORDEN.indexOf(id)
   if (posicion === -1) return ORDEN[0]
-  return ORDEN[posicion + 1] ?? null
+  return ORDEN.slice(posicion + 1).find((paso) => toca(paso, respuestas)) ?? null
 }
 
-/** El anterior, o `null` si este era el primero. */
-export function anterior(id) {
+/** El anterior que toca, o `null` si este era el primero. */
+export function anterior(id, respuestas = null) {
   const posicion = ORDEN.indexOf(id)
   if (posicion <= 0) return null
-  return ORDEN[posicion - 1]
+  return (
+    ORDEN.slice(0, posicion)
+      .reverse()
+      .find((paso) => toca(paso, respuestas)) ?? null
+  )
 }
 
 /**

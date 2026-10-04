@@ -106,6 +106,15 @@ const BREATHING_FILES = [
   'src/components/breathing/**/*.{js,jsx}',
 ]
 
+// SPEC_28 — Las referencias de las frases son territorio neutral: las leen el
+// onboarding, Tu perfil y el diario, así que no pueden importar de ninguno de
+// los tres, ni de Respiración. Lo mismo vale para el catálogo de contenido.
+const REFERENCIAS =
+  'src/referencias/ y src/content/ son neutrales: los leen el onboarding, Tu ' +
+  'perfil y el diario, y no pueden depender de diario/ ni de breathing/.'
+
+const REFERENCIAS_FILES = ['src/referencias/**/*.{js,jsx}', 'src/content/**/*.{js,jsx}']
+
 // El motor no conoce a nadie: ni el diario ni la propia Respiración.
 // Si algún día necesitara el catálogo de patrones, dejaría de poder usarlo el diario.
 const NEUTRAL_FILES = ['src/lib/respiracion/**/*.js']
@@ -243,6 +252,22 @@ export default [
             { group: DIARIO_MODULES, message: PRESENTACION },
             { group: BREATHING_MODULES, message: PRESENTACION },
             { group: DB_ENTRYPOINT, importNames: ['diario'], message: PRESENTACION },
+          ],
+        },
+      ],
+    },
+  },
+
+  // ─── Las referencias de las frases y el contenido son neutrales ─────────────
+  {
+    files: REFERENCIAS_FILES,
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            { group: [...DIARIO_MODULES, ...BREATHING_MODULES], message: REFERENCIAS },
+            { group: DB_ENTRYPOINT, importNames: ['diario'], message: REFERENCIAS },
           ],
         },
       ],

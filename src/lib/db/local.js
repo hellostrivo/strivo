@@ -268,7 +268,23 @@ export async function deletePath({ uid, path, sync = true }) {
  * Se reconoce por la ruta y no importando `diario.js`, que este módulo no
  * conoce y no debe conocer.
  */
-const SIN_SINCRONIZAR = /\/diario\/pinConfig$/
+const SIN_SINCRONIZAR = /\/(?:diario\/pinConfig|shared\/frases|diario\/frasesDelDia\/items\/[^/]+)$/
+
+/**
+ * ¿Esta ruta vive solo en el dispositivo?
+ *
+ * Son tres: el PIN y, desde SPEC_28, la preferencia de frases y las frases ya
+ * asignadas a cada día. La preferencia dice qué referencias religiosas,
+ * espirituales o filosóficas quiere encontrar alguien, y la asignación lo
+ * delata por el id de la frase: ninguna de las dos sube a Firestore.
+ *
+ * `enqueue` la consulta también, y no solo `mudarUid`: quien escribe estas
+ * rutas ya pasa `sync: false`, pero la garantía no puede depender de que
+ * nadie se olvide en una escritura futura.
+ */
+export function esRutaLocal(path) {
+  return SIN_SINCRONIZAR.test(String(path ?? ''))
+}
 
 /**
  * Mueve todo lo guardado de un uid a otro.
@@ -487,6 +503,9 @@ export async function borrarUid(uid) {
 // vez y el resultado es el mismo que si nunca se hubiera caído.
 
 export async function enqueue({ uid, path, op, data }) {
+  // Lo que vive solo en el dispositivo no entra en la cola, la pida quien la
+  // pida (SPEC_28 §7; ver `esRutaLocal`).
+  if (esRutaLocal(path)) return
   const db = await getLocalDB()
   const tx = db.transaction(STORE_SYNC_QUEUE, 'readwrite')
   const store = tx.objectStore(STORE_SYNC_QUEUE)

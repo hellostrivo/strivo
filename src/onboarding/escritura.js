@@ -31,6 +31,7 @@
 // sesión, y tiene que llegar a donde la puerta lo va a leer.
 
 import { shared } from '@/lib/db'
+import { paraGuardar as referenciasParaGuardar } from '@/referencias/preferencias'
 import { arbolDeEntrada } from '@lib/entradaCuenta'
 import { opcionDe } from './genero.js'
 import { expedienteDe, motivoDesde, perfilDesde } from './estado.js'
@@ -46,11 +47,12 @@ import { quedanActivados } from './recordatorios.js'
  */
 export async function leerRecorrido(uid) {
   const arbol = await arbolDeEntrada(uid)
-  const [perfil, expediente] = await Promise.all([
+  const [perfil, expediente, referencias] = await Promise.all([
     shared.getProfile(arbol).catch(() => null),
     shared.getOnboarding(arbol).catch(() => null),
+    shared.getFrasesPreferencias(arbol).catch(() => null),
   ])
-  return { carga: { uid, arbol }, perfil, expediente }
+  return { carga: { uid, arbol }, perfil, expediente, referencias }
 }
 
 /**
@@ -66,7 +68,7 @@ export async function releerSiCambioElArbol(uid, carga) {
 }
 
 /** Las respuestas del recorrido a partir de lo guardado, sobre `previas`. */
-export function respuestasDe(perfil, expediente, previas) {
+export function respuestasDe(perfil, expediente, previas, referencias = null) {
   return {
     ...previas,
     nombre: perfil?.name ?? previas.nombre,
@@ -75,6 +77,8 @@ export function respuestasDe(perfil, expediente, previas) {
     dormir: perfil?.sleepTime ?? previas.dormir,
     motivos: expediente?.motivos ?? previas.motivos,
     motivoOtro: expediente?.motivoOtro ?? previas.motivoOtro,
+    referenciasModo: referencias?.modo ?? previas.referenciasModo,
+    afinidades: referencias?.afinidades ?? previas.afinidades,
   }
 }
 
@@ -115,6 +119,22 @@ export async function escribirRecordatorios(uid, carga, estado) {
  * escritura —ver `ir` en el hook—, pero solo si las respuestas siguen siendo
  * de este árbol; el paso, siempre.
  */
+/**
+ * Las referencias de las frases (SPEC_28). Viven solo en el dispositivo
+ * —`saveFrasesPreferencias` escribe sin cola—, y se escriben en el mismo árbol
+ * que el resto de lo contestado. Soltar el modo elegido, que deja la pregunta
+ * sin contestar, borra la elección: no queda una respuesta que nadie dio.
+ */
+export async function escribirReferencias(uid, carga, valores) {
+  const arbol = await arbolDeEntrada(uid)
+  if (!respuestasValenEn(carga, arbol)) return null
+  if (!valores?.referenciasModo) return shared.clearFrasesPreferencias(arbol)
+  return shared.saveFrasesPreferencias(
+    arbol,
+    referenciasParaGuardar({ modo: valores.referenciasModo, afinidades: valores.afinidades }),
+  )
+}
+
 export async function escribirPaso(uid, carga, destino, recorridos, valores) {
   const arbol = await arbolDeEntrada(uid)
   const motivo = respuestasValenEn(carga, arbol) && valores ? motivoDesde(valores) : {}

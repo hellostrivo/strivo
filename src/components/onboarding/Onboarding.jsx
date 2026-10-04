@@ -1,5 +1,7 @@
 // src/components/onboarding/Onboarding.jsx
-// El recorrido de entrada: ocho pantallas, siete pasos, una sola vez.
+// El recorrido de entrada: diez pantallas, ocho pasos, una sola vez.
+// (SPEC_28 añadió las referencias de las frases tras los horarios: un paso y
+// un sub-paso que solo ve quien quiere elegir referencias.)
 //
 // **Se interpone solo la primera vez.** Quién decide eso es `App.jsx`, que
 // pregunta al árbol de datos si queda onboarding pendiente; aquí se da por
@@ -84,6 +86,7 @@ import Genero from './Genero'
 import Motivo from './Motivo'
 import Horarios from './Horarios'
 import Recordatorios from './Recordatorios'
+import { PreguntaAfinidades, PreguntaModo } from '@components/shared/PreguntasReferencias'
 import CuentaPaso from './Cuenta'
 import Cierre from './Cierre'
 
@@ -92,13 +95,21 @@ import { useOnboarding } from '@/onboarding/useOnboarding'
 import { alternar as alternarGenero } from '@/onboarding/genero'
 import { alternar as alternarMotivo } from '@/onboarding/motivos'
 import { pedirPermiso } from '@/onboarding/recordatorios'
+import { alternarAfinidad, alternarModo } from '@/referencias/preferencias'
 import { crearConCorreo, entrarConProveedor } from '@lib/cuenta'
 import { useSesion } from '@lib/useSesion'
 
 const textos = copy.diario.onboarding
 
 /** Los pasos cuyo avance es un "Continuar" y nada más. */
-const CON_CONTINUAR = [PASOS.nombre, PASOS.genero, PASOS.motivo, PASOS.horarios]
+const CON_CONTINUAR = [
+  PASOS.nombre,
+  PASOS.genero,
+  PASOS.motivo,
+  PASOS.horarios,
+  PASOS.referencias,
+  PASOS.afinidades,
+]
 
 /**
  * ¿Toca umbral en esta sesión?
@@ -156,6 +167,30 @@ export default function Onboarding({ uid, onTerminado }) {
   const crearCuenta = async (correo, contrasena) =>
     conectar(await crearConCorreo(correo, contrasena))
 
+  // SPEC_28 — Las referencias de las frases. Se guardan al tocar y solo en el
+  // dispositivo. Las respuestas que se guardan son las de este toque: el
+  // estado de React todavía no las tiene.
+  const elegirModo = (id) => {
+    const modo = alternarModo(respuestas.referenciasModo, id)
+    acciones.responder('referenciasModo', modo)
+    acciones.guardarReferencias({ ...respuestas, referenciasModo: modo })
+  }
+
+  const elegirAfinidad = (id) => {
+    const afinidades = alternarAfinidad(respuestas.afinidades, id)
+    acciones.responder('afinidades', afinidades)
+    acciones.guardarReferencias({ ...respuestas, afinidades })
+  }
+
+  // «Omitir por ahora» sigue sin elegir: suelta lo que hubiera tocado y avanza.
+  // Con «Quiero elegir referencias» y ninguna afinidad, las frases son las de
+  // quien todavía no decidió.
+  const omitirAfinidades = () => {
+    acciones.responder('afinidades', [])
+    acciones.guardarReferencias({ ...respuestas, afinidades: [] })
+    acciones.avanzar()
+  }
+
   const entrar = async () => {
     await acciones.terminar()
     onTerminado()
@@ -199,6 +234,17 @@ export default function Onboarding({ uid, onTerminado }) {
         dormir={respuestas.dormir}
         onDespertar={(valor) => acciones.responder('despertar', valor)}
         onDormir={(valor) => acciones.responder('dormir', valor)}
+      />
+    ),
+    [PASOS.referencias]: () => (
+      <PreguntaModo textos={textos.p5r} valor={respuestas.referenciasModo} onTocar={elegirModo} />
+    ),
+    [PASOS.afinidades]: () => (
+      <PreguntaAfinidades
+        textos={textos.p5ra}
+        valor={respuestas.afinidades}
+        onTocar={elegirAfinidad}
+        onOmitir={omitirAfinidades}
       />
     ),
     [PASOS.recordatorios]: () => (
