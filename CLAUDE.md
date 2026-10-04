@@ -1,6 +1,6 @@
 # CLAUDE.md — Strivo
 
-**Última actualización:** 3 oct 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding · en la rama `una-pausa`, el modelo y el canal de Una pausa (SPEC_28.1 y 28.2)
+**Última actualización:** 4 oct 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding · en la rama `una-pausa`, el modelo, el canal y la sección de Una pausa (SPEC_28.1 a 28.3)
 **Blueprint (documento rector):** `/docs/blueprint/Strivo_Blueprint_de_Producto_v5_0_24-08-2026.md`
 **Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO.md`
 **Plan operativo del repliegue:** `/docs/Strivo_Plan_de_Separacion_Tecnica_v1_24-08-2026.md`
@@ -41,7 +41,7 @@ esfuerzo**. Ninguna pieza de copy explica su origen ni lo usa como llamada a la 
 
 ---
 
-## 2. Navegación (cinco destinos, repartidos en dos barras)
+## 2. Navegación (seis destinos, repartidos en dos barras)
 
 ```
 Strivo
@@ -52,7 +52,8 @@ Strivo
 │   │   ├── Mañana     → 3 momentos → cierre → consulta
 │   │   └── Noche      → 3 momentos → cierre → consulta
 │   ├── /journal       escritura libre, protegible con PIN
-│   └── /respiracion   configuración → sesión → cierre
+│   ├── /respiracion   configuración → sesión → cierre
+│   └── /una-pausa     la de la semana → archivo → detalle   (rama `una-pausa`)
 │
 └── barra inferior — lo que ya pasó, y tú
     ├── /historial     calendario → día completo
@@ -70,8 +71,8 @@ ningún sitio por encima del producto; lleva a dos destinos que ya estaban dentr
 
 | Regla | Enunciado |
 |---|---|
-| **RN-NAV-01** | **Cinco destinos: tres arriba, dos abajo.** Un sexto exige revisar el capítulo 4, no basta con añadirlo — la puerta sigue cerrada, solo se movió una vez y a la vista. El blueprint §4 está pendiente de esta revisión. |
-| **RN-NAV-02** | Orden fijo. Arriba **Hoy · Journal · Respiración**; abajo **Historial · Tu perfil**. El razonamiento no cambió, se cumple mejor: el Historial ya no tiene que encajar al final de una lista de cosas que se hacen hoy, porque no está en ella. |
+| **RN-NAV-01** | **Seis destinos: cuatro arriba, dos abajo** (4 oct 2026, DP-28.1, en la rama `una-pausa`). Eran cinco —tres arriba, dos abajo—; Una pausa es el sexto, y la regla se cambió a la vista, que es lo que pedía antes de añadirlo. Un séptimo exige revisar el capítulo 4 otra vez, no basta con añadirlo. **El blueprint §4 sigue pendiente de revisión**, de esta y de la del 26 de agosto. |
+| **RN-NAV-02** | Orden fijo. Arriba **Hoy · Journal · Respiración · Una pausa**; abajo **Historial · Tu perfil**. El razonamiento no cambió, se cumple mejor: el Historial ya no tiene que encajar al final de una lista de cosas que se hacen hoy, porque no está en ella. Una pausa va la última de arriba porque se renueva una vez por semana. **Con cuatro, la cabecera se desplaza en horizontal y no se parte en dos filas** (DP-28.2): la activa siempre a la vista, un fundido en el borde que tiene más. |
 | **RN-NAV-03** | Profundidad máxima de tres toques desde cualquier punto. |
 | **RN-NAV-04** | La navegación se oculta durante la escritura activa y las secuencias de cierre. Son estados de flujo, no de navegación. |
 | **RN-NAV-05** | Volver a una sección devuelve donde estabas, no a su raíz. Se olvida entre sesiones a propósito. |
@@ -277,7 +278,7 @@ catálogo son decorativos y van ocultos al lector de pantalla.
 | **RN-07** | Ningún dato identificable ni contenido escrito sale en analítica. |
 | **RN-08** | Lo escrito debe ser exportable. |
 | **RN-09** | Toda pantalla es abandonable sin coste y sin confirmación. |
-| **RN-10** | Cinco destinos máximo —tres en la cabecera, dos en la barra de abajo—; tres toques de profundidad máxima. |
+| **RN-10** | Seis destinos máximo —cuatro en la cabecera, dos en la barra de abajo (DP-28.1, 4 oct 2026)—; tres toques de profundidad máxima. |
 | **RN-11** | **Un día se escribe hasta 72 horas después de haber empezado.** La ventana es deslizante y continua: no se reinicia a medianoche y no depende de la franja de la mañana ni de la noche. Pasado el plazo el día **se lee entero y no se toca** — nunca se oculta ni desaparece. Ningún día futuro se puede escribir. |
 
 **Verifica estas antes de cada feature: si viola una regla, no entra.**
@@ -568,7 +569,11 @@ src/
 ├── onboarding/      cómo se entra: pasos · catálogos · estado
 ├── perfil/          bloques de Tu perfil y su estado
 ├── breathing/       la herramienta completa
-├── unaPausa/        la cápsula de la semana — hoy solo modelo/ (SPEC_28, rama `una-pausa`)
+├── unaPausa/        la cápsula de la semana (SPEC_28, rama `una-pausa`)
+│   ├── modelo/      las reglas editoriales y la forma del canal, lógica pura (28.1, 28.2)
+│   ├── canal/       leer el canal y su caché `strivo-contenido` (28.3)
+│   └── *.jsx        la sección: UnaPausa · Capsula · Fuentes · Archivo · Estado ·
+│                    LimiteDeErrores, con useUnaPausa y fecha (28.3)
 ├── components/
 │   ├── shared/      Simbolo · TransicionLuz · Campo · Chips · pildora · BarraInferior
 │   ├── ui/          primitivas
@@ -657,6 +662,14 @@ el componente.**
   la app en 28.3 y lo escribirá igual el servidor de Fase B.
 - `src/unaPausa/modelo/portada.js` → si un archivo de portada es lo que DP-28.4 pide (`PORTADA`:
   WebP, 1600 × 1200, 250 000 bytes). Recibe bytes, no rutas: leer el archivo es del script.
+- `src/unaPausa/canal/leer.js` → **el único sitio que sabe leer el canal**: `urlDelCanal`
+  (`VITE_URL_CANAL` o `URL_CANAL`), `leerCanal` —nunca lanza, devuelve un motivo por código, tope de
+  10 s— y `esCanal`, que es también lo que la caché exige antes de guardar.
+- `src/unaPausa/useUnaPausa.js` → `estadoDeLaSeccion`: qué pinta la sección con lo que hay en
+  caché, lo que dijo la lectura y si hay red. Es la tabla de SPEC_28.3 §4.4, probada fila a fila.
+- `src/components/diario/cabeceraDesplazable.js` → cuánto desplazar la cabecera para que una píldora
+  se vea entera y en qué borde va el fundido. `FUNDIDO` vale lo mismo que `--fundido-cabecera` en
+  `globals.css`, y una prueba los compara.
 
 **Pila:** React + Vite (PWA) · IndexedDB local + Firestore para sync · Firebase Auth · Netlify con
 publicación automática · Vitest.
@@ -702,7 +715,8 @@ rama de resguardo está creada y congelada, la rama activa es `strivo`, y el có
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
 **77 archivos de prueba · 2.083 casos · los seis comandos en verde.** En la rama `una-pausa`, tras
-SPEC_28.1: **84 archivos · 2.498 casos**; tras SPEC_28.2: **90 archivos · 2.733 casos**.
+SPEC_28.1: **84 archivos · 2.498 casos**; tras SPEC_28.2: **90 archivos · 2.733 casos**; tras
+SPEC_28.3: **95 archivos · 2.854 casos**.
 
 ### Marca: el logo oficial y el video de apertura (25 ago 2026)
 
@@ -1590,7 +1604,7 @@ tocó: ni un archivo, ni un cherry-pick, ni una línea de copy.
 
 **Qué es.** Una cápsula por semana —un tema, lo que dice la evidencia con sus fuentes, una
 invitación y una pregunta— que se publica los lunes a las 00:00 de Monterrey y es la misma para
-todos. Será la sexta sección; entra en 1.0 solo si está terminada y gusta a tiempo (DP-28.0, corte
+todos. Es la sexta sección desde 28.3; entra en 1.0 solo si está terminada y gusta a tiempo (DP-28.0, corte
 el 9 de noviembre). La SPEC es `docs/specs/SPEC_28_UNA_PAUSA.md` (v0.4) y cada entrega tiene su
 instrucción.
 
@@ -1700,9 +1714,62 @@ y escribe `feed.json`, y los dos sitios de Netlify que lo sirven. La instrucció
 **Estado:** 28.2 cerrada en código el 4 oct; M1, M2 y M4 (sitio del canal y
 `contenido.hellostrivo.com`) diferidos hasta crear ese sitio, antes del 20 nov.
 
-**Lo que esto no hizo:** la pestaña y la sección (28.3) —y con ella la enmienda de RN-NAV-01/02,
-la lectura del canal, la caché `strivo-contenido` y `VITE_URL_CANAL` en el código—, los accesos
-desde Hoy (28.4) ni ninguna cápsula (28.5).
+**Lo que 28.2 no hizo** —la pestaña, la sección, la lectura del canal y su caché— lo hizo 28.3.
+
+**28.3 es la sección** (4 oct 2026): la cuarta píldora, la cápsula vigente, el archivo, el detalle,
+la lectura del canal y su caché. La instrucción es `docs/specs/INSTRUCCION_SPEC_28_3_SECCION.md`.
+
+- **La cabecera se desplaza, no se parte** (DP-28.1, DP-28.2). Una fila sin `flex-wrap`, píldoras
+  con `whitespace-nowrap`. La activa se ve siempre entera: al montar y al cambiar de ruta la lista
+  hace `scrollTo` —nunca `scrollIntoView`, que movería también la página— y sin animación con
+  movimiento reducido. **El fundido es una máscara** con paradas `currentColor` y `transparent`, solo
+  en el borde que tiene más: no escribe ningún color, así que vale sobre el contratono y sobre el
+  rango claro de la Noche de Hoy. `scroll-padding-inline` es el ancho del fundido, y así la píldora
+  que llega con el foco nunca queda debajo de él.
+- **La lectura del canal nunca lanza.** `{ ok, canal }` o `{ ok: false, motivo }` con un código
+  (`red`, `estado`, `tipo`, `json`, `formato`, `espera`). Un 200 con HTML es `tipo`: en el sitio de la
+  app, una ruta inexistente bajo `/una-pausa/` devuelve `index.html`. Tope de 10 s con
+  `AbortController`, sin credenciales ni referente. Las portadas se resuelven **contra la URL del
+  canal**, no contra la página.
+- **La caché `strivo-contenido` vive fuera del árbol del usuario**, porque lo que guarda es contenido
+  público y el mismo para todos: no entra en la cola, no se exporta, no se restaura y no se borra al
+  salir de la cuenta. Ningún archivo de `src/unaPausa/` importa `lib/db`, `firebase` ni `firestore`
+  —prueba de repo—, y su nombre solo aparece en `canal/cache.js`. Guarda el último canal válido —uno
+  inválido no pisa uno bueno— y **solo la portada de la vigente**, como bytes y tipo y no como
+  `Blob`, que algunas versiones de Safari no sabían guardar. No depende del service worker, que en
+  Capacitor no existe. Sin IndexedDB, la sección funciona igual, sin caché.
+- **Qué ve la persona lo decide `estadoDeLaSeccion`.** Con caché, se enseña enseguida y un fallo
+  de red no se ve (RN-EST-05); sin caché, vacío sin red y error con red; mientras se lee, la forma
+  final vacía (RN-EST-02). El `objectURL` de la portada guardada se libera al desmontar y al cambiar
+  de portada (`crearPortadaLocal`).
+- **Un error en Una pausa se queda en Una pausa.** `LimiteDeErrores` —la única clase del árbol—
+  envuelve la ruta en `App.jsx`; la cabecera, la barra y las otras secciones están fuera. **Lo que un
+  límite de errores no ve son los errores de los manejadores de eventos y de las promesas.** Por eso
+  `leerCanal` y la caché no lanzan y `cargarSeccion` no rechaza; **un manejador nuevo dentro de la
+  sección tiene que atrapar lo suyo**, porque ningún límite lo hará. Como las pruebas corren sin DOM,
+  la garantía son cinco pruebas, no una que monte `App` (desvío 3 de la instrucción).
+- **La piloto también en el archivo de la vista previa** (DP-28.19), con la semana del canal menos 7
+  días; si comparte fecha con una publicada, va detrás. El detalle busca en el archivo antes que en
+  la vigente, porque en la vista previa la piloto está en los dos. El canal de producción no cambia.
+- **`theme` no se pinta** (DP-28.24): la etiqueta es «Tema de la semana» y el encabezado, `title`.
+  **El archivo es una lista de texto**, título y fecha, sin portada ni contador (DP-28.25).
+- **La pregunta y la práctica `journal` se leen y no llevan control**: abrir el Journal es de 28.4,
+  y un botón que no hace nada es peor que no tenerlo. La práctica `breathing` enlaza a la ruta que
+  `App.jsx` le pasa.
+- **Cada vista tiene un `h1` que recibe el foco sin anillo** (`.una-pausa-encabezado`, como
+  Respiración). En cargando, vacío y error es «Una pausa», solo para el lector de pantalla.
+- **El contenedor que se esconde con `hidden` no lleva clases de `display`**: `flex` le gana —misma
+  especificidad, y las utilidades van después— y las fuentes se veían cerradas. Lo encontró el
+  recorrido en Chromium con toda la suite en verde, y ahora hay una prueba.
+- **Sin pares de contraste nuevos**: la sección usa los de la base de fuera de Hoy y del cromo, y
+  `lint-contraste.js` dice cuáles.
+- **Verificado en Chromium con Playwright** a 320, 375 y 390 px y con la letra al 200 %, sobre un
+  build de vista previa con un canal de prueba que no vive en `contenido/`.
+
+**Lo que esto no hizo:** los accesos desde Hoy, volver al mismo punto del ritual y abrir el Journal
+con la pregunta (28.4); la quinta tarjeta de la presentación (DP-28.11, con la piloto); ninguna
+cápsula (28.5). **En desarrollo local la sección dice el estado de error**: sin `VITE_URL_CANAL`,
+la app lee `contenido.hellostrivo.com`, que no existe hasta que se cree el sitio del canal.
 
 ---
 

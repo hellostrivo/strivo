@@ -3,7 +3,9 @@
 **Para:** la fundadora (decisiones) y, entrega por entrega, Claude Code (ejecución)
 **Rama de trabajo propuesta:** `una-pausa`, creada desde `strivo` en `1aa5e87` (2 oct 2026)
 **Gobierna junto con:** `SPEC_00B` + `CLAUDE.md` + el brief de «Una pausa» del 3 oct 2026
-**Versión:** 0.4 — 3 oct 2026. Cierra DP-28.0 a 28.4, 28.12, 28.16, 28.17, 28.21 y 28.23; abre DP-28.20. Cada entrega tiene instrucción propia: `INSTRUCCION_SPEC_28_1_MODELO.md`, `INSTRUCCION_SPEC_28_2_CANAL.md`.
+**Versión:** 0.5 — 4 oct 2026. Cierra DP-28.0 a 28.4, 28.12, 28.16, 28.17, 28.19, 28.21, 28.23, 28.24 y 28.25; abre DP-28.20. Cada entrega tiene instrucción propia: `INSTRUCCION_SPEC_28_1_MODELO.md`, `INSTRUCCION_SPEC_28_2_CANAL.md`, `INSTRUCCION_SPEC_28_3_SECCION.md`.
+
+> **Cambios desde 0.4:** 28.3 reescrita según su instrucción, con la ubicación real y los desvíos 1 a 4 (§7). DP-28.19, 28.24 y 28.25 cerradas; DP-28.11 queda para la piloto, fuera de 28.3 (§5).
 
 > **Cambios desde 0.3:** el canal lo construye un segundo sitio de Netlify y la vista previa sale solo en los deploys de rama de la app; el build de producción de la app no cambia (§3.1). Hasta la fusión no hay cron (DP-28.17). DP-28.12, 28.16, 28.17, 28.21 y 28.23 cerradas; DP-28.20, abierta (§5). 28.2 reescrita según su instrucción (§7).
 
@@ -165,12 +167,15 @@ Las marcadas **⛔** bloquean la entrega indicada.
 | **DP-28.8** | ¿Una pausa se lee en modo lectura (prueba vencida sin pago)? | Sí. No es escritura, y Respiración ya funciona en ese modo (DP-25.1). | 28.3 / SPEC_25 |
 | **DP-28.9** | Regla editorial: ¿«revisar y modificar» o «revisar»? ¿Validación «el miércoles» o «a más tardar el miércoles»? | «Revisar cada sección» (marca por sección, no edición forzada) y «a más tardar el miércoles previo, 23:59 Monterrey». | 28.1 |
 | **DP-28.10** | ¿«Date una pausa» se muestra si no hay ninguna cápsula conocida (primer arranque sin red)? | Se oculta hasta que haya una en caché o en red. Con la reserva, eso solo pasa la primera vez. | 28.4 |
-| **DP-28.11** | ¿La presentación gana una quinta tarjeta? | Sí, si DP-28.0 dice 1.0; se escribe con la cápsula piloto. | 28.3 |
+| **DP-28.11** | ¿La presentación gana una quinta tarjeta? | Sí, si DP-28.0 dice 1.0; se escribe con la cápsula piloto. **Con la piloto, fuera de 28.3** (4 oct). | 28.5 |
 | **DP-28.12** ✅ | Recordatorio editorial del miércoles en Fase A. | **Cerrada 3 oct (adenda de 28.1):** una GitHub Action los miércoles abre un issue si el lunes siguiente no tiene una cápsula `programada` válida; el cuerpo dice qué pasará ese lunes —la reserva que entra, la que se repite o ninguna—. GitHub lo manda por correo. Corre solo cuando `strivo` sea la rama por defecto (DP-28.17); hasta entonces, los plazos los lleva la fundadora (prevalidación de la cápsula del 7 dic: 9 nov). Ampliada por DP-28.23. | — |
 | **DP-28.13** | Alcance de la exención léxica. Decidido: «estrés» y «ansiedad» se permiten en Una pausa y los criterios se revisan al terminar la piloto. Abierto: ¿solo esas dos palabras, o también sus derivadas («ansioso», «estresante»)? | Solo las dos, con sus plurales. El resto de `CLINICO` («terapia», «síntoma», «tratamiento», «cura», «trastorno», «pánico») sigue fuera. La exención vive en una constante y caduca con la adenda de la piloto. | 28.1 |
 | **DP-28.14** | ¿Las fotografías pueden mostrar personas? | Sin rostros reconocibles: manos, siluetas de espaldas, paisajes, objetos, luz. Un rostro fotorrealista inventado en una app íntima se lee como una persona real que no dio permiso. | 28.5 |
 | **DP-28.16** ✅ | Vista previa de la piloto. | **Cerrada 3 oct (adenda de 28.1):** **vista previa solo en los deploys de rama de la app.** En ese contexto el build genera además un `feed.json` propio, servido en el mismo origen, con la piloto como vigente. La app lee la URL del canal de una variable de build cuyo valor por defecto es `URL_CANAL`. El canal de producción nunca incluye la piloto. | — |
 | **DP-28.17** ✅ | Cuándo corren los workflows. | **Cerrada 3 oct (adenda de 28.1):** **hasta la fusión, sin cron:** no hay público, el sitio del canal publica desde `una-pausa` y se reconstruye a mano cuando haga falta. **Con la fusión**, los workflows entran en `strivo` y el sitio del canal pasa a publicar desde `strivo`. **`strivo` tiene que ser la rama por defecto de GitHub antes del 7 dic**: GitHub solo ejecuta Actions programadas desde la rama por defecto, que hoy es `main`. La promoción se decide en el proyecto de lanzamiento. | — |
+| **DP-28.19** ✅ | ¿La piloto también en el archivo de la vista previa? | **Cerrada 4 oct (instrucción de 28.3):** sí, para recorrer en el teléfono vigente → archivo → detalle antes de que haya ninguna publicada. La misma cápsula, sin inventar nada, con `publicadaEl` = la semana del canal menos 7 días, en el orden del archivo; si comparte fecha con una publicada, va detrás. El detalle busca en el archivo antes que en la vigente. **El canal de producción no cambia.** | — |
+| **DP-28.24** ✅ | ¿Qué se pinta de `theme`? | **Cerrada 4 oct:** nada. La etiqueta editorial es la frase fija «Tema de la semana» y el encabezado es `title`; `theme` es el nombre del calendario editorial y repetirlo bajo el título diría dos veces lo mismo. | — |
+| **DP-28.25** ✅ | ¿Cómo es el archivo? | **Cerrada 4 oct:** una lista de texto, título y fecha, sin portada. La portada se ve en el detalle: una lista de fotos se lee como un catálogo, y sin conexión serían huecos. | — |
 | **DP-28.20** | Antes de la primera `programada`, ¿cubre una reserva una semana vacía? | **Abierta.** Hoy no: el calendario empieza en la primera programada que ya llegó, así que si la cápsula del 7 dic no está `programada`, ese lunes no hay ninguna aunque haya reservas aprobadas. El recordatorio del miércoles lo dice así. Se decide fuera de 28.2. | — |
 | **DP-28.21** ✅ | ¿Puede el contenido tumbar un deploy de rama? | **Cerrada 3 oct:** no. Con `--vista-previa` el script sale siempre con 0; las faltas se imprimen como avisos y el canal deja fuera lo inválido. Sin `--vista-previa`, una falta en una `aprobada` o `programada` rompe el build. Tras la fusión, `branch-deploy` corre en los deploys de revisión del lanzamiento, y el contenido editorial no puede tumbarlos. Lo decide `codigoDeSalida`, exportada y probada. | — |
 | **DP-28.23** ✅ | ¿Avisa el recordatorio si el canal del lunes no se podría construir? | **Cerrada 4 oct (adenda de 28.2):** sí. Si hay faltas que romperían el build de producción, el recordatorio abre el issue aunque el lunes tenga programada válida, con una línea por falta. Lo decide `revisar`, en `publicar-pausa.js`; el recordatorio no copia la regla. | — |
@@ -239,22 +244,28 @@ Una SPEC a la vez, como siempre. Cada una se convierte en instrucción para Clau
 
 #### SPEC_28.3 — La sección · ~10 h
 
-**Ubicación:** `src/unaPausa/` (`UnaPausa.jsx`, `Capsula.jsx`, `Fuentes.jsx`, `Archivo.jsx`, `useCapsula.js`, `cache.js`), `src/App.jsx` (ruta `/una-pausa/*`), `src/components/diario/NavStrivo.jsx`, `src/copy/index.js` (`copy.unaPausa.*` y `navegacion.diario.secciones.unaPausa`), `eslint.config.js` (frontera del módulo), `CLAUDE.md` §2 y §11.
+**Ubicación:** `src/unaPausa/` (`UnaPausa.jsx`, `Capsula.jsx`, `Fuentes.jsx`, `Archivo.jsx`, `Estado.jsx`, `LimiteDeErrores.jsx`, `useUnaPausa.js`, `fecha.js`), `src/unaPausa/canal/` (`leer.js`, `cache.js`), `src/unaPausa/modelo/canal.js` (la piloto en el archivo de la vista previa), `src/App.jsx` (ruta `/una-pausa/*` dentro de su límite de errores), `src/components/diario/NavStrivo.jsx` y `cabeceraDesplazable.js`, `src/styles/globals.css` (la cabecera desplazable y `.una-pausa-encabezado`), `src/copy/index.js` (`copy.unaPausa` al final del objeto y `shared.navegacion.diario.secciones.unaPausa`), `eslint.config.js` (cuatro globales del navegador; la frontera del módulo ya estaba desde 28.1), `scripts/lint-contraste.js` (comentario, sin pares nuevos), `CLAUDE.md` §2, §5, §11 y §13. Instrucción: `INSTRUCCION_SPEC_28_3_SECCION.md`.
 
-**Actual:** cabecera con tres destinos.
-**Esperado:** cuarta píldora «Una pausa» tras Respiración, con el comportamiento de DP-28.2. La sección muestra la cápsula vigente en el orden del brief (etiqueta, título, apertura, portada, lo que sabemos, llévalo a tu día, una pregunta para ti, fuentes desplegables con aviso educativo y la línea de transparencia) y «Explorar pausas anteriores», que lleva a `/una-pausa/archivo` y de ahí a `/una-pausa/:id`. Estados: cargando sin rueda (la forma final vacía, RN-EST-02), sin conexión con la última en caché, vacío y error en tono sereno con reintento.
+**Actual:** cabecera con tres destinos; el canal existe y nadie lo lee.
+**Esperado:** cuarta píldora «Una pausa» tras Respiración, en una cabecera que se desplaza en horizontal (DP-28.2). La sección muestra la cápsula vigente en el orden del brief (etiqueta, título, apertura, portada, lo que sabemos, llévalo a tu día, una pregunta para ti, fuentes desplegables con aviso educativo y la línea de transparencia) y «Explorar pausas anteriores» si el archivo tiene algo, que lleva a `/una-pausa/archivo` y de ahí a `/una-pausa/:id`. La lectura del canal nunca lanza, comprueba que la respuesta es JSON y tiene un tope de 10 s; la caché `strivo-contenido` guarda el último canal válido y la portada de la vigente, fuera del árbol del usuario. Estados: cargando sin rueda (la forma final vacía, RN-EST-02), sin conexión con la última en caché, vacío y error en tono sereno con reintento.
+
+**Desvíos resueltos en la §0:**
+1. «Ningún rótulo de la cabecera se trunca: son de una palabra» se deroga: «Una pausa» son dos. Lo garantiza `whitespace-nowrap` en las píldoras y una lista sin `flex-wrap`, con su prueba.
+2. RN-10 y RN-NAV-01/02 se enmiendan a seis destinos en `CLAUDE.md`. **El blueprint §4 sigue pendiente de revisión.**
+3. «Una prueba que monta `App` con el `fetch` fallando» no se puede escribir así: las pruebas corren en Node y pintan con `renderToStaticMarkup`, que no ejecuta efectos ni límites de error. La garantía son cinco pruebas: `leerCanal` nunca lanza; `cargarSeccion` con todo fallando no rechaza; el límite de errores pintado a HTML da el estado `error`; la ruta de Una pausa es la única dentro del límite y la cabecera y la barra van fuera de las rutas; nadie fuera de `App.jsx` importa `unaPausa/`. Lo que un límite no ve —los errores de los manejadores de eventos— está anotado en `CLAUDE.md`.
+4. La pregunta y la práctica `journal` se leen y no llevan control: abrir el Journal es de 28.4.
 
 **Criterios:**
 1. A 320, 375 y 390 px la cabecera no se parte en dos filas, ninguna píldora se recorta y la activa queda visible al entrar por enlace directo a `/una-pausa`.
-2. Navegación por teclado completa; el desplegable de fuentes es un `<button aria-expanded>`; enlaces de fuentes con `rel="noopener noreferrer"` y nombre accesible que dice que abren fuera.
+2. Navegación por teclado completa; el desplegable de fuentes es un `<button aria-expanded aria-controls>`; enlaces de fuentes con `rel="noopener noreferrer"` y nombre accesible que dice que abren fuera.
 3. Modo avión con una cápsula en caché: se ve entera, con portada. Sin caché: estado vacío, sin error.
-4. Con el canal devolviendo 500, Hoy, Journal, Respiración, Historial y Tu perfil funcionan igual (prueba que monta `App` con el `fetch` fallando).
-5. `strivo-contenido` no aparece en la cola de sincronización ni en ningún `setDoc` (prueba).
+4. Con el canal devolviendo 500, Hoy, Journal, Respiración, Historial y Tu perfil funcionan igual (desvío 3).
+5. `strivo-contenido` no aparece en la cola de sincronización ni en ningún `setDoc`: ningún archivo de `unaPausa/` importa `lib/db`, `firebase` ni `firestore` (prueba de repo).
 6. El archivo no tiene contadores, «me gusta», orden por popularidad ni marca de «leída».
-7. `lint:contraste` cubre las combinaciones nuevas en los dos momentos.
-8. Ningún módulo de `unaPausa/` importa `diario/` ni `breathing/` (regla de ESLint, no convención).
+7. `lint:contraste` cubre las combinaciones nuevas en los dos momentos: no hay pares nuevos, y el comentario nombra los que se reutilizan.
+8. Ningún módulo de `unaPausa/` importa `diario/` ni `breathing/` (regla de ESLint y prueba de repo).
 
-**Roza:** RN-NAV-01/02 (se enmiendan en este mismo commit de docs), RN-TEC-02, AAA, `prefers-reduced-motion` (el desplegable no anima con movimiento reducido), Firestore de solo escritura (no se toca: el canal es `fetch`).
+**Roza:** RN-NAV-01/02 y RN-10 (se enmiendan en el commit de docs), RN-TEC-02, AAA, `prefers-reduced-motion` (ni el desplegable ni la cabecera animan con él), Firestore de solo escritura (no se toca: el canal es `fetch`).
 
 #### SPEC_28.4 — Accesos desde Hoy y paso al Journal · ~6 h
 
