@@ -1,5 +1,5 @@
 // src/onboarding/__tests__/referencias.test.js
-// Las referencias de las frases en el onboarding y en Tu perfil (SPEC_28 §5–§7):
+// Las referencias de las frases en el onboarding y en Tu perfil (SPEC_29 §5–§7):
 // el copy es el del encargo, las dos superficies hacen la misma pregunta con
 // las mismas piezas, la elección se guarda y se relee, y no bloquea nada.
 

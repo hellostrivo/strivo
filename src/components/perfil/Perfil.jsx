@@ -33,7 +33,7 @@
 // para la nube, después dónde está lo tuyo. Tiene vistas propias —entrar,
 // crear, recuperar, salir— y por eso vive en su componente (`TuCuenta`).
 //
-// **Personaliza tus frases (SPEC_28)** tiene también vistas propias —resumen,
+// **Personaliza tus frases (SPEC_29)** tiene también vistas propias —resumen,
 // las dos preguntas del onboarding y las fuentes— y vive en `TusFrases`. Es la
 // invitación para quien terminó el onboarding antes de que existieran esas
 // preguntas: nada se le muestra al abrir la app.

@@ -120,7 +120,7 @@ export async function escribirRecordatorios(uid, carga, estado) {
  * de este árbol; el paso, siempre.
  */
 /**
- * Las referencias de las frases (SPEC_28). Viven solo en el dispositivo
+ * Las referencias de las frases (SPEC_29). Viven solo en el dispositivo
  * —`saveFrasesPreferencias` escribe sin cola—, y se escriben en el mismo árbol
  * que el resto de lo contestado. Soltar el modo elegido, que deja la pregunta
  * sin contestar, borra la elección: no queda una respuesta que nadie dio.

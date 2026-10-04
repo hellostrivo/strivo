@@ -1,5 +1,5 @@
 // src/content/frases-v2/construir.js
-// La forma de una frase del catálogo v2 y cómo se construye (SPEC_28 §8).
+// La forma de una frase del catálogo v2 y cómo se construye (SPEC_29 §8).
 //
 // **El catálogo es material editorial y vive separado de la lógica que lo
 // elige.** Aquí no se decide qué frase toca hoy: eso es de

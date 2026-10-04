@@ -1,5 +1,5 @@
 // src/content/frases-v2/budismo.js
-// Frases originales con referencias budistas (SPEC_28 §8.5).
+// Frases originales con referencias budistas (SPEC_29 §8.5).
 //
 // **Solo llegan a quien eligió Budismo.** Son redacción de Strivo, no citas:
 // cuando dicen «la tradición enseña», resumen una enseñanza con palabras

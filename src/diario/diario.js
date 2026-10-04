@@ -76,7 +76,7 @@ export async function animoBajoReciente(uid, fecha) {
 
 /**
  * La frase de un día para esta persona, ya asignada o recién elegida
- * (SPEC_28 §11).
+ * (SPEC_29 §11).
  *
  * **Lo que ya se asignó manda.** Una asignación guardada para esta fecha y
  * esta huella de preferencias se devuelve tal cual, aunque el catálogo haya
@@ -197,7 +197,7 @@ export async function cargarDia(uid, fechaPedida = null) {
     // que se escribió en ellas.
     noches,
     // La misma para la Mañana y la Noche: depende de la fecha, de las
-    // preferencias de referencias y de lo que ya se asignó (SPEC_28).
+    // preferencias de referencias y de lo que ya se asignó (SPEC_29).
     frase: await fraseAsignada(uid, fecha, { animoBajo }),
   }
 }

@@ -1,5 +1,5 @@
 // src/content/frases-v2/espiritual.js
-// Frases espirituales sin una tradición específica (SPEC_28 §8.5).
+// Frases espirituales sin una tradición específica (SPEC_29 §8.5).
 //
 // Para quien eligió «Espirituales, sin una tradición específica». Hablan del
 // interior, del silencio, de lo sagrado y de lo que trasciende, y **no

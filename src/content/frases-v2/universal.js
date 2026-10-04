@@ -1,6 +1,6 @@
 // src/content/frases-v2/universal.js
 // Frases universales: las puede leer cualquier persona, haya elegido lo que
-// haya elegido (SPEC_28 §8.5).
+// haya elegido (SPEC_29 §8.5).
 //
 // **Universal quiere decir neutral, no «para todos los gustos».** Ninguna de
 // estas frases nombra una tradición, una práctica religiosa, un concepto

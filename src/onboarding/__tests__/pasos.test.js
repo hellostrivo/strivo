@@ -1,5 +1,5 @@
 // src/onboarding/__tests__/pasos.test.js
-// El recorrido: ocho pasos, dos sub-pasos y ningún hueco (SPEC_28).
+// El recorrido: ocho pasos, dos sub-pasos y ningún hueco (SPEC_29).
 //
 // Lo que estas pruebas custodian no es el orden por el orden: es que el género
 // siga sin contar en el indicador. Un día alguien va a querer "arreglar" que

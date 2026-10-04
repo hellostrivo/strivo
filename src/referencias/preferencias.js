@@ -1,5 +1,5 @@
 // src/referencias/preferencias.js
-// Qué referencias quiere encontrar alguien en sus frases del día (SPEC_28).
+// Qué referencias quiere encontrar alguien en sus frases del día (SPEC_29).
 //
 // **Es una preferencia de contenido, no una declaración de identidad.** La
 // pregunta no es «¿en qué crees?»: es qué tipo de referencias te gustaría

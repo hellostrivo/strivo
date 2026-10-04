@@ -194,7 +194,7 @@ export function useOnboarding(uid, { conectar, sello = 0 } = {}) {
   )
 
   /**
-   * Las referencias de las frases (SPEC_28): se guardan al tocar, como todo
+   * Las referencias de las frases (SPEC_29): se guardan al tocar, como todo
    * toque, y solo en el dispositivo. Reciben las respuestas ya actualizadas
    * porque el estado de React todavía no las tiene en este mismo toque.
    */
@@ -233,7 +233,7 @@ export function useOnboarding(uid, { conectar, sello = 0 } = {}) {
   const avanzar = useCallback(async () => {
     await guardarAhora()
     // Las respuestas deciden qué pasos tocan: el de las afinidades solo se
-    // recorre si se eligió «Quiero elegir referencias» (SPEC_28).
+    // recorre si se eligió «Quiero elegir referencias» (SPEC_29).
     ir(siguiente(paso, respuestas), respuestas)
   }, [guardarAhora, ir, paso, respuestas])
 

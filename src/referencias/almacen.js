@@ -1,6 +1,6 @@
 // src/referencias/almacen.js
 // Dónde vive la preferencia de frases: en el dispositivo y en ningún otro sitio
-// (SPEC_28 §7).
+// (SPEC_29 §7).
 //
 // Las tres funciones pasan por `shared` de la capa de datos, que escribe con
 // `sync: false`; `local.js` además reconoce la ruta y no la encola nunca. Lo

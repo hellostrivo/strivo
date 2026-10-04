@@ -106,7 +106,7 @@ const BREATHING_FILES = [
   'src/components/breathing/**/*.{js,jsx}',
 ]
 
-// SPEC_28 — Las referencias de las frases son territorio neutral: las leen el
+// SPEC_29 — Las referencias de las frases son territorio neutral: las leen el
 // onboarding, Tu perfil y el diario, así que no pueden importar de ninguno de
 // los tres, ni de Respiración. Lo mismo vale para el catálogo de contenido.
 const REFERENCIAS =

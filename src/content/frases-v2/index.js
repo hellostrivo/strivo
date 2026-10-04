@@ -1,5 +1,5 @@
 // src/content/frases-v2/index.js
-// El catálogo de frases del día, versión 2 (SPEC_28).
+// El catálogo de frases del día, versión 2 (SPEC_29).
 //
 // Reúne las siete audiencias y las citas candidatas en una sola lista y
 // responde a dos preguntas: qué frases existen (`FRASES_V2`, todas, también las
@@ -10,7 +10,7 @@
 // El repertorio anterior (`../frases-del-dia.js`, 200 entradas) **sigue en el
 // repo y no se toca**: es el que sabe resolver una asignación de la versión 1
 // si alguna existiera, y retirarlo antes de tiempo dejaría sin respuesta lo
-// que ya se vio (SPEC_28 §13).
+// que ya se vio (SPEC_29 §13).
 
 import universal from './universal.js'
 import secular from './secular.js'

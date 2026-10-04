@@ -1,7 +1,7 @@
 // src/onboarding/pasos.js
 // El recorrido del onboarding: qué pasos hay, en qué orden y cuáles cuentan.
 //
-// **Ocho pasos y dos sub-pasos** (SPEC_28, 4 oct 2026). El género (P2A) no es un paso: es una pregunta
+// **Ocho pasos y dos sub-pasos** (SPEC_29, 4 oct 2026). El género (P2A) no es un paso: es una pregunta
 // que cuelga del nombre, para saber cómo hablarle a quien acaba de escribirlo.
 // Por eso no entra en la cuenta del indicador — la misma razón por la que la
 // pausa opcional de la mañana no entra en la suya (RN-MAN-02): un total que
@@ -30,7 +30,7 @@
  * la versión sube igualmente porque es lo que distingue a quien terminó con la
  * presentación delante de quien terminó antes de que existiera. De eso depende
  * que a nadie que ya entró le aparezca de golpe (`presentacion/entrada.js`).
- * 4 — entran las referencias de las frases (SPEC_28): un paso nuevo detrás de
+ * 4 — entran las referencias de las frases (SPEC_29): un paso nuevo detrás de
  * los horarios (`p5r`) y su sub-paso (`p5ra`). Quien terminó con una versión
  * anterior no lo vuelve a ver: el recorrido no se repite, y la invitación vive
  * en Tu perfil. Sube la versión para saber a quién se le preguntó.

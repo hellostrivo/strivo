@@ -1,5 +1,5 @@
 // src/diario/fraseDelDia.js
-// Qué frase le toca a un día, para unas preferencias (SPEC_28 §11).
+// Qué frase le toca a un día, para unas preferencias (SPEC_29 §11).
 //
 // Es aire, no información: la elección es local, sin red, sin uid y sin azar.
 // La misma fecha, las mismas preferencias y el mismo catálogo dan siempre la

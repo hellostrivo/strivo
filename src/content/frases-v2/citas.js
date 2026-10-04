@@ -1,5 +1,5 @@
 // src/content/frases-v2/citas.js
-// Citas candidatas (SPEC_28 §9).
+// Citas candidatas (SPEC_29 §9).
 //
 // **Ninguna es elegible todavía.** Todas están en `pendiente_revision`: el
 // texto se cotejó contra una edición concreta de dominio público, pero falta

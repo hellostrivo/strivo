@@ -29,7 +29,7 @@
 // suelto que el del resto de la pantalla: lo que se lee despacio se compone
 // despacio.
 //
-// **Quién lo dijo va debajo, y solo cuando lo dijo alguien** (SPEC_28, 4 oct
+// **Quién lo dijo va debajo, y solo cuando lo dijo alguien** (SPEC_29, 4 oct
 // 2026). El repertorio tiene dos tipos de entrada y la diferencia no es de
 // catálogo, es de quién habla: una cita reproduce a alguien —y va
 // entrecomillada, con las mismas «» que la palabra propia en el resto del

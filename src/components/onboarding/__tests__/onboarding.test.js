@@ -171,7 +171,7 @@ describe('nada bloquea (RN-02, no-negociable 1)', () => {
 
 describe('el indicador cuenta ocho y los sub-pasos no se pintan', () => {
   it('el copy dice "Paso {n} de {total}" y el total son ocho', () => {
-    // Ocho desde SPEC_28: las referencias de las frases suman un paso; la
+    // Ocho desde SPEC_29: las referencias de las frases suman un paso; la
     // elección de las afinidades es un sub-paso y no cuenta.
     expect(textos.nav.progressTemplate).toBe('Paso {n} de {total}')
     expect(TOTAL).toBe(8)

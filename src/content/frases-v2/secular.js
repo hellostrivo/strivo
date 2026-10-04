@@ -1,6 +1,6 @@
 // src/content/frases-v2/secular.js
 // Frases seculares: para quien prefiere frases seculares y para quien todavía
-// no decidió (SPEC_28 §8.5).
+// no decidió (SPEC_29 §8.5).
 //
 // Hablan desde lo humano y lo natural —el cuerpo, la comunidad, el
 // conocimiento, la naturaleza— y **no contienen referencias religiosas ni

@@ -1,5 +1,5 @@
 // src/content/frases-v2/estoicismo.js
-// Frases originales con referencias estoicas (SPEC_28 §8.5).
+// Frases originales con referencias estoicas (SPEC_29 §8.5).
 //
 // **Solo llegan a quien eligió Estoicismo.** Son redacción de Strivo, no
 // citas: resumen ideas de la escuela con palabras propias y no ponen nada en

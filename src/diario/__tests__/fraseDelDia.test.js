@@ -1,5 +1,5 @@
 // src/diario/__tests__/fraseDelDia.test.js
-// La frase del día personalizada (SPEC_28 §14): selección, garantías de no
+// La frase del día personalizada (SPEC_29 §14): selección, garantías de no
 // repetición, audiencias, ánimo bajo, persistencia y presentación.
 
 import { beforeEach, describe, expect, it } from 'vitest'
