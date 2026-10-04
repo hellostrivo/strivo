@@ -1604,10 +1604,14 @@ export const copy = {
         // ya pasó y tú. El razonamiento del orden no cambia, se cumple mejor:
         // el Historial ya no tiene que ir "al final" de una lista de cosas que
         // se hacen hoy, porque no está en ella.
+        //
+        // **Seis desde el 4 de octubre de 2026** (SPEC_28.3, DP-28.1): Una
+        // pausa entra arriba, tras Respiración. Abajo no cambia nada.
         secciones: {
           hoy: 'Hoy',
           journal: 'Journal',
           respiracion: 'Respiración',
+          unaPausa: 'Una pausa',
           historial: 'Historial',
           perfil: 'Tu perfil',
         },

@@ -114,7 +114,8 @@ describe('la pestaña de la cabecera (24 ago)', () => {
     // **Revisión del 26 de agosto de 2026.** El Historial bajó a la barra
     // inferior, así que Respiración queda la última de la cabecera — y eso ya
     // no la mete en el pasado, que era todo el motivo de ponerla en medio: en
-    // la cabecera solo queda lo que se hace ahora.
+    // la cabecera solo queda lo que se hace ahora. Desde el 4 de octubre de
+    // 2026 la sigue Una pausa (SPEC_28.3), que tampoco es pasado.
     const secciones = nav.match(/const SECCIONES = \[[\s\S]*?\]/)[0]
     expect(secciones.indexOf("'journal'")).toBeLessThan(secciones.indexOf("'respiracion'"))
     expect(secciones).not.toContain("'historial'")
@@ -125,9 +126,18 @@ describe('la pestaña de la cabecera (24 ago)', () => {
     expect(codigoDe(APP)).toContain('path="/respiracion/*"')
   })
 
-  it('los cinco destinos tienen rótulo, aquí arriba y abajo', () => {
+  it('los seis destinos tienen rótulo, aquí arriba y abajo', () => {
+    // Seis desde el 4 de octubre de 2026: Una pausa entra arriba, detrás de
+    // Respiración (SPEC_28.3, DP-28.1).
     const secciones = copy.shared.navegacion.diario.secciones
-    expect(Object.keys(secciones)).toEqual(['hoy', 'journal', 'respiracion', 'historial', 'perfil'])
+    expect(Object.keys(secciones)).toEqual([
+      'hoy',
+      'journal',
+      'respiracion',
+      'unaPausa',
+      'historial',
+      'perfil',
+    ])
     Object.values(secciones).forEach((rotulo) => expect(rotulo.length).toBeGreaterThan(0))
   })
 })

@@ -23,6 +23,11 @@ import { join } from 'path'
 import { describe, expect, it } from 'vitest'
 
 import { copy } from '@copy'
+import {
+  FUNDIDO,
+  bordesConMas,
+  desplazamientoParaVer,
+} from '@components/diario/cabeceraDesplazable'
 
 const APP = 'src/App.jsx'
 const NAV = 'src/components/diario/NavStrivo.jsx'
@@ -122,30 +127,33 @@ describe('la cabecera lleva la marca y lo que se hace ahora', () => {
     expect(copy.shared.navegacion.diario.cabecera).toBe('Strivo')
   })
 
-  it('los cinco destinos están, repartidos en dos barras', () => {
+  it('los seis destinos están, repartidos en dos barras (DP-28.1)', () => {
     // El reparto es la decisión: arriba lo que se hace ahora —el día, lo que se
-    // escribe, el aire—, abajo lo que ya pasó y tú.
+    // escribe, el aire y una pausa—, abajo lo que ya pasó y tú. **Una pausa
+    // entra arriba el 4 de octubre de 2026** (SPEC_28.3); abajo no cambia nada.
     expect(Object.keys(copy.shared.navegacion.diario.secciones)).toEqual([
       'hoy',
       'journal',
       'respiracion',
+      'unaPausa',
       'historial',
       'perfil',
     ])
     const arriba = (nav.match(/id: '(\w+)'/g) ?? []).map((r) => r.match(/'(\w+)'/)[1])
     const abajo = (codigoDe(BARRA).match(/id: '(\w+)'/g) ?? []).map((r) => r.match(/'(\w+)'/)[1])
-    expect(arriba).toEqual(['hoy', 'journal', 'respiracion'])
+    expect(arriba).toEqual(['hoy', 'journal', 'respiracion', 'unaPausa'])
     expect(abajo).toEqual(['historial', 'perfil'])
   })
 
-  it('ningún rótulo de la cabecera se trunca: son de una palabra', () => {
-    // La regla es de la cabecera, donde los rótulos comparten una fila con el
-    // logo. La barra de abajo lleva dos y tiene sitio de sobra: "Tu perfil"
-    // cabe entero, y así es como se llama esa sección.
-    const secciones = copy.shared.navegacion.diario.secciones
-    ;['hoy', 'journal', 'respiracion'].forEach((id) =>
-      expect(secciones[id].split(' ')).toHaveLength(1),
-    )
+  it('ningún rótulo de la cabecera se parte ni se trunca (SPEC_28.3, desvío 1)', () => {
+    // **Deroga** "son de una palabra": «Una pausa» son dos. Lo que la regla
+    // protegía —que ningún rótulo se corte— lo garantiza ahora la forma de la
+    // píldora, no la longitud del texto: no se parte en dos líneas y la lista
+    // no salta a una segunda fila, se desplaza.
+    expect(copy.shared.navegacion.diario.secciones.unaPausa).toBe('Una pausa')
+    expect(nav).toMatch(/whitespace-nowrap/)
+    expect(nav).not.toMatch(/flex-wrap/)
+    expect(nav).not.toMatch(/truncate|text-ellipsis|line-clamp/)
   })
 })
 
@@ -168,17 +176,20 @@ describe('profundidad máxima de tres toques (§4.3.2, regla 1)', () => {
     { destino: 'Respiración · sesión', toques: 2 },
     { destino: 'Journal · una entrada', toques: 2 },
     { destino: 'Historial · un día', toques: 2 },
+    { destino: 'Una pausa · la de la semana', toques: 1 },
+    { destino: 'Una pausa · una anterior', toques: 3 },
   ]
 
   it('ningún destino pasa de tres', () => {
     CAMINOS.forEach((camino) => expect(camino.toques).toBeLessThanOrEqual(3))
   })
 
-  it('los cinco destinos están a un toque desde cualquier pantalla', () => {
+  it('los seis destinos están a un toque desde cualquier pantalla', () => {
     // Las dos barras acompañan a todas las pantallas. Con la de abajo solo en
-    // Hoy, llegar al Historial desde el Journal costaría dos toques.
-    expect(codigoDe(NAV).match(/ruta: '\/\w+'/g) ?? []).toHaveLength(3)
-    expect(codigoDe(BARRA).match(/ruta: '\/\w+'/g) ?? []).toHaveLength(2)
+    // Hoy, llegar al Historial desde el Journal costaría dos toques. El guion
+    // cuenta: `/una-pausa` es una ruta, y `\w+` sola no la veía.
+    expect(codigoDe(NAV).match(/ruta: '\/[\w-]+'/g) ?? []).toHaveLength(4)
+    expect(codigoDe(BARRA).match(/ruta: '\/[\w-]+'/g) ?? []).toHaveLength(2)
     const app = codigoDe(APP)
     expect(app).toMatch(/\{!hideNav && <NavStrivo \/>\}/)
     expect(app).toMatch(/\{!hideNav && <BarraInferior \/>\}/)
@@ -383,5 +394,119 @@ describe('el conmutador sigue siendo el único origen del tema (RN-HOY-05)', () 
     // El Journal, Respiración y el Historial no tienen momento: dejarlo puesto
     // teñiría su cromo con la sección de una pantalla que ya no está.
     expect(hoy).toMatch(/return \(\) => onMomento\?\.\(null\)/)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// La cabecera desplazable (SPEC_28.3 §4.6, DP-28.2).
+//
+// Con cuatro píldoras arriba ya no caben en un teléfono, y la lista no se
+// parte: se desplaza en horizontal. La activa siempre a la vista, un fundido en
+// el borde que tiene más, y nada de eso anima con movimiento reducido.
+
+describe('la cabecera se desplaza, no se parte (SPEC_28.3 §4.6)', () => {
+  const nav = codigoDe(NAV)
+  const css = readFileSync(CSS, 'utf8')
+
+  /** Una lista de cuatro píldoras de 100 px con 8 de hueco y 20 de relleno. */
+  const PILDORAS = [20, 128, 236, 344].map((inicio) => ({ inicio, ancho: 100 }))
+  const lista = { anchoVisible: 300, anchoTotal: 464 }
+
+  it('la primera: desde el principio no hay que moverse; desde el final, se vuelve al principio', () => {
+    const [primera] = PILDORAS
+    expect(desplazamientoParaVer({ ...lista, ...primera, desplazamiento: 0 })).toBeNull()
+    expect(desplazamientoParaVer({ ...lista, ...primera, desplazamiento: 164 })).toBe(0)
+  })
+
+  it('la última: se desplaza hasta el final, que es lo justo para verla entera', () => {
+    const ultima = PILDORAS.at(-1)
+    expect(desplazamientoParaVer({ ...lista, ...ultima, desplazamiento: 0 })).toBe(164)
+    expect(desplazamientoParaVer({ ...lista, ...ultima, desplazamiento: 164 })).toBeNull()
+  })
+
+  it('una del medio: lo justo para que quede fuera del fundido, por un lado o por el otro', () => {
+    const tercera = PILDORAS[2]
+    // Asoma por la derecha: su final más el fundido, menos lo que se ve.
+    expect(desplazamientoParaVer({ ...lista, ...tercera, desplazamiento: 0 })).toBe(
+      236 + 100 + FUNDIDO - 300,
+    )
+    // Asoma por la izquierda: su principio menos el fundido.
+    expect(desplazamientoParaVer({ ...lista, ...tercera, desplazamiento: 230 })).toBe(
+      Math.min(164, 236 - FUNDIDO),
+    )
+    // Ya entera y fuera del fundido: nada.
+    expect(desplazamientoParaVer({ ...lista, ...tercera, desplazamiento: 100 })).toBeNull()
+  })
+
+  it('nunca se sale de lo que la lista puede desplazarse', () => {
+    for (const p of PILDORAS) {
+      for (const desplazamiento of [0, 50, 164]) {
+        const destino = desplazamientoParaVer({ ...lista, ...p, desplazamiento })
+        if (destino !== null) {
+          expect(destino).toBeGreaterThanOrEqual(0)
+          expect(destino).toBeLessThanOrEqual(164)
+        }
+      }
+    }
+  })
+
+  it('el fundido va solo en el borde que tiene más', () => {
+    expect(bordesConMas({ ...lista, desplazamiento: 0 })).toEqual({ inicio: false, fin: true })
+    expect(bordesConMas({ ...lista, desplazamiento: 80 })).toEqual({ inicio: true, fin: true })
+    expect(bordesConMas({ ...lista, desplazamiento: 164 })).toEqual({ inicio: true, fin: false })
+    // Si cabe todo —una pantalla ancha—, ninguno.
+    expect(bordesConMas({ anchoVisible: 600, anchoTotal: 464, desplazamiento: 0 })).toEqual({
+      inicio: false,
+      fin: false,
+    })
+  })
+
+  it('una fila con desplazamiento horizontal, sin barra pintada', () => {
+    expect(nav).toMatch(/className="cabecera-secciones /)
+    const regla = css.slice(css.indexOf('.cabecera-secciones {'))
+    const cuerpo = regla.slice(0, regla.indexOf('}'))
+    expect(cuerpo).toMatch(/overflow-x: auto/)
+    expect(cuerpo).toMatch(/scrollbar-width: none/)
+    expect(css).toMatch(/\.cabecera-secciones::-webkit-scrollbar \{\s*display: none/)
+  })
+
+  it('cada píldora conserva su objetivo táctil y no encoge', () => {
+    expect(nav).toMatch(/min-h-touch-sm whitespace-nowrap/)
+    expect(nav).toMatch(/className="shrink-0"/)
+  })
+
+  it('el fundido es una máscara sin color escrito, y no tapa el anillo de foco', () => {
+    expect(css).toMatch(/mask-image: linear-gradient\(/)
+    expect(css).toMatch(/-webkit-mask-image: linear-gradient\(/)
+    const regla = css.slice(
+      css.indexOf('.cabecera-secciones {'),
+      css.indexOf('.cabecera-secciones::'),
+    )
+    expect(regla).not.toMatch(/#[0-9a-fA-F]{3,8}|rgba?\(|black|white/)
+    // El margen de la cuenta y el scroll-padding son el ancho del fundido.
+    expect(regla).toMatch(new RegExp(`--fundido-cabecera: ${FUNDIDO}px`))
+    expect(regla).toMatch(/scroll-padding-inline: var\(--fundido-cabecera\)/)
+    expect(nav).toMatch(/margen: FUNDIDO/)
+    expect(css).toMatch(/\.cabecera-secciones\[data-mas-inicio\]/)
+    expect(css).toMatch(/\.cabecera-secciones\[data-mas-fin\]/)
+  })
+
+  it('la activa se busca al montar y al cambiar de ruta, y se desplaza solo en horizontal', () => {
+    expect(nav).toMatch(/aria-current="page"/)
+    expect(nav).toMatch(/\}, \[pathname, mostrar, medir\]\)/)
+    expect(nav).toMatch(/ul\.scrollTo\(\{\s*left: destino/)
+    expect(nav).not.toMatch(/scrollIntoView/)
+  })
+
+  it('el foco que entra en una píldora la trae a la vista', () => {
+    expect(nav).toMatch(/onFocus=\{\(evento\) => mostrar\(evento\.currentTarget, true\)\}/)
+  })
+
+  it('con movimiento reducido no anima: ni al desplazar ni el fundido', () => {
+    expect(nav).toMatch(/animar && !prefiereMenosMovimiento\(\) \? 'smooth' : 'auto'/)
+    const regla = css.slice(css.indexOf('.cabecera-secciones {'))
+    expect(regla.slice(0, regla.indexOf('.cabecera-secciones[data-mas-fin]'))).not.toMatch(
+      /transition|animation/,
+    )
   })
 })

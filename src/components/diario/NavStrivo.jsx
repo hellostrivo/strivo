@@ -1,7 +1,15 @@
 // src/components/diario/NavStrivo.jsx
 // La cabecera de la app: la marca y lo que se hace ahora.
 //
-// **Hoy · Journal · Respiración.**
+// **Hoy · Journal · Respiración · Una pausa.**
+//
+// **Una pausa entra como cuarta sección el 4 de octubre de 2026** (SPEC_28.3,
+// DP-28.1), en la rama `una-pausa`. Con cuatro, las píldoras ya no caben en un
+// teléfono, y la lista **no se parte en dos filas: se desplaza en horizontal**
+// (DP-28.2). La activa se ve siempre entera, un fundido dice en qué borde hay
+// más, y la barra de desplazamiento no se pinta. Las cuentas viven en
+// `cabeceraDesplazable.js`; el fundido y la barra oculta, en `globals.css`
+// (`.cabecera-secciones`).
 //
 // **El Historial baja a la barra inferior el 26 de agosto de 2026**, con el
 // Perfil al lado (`components/shared/BarraInferior.jsx`). El reparto conserva
@@ -38,10 +46,13 @@
 // darle su clase: las cuatro secciones conservan forma, peso y borde, y solo se
 // invierte lo que hay debajo de ellas.
 
-import { NavLink } from 'react-router-dom'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
 import { clsx } from 'clsx'
 import Simbolo from '@components/shared/Simbolo'
+import { prefiereMenosMovimiento } from '@components/shared/TransicionLuz'
 import { copy } from '@copy'
+import { FUNDIDO, bordesConMas, desplazamientoParaVer } from './cabeceraDesplazable'
 
 const textos = copy.shared.navegacion
 
@@ -53,14 +64,84 @@ const ALTO_LOGO = 56
 // sección más: el mismo componente, el mismo estado, la misma sesión, con el
 // cromo y la paleta del espacio. Lo pidió el propietario del producto.
 //
-// Las tres son lo que se hace ahora: el día, lo que se escribe, el aire.
+// Las cuatro son lo que se hace ahora: el día, lo que se escribe, el aire y
+// una pausa. Una pausa va al final porque es la que menos se usa a diario: se
+// renueva una vez por semana.
 const SECCIONES = [
   { id: 'hoy', ruta: '/hoy' },
   { id: 'journal', ruta: '/journal' },
   { id: 'respiracion', ruta: '/respiracion' },
+  { id: 'unaPausa', ruta: '/una-pausa' },
 ]
 
 export default function NavStrivo() {
+  const lista = useRef(null)
+  const { pathname } = useLocation()
+  const [mas, setMas] = useState({ inicio: false, fin: false })
+  const montada = useRef(false)
+
+  /** En qué borde hay más contenido: ahí, y solo ahí, va el fundido. */
+  const medir = useCallback(() => {
+    const ul = lista.current
+    if (!ul) return
+    const bordes = bordesConMas({
+      desplazamiento: ul.scrollLeft,
+      anchoVisible: ul.clientWidth,
+      anchoTotal: ul.scrollWidth,
+    })
+    setMas((actual) =>
+      actual.inicio === bordes.inicio && actual.fin === bordes.fin ? actual : bordes,
+    )
+  }, [])
+
+  /**
+   * Desplaza la lista lo justo para que esa píldora se vea entera y fuera del
+   * fundido. **Solo en horizontal**: `scrollTo` sobre la lista, nunca
+   * `scrollIntoView`, que movería también la página. Con movimiento reducido,
+   * sin animación.
+   */
+  const mostrar = useCallback((li, animar) => {
+    const ul = lista.current
+    if (!ul || !li) return
+    const destino = desplazamientoParaVer({
+      desplazamiento: ul.scrollLeft,
+      anchoVisible: ul.clientWidth,
+      anchoTotal: ul.scrollWidth,
+      inicio: li.offsetLeft,
+      ancho: li.offsetWidth,
+      margen: FUNDIDO,
+    })
+    if (destino === null) return
+    ul.scrollTo({
+      left: destino,
+      behavior: animar && !prefiereMenosMovimiento() ? 'smooth' : 'auto',
+    })
+  }, [])
+
+  // La activa, siempre a la vista: al montar —entrando por enlace directo a
+  // `#/una-pausa`, por ejemplo— de golpe, y al cambiar de ruta, con calma.
+  useEffect(() => {
+    const activa = lista.current?.querySelector('[aria-current="page"]')?.closest('li')
+    mostrar(activa, montada.current)
+    montada.current = true
+    medir()
+  }, [pathname, mostrar, medir])
+
+  // El fundido sigue al desplazamiento y al tamaño: girar el teléfono, escalar
+  // la letra o que termine de cargar la tipografía cambian lo que cabe.
+  useEffect(() => {
+    const ul = lista.current
+    if (!ul) return undefined
+    ul.addEventListener('scroll', medir, { passive: true })
+    const observador = typeof ResizeObserver === 'function' ? new ResizeObserver(medir) : null
+    observador?.observe(ul)
+    ul.querySelectorAll('li').forEach((li) => observador?.observe(li))
+    return () => {
+      ul.removeEventListener('scroll', medir)
+      observador?.disconnect()
+    }
+  }, [medir])
+
   return (
     // `z-30` no es decorativo: la pantalla Hoy pinta su degradado en una capa
     // `fixed` que cubre la ventana entera, y sin esto la cabecera queda debajo
@@ -79,15 +160,31 @@ export default function NavStrivo() {
       </p>
 
       <nav aria-label={textos.seccionesLabel}>
-        <ul className="flex flex-wrap gap-2">
+        {/* Una fila que se desplaza, nunca dos. Llega hasta los bordes de la
+            pantalla (`-mx-5 px-5`) para que el fundido caiga en el borde y no
+            a media cabecera; el relleno vertical es el sitio del anillo de foco
+            y de la elevación de la activa, que el desplazamiento recortaría. */}
+        <ul
+          ref={lista}
+          data-mas-inicio={mas.inicio || undefined}
+          data-mas-fin={mas.fin || undefined}
+          className="cabecera-secciones relative -mx-5 -my-1 flex gap-2 px-5 py-1"
+        >
           {SECCIONES.map((seccion) => (
-            <li key={seccion.id}>
+            <li
+              key={seccion.id}
+              className="shrink-0"
+              // El foco que entra en una píldora la trae entera a la vista.
+              onFocus={(evento) => mostrar(evento.currentTarget, true)}
+            >
               <NavLink
                 to={seccion.ruta}
                 className={({ isActive }) =>
                   clsx(
                     'inline-flex items-center rounded-full border px-4 py-2',
-                    'min-h-touch-sm text-base',
+                    // `whitespace-nowrap`: «Una pausa» son dos palabras, y
+                    // ninguna píldora se parte en dos líneas.
+                    'min-h-touch-sm whitespace-nowrap text-base',
                     'transition-colors duration-260 ease-smooth motion-reduce:transition-none',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30',
                     // Peso y borde, no solo color (criterio 7).

@@ -916,3 +916,60 @@
 .una-pausa-encabezado:focus {
   outline: none;
 }
+
+/* ─── La cabecera desplazable (SPEC_28.3 §4.6, DP-28.2) ───────────────────────
+   Con cuatro secciones arriba, la lista no se parte en dos filas: se desplaza
+   en horizontal. Las cuentas —qué desplazar para ver la activa, en qué borde
+   hay más— viven en `components/diario/cabeceraDesplazable.js`; aquí, lo que
+   se ve.
+
+   - **La barra no se pinta**, y el desplazamiento sigue funcionando con el
+     dedo, la rueda y el teclado.
+   - **El fundido es una máscara, no un color.** Difumina el borde que tiene más
+     contenido —`data-mas-inicio`, `data-mas-fin`, que pone la cabecera— y deja
+     ver lo que haya debajo, así que vale igual sobre el contratono, sobre el
+     rango claro de la Noche de Hoy y sobre cualquier tono que venga. Sus
+     paradas son `currentColor` y `transparent`: una máscara solo lee el alfa, y
+     así no se escribe ningún color a mano (RN-VIS-02).
+   - **`scroll-padding-inline` es el ancho del fundido**, el mismo margen que usa
+     la cuenta: la píldora que llega con el foco queda fuera de la zona
+     difuminada, y el fundido no le tapa el anillo. `FUNDIDO` en JS y
+     `--fundido-cabecera` aquí valen lo mismo, y una prueba los compara.
+   - **Sin animación**: el fundido aparece y desaparece de golpe, y el
+     desplazamiento suave lo decide la cabecera según la preferencia. */
+.cabecera-secciones {
+  --fundido-cabecera: 24px;
+  --mas-inicio: 0px;
+  --mas-fin: 0px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: var(--fundido-cabecera);
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    currentColor var(--mas-inicio),
+    currentColor calc(100% - var(--mas-fin)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    currentColor var(--mas-inicio),
+    currentColor calc(100% - var(--mas-fin)),
+    transparent 100%
+  );
+}
+
+.cabecera-secciones::-webkit-scrollbar {
+  display: none;
+}
+
+.cabecera-secciones[data-mas-inicio] {
+  --mas-inicio: var(--fundido-cabecera);
+}
+
+.cabecera-secciones[data-mas-fin] {
+  --mas-fin: var(--fundido-cabecera);
+}
