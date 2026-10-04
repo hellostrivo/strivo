@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // scripts/validar-frases.js
-// Valida el catálogo de frases del día v2 (SPEC_28 §14).
+// Valida el catálogo de frases del día v2 (SPEC_29 §14).
 //
 // Cómo correr: node scripts/validar-frases.js  (o `npm run validar:frases`)
 //

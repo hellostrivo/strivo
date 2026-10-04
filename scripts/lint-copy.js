@@ -71,7 +71,7 @@ const CLINICO = [
 // construido y se revisa lo que toca. La prosa del archivo —sus comentarios—
 // sigue revisándose línea a línea: lo que escribimos nosotros no se exime.
 //
-// El catálogo v2 (SPEC_28) se revisa igual: su texto de citas se exime por
+// El catálogo v2 (SPEC_29) se revisa igual: su texto de citas se exime por
 // tipo y todo lo demás —originales y atribuciones— pasa por el léxico. Las
 // reglas editoriales propias del catálogo, más estrictas que estas, las
 // aplica `scripts/validar-frases.js`.
@@ -97,7 +97,7 @@ const EXTENSIONS = ['.js', '.jsx', '.ts', '.tsx', '.json', '.md']
 const EXCLUDE_DIRS = ['node_modules', 'dist', '.git', 'scripts', '__tests__']
 
 // Archivos que nombran el léxico prohibido para poder hacerlo cumplir, por la
-// misma razón que `__tests__`: el validador del catálogo de frases (SPEC_28)
+// misma razón que `__tests__`: el validador del catálogo de frases (SPEC_29)
 // tiene que escribir «debería» en una expresión regular para encontrarlo.
 // No contiene copy: ninguna de sus cadenas llega a una pantalla.
 const NOMBRAN_EL_LEXICO = new Set(['src/content/frases-v2/validacion.js'])

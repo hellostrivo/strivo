@@ -1,5 +1,5 @@
 // src/content/frases-v2/__tests__/catalogo.test.js
-// El catálogo v2 cumple sus reglas editoriales y de cobertura (SPEC_28 §8–§10, §14).
+// El catálogo v2 cumple sus reglas editoriales y de cobertura (SPEC_29 §8–§10, §14).
 // Son las mismas reglas que `scripts/validar-frases.js`: viven en `validacion.js`.
 
 import { readFileSync } from 'fs'

@@ -1,6 +1,6 @@
 // src/lib/db/__tests__/frasesLocales.test.js
 // La preferencia de frases y las asignaciones viven solo en el dispositivo
-// (SPEC_28 §7): no se encolan, no se suben al mudar el árbol y no se restauran.
+// (SPEC_29 §7): no se encolan, no se suben al mudar el árbol y no se restauran.
 
 import { readFileSync } from 'fs'
 import { beforeEach, describe, expect, it } from 'vitest'

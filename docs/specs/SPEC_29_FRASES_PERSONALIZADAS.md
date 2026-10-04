@@ -1,8 +1,9 @@
-# SPEC_28 — Frases del día personalizadas por referencias
+# SPEC_29 — Frases del día personalizadas por referencias
 
 **Fecha:** 4 de octubre de 2026 · **Rama:** `strivo` · **Estado:** construida; citas pendientes de revisión
 **Archivos de referencia:** `src/content/frases-v2/`, `src/diario/fraseDelDia.js`,
 `src/referencias/`, `docs/frases-v2-fuentes.md`, `scripts/validar-frases.js`
+**Número:** se llamó SPEC_28 hasta el 4 oct 2026 (commit `651dbec`); el 28 es de «Una pausa».
 
 ---
 

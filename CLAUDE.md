@@ -300,7 +300,7 @@ shared/ {
   // `motivoOtro` son la respuesta de P3, que se da una vez y no vuelve a mutar.
   onboarding:  { version, completedSteps, currentStep, completedAt,
                  motivos[], motivoOtro },
-  // SPEC_28 — SOLO LOCAL: nunca se encola, ni al mudar, ni se restaura.
+  // SPEC_29 — SOLO LOCAL: nunca se encola, ni al mudar, ni se restaura.
   // Sin documento es `sin_definir`. Restablecer lo borra.
   frases:      { modo, afinidades[], version, updatedAt }
 }
@@ -323,7 +323,7 @@ diario/ {
 
   journal/{entryId}:    { date, text, emotions[], otherText, createdAt, updatedAt },
   pinConfig:            { salt, hash, iterations, algorithm, enabled },
-  // SPEC_28 — SOLO LOCAL. La frase ya asignada a un día para una huella de
+  // SPEC_29 — SOLO LOCAL. La frase ya asignada a un día para una huella de
   // preferencias: lo que impide que ampliar el catálogo cambie el pasado.
   frasesDelDia/{fecha}~{huella}: { phraseId, fecha, huella, catalogoVersion, asignadaEn }
 }
@@ -557,8 +557,8 @@ cualquiera de estas es un defecto**, aunque todo esté en verde:
 ```
 src/
 ├── copy/            biblioteca central de texto  ← todo string visible sale de aquí
-├── content/         repertorios de frases: apertura, día v1 (legado) y frases-v2/ (SPEC_28)
-├── referencias/     territorio neutral: qué referencias se eligen para las frases (SPEC_28)
+├── content/         repertorios de frases: apertura, día v1 (legado) y frases-v2/ (SPEC_29)
+├── referencias/     territorio neutral: qué referencias se eligen para las frases (SPEC_29)
 ├── tokens/          design-tokens.json
 ├── styles/          globals.css + tokens-strivo.css
 ├── lib/
@@ -589,8 +589,8 @@ src/
 | **RN-TEC-04** | **`breathing/` no importa nada de `diario/` y viceversa.** |
 | **RN-TEC-05** | **`components/shared/` no importa nada específico de una sección.** Lo que necesiten llega **por props**. |
 | **RN-TEC-06** | **`onboarding/` no importa `diario/` ni `breathing/`.** Corre antes de la app, una sola vez, y todo lo que escribe vive en `shared/`. No se enruta: se interpone. |
-| **RN-TEC-07** | **`perfil/` tampoco.** Es gestión de cuenta, no una sección del refugio: toca `shared/profile` y, desde SPEC_28, `shared/frases` (por `src/referencias/almacen.js`). Sí lee el catálogo de género del onboarding, y eso es deliberado: es un campo del perfil, no un paso de un recorrido, y dos copias del mismo catálogo se separan en cuanto alguien edite una. |
-| **RN-TEC-08** | **`referencias/` y `content/` son neutrales** (SPEC_28): los leen el onboarding, Tu perfil y el diario, y no importan ni `diario/` ni `breathing/`. Lo impone `eslint.config.js`. |
+| **RN-TEC-07** | **`perfil/` tampoco.** Es gestión de cuenta, no una sección del refugio: toca `shared/profile` y, desde SPEC_29, `shared/frases` (por `src/referencias/almacen.js`). Sí lee el catálogo de género del onboarding, y eso es deliberado: es un campo del perfil, no un paso de un recorrido, y dos copias del mismo catálogo se separan en cuanto alguien edite una. |
+| **RN-TEC-08** | **`referencias/` y `content/` son neutrales** (SPEC_29): los leen el onboarding, Tu perfil y el diario, y no importan ni `diario/` ni `breathing/`. Lo impone `eslint.config.js`. |
 
 Esa última regla es la que da forma a media base de código: `TransicionLuz` recibe su tema desde
 `globals.css` y no por props de sección; `Respiracion` (la de la sección) recibe `base` y `salida`
@@ -668,7 +668,7 @@ npm run test            # suite completa
 npm run build           # construcción de producción
 ```
 
-Y desde SPEC_28, **`npm run validar:frases`**: metadatos, voz, marcas de referencia, duplicados,
+Y desde SPEC_29, **`npm run validar:frases`**: metadatos, voz, marcas de referencia, duplicados,
 expedientes de las citas y cobertura de 500 por perfil. Falla si un perfil baja de 500.
 
 `npm run format` ya se puede correr: `.prettierrc` reproduce el estilo del repo (sin punto y coma,
@@ -687,9 +687,12 @@ componentes, los estilos, los textos, las pruebas y la documentación están dep
 
 **81 archivos de prueba · 2.149 casos · los seis comandos y `validar:frases` en verde.**
 
-### Frases del día personalizadas (SPEC_28, 4 oct 2026)
+### Frases del día personalizadas (SPEC_29, 4 oct 2026)
 
-La instrucción completa y sus decisiones están en `docs/specs/SPEC_28_FRASES_PERSONALIZADAS.md`.
+La instrucción completa y sus decisiones están en `docs/specs/SPEC_29_FRASES_PERSONALIZADAS.md`.
+
+**Se llamó SPEC_28 hasta el 4 oct 2026** y así lo dice el commit que la fusionó (`651dbec`). El 28 es de
+«Una pausa», que ya iba por SPEC_28.5 en su rama; renombrarla a ella habría tocado unas 500 menciones.
 
 - **Catálogo v2** en `src/content/frases-v2/`: 1 000 originales aprobadas en siete audiencias
   (universal, secular, espiritual general y cuatro tradiciones) y 25 citas candidatas en
@@ -1512,7 +1515,7 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
   pide. **No es una regresión de este cambio**: el `.svg` del logo y las once fuentes de Inter
   tampoco lo están —workbox solo precachea `js`, `css` y `html`—, así que meter el `.mp4` es una
   decisión sobre los assets en general y no sobre este archivo.
-- **Las frases están sin revisar editorialmente:** ~100 de apertura y las 1 000 del día v2 (SPEC_28). Pasan §3.3 con
+- **Las frases están sin revisar editorialmente:** ~100 de apertura y las 1 000 del día v2 (SPEC_29). Pasan §3.3 con
   prueba automática; **qué se le dice a alguien al abrir la app es del propietario del producto**, no
   de quien programa. El objetivo del blueprint son 120+ frases del día (B-2).
 - **Los catálogos emocionales nuevos y las ideas de acción están sin revisar editorialmente.** Las
@@ -1562,7 +1565,7 @@ entra en la cuenta del indicador, igual que la pausa opcional de la Mañana no e
 | P3 | Motivo | «¿Qué te gustaría encontrar aquí?»: paz, avance, escucha, sueño, espacio, otro |
 | ~~P4~~ | ~~Identidad central~~ | **Retirado el 1 de septiembre de 2026**, con su pantalla, su copy, su módulo y su bloque del Perfil |
 | P5 | Horarios | Despertar / dormir |
-| P5R | Referencias de las frases | SPEC_28. Una opción de cuatro; se salta |
+| P5R | Referencias de las frases | SPEC_29. Una opción de cuatro; se salta |
 | P5RA | Afinidades | Sub-paso, solo con «Quiero elegir referencias». Varias; «Omitir por ahora» |
 | P6 | Recordatorios | Dos avisos al día, opcional |
 | P7 | Crear cuenta | Google · Apple · correo, con opción de saltar |

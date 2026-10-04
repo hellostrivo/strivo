@@ -1,5 +1,5 @@
 // src/components/shared/PreguntasReferencias.jsx
-// Las dos preguntas de las referencias de las frases (SPEC_28 §5–§6).
+// Las dos preguntas de las referencias de las frases (SPEC_29 §5–§6).
 //
 // **Una sola pieza para dos sitios.** Las hace el onboarding la primera vez y
 // Tu perfil cuando alguien quiera cambiarlas, y el encargo pide que sean

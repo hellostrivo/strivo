@@ -177,7 +177,7 @@ export const FIELDS = Object.freeze({
   dayState: Object.freeze(['mood', 'updatedAt']),
   pinConfig: Object.freeze(['salt', 'hash', 'iterations', 'algorithm', 'enabled']),
 
-  // ─── Frases personalizadas (SPEC_28, 4 oct 2026) ──────────────────────────
+  // ─── Frases personalizadas (SPEC_29, 4 oct 2026) ──────────────────────────
   // Los dos registros **nunca salen del dispositivo**, igual que `pinConfig`:
   // se escriben con `sync: false`, `local.js` los reconoce por la ruta para no
   // encolarlos nunca (ni al mudar el árbol) y `restaurar.js` no los baja.
@@ -310,7 +310,7 @@ export function validatePreferences(preferences) {
 }
 
 /**
- * La preferencia de frases (SPEC_28). Los identificadores **no se validan
+ * La preferencia de frases (SPEC_29). Los identificadores **no se validan
  * aquí**, por lo mismo que los motivos del onboarding: el catálogo vive en
  * `src/referencias/` y repetirlo serían dos listas. Lo que es de esta capa es
  * la forma.
@@ -326,7 +326,7 @@ export function validateFrases(frases) {
   return frases
 }
 
-/** La asignación de una frase a un día (SPEC_28). */
+/** La asignación de una frase a un día (SPEC_29). */
 export function validateFraseAsignada(asignada) {
   assertFields(asignada, FIELDS.fraseAsignada, 'diario/frasesDelDia')
   assertDateKey(asignada.fecha, 'fraseAsignada.fecha')

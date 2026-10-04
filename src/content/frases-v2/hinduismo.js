@@ -1,5 +1,5 @@
 // src/content/frases-v2/hinduismo.js
-// Frases originales con referencias hindúes (SPEC_28 §8.5).
+// Frases originales con referencias hindúes (SPEC_29 §8.5).
 //
 // **Solo llegan a quien eligió Hinduismo.** Son redacción de Strivo, no
 // citas: algunas recogen imágenes de la tradición —la llama quieta, el fruto

@@ -93,7 +93,7 @@ describe('el diario no sabe nada de hábitos (§C2.6, revisión 25 ago)', () => 
     // importar el diario y Respiración igual que al onboarding. Lo que sabe de
     // cada sección es un nombre, una frase del copy y un dibujo propio.
     //
-    // **`referencias` se suma el 4 de octubre de 2026 (SPEC_28).** Tampoco es un
+    // **`referencias` se suma el 4 de octubre de 2026 (SPEC_29).** Tampoco es un
     // producto ni una sección: es el catálogo neutral de las referencias que
     // alguien elige para sus frases del día. Lo leen tres sitios —el
     // onboarding, Tu perfil y el diario— y el onboarding no puede importar del
@@ -155,7 +155,7 @@ describe('el diario no sabe nada de hábitos (§C2.6, revisión 25 ago)', () => 
     // las rutas infractoras en vez de concatenarlas al texto: lo que se
     // comprueba es la cadena, y el fallo tiene que decir dónde está.
     //
-    // Con límite de palabra al principio desde SPEC_28: «espiritual» contiene
+    // Con límite de palabra al principio desde SPEC_29: «espiritual» contiene
     // «ritual» y es justo una de las opciones de las referencias de las frases.
     // Lo que esta prueba vigila es la palabra, no las letras.
     const infractoras = CADENAS.filter(([, texto]) => /\britual/i.test(texto)).map(([ruta]) => ruta)

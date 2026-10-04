@@ -14,7 +14,7 @@
 // al pintar con `resolveGender` de `src/copy/gender.js` (§3.6.5). Ningún
 // componente lee `.m` ni `.f` (RN-GEN-01).
 
-// ─── Referencias de las frases (SPEC_28 §5–§6) ────────────────────────────────
+// ─── Referencias de las frases (SPEC_29 §5–§6) ────────────────────────────────
 // Las dos preguntas que personalizan las frases del día. Se declaran aquí
 // arriba porque se hacen en dos sitios —el onboarding (`p5r`, `p5ra`) y Tu
 // perfil (`perfil.frases`)— **con los mismos textos**: dos copias de la misma
@@ -227,7 +227,7 @@ export const copy = {
         sleepLabel: 'Me duermo a las',
       },
 
-      // SPEC_28 — Las referencias de las frases. Dos pantallas: la primera es
+      // SPEC_29 — Las referencias de las frases. Dos pantallas: la primera es
       // un paso y cuenta en el indicador; la segunda es un sub-paso —solo la
       // ve quien eligió «Quiero elegir referencias»— y, como el género, no
       // gasta número. Los textos son los de Tu perfil (`REFERENCIAS`, arriba).
@@ -1502,7 +1502,7 @@ export const copy = {
         sleepLabel: 'Me duermo a las',
       },
 
-      // SPEC_28 — Las referencias de las frases del día. Las dos preguntas son
+      // SPEC_29 — Las referencias de las frases del día. Las dos preguntas son
       // las del onboarding, con sus mismos textos (`preguntas`). El bloque
       // cuenta qué se eligió con palabras, deja cambiarlo y borrarlo, y abre
       // una vista estática con el criterio editorial y las fuentes de las

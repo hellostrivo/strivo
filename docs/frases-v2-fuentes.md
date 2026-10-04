@@ -1,4 +1,4 @@
-# Fuentes de las frases del día, versión 2 (SPEC_28)
+# Fuentes de las frases del día, versión 2 (SPEC_29)
 
 **Fecha:** 4 de octubre de 2026 · **Estado:** ninguna cita aprobada todavía
 

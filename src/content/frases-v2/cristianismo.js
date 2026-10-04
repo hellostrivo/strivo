@@ -1,5 +1,5 @@
 // src/content/frases-v2/cristianismo.js
-// Frases originales con referencias cristianas (SPEC_28 §8.5).
+// Frases originales con referencias cristianas (SPEC_29 §8.5).
 //
 // **Solo llegan a quien eligió Cristianismo.** Son redacción de Strivo, no
 // citas: no van entre comillas ni se atribuyen a nadie, aunque nombren a Dios,

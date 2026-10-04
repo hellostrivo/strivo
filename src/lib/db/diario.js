@@ -217,7 +217,7 @@ export async function clearPinConfig(uid) {
   await deletePath({ uid, path: paths.diarioDoc(uid, 'pinConfig'), sync: PIN_SYNC })
 }
 
-// ─── frasesDelDia (SPEC_28) ───────────────────────────────────────────────────
+// ─── frasesDelDia (SPEC_29) ───────────────────────────────────────────────────
 // La frase que ya se le asignó a un día, por huella de preferencias. Es lo que
 // hace que una ampliación o un reordenamiento del catálogo no cambie lo que ya
 // se vio: el selector solo decide los días que todavía no tienen asignación.

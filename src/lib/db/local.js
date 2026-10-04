@@ -273,7 +273,7 @@ const SIN_SINCRONIZAR = /\/(?:diario\/pinConfig|shared\/frases|diario\/frasesDel
 /**
  * ¿Esta ruta vive solo en el dispositivo?
  *
- * Son tres: el PIN y, desde SPEC_28, la preferencia de frases y las frases ya
+ * Son tres: el PIN y, desde SPEC_29, la preferencia de frases y las frases ya
  * asignadas a cada día. La preferencia dice qué referencias religiosas,
  * espirituales o filosóficas quiere encontrar alguien, y la asignación lo
  * delata por el id de la frase: ninguna de las dos sube a Firestore.
@@ -504,7 +504,7 @@ export async function borrarUid(uid) {
 
 export async function enqueue({ uid, path, op, data }) {
   // Lo que vive solo en el dispositivo no entra en la cola, la pida quien la
-  // pida (SPEC_28 §7; ver `esRutaLocal`).
+  // pida (SPEC_29 §7; ver `esRutaLocal`).
   if (esRutaLocal(path)) return
   const db = await getLocalDB()
   const tx = db.transaction(STORE_SYNC_QUEUE, 'readwrite')

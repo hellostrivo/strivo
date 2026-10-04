@@ -1,6 +1,6 @@
 // src/components/perfil/TusFrases.jsx
 // Personaliza tus frases — el bloque de Tu perfil para las referencias de las
-// frases del día (SPEC_28 §6).
+// frases del día (SPEC_29 §6).
 //
 // **Es una invitación, no un aviso.** Quien ya terminó el onboarding antes de
 // que existieran estas preguntas no ve nada al abrir la app: encuentra este

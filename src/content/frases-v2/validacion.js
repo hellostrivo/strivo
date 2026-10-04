@@ -1,5 +1,5 @@
 // src/content/frases-v2/validacion.js
-// Las reglas editoriales del catálogo v2, como funciones puras (SPEC_28 §8–§10).
+// Las reglas editoriales del catálogo v2, como funciones puras (SPEC_29 §8–§10).
 //
 // Viven aquí, junto a los datos, porque las consumen dos sitios —el script
 // `scripts/validar-frases.js` y las pruebas— y dos copias de la misma regla

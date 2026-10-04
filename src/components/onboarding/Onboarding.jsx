@@ -1,6 +1,6 @@
 // src/components/onboarding/Onboarding.jsx
 // El recorrido de entrada: diez pantallas, ocho pasos, una sola vez.
-// (SPEC_28 añadió las referencias de las frases tras los horarios: un paso y
+// (SPEC_29 añadió las referencias de las frases tras los horarios: un paso y
 // un sub-paso que solo ve quien quiere elegir referencias.)
 //
 // **Se interpone solo la primera vez.** Quién decide eso es `App.jsx`, que
@@ -167,7 +167,7 @@ export default function Onboarding({ uid, onTerminado }) {
   const crearCuenta = async (correo, contrasena) =>
     conectar(await crearConCorreo(correo, contrasena))
 
-  // SPEC_28 — Las referencias de las frases. Se guardan al tocar y solo en el
+  // SPEC_29 — Las referencias de las frases. Se guardan al tocar y solo en el
   // dispositivo. Las respuestas que se guardan son las de este toque: el
   // estado de React todavía no las tiene.
   const elegirModo = (id) => {

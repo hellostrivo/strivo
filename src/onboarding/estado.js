@@ -35,7 +35,7 @@ export const RESPUESTAS_INICIALES = Object.freeze({
   motivoOtro: '',
   despertar: DESPERTAR_SUGERIDO,
   dormir: DORMIR_SUGERIDO,
-  // SPEC_28 — Las referencias de las frases. `null` es no haber contestado:
+  // SPEC_29 — Las referencias de las frases. `null` es no haber contestado:
   // no es lo mismo que «Prefiero decidir después», que sí es una respuesta.
   referenciasModo: null,
   afinidades: Object.freeze([]),

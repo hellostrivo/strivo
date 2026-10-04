@@ -144,7 +144,7 @@ export async function updatePreferences(uid, patch) {
 
 // ─── onboarding ───────────────────────────────────────────────────────────────
 
-// ─── Preferencia de frases (SPEC_28) ──────────────────────────────────────────
+// ─── Preferencia de frases (SPEC_29) ──────────────────────────────────────────
 // **Nunca sale del dispositivo**: se escribe con `sync: false`, `local.js` la
 // reconoce por la ruta y `restaurar.js` no la baja. Es una preferencia
 // sensible y la minimización empieza por no tenerla en la nube. La
