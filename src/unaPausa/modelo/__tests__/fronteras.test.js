@@ -23,6 +23,8 @@ describe('criterio 2: nadie en Una pausa lee la hora local', () => {
 
   it('la prueba ve los archivos que tiene que ver', () => {
     expect(fuentes('src/unaPausa').sort()).toEqual([
+      'src/unaPausa/canal/cache.js',
+      'src/unaPausa/canal/leer.js',
       'src/unaPausa/modelo/canal.js',
       'src/unaPausa/modelo/capsula.js',
       'src/unaPausa/modelo/estados.js',
@@ -30,7 +32,61 @@ describe('criterio 2: nadie en Una pausa lee la hora local', () => {
       'src/unaPausa/modelo/semana.js',
       'src/unaPausa/modelo/validar.js',
       'src/unaPausa/modelo/vigente.js',
+      'src/unaPausa/useUnaPausa.js',
     ])
+  })
+})
+
+// SPEC_28.3 §4.3, criterio 5 — Una pausa no toca el árbol del usuario. Su caché
+// es una base aparte, `strivo-contenido`, con contenido público: no entra en la
+// cola, no se exporta, no se restaura y no se borra al salir. La forma de
+// garantizarlo es que ningún archivo de la sección pueda alcanzar la capa que
+// hace esas cuatro cosas, ni Firebase, ni las otras dos secciones.
+describe('criterio 5 de 28.3: Una pausa no alcanza el árbol del usuario', () => {
+  const PROHIBIDOS = [
+    /(^|\/)lib\/db(\/|$)/,
+    /^@\/lib\/db|^@lib\/db/,
+    /firebase/i,
+    /firestore/i,
+    /(^|\/)diario(\/|\.js$|$)/,
+    /(^|\/)breathing(\/|\.js$|$)/,
+  ]
+
+  /** Los destinos de todos los import, estáticos y dinámicos. */
+  const destinos = (codigo) =>
+    [...codigo.matchAll(/(?:from|import\()\s*['"]([^'"]+)['"]/g)].map((m) => m[1])
+
+  it('ningún archivo de src/unaPausa importa lib/db, firebase, firestore, diario/ ni breathing/', () => {
+    const culpables = fuentes('src/unaPausa').flatMap((ruta) =>
+      destinos(readFileSync(ruta, 'utf8'))
+        .filter((d) => PROHIBIDOS.some((p) => p.test(d)))
+        .map((d) => `${ruta}: ${d}`),
+    )
+    expect(culpables).toEqual([])
+  })
+
+  it('la prueba muerde: los patrones atrapan las formas que se escriben', () => {
+    for (const d of [
+      '@/lib/db',
+      '@lib/db/local',
+      '../../lib/db/sync.js',
+      'firebase/firestore',
+      '@/lib/firebase',
+      '@/diario/noche',
+      '../diario.js',
+      '@/breathing/Respiracion',
+    ]) {
+      expect(
+        PROHIBIDOS.some((p) => p.test(d)),
+        d,
+      ).toBe(true)
+    }
+    expect(PROHIBIDOS.some((p) => p.test('idb'))).toBe(false)
+  })
+
+  it('el nombre strivo-contenido solo aparece en la caché', () => {
+    const todos = fuentes('src').filter((r) => readFileSync(r, 'utf8').includes('strivo-contenido'))
+    expect(todos).toEqual(['src/unaPausa/canal/cache.js'])
   })
 })
 

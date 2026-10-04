@@ -148,6 +148,13 @@ const browserGlobals = {
   performance: 'readonly',
   requestAnimationFrame: 'readonly',
   cancelAnimationFrame: 'readonly',
+  // Una pausa (SPEC_28.3): el canal se lee con un tope de espera, su portada se
+  // guarda como blob y se resuelve contra la URL del canal, y la cabecera mide
+  // cuándo tiene más contenido del que se ve.
+  AbortController: 'readonly',
+  URL: 'readonly',
+  Blob: 'readonly',
+  ResizeObserver: 'readonly',
 }
 
 export default [
