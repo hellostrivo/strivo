@@ -1697,6 +1697,9 @@ y escribe `feed.json`, y los dos sitios de Netlify que lo sirven. La instrucció
 - **Abierto, DP-28.20:** antes de la primera `programada`, una reserva no cubre ninguna semana. Si
   la cápsula del 7 dic no está programada, ese lunes no hay ninguna, y el recordatorio lo dice así.
 
+**Estado:** 28.2 cerrada en código el 4 oct; M1, M2 y M4 (sitio del canal y
+`contenido.hellostrivo.com`) diferidos hasta crear ese sitio, antes del 20 nov.
+
 **Lo que esto no hizo:** la pestaña y la sección (28.3) —y con ella la enmienda de RN-NAV-01/02,
 la lectura del canal, la caché `strivo-contenido` y `VITE_URL_CANAL` en el código—, los accesos
 desde Hoy (28.4) ni ninguna cápsula (28.5).
