@@ -1,0 +1,50 @@
+{
+  "id": "respirar-cuando-el-dia-se-acelera",
+  "version": 1,
+  "status": "en_revision",
+  "weekStart": null,
+  "piloto": true,
+  "theme": "Respirar cuando el día se acelera",
+  "title": "Respirar cuando el día se acelera",
+  "opening": "Hay días que van más rápido que tú. No se trata de frenarlos ni de borrar lo que sientes, sino de darte un poco de espacio antes de seguir. A veces ese espacio cabe en unas cuantas respiraciones.",
+  "evidenceSummary": "Respirar despacio a propósito es una práctica muy estudiada. La investigación sugiere que puede acompañar una baja del estrés y que se asocia con más actividad del sistema que ayuda al cuerpo a descansar. Los efectos encontrados son modestos y los estudios todavía tienen límites: es una herramienta sencilla, no una solución para todo.",
+  "keyFindings": [
+    "Una revisión de 12 ensayos con 785 personas adultas encontró menos estrés en quienes practicaron ejercicios de respiración que en los grupos de comparación. El efecto fue de pequeño a moderado y se vio con ritmos lentos; con los rápidos no apareció.",
+    "En más de 200 estudios, respirar despacio se relacionó con una mayor variabilidad del ritmo del corazón, una señal ligada al sistema de descanso del cuerpo. Se observó durante la práctica, justo después y tras varias sesiones.",
+    "En un ensayo de un mes con un centenar de personas, cinco minutos diarios de suspiro cíclico —dos inhalaciones y una exhalación larga— se asociaron con la mayor mejora del ánimo y la mayor baja del ritmo respiratorio entre las prácticas comparadas. La ansiedad bajó en todos los grupos por igual, también en el de meditación."
+  ],
+  "practiceDestination": "in_capsule",
+  "practiceLabel": "Un suspiro lento, cuando lo necesites",
+  "practiceText": "Toma aire por la nariz. Cuando sientas los pulmones llenos, toma un segundo sorbo de aire, más corto. Después suéltalo despacio por la boca, sin prisa, hasta que salga todo.\nPuedes hacerlo una vez o unas cuantas seguidas. Si notas mareo, vuelve a respirar como siempre.",
+  "journalPrompt": "¿Qué suele acelerar tus días, y dónde podría caber una pausa?",
+  "sources": [
+    {
+      "title": "Effect of breathwork on stress and mental health: A meta-analysis of randomised-controlled trials",
+      "authorsOrInstitution": "Fincham, G. W., Strauss, C., Montero-Marin, J. y Cavanagh, K.",
+      "year": 2023,
+      "originalUrl": "https://www.nature.com/articles/s41598-022-27247-y",
+      "doi": "10.1038/s41598-022-27247-y",
+      "reviewed": true
+    },
+    {
+      "title": "Effects of voluntary slow breathing on heart rate and heart rate variability: A systematic review and a meta-analysis",
+      "authorsOrInstitution": "Laborde, S., Allen, M. S., Borges, U., Dosseville, F., Hosang, T. J., Iskra, M., Mosley, E., Salvotti, C., Spolverato, L., Zammit, N. y Javelle, F.",
+      "year": 2022,
+      "originalUrl": "https://www.sciencedirect.com/science/article/abs/pii/S0149763422002007",
+      "doi": "10.1016/j.neubiorev.2022.104711",
+      "reviewed": true
+    },
+    {
+      "title": "Brief structured respiration practices enhance mood and reduce physiological arousal",
+      "authorsOrInstitution": "Balban, M. Y., Neri, E., Kogon, M. M., Weed, L., Nouriani, B., Jo, B., Holl, G., Zeitzer, J. M., Spiegel, D. y Huberman, A. D.",
+      "year": 2023,
+      "originalUrl": "https://www.cell.com/cell-reports-medicine/fulltext/S2666-3791(22)00474-8",
+      "doi": "10.1016/j.xcrm.2022.100895",
+      "reviewed": true
+    }
+  ],
+  "generatedWithAi": true,
+  "generatedAt": "2026-10-04T16:50:00-06:00",
+  "coverAsset": "respirar-cuando-el-dia-se-acelera.webp",
+  "coverAltText": "Una persona sentada de espaldas sobre una manta, en un muelle de madera junto a un lago rodeado de montañas y árboles, con luz cálida de tarde."
+}
