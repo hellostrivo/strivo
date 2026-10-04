@@ -67,9 +67,18 @@ describe('la app abre en su primera sección (revisión 25 ago)', () => {
     expect(app).toMatch(/path="\*" element=\{<Navigate to=\{INICIO\} replace/)
   })
 
-  it('los cinco destinos tienen ruta, y no hay un sexto', () => {
+  it('los seis destinos tienen ruta, y no hay un séptimo (DP-28.1)', () => {
     const rutas = (app.match(/<Route\s+path="([^"]+)"/g) ?? []).map((r) => r.match(/"([^"]+)"/)[1])
-    expect(rutas).toEqual(['/', '/hoy', '/journal', '/respiracion/*', '/historial', '/perfil', '*'])
+    expect(rutas).toEqual([
+      '/',
+      '/hoy',
+      '/journal',
+      '/respiracion/*',
+      '/una-pausa/*',
+      '/historial',
+      '/perfil',
+      '*',
+    ])
   })
 })
 

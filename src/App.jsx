@@ -46,6 +46,8 @@ import Hoy from '@/pages/diario/Hoy'
 import Perfil from '@components/perfil/Perfil'
 import Journal from '@/pages/diario/Journal'
 import Historial from '@/pages/diario/Historial'
+import UnaPausa from '@/unaPausa/UnaPausa'
+import LimiteDeErrores from '@/unaPausa/LimiteDeErrores'
 
 /**
  * ¿Toca umbral en esta sesión?
@@ -323,6 +325,21 @@ function Secciones({ uid }) {
                 salida={INICIO}
                 onHideNav={setHideNav}
               />
+            }
+          />
+
+          {/* La cápsula de la semana (SPEC_28.3). Resuelve sus vistas ella
+              misma, como Respiración, y la ruta de Respiración le llega por
+              props: `unaPausa/` no nombra `breathing/`. **Va dentro de su
+              límite de errores**: lo que falle ahí —red, canal o render— se
+              queda ahí, y la cabecera, la barra y las otras secciones no se
+              enteran. */}
+          <Route
+            path="/una-pausa/*"
+            element={
+              <LimiteDeErrores>
+                <UnaPausa base="/una-pausa" rutaRespiracion={RUTA_RESPIRACION} />
+              </LimiteDeErrores>
             }
           />
 

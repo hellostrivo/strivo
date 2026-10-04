@@ -901,3 +901,18 @@
   from { opacity: 1; }
   to   { opacity: 0; }
 }
+
+/* ─── Una pausa (SPEC_28.3) ──────────────────────────────────────────────────
+   **El encabezado de cada vista recibe el foco y no lo dibuja.** Al entrar a la
+   sección, o al pasar de la cápsula al archivo y al detalle, el foco va al `h1`
+   para que el lector de pantalla diga dónde estás antes de tabular a nada
+   (RN-RE-NAV-41, como Respiración). Un `tabindex="-1"` enfocado por script se
+   pinta con el anillo por defecto del navegador, que nadie pidió y no dice nada.
+
+   **No es una excepción a "todo alcanzable por teclado, con foco visible".** Un
+   encabezado no es alcanzable con el tabulador, así que no es de los elementos
+   a los que WCAG 2.4.7 exige indicador; los enlaces y botones de la sección
+   conservan el suyo. */
+.una-pausa-encabezado:focus {
+  outline: none;
+}

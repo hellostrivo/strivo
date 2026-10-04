@@ -1898,6 +1898,48 @@ export const copy = {
     short: ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'],
     long: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
   },
+
+  // ─── Una pausa (SPEC_28.3) ────────────────────────────────────────────────
+  // La cápsula de la semana. **Va al final del objeto a propósito**, en un
+  // bloque propio: la rama `una-pausa` vive aparte hasta la fusión, y así choca
+  // lo menos posible con lo que entre en `strivo` mientras tanto.
+  //
+  // Lo que dice cada cápsula no vive aquí: llega del canal y lo valida su
+  // propio léxico (`unaPausa/modelo/validar.js`). Aquí solo está el marco.
+  // Los rótulos del brief van literales; el resto se aprobó en la §0 de 28.3.
+  unaPausa: {
+    // El encabezado de los estados sin cápsula, solo para el lector de
+    // pantalla: el nombre de la sección es lo que hace falta oír al entrar.
+    nombre: 'Una pausa',
+    etiqueta: 'Tema de la semana',
+    loQueSabemos: 'Lo que sabemos',
+    llevaloATuDia: 'Llévalo a tu día',
+    preguntaParaTi: 'Una pregunta para ti',
+    fuentes: {
+      titulo: 'Fuentes',
+      listaLabel: 'Fuentes de esta pausa',
+      original: 'Leer el original',
+      doi: 'DOI {doi}',
+      seAbreFuera: '(se abre fuera de Strivo)',
+      aviso:
+        'Lo que lees aquí es información educativa. No sustituye la atención de una persona profesional de la salud.',
+      // Solo con `generatedWithAi: true`.
+      transparencia: 'Contenido elaborado con apoyo de IA y revisado por Strivo.',
+    },
+    explorar: 'Explorar pausas anteriores',
+    archivo: {
+      titulo: 'Pausas anteriores',
+      listaLabel: 'Pausas anteriores, de la más reciente a la más antigua',
+    },
+    cargandoLabel: 'Trayendo la pausa de esta semana',
+    // Dice qué cabe aquí, no qué falta (RN-EST-01).
+    vacio:
+      'Cada semana llega aquí una pausa. Cuando esté la próxima, la encontrarás en este lugar.',
+    error: {
+      texto: 'No pudimos traer la pausa de esta semana. Todo lo tuyo sigue aquí.',
+      reintentar: 'Reintentar',
+    },
+  },
 }
 
 // Utilidad: interpolar template strings

@@ -23,8 +23,15 @@ describe('criterio 2: nadie en Una pausa lee la hora local', () => {
 
   it('la prueba ve los archivos que tiene que ver', () => {
     expect(fuentes('src/unaPausa').sort()).toEqual([
+      'src/unaPausa/Archivo.jsx',
+      'src/unaPausa/Capsula.jsx',
+      'src/unaPausa/Estado.jsx',
+      'src/unaPausa/Fuentes.jsx',
+      'src/unaPausa/LimiteDeErrores.jsx',
+      'src/unaPausa/UnaPausa.jsx',
       'src/unaPausa/canal/cache.js',
       'src/unaPausa/canal/leer.js',
+      'src/unaPausa/fecha.js',
       'src/unaPausa/modelo/canal.js',
       'src/unaPausa/modelo/capsula.js',
       'src/unaPausa/modelo/estados.js',
