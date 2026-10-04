@@ -309,6 +309,28 @@ const PARES = [
   // pantallas.
   ['Secciones · sección activa sobre el cromo', TEXTO.onDark, sobre(TEXTO.onDark, 0.12, MARCA.conmutadorAm), CUERPO],
   ['Secciones · borde de la sección activa sobre el cromo', MARCA.strivoAm100, sobre(TEXTO.onDark, 0.12, MARCA.conmutadorAm), NO_TEXTO],
+
+  // ── Una pausa (SPEC_28.3, 4 oct 2026) ───────────────────────────────────────
+  // **No trae pares nuevos, y es a propósito.** La sección se pinta sobre la
+  // base de fuera de Hoy, que elige el reloj, con las superficies de siempre:
+  //
+  // - Cuerpo y secundario sobre `strivo-am-50` y `strivo-pm-50`: «Mañana ·
+  //   cuerpo / secundario sobre base» y «Noche · cuerpo / secundario sobre
+  //   base», arriba. Los enlaces van con la tinta del cuerpo, subrayados.
+  // - Las fuentes van sin tarjeta: `bg-raised` sobre `pm-50` sería un par sin
+  //   medir. El botón «Reintentar» sí va sobre `bg-raised` —la variante
+  //   `surface` de la casa—, y ese velo es blanco al 72 % encima de la base:
+  //   más claro que ella, así que la tinta oscura contrasta más que sobre la
+  //   base desnuda, que ya pasa AAA.
+  // - La cuarta píldora es el mismo `NavLink` que las otras tres: «Mañana ·
+  //   sección / rótulo sobre cabecera», «Secciones · sección activa / borde
+  //   sobre el cromo» y, en la Noche de Hoy, «Noche · cuerpo / secundario
+  //   sobre cabecera».
+  // - El fundido de la cabecera es una máscara, no un color: no hay par que
+  //   medir. Lo que difumina es el borde de una píldora que sigue fuera de la
+  //   vista, y la que se lee —la activa o la enfocada— queda siempre fuera de
+  //   él (`cabeceraDesplazable.js`).
+  // - El esqueleto de «cargando» es forma sin texto.
 ]
 
 /**
