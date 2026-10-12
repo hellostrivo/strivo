@@ -1530,9 +1530,9 @@ export const copy = {
 
       horarios: {
         titulo: 'Cómo son tus días',
-        hint: 'Para acompañarte a tu ritmo, no al de la app.',
-        wakeLabel: 'Me despierto a las',
-        sleepLabel: 'Me duermo a las',
+        hint: 'Para acompañarte a tu ritmo.',
+        wakeLabel: 'Me despierto a las:',
+        sleepLabel: 'Me duermo a las:',
       },
 
       // SPEC_29 — Las referencias de las frases del día. Las dos preguntas son

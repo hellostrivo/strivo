@@ -74,6 +74,17 @@ describe('los catálogos no se repiten', () => {
   })
 })
 
+describe('los horarios caben en su tarjeta', () => {
+  // La corrección de P5 no había llegado aquí: en un teléfono de 320 px el
+  // `input[type="time"]` se salía de la tarjeta por la derecha.
+  it('cada campo de hora lleva `campo-hora` y su renglón puede encoger', () => {
+    const bloque = pantalla.match(/horarios: \(\) => \([\s\S]*?\n {4}\),/)[0]
+    expect(bloque.match(/type="time"/g)).toHaveLength(2)
+    expect(bloque.match(/className="campo-hora"/g)).toHaveLength(2)
+    expect(bloque.match(/<label className="flex min-w-0 flex-col/g)).toHaveLength(2)
+  })
+})
+
 describe('nada bloquea y nada mide', () => {
   it('ningún control lleva disabled, required ni aria-invalid', () => {
     ;[pantalla, codigoDe(BLOQUE), barra].forEach((codigo) =>

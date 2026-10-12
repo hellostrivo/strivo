@@ -92,20 +92,26 @@ export default function Perfil({ uid }) {
       />
     ),
 
+    // Los dos campos de hora llevan la misma corrección que P5 (ver
+    // `onboarding/Horarios.jsx`): un `input[type="time"]` trae un ancho propio
+    // del navegador mayor que el hueco de un teléfono, y sin `campo-hora` ni
+    // `min-w-0` se salía de la tarjeta.
     horarios: () => (
-      <div className="flex flex-col gap-4">
-        <label className="flex flex-col gap-2">
+      <div className="flex min-w-0 flex-col gap-4">
+        <label className="flex min-w-0 flex-col gap-2">
           <span className="text-sm text-on-surface-soft">{textos.horarios.wakeLabel}</span>
           <CampoLinea
             type="time"
+            className="campo-hora"
             value={valores.despertar}
             onChange={(evento) => acciones.responder('despertar', evento.target.value)}
           />
         </label>
-        <label className="flex flex-col gap-2">
+        <label className="flex min-w-0 flex-col gap-2">
           <span className="text-sm text-on-surface-soft">{textos.horarios.sleepLabel}</span>
           <CampoLinea
             type="time"
+            className="campo-hora"
             value={valores.dormir}
             onChange={(evento) => acciones.responder('dormir', evento.target.value)}
           />

@@ -687,7 +687,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**82 archivos de prueba · 2.179 casos · los seis comandos y `validar:frases` en verde.**
+**82 archivos de prueba · 2.180 casos · los seis comandos y `validar:frases` en verde.**
 
 ### «Comenzar mi día» se despide con un buen deseo (12 oct 2026)
 
@@ -728,6 +728,20 @@ intacto al reabrir, la misma frase al volver a cerrar y el toque que salta la es
 **Lo que sigue sin decidirse ni verse en un teléfono:** la revisión editorial de las veinte frases
 es del propietario del producto, como la del resto del repertorio; y si cinco segundos de buen
 deseo por la mañana —cuando la gente tiene prisa— son un respiro o una espera. Tocarlo ya la salta.
+
+### Tu perfil: «Cómo son tus días» cabe en su tarjeta (12 oct 2026)
+
+Lo pidió el propietario del producto. **Solo en Tu perfil; el onboarding (P5) no se tocó.**
+
+- **El apoyo dice «Para acompañarte a tu ritmo.»** y las etiquetas, «Me despierto a las:» y «Me
+  duermo a las:». P5 conserva su redacción, que sigue con «no al de la app. Lo cambias cuando
+  quieras.».
+- **Los campos de hora se salían de la tarjeta.** Es el mismo defecto que se corrigió en P5 el 26 de
+  agosto y la corrección nunca llegó aquí: ahora el bloque lleva `campo-hora` en cada campo y
+  `min-w-0` en cada renglón, y una prueba en `perfil.test.js` lo vigila. **Ni Chromium ni el WebKit
+  de escritorio reproducen el desbordamiento** —el ancho propio del control es de Safari en iOS—,
+  así que la verificación a 320, 360 y 390 px solo confirma que nada se rompió. Falta verlo en un
+  iPhone.
 
 ### Frases del día personalizadas (SPEC_29, 4 oct 2026)
 
