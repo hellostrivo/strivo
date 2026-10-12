@@ -19,7 +19,14 @@
 // arriba porque se hacen en dos sitios —el onboarding (`p5r`, `p5ra`) y Tu
 // perfil (`perfil.frases`)— **con los mismos textos**: dos copias de la misma
 // pregunta se separan en cuanto alguien edite una. Es el mismo objeto en los
-// dos sitios, no una copia.
+// dos sitios, no una copia. Tu perfil no pinta el título ni el apoyo de la
+// primera pregunta —el bloque ya tiene los suyos—, pero la pregunta y sus
+// opciones son estas.
+//
+// **«Prefiero decidir después» ya no se ofrece** (12 oct 2026), en ningún
+// sitio: no se elige, es lo que vale mientras no se elige nada. El modo
+// `sin_definir` sigue existiendo y su texto vive en `perfil.frases.actual`,
+// para quien lo eligió antes.
 //
 // **Es una preferencia de contenido, no una declaración de identidad.** Nada
 // pregunta «¿en qué crees?» y ninguna opción obliga a declararse religioso,
@@ -29,15 +36,17 @@
 // `AFINIDADES`); aquí solo está cómo se dicen.
 const REFERENCIAS = {
   modo: {
-    titulo: 'Haz tuyas tus frases',
-    apoyo:
-      'Si te hace sentido, podemos considerar referencias espirituales, religiosas o filosóficas. Es opcional y puedes cambiarlo cuando quieras.',
+    titulo: 'Para tu inspiración diaria',
+    // Dos párrafos: lo que se ofrece y que es opcional.
+    apoyo: [
+      'Cada día compartiremos contigo una frase para acompañarte. Si lo deseas, puedes indicarnos si te gustaría encontrar en ellas referencias espirituales o filosóficas.',
+      'Es completamente opcional y podrás cambiar esta preferencia cuando quieras.',
+    ],
     pregunta: '¿Qué tipo de referencias te gustaría encontrar?',
     opciones: {
-      guiadas: 'Quiero elegir referencias',
-      espirituales_generales: 'Espirituales, sin una tradición específica',
-      seculares: 'Prefiero frases seculares',
-      sin_definir: 'Prefiero decidir después',
+      guiadas: 'Quiero elegir referencias espirituales',
+      espirituales_generales: 'Sin una tradición espiritual específica',
+      seculares: 'Prefiero frases seculares, sin referencias espirituales',
     },
   },
   afinidades: {
@@ -1546,16 +1555,17 @@ export const copy = {
       // nada escrito, y la frase de mañana será igual de buena.
       frases: {
         titulo: 'Personaliza tus frases',
-        hint: 'Elige qué referencias, si alguna, te gustaría encontrar en tus frases diarias.',
+        hint: 'Para que tus frases diarias reflejen mejor lo que es importante para ti, elige las referencias espirituales o religiosas que te gustaría encontrar en ellas.',
         nota: 'Usamos esta elección solo para seleccionar tus frases. Puedes cambiarla o borrarla cuando quieras.',
         elegir: 'Elegir mis referencias',
         cambiar: 'Cambiar mis referencias',
         listo: 'Listo',
-        actualLabel: 'Tu elección',
+        // Con dos puntos: lo elegido sigue en el mismo renglón.
+        actualLabel: 'Tu elección:',
         actual: {
-          ninguna:
-            'Todavía no elegiste. Por ahora tus frases no traen referencias religiosas, espirituales ni filosóficas.',
-          guiadasTemplate: 'Referencias de {lista}.',
+          // Sin elección no se pinta «Tu elección:» delante: se dice esto solo.
+          ninguna: 'Todavía no has elegido.',
+          guiadasTemplate: '{lista}.',
           guiadasSinElegir: 'Quieres elegir referencias, y todavía no hay ninguna elegida.',
           espirituales_generales: 'Espirituales, sin una tradición específica.',
           seculares: 'Frases seculares.',

@@ -687,7 +687,35 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**82 archivos de prueba · 2.180 casos · los seis comandos y `validar:frases` en verde.**
+**82 archivos de prueba · 2.188 casos · los seis comandos y `validar:frases` en verde.**
+
+### Las referencias de las frases: tres opciones, la misma redacción en los dos sitios (12 oct 2026)
+
+Lo pidió el propietario del producto, primero para Tu perfil y después también para el onboarding
+(`p5r`): **las dos superficies dicen lo mismo** y vuelven a leer **el mismo objeto de copy**
+(`REFERENCIAS`), que es lo que ya pedía SPEC_29. La lógica de las frases no cambia: los
+identificadores, `normalizar` y el selector son los mismos.
+
+- **P5R se titula «Para tu inspiración diaria»** y su apoyo son dos párrafos (`apoyo` admite una
+  lista). La pregunta no cambió.
+- **Tres opciones**: «Quiero elegir referencias espirituales», «Sin una tradición espiritual
+  específica» y «Prefiero frases seculares, sin referencias espirituales».
+- **«Prefiero decidir después» ya no se ofrece en ningún sitio** (`MODOS_OFRECIDOS`, en
+  `referencias/preferencias.js`). No se elige: es lo que vale sin elegir. El modo `sin_definir`
+  sigue en `MODOS` porque hay elecciones guardadas con él, y es lo que deja «Borrar mi elección» o
+  saltar P5R. Quien lo eligió no ve ningún chip marcado, y el resumen de Tu perfil lo sigue diciendo
+  con su frase (`perfil.frases.actual.sin_definir`).
+- **En Tu perfil la primera pregunta va sin título ni apoyo** (`conEncabezado={false}`): el bloque
+  ya tiene los suyos y su `hint` es propio («Para que tus frases diarias reflejen mejor…»).
+- **El texto de los chips de las dos preguntas va a la izquierda**, en los dos sitios (`alIzquierda`,
+  de `ListaDeChips` a `Chip`). Un `<button>` centra por defecto y se notaba en cuanto la opción
+  envolvía. Es una prop y no un cambio de la píldora: el resto de chips de la app no se tocaron.
+- **El tamaño del encabezado lo da su nivel** (`PreguntasReferencias`): `h1` en el onboarding,
+  `text-lg`; `h3` en Tu perfil, `text-base`, por debajo del `h2` del bloque (`text-md`). «Elige tus
+  referencias» se leía más grande que «Personaliza tus frases».
+- **En Tu perfil, «Tu elección:» y lo elegido van en un solo párrafo**, y las afinidades se dicen
+  sin «Referencias de»: «Tu elección: Cristianismo y Estoicismo.». **Sin elección no hay
+  etiqueta**: dice solo «Todavía no has elegido.».
 
 ### «Comenzar mi día» se despide con un buen deseo (12 oct 2026)
 

@@ -30,7 +30,7 @@ import { PILDORA, PILDORA_ELEGIDA, PILDORA_LIBRE } from '@components/shared/pild
 /** La marca de lo elegido. No es copy: es un signo, y va oculto al lector. */
 const MARCA = '✓'
 
-export function Chip({ texto, elegido = false, punteado = false, onTocar }) {
+export function Chip({ texto, elegido = false, punteado = false, alIzquierda = false, onTocar }) {
   return (
     <button
       type="button"
@@ -42,6 +42,9 @@ export function Chip({ texto, elegido = false, punteado = false, onTocar }) {
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30',
         elegido ? PILDORA_ELEGIDA : PILDORA_LIBRE,
         punteado && !elegido && 'border-dashed',
+        // Un `<button>` centra su texto por defecto, y se nota en cuanto la
+        // opción no cabe en un renglón y ocupa el ancho entero.
+        alIzquierda && 'justify-start text-left',
       )}
     >
       {elegido && (
@@ -60,8 +63,16 @@ export function Chip({ texto, elegido = false, punteado = false, onTocar }) {
  * @param {Array<{id: string, texto: string}>} opciones
  * @param {string[]} elegidas - ids elegidos. Una sola, o varias: quien monta
  *   la lista decide cuántas caben, y la regla vive en su módulo, no aquí.
+ * @param {boolean} [alIzquierda] - el texto de cada chip, alineado a la izquierda.
  */
-export function ListaDeChips({ etiqueta, opciones, elegidas = [], punteados = [], onTocar }) {
+export function ListaDeChips({
+  etiqueta,
+  opciones,
+  elegidas = [],
+  punteados = [],
+  alIzquierda = false,
+  onTocar,
+}) {
   return (
     <div className="flex flex-wrap gap-2" role="group" aria-label={etiqueta}>
       {opciones.map((opcion) => (
@@ -70,6 +81,7 @@ export function ListaDeChips({ etiqueta, opciones, elegidas = [], punteados = []
           texto={opcion.texto}
           elegido={elegidas.includes(opcion.id)}
           punteado={punteados.includes(opcion.id)}
+          alIzquierda={alIzquierda}
           onTocar={() => onTocar(opcion.id)}
         />
       ))}

@@ -14,19 +14,38 @@
 // por color; un toque elige y otro suelta. En la primera pregunta soltar deja
 // la pregunta sin contestar, que es una forma válida de contestarla.
 //
-// **Quien monta decide el nivel del encabezado.** En el onboarding la pregunta
-// es la pantalla y va en `h1`; en Tu perfil vive dentro de un bloque que ya
-// tiene su `h2`, y va en `h3`.
+// **Quien monta decide el nivel del encabezado, y el nivel decide el tamaño.**
+// En el onboarding la pregunta es la pantalla y va en `h1`; en Tu perfil vive
+// dentro de un bloque que ya tiene su `h2`, y va en `h3` y más pequeña que él:
+// un subtítulo que se lee más grande que el título del bloque invierte la
+// jerarquía. Y decide si hay encabezado: la primera pregunta de Tu perfil va
+// sin título ni apoyo, porque el bloque ya tiene los suyos.
+//
+// **El texto de los chips va a la izquierda** (12 oct 2026): las opciones de
+// la primera pregunta ocupan dos renglones en un teléfono, y un `<button>`
+// centrado las pintaba como un párrafo centrado.
 
+import { clsx } from 'clsx'
 import { ListaDeChips } from '@components/shared/Chips'
-import { AFINIDADES, MODOS } from '@/referencias/preferencias'
+import { AFINIDADES, MODOS_OFRECIDOS } from '@/referencias/preferencias'
 
 function Encabezado({ nivel, textos }) {
   const Titulo = nivel
   return (
     <div className="flex flex-col gap-2">
-      <Titulo className="font-display text-lg text-on-surface leading-snug">{textos.titulo}</Titulo>
-      <p className="text-base text-on-surface-soft leading-relaxed">{textos.apoyo}</p>
+      <Titulo
+        className={clsx(
+          'font-display text-on-surface leading-snug',
+          nivel === 'h1' ? 'text-lg' : 'text-base',
+        )}
+      >
+        {textos.titulo}
+      </Titulo>
+      {[].concat(textos.apoyo).map((parrafo) => (
+        <p key={parrafo} className="text-base text-on-surface-soft leading-relaxed">
+          {parrafo}
+        </p>
+      ))}
     </div>
   )
 }
@@ -39,17 +58,19 @@ function Encabezado({ nivel, textos }) {
  * @param {?string} props.valor - el modo elegido, o `null`.
  * @param {(id: string) => void} props.onTocar
  * @param {'h1'|'h2'|'h3'} [props.nivel]
+ * @param {boolean} [props.conEncabezado] - `false` omite el título y el apoyo.
  */
-export function PreguntaModo({ textos, valor, onTocar, nivel = 'h1' }) {
+export function PreguntaModo({ textos, valor, onTocar, nivel = 'h1', conEncabezado = true }) {
   return (
     <section className="flex flex-col gap-4">
-      <Encabezado nivel={nivel} textos={textos} />
+      {conEncabezado && <Encabezado nivel={nivel} textos={textos} />}
       <p className="text-base text-on-surface">{textos.pregunta}</p>
       <ListaDeChips
         etiqueta={textos.pregunta}
-        opciones={MODOS.map((id) => ({ id, texto: textos.opciones[id] }))}
+        opciones={MODOS_OFRECIDOS.map((id) => ({ id, texto: textos.opciones[id] }))}
         elegidas={valor ? [valor] : []}
         onTocar={onTocar}
+        alIzquierda
       />
     </section>
   )
@@ -76,6 +97,7 @@ export function PreguntaAfinidades({ textos, valor, onTocar, onOmitir, nivel = '
         opciones={AFINIDADES.map((id) => ({ id, texto: textos.opciones[id] }))}
         elegidas={valor}
         onTocar={onTocar}
+        alIzquierda
       />
       <div>
         <button

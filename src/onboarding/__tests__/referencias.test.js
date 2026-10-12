@@ -15,10 +15,12 @@ import { UID, resetLocalDB } from '../../lib/db/__tests__/helpers.js'
 import * as escritura from '../escritura.js'
 import { RESPUESTAS_INICIALES } from '../estado.js'
 import { PreguntaAfinidades, PreguntaModo } from '@components/shared/PreguntasReferencias'
-import { textoDeEleccion } from '@components/perfil/TusFrases'
+import TusFrases, { textoDeEleccion } from '@components/perfil/TusFrases'
 import {
   AFINIDADES,
   MODOS,
+  MODOS_OFRECIDOS,
+  MODO_POR_DEFECTO,
   alternarAfinidad,
   alternarModo,
   normalizar,
@@ -26,6 +28,7 @@ import {
 } from '@/referencias/preferencias'
 
 const textos = copy.diario.onboarding
+const REFERENCIAS_TODAS = () => [textos.p5r, textos.p5ra, copy.diario.perfil.frases.preguntas]
 
 function codigoDe(ruta) {
   return readFileSync(ruta, 'utf8')
@@ -36,15 +39,16 @@ function codigoDe(ruta) {
 describe('el copy es el del encargo, literal', () => {
   it('pregunta 1', () => {
     expect(textos.p5r).toEqual({
-      titulo: 'Haz tuyas tus frases',
-      apoyo:
-        'Si te hace sentido, podemos considerar referencias espirituales, religiosas o filosóficas. Es opcional y puedes cambiarlo cuando quieras.',
+      titulo: 'Para tu inspiración diaria',
+      apoyo: [
+        'Cada día compartiremos contigo una frase para acompañarte. Si lo deseas, puedes indicarnos si te gustaría encontrar en ellas referencias espirituales o filosóficas.',
+        'Es completamente opcional y podrás cambiar esta preferencia cuando quieras.',
+      ],
       pregunta: '¿Qué tipo de referencias te gustaría encontrar?',
       opciones: {
-        guiadas: 'Quiero elegir referencias',
-        espirituales_generales: 'Espirituales, sin una tradición específica',
-        seculares: 'Prefiero frases seculares',
-        sin_definir: 'Prefiero decidir después',
+        guiadas: 'Quiero elegir referencias espirituales',
+        espirituales_generales: 'Sin una tradición espiritual específica',
+        seculares: 'Prefiero frases seculares, sin referencias espirituales',
       },
     })
   })
@@ -70,12 +74,19 @@ describe('el copy es el del encargo, literal', () => {
     expect(frases.preguntas.afinidades).toBe(textos.p5ra)
     expect(frases.titulo).toBe('Personaliza tus frases')
     expect(frases.hint).toBe(
-      'Elige qué referencias, si alguna, te gustaría encontrar en tus frases diarias.',
+      'Para que tus frases diarias reflejen mejor lo que es importante para ti, elige las referencias espirituales o religiosas que te gustaría encontrar en ellas.',
     )
     expect(frases.elegir).toBe('Elegir mis referencias')
+    expect(frases.actualLabel).toBe('Tu elección:')
     expect(frases.nota).toBe(
       'Usamos esta elección solo para seleccionar tus frases. Puedes cambiarla o borrarla cuando quieras.',
     )
+  })
+
+  it('«Prefiero decidir después» ya no se ofrece, y el modo sigue existiendo', () => {
+    expect(MODOS_OFRECIDOS).toEqual(['guiadas', 'espirituales_generales', 'seculares'])
+    expect(MODOS).toContain(MODO_POR_DEFECTO)
+    expect(JSON.stringify(REFERENCIAS_TODAS())).not.toMatch(/decidir después/i)
   })
 
   it('nadie pregunta en qué crees', () => {
@@ -83,8 +94,8 @@ describe('el copy es el del encargo, literal', () => {
     expect(todo).not.toMatch(/en qué crees|creyente|ateo|religios[oa] eres|tu religión|tu fe/i)
   })
 
-  it('cada opción del catálogo tiene su texto, y ninguna sobra', () => {
-    expect(Object.keys(textos.p5r.opciones).sort()).toEqual([...MODOS].sort())
+  it('cada opción que se ofrece tiene su texto, y ninguna sobra', () => {
+    expect(Object.keys(textos.p5r.opciones)).toEqual([...MODOS_OFRECIDOS])
     expect(Object.keys(textos.p5ra.opciones).sort()).toEqual([...AFINIDADES].sort())
   })
 })
@@ -97,7 +108,7 @@ describe('las piezas de las preguntas', () => {
     expect(html).toContain('role="group"')
     expect(html).toContain(`aria-label="${textos.p5r.pregunta}"`)
     expect((html.match(/aria-pressed="true"/g) ?? []).length).toBe(1)
-    expect((html.match(/aria-pressed="false"/g) ?? []).length).toBe(3)
+    expect((html.match(/aria-pressed="false"/g) ?? []).length).toBe(2)
     expect(html).toContain('✓')
     expect(html).toContain('<h1')
   })
@@ -113,6 +124,84 @@ describe('las piezas de las preguntas', () => {
     expect((html.match(/aria-pressed="true"/g) ?? []).length).toBe(2)
     expect(html).toContain(textos.p5ra.omitir)
     expect(html).toContain('<h3')
+  })
+
+  it('el onboarding pinta título, los dos párrafos de apoyo y tres opciones', () => {
+    const html = pintar(PreguntaModo, { textos: textos.p5r, valor: null, onTocar: () => {} })
+    expect(html).toContain(`<h1`)
+    expect(html).toContain(textos.p5r.titulo)
+    for (const parrafo of textos.p5r.apoyo) expect(html).toContain(`>${parrafo}</p>`)
+    expect((html.match(/aria-pressed=/g) ?? []).length).toBe(3)
+    for (const texto of Object.values(textos.p5r.opciones)) expect(html).toContain(texto)
+  })
+
+  it('Tu perfil pinta la misma pregunta sin título ni apoyo', () => {
+    const html = pintar(PreguntaModo, {
+      textos: copy.diario.perfil.frases.preguntas.modo,
+      valor: null,
+      onTocar: () => {},
+      nivel: 'h3',
+      conEncabezado: false,
+    })
+    expect(html).not.toMatch(/<h[1-6]/)
+    expect(html).not.toContain(textos.p5r.titulo)
+    for (const parrafo of textos.p5r.apoyo) expect(html).not.toContain(parrafo)
+    expect(html).toContain(textos.p5r.pregunta)
+    expect((html.match(/aria-pressed=/g) ?? []).length).toBe(3)
+  })
+
+  it('el texto de cada chip va a la izquierda, en las dos preguntas', () => {
+    const botones = [
+      pintar(PreguntaModo, { textos: textos.p5r, valor: null, onTocar: () => {} }),
+      pintar(PreguntaAfinidades, {
+        textos: textos.p5ra,
+        valor: [],
+        onTocar: () => {},
+        onOmitir: () => {},
+      }),
+    ].flatMap((html) => html.match(/<button[^>]*aria-pressed[^>]*>/g))
+    expect(botones).toHaveLength(7)
+    for (const boton of botones) expect(boton).toMatch(/text-left/)
+  })
+
+  it('Tu perfil monta la primera sin encabezado', () => {
+    expect(codigoDe('src/components/perfil/TusFrases.jsx')).toMatch(/conEncabezado=\{false\}/)
+  })
+
+  it('el subtítulo de Tu perfil es más pequeño que el título del bloque', () => {
+    const html = pintar(PreguntaAfinidades, {
+      textos: textos.p5ra,
+      valor: [],
+      onTocar: () => {},
+      onOmitir: () => {},
+      nivel: 'h3',
+    })
+    const h3 = html.match(/<h3[^>]*>/)[0]
+    expect(h3).toMatch(/text-base/)
+    expect(h3).not.toMatch(/text-(md|lg|xl)/)
+    expect(codigoDe('src/components/perfil/Bloque.jsx')).toMatch(/<h2 className="[^"]*text-md/)
+    const h1 = pintar(PreguntaAfinidades, {
+      textos: textos.p5ra,
+      valor: [],
+      onTocar: () => {},
+      onOmitir: () => {},
+    }).match(/<h1[^>]*>/)[0]
+    expect(h1).toMatch(/text-lg/)
+  })
+
+  it('lo elegido empieza en el mismo renglón que «Tu elección:»', () => {
+    const codigo = codigoDe('src/components/perfil/TusFrases.jsx')
+    expect(codigo).toMatch(
+      /<p[^>]*>\s*\{eleccion && \(\s*<>\s*<span[^>]*>\{textos\.actualLabel\}<\/span>\{' '\}\s*<\/>\s*\)\}\s*\{textoDeEleccion\(eleccion\)\}\s*<\/p>/,
+    )
+  })
+
+  it('sin elección se dice «Todavía no has elegido.» y nada más, sin «Tu elección:»', () => {
+    const frases = copy.diario.perfil.frases
+    expect(frases.actual.ninguna).toBe('Todavía no has elegido.')
+    const html = pintar(TusFrases, { uid: 'u' })
+    expect(html).toMatch(new RegExp(`<p[^>]*>${frases.actual.ninguna}</p>`))
+    expect(html).not.toContain(frases.actualLabel)
   })
 
   it('nada bloquea: ni disabled, ni required, ni aria-invalid', () => {
@@ -165,10 +254,8 @@ describe('la elección', () => {
     expect(textoDeEleccion(null)).toBe(frases.actual.ninguna)
     expect(
       textoDeEleccion({ modo: 'guiadas', afinidades: ['budismo', 'estoicismo', 'hinduismo'] }),
-    ).toBe('Referencias de Budismo, Estoicismo y Hinduismo.')
-    expect(textoDeEleccion({ modo: 'guiadas', afinidades: ['cristianismo'] })).toBe(
-      'Referencias de Cristianismo.',
-    )
+    ).toBe('Budismo, Estoicismo y Hinduismo.')
+    expect(textoDeEleccion({ modo: 'guiadas', afinidades: ['cristianismo'] })).toBe('Cristianismo.')
     expect(textoDeEleccion({ modo: 'guiadas', afinidades: [] })).toBe(
       frases.actual.guiadasSinElegir,
     )

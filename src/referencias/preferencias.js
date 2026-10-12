@@ -32,6 +32,13 @@ export const MODOS = Object.freeze([
 /** El modo de quien no contestó, saltó la pregunta o restableció su elección. */
 export const MODO_POR_DEFECTO = 'sin_definir'
 
+/**
+ * Los modos que se ofrecen como respuesta: todos menos el de quien todavía no
+ * eligió (12 oct 2026). «Decidir después» no se elige, es lo que vale sin
+ * elegir; sigue en `MODOS` porque hay elecciones guardadas con él.
+ */
+export const MODOS_OFRECIDOS = Object.freeze(MODOS.filter((id) => id !== MODO_POR_DEFECTO))
+
 /** Pregunta 2: las referencias elegidas. Selección múltiple, sin prioridad entre ellas. */
 export const AFINIDADES = Object.freeze(['cristianismo', 'budismo', 'hinduismo', 'estoicismo'])
 

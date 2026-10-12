@@ -13,7 +13,8 @@
 //   · el resumen: qué hay elegido, dicho con palabras, y la nota de para qué
 //     se usa;
 //   · editar: las dos preguntas del onboarding, **las mismas piezas y los
-//     mismos textos** (`components/shared/PreguntasReferencias`). Se guarda al
+//     mismos textos** (`components/shared/PreguntasReferencias`). La primera
+//     va sin título ni apoyo: el bloque ya tiene los suyos. Se guarda al
 //     tocar, como todo en Tu perfil, y «Listo» vuelve al resumen;
 //   · fuentes: el criterio editorial y la atribución de las citas aprobadas.
 //     Es estática y no lleva a ningún sitio.
@@ -114,7 +115,13 @@ export default function TusFrases({ uid }) {
   if (vista === VISTAS.editar) {
     return (
       <div className="flex flex-col gap-6">
-        <PreguntaModo nivel="h3" textos={textos.preguntas.modo} valor={modo} onTocar={tocarModo} />
+        <PreguntaModo
+          nivel="h3"
+          textos={textos.preguntas.modo}
+          valor={modo}
+          onTocar={tocarModo}
+          conEncabezado={false}
+        />
         {modo === 'guiadas' && (
           <PreguntaAfinidades
             nivel="h3"
@@ -168,8 +175,18 @@ export default function TusFrases({ uid }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1" aria-live="polite">
-        <p className="text-sm text-on-surface-soft">{textos.actualLabel}</p>
-        <p className="text-base text-on-surface leading-relaxed">{textoDeEleccion(eleccion)}</p>
+        {/* Un solo párrafo: lo elegido empieza junto a la etiqueta y, si no
+            cabe, sigue en el renglón de abajo sin salto forzado. Sin elección
+            no hay etiqueta: «Tu elección: Todavía no has elegido» se
+            contradice. */}
+        <p className="text-base text-on-surface leading-relaxed">
+          {eleccion && (
+            <>
+              <span className="font-medium">{textos.actualLabel}</span>{' '}
+            </>
+          )}
+          {textoDeEleccion(eleccion)}
+        </p>
         {aviso && <p className="text-sm text-on-surface-soft">{aviso}</p>}
       </div>
       <p className="text-sm text-on-surface-soft leading-relaxed">{textos.nota}</p>
