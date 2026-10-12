@@ -876,6 +876,10 @@
      corto, porque aquí no se cruza una puerta: se apaga una luz. La duración
      vive en `CierreDeLaNoche.jsx` (`SALIDA`) y una prueba compara las dos.
 
+     Desde el 12 de octubre de 2026 la usa también el buen deseo de la mañana
+     (`AperturaDelDia.jsx`), con las mismas dos cifras: es el mismo gesto con
+     la otra luz. Otra prueba compara las tres.
+
      Con "reducir movimiento" el componente no la pone: a los cinco segundos se
      vuelve, sin desvanecido (RN-VIS-05). */
   .salida-cierre {

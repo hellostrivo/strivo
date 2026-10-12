@@ -126,6 +126,12 @@ export const FIELDS = Object.freeze({
   //
   // `feelingOther` e `intentionOther` **se quedan en singular y siguen
   // escribiéndose**: "Algo más" es uno por pregunta, no uno por selección.
+  //
+  // `wishId` entró el 12 de octubre de 2026: el buen deseo que despide a
+  // la mañana al tocar "Comenzar mi día" (`diario/mananaDeseo.js`). Se guarda
+  // para que el mismo día devuelva la misma frase y el siguiente avance la
+  // rotación. Las mañanas anteriores no lo traen y no hace falta: la primera
+  // que se cierre después lo escribe.
   morningEntry: Object.freeze([
     'version',
     'updatedAt',
@@ -139,6 +145,7 @@ export const FIELDS = Object.freeze({
     'action',
     'reflectionId',
     'reflection',
+    'wishId',
   ]),
   // La noche de tres momentos (actualización del 23 ago). `gratitude`,
   // `learning`, `sleepState` y `sleepStateOther` salieron de la lista con las

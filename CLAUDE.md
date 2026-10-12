@@ -1,6 +1,6 @@
 # CLAUDE.md — Strivo
 
-**Última actualización:** 4 oct 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
+**Última actualización:** 12 oct 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
 **Blueprint (documento rector):** `/docs/blueprint/Strivo_Blueprint_de_Producto_v5_0_24-08-2026.md`
 **Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO.md`
 **Plan operativo del repliegue:** `/docs/Strivo_Plan_de_Separacion_Tecnica_v1_24-08-2026.md`
@@ -311,7 +311,8 @@ diario/ {
   // escriben. Los dos últimos guardaban un id suelto donde ahora hay lista.
   morningEntry/{fecha}: { version, updatedAt, completedAt, skipped,
                           feelings[], feelingOther, intentions[], intentionOther,
-                          gratitude[], action, reflectionId, reflection },
+                          gratitude[], action, reflectionId, reflection,
+                          wishId },   // el buen deseo de «Comenzar mi día», desde el 12 oct 2026
 
   // La noche de tres momentos. `gratitude`, `learning`, `sleepState`,
   // `sleepStateOther` y —desde el 10 sep 2026— `closingFeeling` son de
@@ -369,6 +370,7 @@ pantalla**.
            ¿Qué puedo hacer hoy…?                 (texto libre + ideas)
    +    ·  Si quieres, una última pausa           (opcional, algunos días)
    →       Tu intención · Tu paso · «Comenzar mi día»
+   →       Un buen deseo (rota entre 20) · «Puedes volver y cambiar lo que quieras.»
    →       La consulta: lo respondido, con las preguntas delante
 ```
 
@@ -685,7 +687,47 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**81 archivos de prueba · 2.149 casos · los seis comandos y `validar:frases` en verde.**
+**82 archivos de prueba · 2.179 casos · los seis comandos y `validar:frases` en verde.**
+
+### «Comenzar mi día» se despide con un buen deseo (12 oct 2026)
+
+Lo pidió el propietario del producto. «Comenzar mi día» devolvía a la consulta sin más; ahora deja
+delante **un buen deseo** —«Que tengas un día sereno.»— y debajo, más pequeño y en el secundario,
+«Puedes volver y cambiar lo que quieras.». Es **el mismo gesto que «Buenas noches.»** con la luz de
+la mañana: cinco segundos, medio de desvanecido (`.salida-cierre`, la misma regla de la hoja),
+tocarlo salta la espera y con movimiento reducido no hay desvanecido. Al irse vuelve a la consulta,
+que es donde llevaba el botón antes; desde ahí «Cambiar algo» reabre el recorrido con todo lo
+escrito. **La Noche no se tocó**, ni su flujo ni su copy.
+
+- **Veinte frases que rotan por mañana cerrada, no por calendario** (`src/diario/mananaDeseo.js`).
+  El mismo día devuelve la misma aunque se reabra y se vuelva a cerrar; la siguiente mañana cerrada
+  lleva la siguiente de la lista, y **ninguna se repite hasta haber pasado las veinte**. Quien pasa
+  una semana sin abrir la app retoma donde se quedó, no siete frases más allá. Cerrar tarde un día
+  anterior —la ventana de 72 h lo permite— no le da la frase que ya salió al día siguiente: se
+  saltan las diecinueve más recientes. **No mira nada de lo escrito** (RN-06).
+- **El modelo se amplía con `wishId`** en `morningEntry`, como la pausa guarda `reflectionId`: la
+  rotación se decide leyendo lo ya escrito, sin contador aparte, y viaja con la mañana a la nube. Las
+  mañanas anteriores no lo traen y no hace falta migrar nada. Las frases viven en
+  `copy.diario.manana.cierre.deseos` con un `id` cada una: **solo se añade al final y un id no se
+  cambia**.
+- **Se llama «deseo» y no «saludo», a propósito.** En este código el saludo es el del héroe de Hoy
+  y `separacion.test.js` prohíbe que la mañana empotrada lo nombre. Es además lo que es: un buen
+  deseo, no una felicitación.
+- **Terminar responde en el acto y guarda detrás**, como la noche desde el 12 de septiembre: el
+  cierre se pone delante en el mismo toque, una guarda (`cerrando`) deja pasar uno solo y el buen
+  deseo **solo se dice con la mañana guardada**; si la escritura falla, se dice qué pasó y se
+  ofrece reintentar. Salda la deuda anotada ese día.
+- **Las dos duraciones están escritas en `AperturaDelDia.jsx` y no se importan de la noche**: la
+  mañana no nombra la noche. Una prueba (`mananaDeseo.test.js`) compara las de los dos componentes
+  y la de la hoja.
+
+**Verificado en Chromium con Playwright a 390 px**, además de la suite: la intención y el paso,
+el buen deseo al tocar, el desvanecido entre los 5,0 y los 5,5 s, vuelta a la consulta, lo escrito
+intacto al reabrir, la misma frase al volver a cerrar y el toque que salta la espera.
+
+**Lo que sigue sin decidirse ni verse en un teléfono:** la revisión editorial de las veinte frases
+es del propietario del producto, como la del resto del repertorio; y si cinco segundos de buen
+deseo por la mañana —cuando la gente tiene prisa— son un respiro o una espera. Tocarlo ya la salta.
 
 ### Frases del día personalizadas (SPEC_29, 4 oct 2026)
 
@@ -1219,8 +1261,8 @@ permite pintar un componente a HTML en una prueba sin `import React`.
 
 **Lo que sigue sin verse en un teléfono:** si una tarjeta de varios párrafos con el teclado abierto
 se sigue sintiendo un refugio y no un formulario, y si cinco segundos de despedida son un descanso
-o una espera. `DiarioManana.terminar` conserva la espera y sin guarda contra el doble toque: no
-estaba en el encargo y se deja anotado.
+o una espera. ~~`DiarioManana.terminar` conserva la espera y sin guarda contra el doble toque~~:
+saldado el 12 de octubre de 2026, con el buen deseo de la mañana (abajo).
 
 ### Lo que subió a la nube vuelve a bajar (SPEC_17A, 17 sep 2026)
 

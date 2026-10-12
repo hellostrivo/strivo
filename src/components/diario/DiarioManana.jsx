@@ -6,6 +6,7 @@
 //   3. Cómo me gustaría sentirme · qué puedo hacer hoy    (dos preguntas)
 //   +  Una pausa opcional, algunos días
 //   →  El cierre: la intención y el paso, y "Comenzar mi día"
+//   →  El buen deseo del día, que se va solo
 //   →  La consulta: lo respondido, con las preguntas delante
 //
 // **La intención va con la acción, no con el punto de partida.** "¿Qué puedo
@@ -28,6 +29,14 @@
 // fecha, ni frase del día —eso es del héroe— ni botón de volver. Lo único que
 // ocupa la pantalla entera es el cierre, que es una ceremonia y dura lo que
 // dura un toque.
+//
+// **Terminar responde en el acto y guarda detrás** (12 oct 2026), como la
+// noche desde el 12 de septiembre. El último "Siguiente" esperaba a dos
+// escrituras encadenadas antes de cambiar de pantalla, sin decir nada y sin
+// nada que parara un segundo toque. Ahora el cierre se pone delante en el
+// mismo instante, una guarda deja pasar uno solo, y las escrituras corren
+// mientras ya se lee la intención. Lo que sí espera a la base de datos es el
+// buen deseo: se dice cuando la mañana está guardada (`guardado`).
 //
 // La mañana ya cerrada se queda a la vista como pantalla de consulta, con el
 // mismo aspecto que las del recorrido y un enlace discreto para cambiar algo.
@@ -57,6 +66,7 @@ import {
 import { ANIMO, INTENCION } from '@/diario/mananaEmociones'
 import { ideasAnteriores, ideasGenerales } from '@/diario/mananaAcciones'
 import { debeAparecer, siguientePregunta } from '@/diario/mananaPausa'
+import { deseoDelDia } from '@/diario/mananaDeseo'
 
 /** El paso de la pausa opcional, que va detrás de los tres momentos. */
 const PASO_PAUSA = MOMENTOS.length
@@ -81,6 +91,13 @@ export default function DiarioManana({ estado, acciones, soloLectura = false }) 
   const [paso, setPaso] = useState(0)
   const [valores, setValores] = useState(VALORES_VACIOS)
   const [gratitud, setGratitud] = useState([])
+  // Cómo va la escritura que cierra la mañana: `pendiente` mientras está de
+  // camino, `listo` cuando respondió, `fallo` si no pudo. Lo lee el cierre.
+  const [guardado, setGuardado] = useState('pendiente')
+  // Una guarda y no `disabled`: nada bloquea, pero un segundo toque mientras
+  // el primero está de camino no tiene que cerrar la mañana dos veces.
+  const cerrando = useRef(false)
+  const vivo = useRef(true)
   const marco = useRef(null)
   const primerRender = useRef(true)
 
@@ -102,8 +119,16 @@ export default function DiarioManana({ estado, acciones, soloLectura = false }) 
     setGratitud(filasIniciales(desdeTextos(morning?.gratitude), LIMITES.gratitudManana))
     setVista(estaCerrada(morning) ? 'resumen' : 'recorrido')
     setPaso(0)
+    cerrando.current = false
     // Solo al cambiar de día: releer en cada guardado pisaría lo que se escribe.
   }, [estado.fecha])
+
+  useEffect(() => {
+    vivo.current = true
+    return () => {
+      vivo.current = false
+    }
+  }, [])
 
   // Cambiar de momento lleva la tarjeta arriba del todo. Sin esto, con el
   // teclado abierto la pregunta nueva puede quedar fuera de la ventana.
@@ -117,6 +142,9 @@ export default function DiarioManana({ estado, acciones, soloLectura = false }) 
 
   const conPausa = debeAparecer(estado.recientes, estado.fecha, morning)
   const pregunta = siguientePregunta(estado.recientes, estado.fecha, morning)
+  // La de hoy si ya la tiene; si no, la siguiente de la rotación. Es la misma
+  // al pintarla y al guardarla, y la misma si se reabre y se vuelve a cerrar.
+  const deseo = deseoDelDia(estado.recientes, estado.fecha, morning)
 
   /** Un toque se guarda al momento; lo escrito, a los 800 ms. */
   const sello = () => ({ version: VERSION, updatedAt: marcaLocal() })
@@ -184,17 +212,35 @@ export default function DiarioManana({ estado, acciones, soloLectura = false }) 
     }
   }
 
-  const terminar = async () => {
+  /**
+   * Escribe la mañana entera con su marca de cierre y su buen deseo. Lo
+   * pendiente del autoguardado se vuelca antes para que ninguna tecla de los
+   * últimos 800 ms llegue después que la marca. `guardarManana` devuelve `null`
+   * cuando no pudo —lo escrito sigue en local y en el campo— y eso es lo que
+   * el cierre enseña como fallo, con su forma de reintentar.
+   */
+  const persistir = async () => {
+    setGuardado('pendiente')
     await acciones.volcar()
     const entrada = entradaActual()
-    await guardar({
+    const resultado = await guardar({
       action: entrada.action,
       reflection: entrada.reflection,
       gratitude: entrada.gratitude,
       skipped: camposOmitidos(entrada, { conPausa }),
+      wishId: deseo.id,
       completedAt: marcaLocal(),
     })
+    if (!vivo.current) return
+    setGuardado(resultado ? 'listo' : 'fallo')
+  }
+
+  /** El cierre se pone delante en el acto; la escritura va detrás. */
+  const terminar = () => {
+    if (cerrando.current) return
+    cerrando.current = true
     setVista('cierre')
+    persistir()
   }
 
   const avanzar = () => {
@@ -230,7 +276,17 @@ export default function DiarioManana({ estado, acciones, soloLectura = false }) 
     return (
       <AperturaDelDia
         lineas={lineasDeCierre(entradaActual(), estado.genero)}
-        onTerminar={() => setVista('resumen')}
+        deseo={deseo}
+        guardado={guardado}
+        onReintentar={persistir}
+        // Al irse el buen deseo se vuelve a la consulta, que es donde llevaba
+        // "Comenzar mi día" antes de que hubiera despedida. Desde ahí, "Cambiar
+        // algo" reabre el recorrido con todo lo escrito; volver a cerrar no
+        // duplica nada y devuelve la misma frase.
+        onTerminar={() => {
+          cerrando.current = false
+          setVista('resumen')
+        }}
       />
     )
   }

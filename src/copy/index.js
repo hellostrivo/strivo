@@ -669,6 +669,39 @@ export const copy = {
         listaUnion: ' y ',
         vacio: 'Tu día puede comenzar desde donde estás.',
         cta: 'Comenzar mi día',
+
+        // La despedida de la mañana (12 oct 2026): lo que se lee al tocar
+        // "Comenzar mi día", y se va sola como "Buenas noches.". Es un buen
+        // deseo y no una felicitación: no dice que algo salió bien, desea que
+        // el día vaya bien.
+        //
+        // **Rotan en este orden, una por mañana cerrada** (`mananaDeseo.js`),
+        // y ninguna se repite hasta haber pasado las veinte. Lo que se guarda
+        // es el `id` (`wishId`), así que **solo se añade al final** y un
+        // id no se cambia: una mañana ya cerrada lo llevaría a otra frase.
+        reabrir: 'Puedes volver y cambiar lo que quieras.',
+        deseos: [
+          { id: 'excelente', texto: 'Que tengas un excelente día.' },
+          { id: 'te-hagan-bien', texto: 'Que hoy encuentres momentos que te hagan bien.' },
+          { id: 'te-acompane', texto: 'Que tu intención te acompañe durante el día.' },
+          { id: 'tu-ritmo', texto: 'Que este día vaya a tu ritmo.' },
+          { id: 'espacio', texto: 'Que hoy haya espacio para ti.' },
+          { id: 'amable', texto: 'Que tengas un día amable contigo.' },
+          { id: 'con-calma', texto: 'Que puedas avanzar con calma.' },
+          { id: 'cotidiano', texto: 'Que encuentres algo bueno en lo cotidiano.' },
+          { id: 'suavidad', texto: 'Que tu día comience con suavidad.' },
+          { id: 'cerca', texto: 'Que hoy te sientas cerca de ti.' },
+          { id: 'ligero', texto: 'Que tengas un día tranquilo y ligero.' },
+          { id: 'a-tu-manera', texto: 'Que puedas cuidar de ti a tu manera.' },
+          { id: 'pausas', texto: 'Que hoy encuentres pausas que te hagan bien.' },
+          { id: 'momentos-de-calma', texto: 'Que este día tenga momentos de calma.' },
+          { id: 'su-lugar', texto: 'Que tu intención encuentre su lugar hoy.' },
+          { id: 'lo-que-necesitas', texto: 'Que hoy te acompañe lo que necesitas.' },
+          { id: 'sereno', texto: 'Que tengas un día sereno.' },
+          { id: 'presencia', texto: 'Que puedas habitar este día con presencia.' },
+          { id: 'en-lo-pequeno', texto: 'Que hoy haya calma, incluso en lo pequeño.' },
+          { id: 'te-reciba', texto: 'Que el día te reciba con amabilidad.' },
+        ],
       },
 
       // La pantalla de consulta. **No tiene etiquetas propias**: repite las

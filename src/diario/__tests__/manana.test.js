@@ -959,6 +959,9 @@ describe('criterio 10 — la noche y el resto del diario no se tocan', () => {
       'action',
       'reflectionId',
       'reflection',
+      // El buen deseo que despide a la mañana (12 oct 2026). Entró a la vista:
+      // ampliar el modelo es una decisión, y esta prueba es donde se ve.
+      'wishId',
     ])
   })
 
@@ -979,8 +982,15 @@ describe('criterio 10 — la noche y el resto del diario no se tocan', () => {
     ;['MomentoAnimo', 'MomentoGratitud', 'MomentoIntencionAccion', 'MomentoPausa'].forEach(
       (nombre) => expect(MOMENTO(nombre)).not.toMatch(/noche|night|journal/i),
     )
-    ;['manana', 'mananaAcciones', 'mananaPausa', 'mananaEmociones', 'seleccionEmociones'].forEach(
-      (nombre) => expect(codigoDe(`src/diario/${nombre}.js`)).not.toMatch(/night|journal|habit/i),
+    ;[
+      'manana',
+      'mananaAcciones',
+      'mananaPausa',
+      'mananaDeseo',
+      'mananaEmociones',
+      'seleccionEmociones',
+    ].forEach((nombre) =>
+      expect(codigoDe(`src/diario/${nombre}.js`)).not.toMatch(/night|journal|habit/i),
     )
   })
 
