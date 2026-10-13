@@ -33,6 +33,7 @@
 // ofrece únicamente con lo que sí puede cumplir.
 
 import { mudarUid, shared } from '@/lib/db'
+import { esNativa } from '@lib/plataforma'
 
 /**
  * Lo que puede salir mal, sin un solo código de error a la vista (RN-EST-04).
@@ -54,12 +55,25 @@ export const MOTIVOS = Object.freeze({
 
 /**
  * Los proveedores que se ofrecen en web (DP-19.4). Apple sale de la lista hasta
- * SPEC_21: en web pide un Service ID y una cuenta de desarrollador que todavía
+ * SPEC_21.2: en web pide un Service ID y una cuenta de desarrollador que todavía
  * no existen, y un botón que no puede funcionar es peor que su ausencia. P7 y
  * Tu perfil pintan sus botones desde aquí, así que volver a ofrecerlo es una
  * línea.
  */
 export const PROVEEDORES_WEB = Object.freeze(['google'])
+
+/**
+ * Los proveedores que se ofrecen aquí, según dónde corre la app (SPEC_21.1
+ * §4.2). **En la app de iPhone, ninguno**: Google entra por ventana emergente y
+ * dentro de la app no hay ventana que abrir, así que su botón no podría
+ * funcionar. Queda el correo, que es la cuenta entera. Google nativo y Apple
+ * llegan con SPEC_21.2.
+ *
+ * @param {boolean} [nativa] - Existe para las pruebas.
+ */
+export function proveedoresDisponibles(nativa = esNativa()) {
+  return nativa ? [] : PROVEEDORES_WEB
+}
 
 async function auth() {
   const { auth: instancia } = await import('@lib/firebase')

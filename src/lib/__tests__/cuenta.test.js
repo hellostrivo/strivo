@@ -61,6 +61,7 @@ vi.mock('firebase/auth', () => ({
 const {
   MOTIVOS,
   PROVEEDORES_WEB,
+  proveedoresDisponibles,
   cerrarSesion,
   crearConCorreo,
   entrarConCorreo,
@@ -222,12 +223,35 @@ describe('criterio 12: Apple no se ofrece en web (DP-19.4)', () => {
 
   it('P7 pinta sus botones desde la lista y no nombra a Apple', () => {
     const p7 = readFileSync('src/components/onboarding/Cuenta.jsx', 'utf8')
-    expect(p7).toMatch(/PROVEEDORES_WEB\.map/)
+    expect(p7).toMatch(/proveedoresDisponibles\(\)\.map/)
     expect(p7).not.toMatch(/'apple'|textos\.apple/)
   })
 
-  it('P7 conserva su copy: el texto de Apple sigue ahí para SPEC_21', async () => {
+  it('P7 conserva su copy: el texto de Apple sigue ahí para SPEC_21.2', async () => {
     const { copy } = await import('@copy')
     expect(copy.diario.onboarding.p7.apple).toBe('Continuar con Apple')
+  })
+})
+
+describe('SPEC_21.1 §4.2: proveedores según la plataforma', () => {
+  it('en web, los de siempre: solo Google', () => {
+    expect(proveedoresDisponibles(false)).toEqual(['google'])
+  })
+
+  it('en la app de iPhone, ninguno: queda el correo', () => {
+    expect(proveedoresDisponibles(true)).toEqual([])
+  })
+
+  it('sin decirle la plataforma pregunta a esNativa, que en las pruebas es web', () => {
+    expect(proveedoresDisponibles()).toEqual(PROVEEDORES_WEB)
+  })
+
+  it('ni P7 ni Tu perfil leen ya la lista web directamente', () => {
+    for (const ruta of [
+      'src/components/onboarding/Cuenta.jsx',
+      'src/components/perfil/TuCuenta.jsx',
+    ]) {
+      expect(readFileSync(ruta, 'utf8')).not.toMatch(/PROVEEDORES_WEB/)
+    }
   })
 })

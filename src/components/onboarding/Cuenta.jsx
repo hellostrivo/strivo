@@ -17,7 +17,7 @@ import { useState } from 'react'
 import Button from '@components/ui/Button'
 import { CampoLinea } from '@components/shared/Campo'
 import { copy } from '@copy'
-import { MOTIVOS, PROVEEDORES_WEB } from '@lib/cuenta'
+import { MOTIVOS, proveedoresDisponibles } from '@lib/cuenta'
 
 export default function Cuenta({ textos, motivo, listo, onProveedor, onCrear, onSaltar }) {
   const [conCorreo, setConCorreo] = useState(false)
@@ -38,9 +38,10 @@ export default function Cuenta({ textos, motivo, listo, onProveedor, onCrear, on
         <p className="text-base text-on-surface">{textos.ready}</p>
       ) : (
         <div className="flex flex-col gap-3">
-          {/* Los proveedores que hay en web (DP-19.4): hoy solo Google. Apple
-              vuelve con SPEC_21, y su copy se queda donde está. */}
-          {PROVEEDORES_WEB.map((proveedor) => (
+          {/* Los proveedores que hay aquí (DP-19.4): en web, solo Google; en la
+              app de iPhone, ninguno (SPEC_21.1). Google nativo y Apple vuelven
+              con SPEC_21.2, y su copy se queda donde está. */}
+          {proveedoresDisponibles().map((proveedor) => (
             <Button
               key={proveedor}
               variant="surface"

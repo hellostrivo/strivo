@@ -124,8 +124,8 @@ describe('el bloque Tu cuenta', () => {
     expect(bloque).toMatch(/noValidate/)
   })
 
-  it('criterio 12: los proveedores salen de PROVEEDORES_WEB y Apple no aparece', () => {
-    expect(bloque).toMatch(/PROVEEDORES_WEB\.map/)
+  it('criterio 12: los proveedores salen de proveedoresDisponibles y Apple no aparece', () => {
+    expect(bloque).toMatch(/proveedoresDisponibles\(\)\.map/)
     expect(bloque).not.toMatch(/apple/i)
   })
 
