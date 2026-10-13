@@ -652,8 +652,13 @@ el componente.**
   identificador aquí, un texto en el copy y un componente; hay una prueba que falla si falta alguno
   de los tres.
 
+- `src/lib/plataforma.js` → `esNativa()`: el **único** sitio que pregunta si la app corre dentro
+  del iPhone. Nadie más importa `@capacitor/core` para eso; hay una prueba que recorre `src/`.
+- `src/lib/barraEstado.js` → `textoDeBarra`: de qué color va la hora y la batería en la app de
+  iPhone, con la tabla entera. Lo deciden el cromo y lo que se pinta encima, no la paleta.
+
 **Pila:** React + Vite (PWA) · IndexedDB local + Firestore para sync · Firebase Auth · Netlify con
-publicación automática · Vitest.
+publicación automática · Vitest · Capacitor 8 para la app de iPhone (SPEC_21.1).
 
 ---
 
@@ -687,7 +692,87 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**82 archivos de prueba · 2.188 casos · los seis comandos y `validar:frases` en verde.**
+**86 archivos de prueba · 2.257 casos · los seis comandos y `validar:frases` en verde.**
+
+### App iOS (SPEC_21.1, 12 oct 2026)
+
+La instrucción completa está en `docs/specs/INSTRUCCION_SPEC_21_1_CAPACITOR_IOS.md`, con la SPEC
+madre en `SPEC_21_CAPACITOR_IOS.md`. **La misma app, empaquetada dentro de un binario de iPhone**:
+ninguna pantalla cambia salvo las áreas seguras. Google nativo e Iniciar sesión con Apple son de
+SPEC_21.2.
+
+**Cómo se construye y se abre:**
+
+```bash
+npm run ios:build      # vite build --mode ios && cap sync ios
+npm run ios:abrir      # cap open ios: abre Xcode
+npm run ios:arranque   # compone assets/splash.png y splash-dark.png desde el símbolo
+npm run ios:recursos   # npx --yes @capacitor/assets@3.0.5 generate --ios
+```
+
+**`@capacitor/assets` no está en `package.json`, a propósito**: arrastra una copia de la CLI 5 y un
+`sharp` viejo con binario nativo que Netlify instalaría en cada build web. Se ejecuta fijado con
+`npx`. El script de la pantalla de arranque usa `sharp` 0.35 como devDependency propia. **Solo se
+genera iOS**: los íconos de Android son de SPEC_26.
+
+**Lo que no se toca nunca, porque no tiene vuelta atrás una vez publicado:**
+
+- **El identificador: `com.hellostrivo.strivo`** (DP-21.3).
+- **El esquema y el host del WebView: los de fábrica, `capacitor://localhost`** (DP-21.8), y por
+  eso no se declaran en `capacitor.config.json`. **El origen es donde viven IndexedDB y
+  `localStorage`**: cambiarlo después de publicar deja a cada persona con la app vacía, sin error y
+  sin forma de recuperar lo escrito. Es «nada se pierde» roto en silencio. La SPEC madre proponía
+  `ios.scheme: 'strivo'`, y no se aplicó por esto.
+- **Sin `server.url` y sin `allowNavigation`**: los archivos van dentro del binario. Es la defensa
+  frente a la Guideline 4.2, que rechaza un envoltorio que carga una web.
+
+Una prueba (`appIos.test.js`) lee `capacitor.config.json`, `project.pbxproj` e `Info.plist` y falla
+si alguno cambia.
+
+**iOS 16.2 como mínimo**, en el proyecto y en el target, Debug y Release. El de fábrica de
+Capacitor 8 es 15.0 y no basta: el arranque usa `crypto.randomUUID` sin guarda y Tu perfil usa
+`.at()` (los dos desde 15.4), y `globals.css` pide `color-mix()` (desde 16.2). **No se añaden
+guardas para 15.x**: lo decidió la fundadora, y ningún iPhone que pueda tener iOS 16 se queda
+fuera. `cap sync` no lo revierte, y la prueba lo vigila. `CapApp-SPM/Package.swift` dice `.v15` y
+es correcto: es el mínimo del paquete, no el de la app, y lo reescribe la CLI.
+
+**Swift Package Manager, no CocoaPods.** Es lo que usa Capacitor 8 por defecto. `Package.swift` lo
+mantiene la CLI y `Package.resolved` se versiona: fija `capacitor-swift-pm` en la versión instalada.
+
+**El build nativo no lleva service worker** (DP-21.7). `vite build --mode ios` apaga el PWA
+(`pwaApagado`, en `vite.config.js`): dentro de la app los archivos ya están en el binario, y un
+service worker podría servir una versión vieja tras una actualización. Netlify lo conserva.
+
+**Auth en nativo es `initializeAuth` con IndexedDB y sin `popupRedirectResolver`**
+(`opcionesDeAuth`, en `firebase.js`). `getAuth` carga el resolvedor de ventanas emergentes —un
+iframe de `authDomain`— que dentro del WebView puede no cargar nunca y dejar colgado
+`authStateReady()`. Sin resolvedor no hay ventana emergente, así que **en nativo P7 y Tu perfil solo
+ofrecen el correo** (`proveedoresDisponibles`, en `cuenta.js`). En web, nada cambia.
+
+**La barra de estado la decide el cromo, no la paleta.** La cabecera llega hasta el borde de arriba
+y es el contratono oscuro en todas partes salvo en la Noche de Hoy, así que la regla de la SPEC
+—«texto oscuro en Mañana»— dejaba la hora ilegible en casi toda la app. La tabla aprobada vive en
+`lib/barraEstado.js` y se prueba fila por fila. **Los recorridos de la mañana y de la noche no
+ocultan el cromo**: en Hoy la navegación solo se retira para «Respira un momento». Funciona con una
+pila: lo que se pinta encima —la presentación, el umbral— manda mientras está montado.
+
+**La pantalla de arranque es la «S» sobre papel**, igual que el ícono (DP-21.1), y se retira tras el
+primer pintado con un fundido de 320 ms, o sin fundido con «reducir movimiento». De día el velo es
+papel y el paso no se ve. **De noche el velo es índigo**, y el fundido es lo que lo vuelve un paso y
+no un corte; arreglarlo del todo depende del tono del velo nocturno, que sigue sin decidirse.
+
+**Áreas seguras.** `ios.contentInset: 'never'`: con `'automatic'` iOS pone su propio margen, los
+`env()` valen 0 y el fondo no llega bajo la isla. Tres pantallas sin cromo no tenían su margen y lo
+tienen ahora, idéntico en web: la cabecera de la sesión de Respiración (`pt-safe`), el editor del
+Journal (`max(1.5rem, env(...))`) y la hoja de ajustes de la sesión, por abajo.
+
+**`UIBackgroundModes: [audio]` está declarado para SPEC_23.** Si DP-23.3 decide no tener audio en
+segundo plano, **se retira antes de App Review**: declararlo sin usarlo es motivo de rechazo.
+
+**Probado en el simulador de Xcode** (iPhone 18 Pro, iOS 27): compila, arranca, la pantalla de
+arranque se retira, el onboarding de noche sale con la hora en claro sobre índigo y debajo de la
+isla. **El primer arranque de un simulador recién encendido tarda casi veinte segundos en cargar el
+WebView**: no es la app. El iPhone físico y los criterios 6–15 son de la fundadora.
 
 ### Las referencias de las frases: tres opciones, la misma redacción en los dos sitios (12 oct 2026)
 
@@ -1629,6 +1714,15 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
   en verde, porque todas las pruebas de esa capa leen la fuente.
 - **La mañana, la noche y la mudanza de Respiración no se han validado en teléfono real.** La
   pregunta que ninguna prueba contesta es **si cada recorrido cabe de verdad en uno o dos minutos**.
+- **Dynamic Type no llega a la app de iPhone** (SPEC_21.1). WKWebView no escala `rem` con el tamaño
+  de texto del sistema: la raíz se queda en 16 px. Seguirlo pide `font: -apple-system-body` en
+  `html`, y eso mueve todas las medidas a la vez. Queda fuera de 21.1.
+- **En la app de iPhone, P6 dice «Este dispositivo no tiene avisos. Strivo funciona igual.»**
+  WKWebView no tiene `Notification`, así que `recordatorios.js` cae en `sin_soporte`, que es
+  verdad pero no es lo que alguien espera leer en un iPhone. **Lo cierra SPEC_22, antes de
+  cualquier build para testers externos.**
+- **El interruptor de silencio del iPhone calla los sonidos de Respiración** en la app nativa: usa la
+  sesión de audio por defecto. Lo resuelve SPEC_23.
 - **El `_redirects` de Netlify no existe.** Mientras el router sea `HashRouter` no hace falta.
 - **Con dos pestañas abiertas sobre el mismo día, la última escritura gana.** Sin bloqueo optimista.
   Es el comportamiento de todo el producto y está asumido.
