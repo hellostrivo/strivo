@@ -48,6 +48,7 @@ import { clsx } from 'clsx'
 import Button from '@components/ui/Button'
 import { prefiereMenosMovimiento } from '@components/shared/TransicionLuz'
 import { copy } from '@copy'
+import { textoDeBarra, useBarraDeEstado } from '@lib/barraEstado'
 
 const textos = copy.diario.noche.cierre
 const error = copy.diario.error.save
@@ -64,6 +65,9 @@ export default function CierreDeLaNoche({
   onReintentar,
   onTerminar,
 }) {
+  // Va encima de todo, cromo incluido: en la app de iPhone, la hora se lee
+  // sobre la noche mientras está montado (SPEC_21.1).
+  useBarraDeEstado(textoDeBarra({ capa: 'pantalla', momento: 'noche' }))
   const [despidiendo, setDespidiendo] = useState(false)
   const [saliendo, setSaliendo] = useState(false)
   // Terminar es una sola vez, venga del reloj o de un toque durante la

@@ -130,7 +130,9 @@ export function fijarBase(texto) {
 /**
  * Pide un color de texto mientras el componente esté montado.
  *
- * @param {'claro'|'oscuro'} texto - Normalmente, `textoDeBarra(...)`.
+ * @param {?('claro'|'oscuro')} texto - Normalmente, `textoDeBarra(...)`. Con
+ *   `null` el componente sigue montado pero no pide nada, y manda lo de debajo:
+ *   es lo que hace una confirmación cerrada.
  */
 export function useBarraDeEstado(texto) {
   const entrada = useRef(null)
