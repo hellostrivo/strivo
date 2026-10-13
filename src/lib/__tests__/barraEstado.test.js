@@ -12,8 +12,19 @@ vi.mock('@capacitor/status-bar', async (original) => ({
   StatusBar: { setStyle: nativo.setStyle },
 }))
 
-const { TEXTO, estiloDeCapacitor, fijarBase, olvidarBarra, textoDeBarra, textoVigente } =
-  await import('../barraEstado.js')
+const {
+  PRIORIDAD,
+  TEXTO,
+  actualizar,
+  apuntar,
+  estiloDeCapacitor,
+  fijarBase,
+  olvidarBarra,
+  quitar,
+  textoAplicable,
+  textoDeBarra,
+  textoVigente,
+} = await import('../barraEstado.js')
 
 describe('textoDeBarra: la tabla, fila por fila', () => {
   const filas = [
@@ -128,7 +139,7 @@ describe('la base del arranque', () => {
 
   it('sin nada montado manda la base', () => {
     fijarBase('claro')
-    expect(textoVigente()).toBe('claro')
+    expect(textoAplicable()).toBe('claro')
   })
 
   it('en web no se llama al plugin', () => {
@@ -146,5 +157,77 @@ describe('la base del arranque', () => {
     fijarBase('oscuro')
     expect(nativo.setStyle).toHaveBeenLastCalledWith({ style: Style.Light })
     nativo.es = false
+  })
+})
+
+describe('la pila: manda la capa, no el orden de montaje', () => {
+  /** Apunta y declara de una vez, como hacen los dos efectos del hook. */
+  const con = (pila, id, capa, texto) => actualizar(apuntar(pila, id), id, { capa, texto })
+
+  it('modal por encima de pantalla, pantalla por encima de secciones', () => {
+    expect(PRIORIDAD.modal).toBeGreaterThan(PRIORIDAD.pantalla)
+    expect(PRIORIDAD.pantalla).toBeGreaterThan(PRIORIDAD.secciones)
+  })
+
+  it('sin entradas manda la base, y sin base no manda nadie', () => {
+    expect(textoVigente([], 'claro')).toBe('claro')
+    expect(textoVigente([])).toBeNull()
+  })
+
+  it('cualquier capa que pida algo va por encima de la base', () => {
+    expect(textoVigente(con([], 1, 'secciones', 'oscuro'), 'claro')).toBe('oscuro')
+  })
+
+  it('el hijo se apunta antes que el padre: la confirmación manda igual al abrirse', () => {
+    // React monta los efectos de los hijos primero: la confirmación, cerrada,
+    // se apunta antes que las secciones que la contienen.
+    let pila = con([], 'confirmacion', 'modal', null)
+    pila = con(pila, 'secciones', 'secciones', 'claro')
+    expect(textoVigente(pila)).toBe('claro')
+
+    pila = actualizar(pila, 'confirmacion', { capa: 'modal', texto: 'oscuro' })
+    expect(textoVigente(pila)).toBe('oscuro')
+
+    pila = actualizar(pila, 'confirmacion', { capa: 'modal', texto: null })
+    expect(textoVigente(pila)).toBe('claro')
+  })
+
+  it('la presentación manda sobre las secciones aunque estas se monten después', () => {
+    let pila = con([], 'presentacion', 'pantalla', 'oscuro')
+    pila = con(pila, 'secciones', 'secciones', 'claro')
+    expect(textoVigente(pila)).toBe('oscuro')
+    expect(textoVigente(quitar(pila, 'presentacion'))).toBe('claro')
+  })
+
+  it('dentro de la misma capa, la última apuntada', () => {
+    let pila = con([], 'a', 'pantalla', 'claro')
+    pila = con(pila, 'b', 'pantalla', 'oscuro')
+    expect(textoVigente(pila)).toBe('oscuro')
+    expect(textoVigente(quitar(pila, 'b'))).toBe('claro')
+  })
+
+  it('actualizar no mueve una entrada de sitio: cambiar de texto no la vuelve la última', () => {
+    let pila = con([], 'a', 'pantalla', 'claro')
+    pila = con(pila, 'b', 'pantalla', 'oscuro')
+    pila = actualizar(pila, 'a', { capa: 'pantalla', texto: 'claro' })
+    expect(pila.map((e) => e.id)).toEqual(['a', 'b'])
+    expect(textoVigente(pila)).toBe('oscuro')
+  })
+
+  it('una entrada que cambia de capa cambia de prioridad: el umbral cede a las secciones', () => {
+    let pila = con([], 'secciones', 'pantalla', 'claro')
+    pila = con(pila, 'ceremonia', 'pantalla', null)
+    pila = actualizar(pila, 'secciones', { capa: 'secciones', texto: 'oscuro' })
+    expect(textoVigente(pila)).toBe('oscuro')
+    pila = actualizar(pila, 'ceremonia', { capa: 'pantalla', texto: 'claro' })
+    expect(textoVigente(pila)).toBe('claro')
+  })
+
+  it('las funciones no tocan la pila que reciben', () => {
+    const pila = Object.freeze(con([], 'a', 'secciones', 'claro'))
+    expect(() => apuntar(pila, 'b')).not.toThrow()
+    expect(() => actualizar(pila, 'a', { capa: 'modal', texto: 'oscuro' })).not.toThrow()
+    expect(() => quitar(pila, 'a')).not.toThrow()
+    expect(pila).toHaveLength(1)
   })
 })

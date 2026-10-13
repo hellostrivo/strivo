@@ -27,7 +27,7 @@
 
 import { useEffect, useId, useRef } from 'react'
 import Button from '@components/ui/Button'
-import { textoDeBarra, useBarraDeEstado } from '@lib/barraEstado'
+import { useBarraDeEstado } from '@lib/barraEstado'
 
 const ENFOCABLES = 'button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])'
 
@@ -47,7 +47,7 @@ export default function Confirmacion({ abierta, titulo, texto, cancelar, confirm
   // Abierta, tapa la pantalla entera con el papel del espacio: en la app de
   // iPhone, la hora va en oscuro mientras dure. Cerrada no pide nada y manda lo
   // de debajo (SPEC_21.1).
-  useBarraDeEstado(abierta ? textoDeBarra({ capa: 'modal' }) : null)
+  useBarraDeEstado(abierta ? { capa: 'modal' } : null)
 
   // Quien tenía el foco al abrirse: es a donde vuelve al cerrarse.
   useEffect(() => {

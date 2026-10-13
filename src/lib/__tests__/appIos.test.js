@@ -159,6 +159,13 @@ describe('ios/App/App/Info.plist', () => {
     )
   })
 
+  it('arm64 como capacidad requerida, no armv7: con iOS 16.2 no deja fuera a nadie', () => {
+    const capacidades = [
+      ...valor('UIRequiredDeviceCapabilities').matchAll(/<string>(\w+)<\/string>/g),
+    ].map((m) => m[1])
+    expect(capacidades).toEqual(['arm64'])
+  })
+
   it('sin cifrado que declarar', () => {
     expect(valor('ITSAppUsesNonExemptEncryption')).toBe('<false/>')
   })

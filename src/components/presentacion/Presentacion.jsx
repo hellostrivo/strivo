@@ -58,7 +58,7 @@ import { useEffect, useRef, useState } from 'react'
 import { clsx } from 'clsx'
 import { copy, interpolate } from '@copy'
 import { momentoDe } from '@lib/timeSlot'
-import { textoDeBarra, useBarraDeEstado } from '@lib/barraEstado'
+import { useBarraDeEstado } from '@lib/barraEstado'
 import Button from '@components/ui/Button'
 import { prefiereMenosMovimiento } from '@components/shared/TransicionLuz'
 
@@ -106,7 +106,7 @@ export default function Presentacion({ uid, onSaliendo, onTerminado }) {
 
   // La hora y la batería, en la app de iPhone, del color que se lee sobre el
   // fondo de este momento (SPEC_21.1).
-  useBarraDeEstado(textoDeBarra({ capa: 'pantalla', momento }))
+  useBarraDeEstado({ capa: 'pantalla', momento })
 
   const id = enPosicion(activa)
   const tarjeta = textos[id]

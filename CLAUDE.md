@@ -692,7 +692,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**86 archivos de prueba · 2.257 casos · los seis comandos y `validar:frases` en verde.**
+**86 archivos de prueba · 2.267 casos · los seis comandos y `validar:frases` en verde.**
 
 ### App iOS (SPEC_21.1, 12 oct 2026)
 
@@ -754,7 +754,10 @@ y es el contratono oscuro en todas partes salvo en la Noche de Hoy, así que la 
 —«texto oscuro en Mañana»— dejaba la hora ilegible en casi toda la app. La tabla aprobada vive en
 `lib/barraEstado.js` y se prueba fila por fila. **Los recorridos de la mañana y de la noche no
 ocultan el cromo**: en Hoy la navegación solo se retira para «Respira un momento». Funciona con una
-pila: lo que se pinta encima —la presentación, el umbral— manda mientras está montado.
+pila en la que **manda la capa, no el orden de montaje** —modal, pantalla, secciones y la base del
+arranque; a igual capa, la última apuntada—, porque React monta los efectos de los hijos antes que
+los del padre y una confirmación ya montada dentro de las secciones quedaría debajo. El buen deseo,
+«Buenas noches» y la confirmación tapan el cromo sin ocultarlo y piden su propio color.
 
 **La pantalla de arranque es la «S» sobre papel**, igual que el ícono (DP-21.1), y se retira tras el
 primer pintado con un fundido de 320 ms, o sin fundido con «reducir movimiento». De día el velo es

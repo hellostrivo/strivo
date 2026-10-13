@@ -30,7 +30,7 @@ import { useEffect, useRef, useState } from 'react'
 import { clsx } from 'clsx'
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { momentoDe } from '@lib/timeSlot'
-import { textoDeBarra, useBarraDeEstado } from '@lib/barraEstado'
+import { useBarraDeEstado } from '@lib/barraEstado'
 
 import ArranqueProvisional from '@/components/ArranqueProvisional'
 import Onboarding from '@components/onboarding/Onboarding'
@@ -283,11 +283,9 @@ function Secciones({ uid }) {
   // La tabla entera, y por qué es el cromo y no la paleta, está en
   // `lib/barraEstado`.
   useBarraDeEstado(
-    textoDeBarra(
-      entrando
-        ? { capa: 'pantalla', momento: momentoDe() }
-        : { capa: 'secciones', cromo: !hideNav, momentoHoy },
-    ),
+    entrando
+      ? { capa: 'pantalla', momento: momentoDe() }
+      : { capa: 'secciones', cromo: !hideNav, momentoHoy },
   )
 
   return (

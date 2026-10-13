@@ -75,7 +75,7 @@ import { useEffect, useState } from 'react'
 import { clsx } from 'clsx'
 import { copy } from '@copy'
 import { momentoDe } from '@lib/timeSlot'
-import { textoDeBarra, useBarraDeEstado } from '@lib/barraEstado'
+import { useBarraDeEstado } from '@lib/barraEstado'
 import Button from '@components/ui/Button'
 import TransicionLuz, { prefiereMenosMovimiento } from '@components/shared/TransicionLuz'
 import { cruzarUmbral, umbralPendiente } from '@lib/umbralSesion'
@@ -146,7 +146,7 @@ export default function Onboarding({ uid, onTerminado }) {
 
   // La hora y la batería, en la app de iPhone, del color que se lee sobre este
   // fondo y sobre el velo del umbral, que es del mismo momento (SPEC_21.1).
-  useBarraDeEstado(textoDeBarra({ capa: 'pantalla', momento }))
+  useBarraDeEstado({ capa: 'pantalla', momento })
 
   const activarAvisos = async () => {
     const estado = await pedirPermiso()
