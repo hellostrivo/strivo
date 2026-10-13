@@ -816,8 +816,12 @@ Llegan dos materiales del diseñador y los dos sustituyen algo que ya existía:
   habría metido «Respiración» dentro de `TransicionLuz.jsx`, que tiene prohibido nombrarla
   (RN-LU-MAN-03), y la tilde viaja percent-encoded desde el hospedaje.
 
-**Pendiente de esto:** el **ícono de app y el favicon piden el símbolo suelto**, sin wordmark —a
-64 px la palabra no se lee— y ese recorte no existe como archivo. Anotado en el manual §3.5 y §9.
+~~**Pendiente de esto:** el ícono de app y el favicon piden el símbolo suelto~~ — **saldado el 12 oct
+2026 con los íconos v1**: la «S» en su color original sobre papel, sin wordmark. La web está en
+`public/` —el manifiesto declara aparte `icon-512.png` (`any`) e `icon-512-maskable.png`
+(`maskable`)—, la fuente de iOS y Android en `assets/` para cuando exista Capacitor, y los de las
+tiendas en `docs/marca/iconos-v1/`, con su LEEME. Manual §3.5 reeditado: decía «S» blanca sobre
+casi negro, y lo aprobado es lo contrario. **Límite conocido:** a 16 px los puntos casi desaparecen.
 
 ### Pendiente para cerrar F-0
 

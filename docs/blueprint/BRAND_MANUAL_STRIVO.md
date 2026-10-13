@@ -177,11 +177,15 @@ sustituirla por la del diseñador— sea borrar dos reglas. **Pendiente de aprob
 
 | Fondo | Símbolo |
 |---|---|
-| `#2B282F` (casi negro) | «S» en blanco, centrada |
+| `#FBF8F4` (papel) | «S» en su color original —carbón `#2B282F`, puntos `#776F79`—, centrada, al 60 % de lo visible |
 
 **Solo la «S», sin el wordmark.** El lockup de §3.1 es vertical y trae la palabra; en un ícono de
-64 px la palabra no se leería, así que el ícono pide un recorte del símbolo. **Pendiente** de que el
-diseñador entregue ese recorte (§9): hoy no existe como archivo.
+64 px la palabra no se leería, así que el ícono es un recorte del símbolo. **Entregado el 12 oct
+2026 (íconos v1)**, con la misma composición que el avatar aprobado (D-26, D-27) y los trazos de
+`Strivo_Logo_Oficial.svg` sin cambios. Los archivos y dónde va cada uno están en
+`docs/marca/iconos-v1/LEEME.md`: la web en `public/`, la fuente de iOS y Android en `assets/` y los
+de las tiendas en `docs/marca/iconos-v1/`. **Límite conocido:** en el favicon de 16 px los puntos
+casi desaparecen; lo resuelve el símbolo redibujado (D-15), que puede traer una versión simplificada.
 
 Esquinas redondeadas siguiendo el estándar del sistema operativo (iOS: *squircle*; Android: círculo o
 *squircle* según versión).
@@ -574,8 +578,8 @@ solo por borde**.
 - [x] ~~Verificación de contraste de cada combinación~~ — ✅ automatizada en `npm run lint:contraste`
 - [x] ~~Naming definitivo de la navegación~~ — ✅ Hoy · Journal · Respiración · Historial
 - [ ] **Espacio de seguridad** del logo — no definido aún. El tamaño mínimo sí: 56 px de alto (§3.1)
-- [ ] **Recorte del símbolo solo**, sin wordmark, para el ícono de app y el favicon (§3.5) — el
-      lockup oficial no sirve a 64 px
+- [x] ~~Recorte del símbolo solo, sin wordmark, para el ícono de app y el favicon~~ — ✅ íconos v1
+      (12 oct 2026, §3.5)
 - [ ] **Aprobación de la versión monocromática** del logo — hoy derivada con un filtro CSS y **en
       uso** en dos sitios; conviene que el diseñador la apruebe o la sustituya por un archivo propio
       (§3.3)
