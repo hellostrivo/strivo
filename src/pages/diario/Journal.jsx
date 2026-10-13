@@ -114,7 +114,10 @@ function JournalAbierto({ uid, pin, onHideNav }) {
   if (borrador) {
     const seleccion = borrador.emotions ?? []
     return (
-      <div className="flex flex-col gap-6 px-5 pb-12 pt-6">
+      // Escribiendo no hay cromo, así que el editor empieza en el borde de
+      // arriba: lo que haya bajo la isla del iPhone, o los 24 px de siempre si
+      // es más (SPEC_21.1).
+      <div className="flex flex-col gap-6 px-5 pb-12 pt-[max(1.5rem,env(safe-area-inset-top))]">
         <header className="flex items-center justify-between gap-3">
           <button
             type="button"

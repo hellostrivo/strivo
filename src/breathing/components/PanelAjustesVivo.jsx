@@ -59,7 +59,9 @@ export default function PanelAjustesVivo({ configuracion, onAjustar, onCerrar, h
       aria-modal="true"
       aria-label={copy.respiracion.sesion.ajustes}
       onKeyDown={alPulsar}
-      className="respiracion-ajustes flex flex-col gap-6 rounded-t-3xl border-t border-espacio p-6"
+      // Hoja pegada al borde de abajo: el último control queda por encima del
+      // indicador de inicio, y en web son los 24 px de siempre (SPEC_21.1).
+      className="respiracion-ajustes flex flex-col gap-6 rounded-t-3xl border-t border-espacio px-6 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]"
     >
       <SelectorVisual visual={configuracion.visual} onCambiar={(visual) => onAjustar({ visual })} />
 
