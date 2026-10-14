@@ -101,7 +101,8 @@ pantalla en blanco no es un umbral, es una espera con luz.
 desmontaba el umbral entero, así que la pantalla de detrás aparecía en el mismo
 fotograma en el que el video dejaba de pintarse — un corte, no un umbral. Ahora
 la salida se cuenta en dos tiempos: el último fotograma se desvanece sobre el
-velo —liso y del mismo tono que el fondo del propio video—, el velo se queda
+velo —liso y del tono del momento: papel de día, índigo `#191428` de noche; ninguno es el
+fondo del video, índigo (44,39,75), y eso está anotado como deuda—, el velo se queda
 solo un instante, y después se retira dejando aparecer lo que ya estaba montado
 detrás. **No es una secuencia y no le añade nada a RN-LU-MAN-02**: nadie avanza
 esos tiempos, no hay nada que decidir y toda la superficie lo sigue saltando
@@ -760,9 +761,23 @@ los del padre y una confirmación ya montada dentro de las secciones quedaría d
 «Buenas noches» y la confirmación tapan el cromo sin ocultarlo y piden su propio color.
 
 **La pantalla de arranque es la «S» sobre papel**, igual que el ícono (DP-21.1), y se retira tras el
-primer pintado con un fundido de 320 ms, o sin fundido con «reducir movimiento». De día el velo es
-papel y el paso no se ve. **De noche el velo es índigo**, y el fundido es lo que lo vuelve un paso y
-no un corte; arreglarlo del todo depende del tono del velo nocturno, que sigue sin decidirse.
+primer pintado **y 300 ms de papel quieto** con un fundido de 320 ms, o sin espera ni fundido con
+«reducir movimiento». De día el velo es papel y el paso no se ve. **De noche el velo es índigo**, y el
+fundido es lo que lo vuelve un paso y no un corte; arreglarlo del todo depende del tono del velo
+nocturno, que sigue sin decidirse.
+
+**Por qué espera** (D-21.9, 13 oct 2026). Dos fotogramas después de montar, la app todavía no está a
+la vista: iOS sigue enseñando su propia imagen del arranque mientras termina el zoom desde el ícono.
+El fundido empezaba ahí y corría sin verse; grabado a 60 fps en un iPhone 17, iOS destapaba la
+ventana con el fundido ya al 41 % —0,41 × 320 ≈ 131 ms invisibles—, y de noche se veía un salto de un
+cuadro del papel a un gris violáceo. **La prueba de que era el fundido nativo y no algo de la web**:
+el salto recorría la misma fracción en los tres canales, que es la firma de una sola capa con alpha
+sobre un fondo quieto. `ESPERA_ANTES_DE_RETIRAR` (`lib/pantallaArranque.js`) es ese tiempo con un
+margen de 2,3×, y **hay que recalibrarla si cambia el aparato mínimo**: el síntoma de que se quedó
+corta es el mismo salto. Cuándo y cómo lo decide `planDeRetirada`, que es pura. **Y la retirada
+ocurre siempre**: con `launchAutoHide: false` un `hide()` que no llega deja la app en la «S» para
+siempre, así que la llamada es lo primero de `main.jsx`, tiene un techo de 2 s que la hace aunque no
+lleguen los fotogramas, se hace una sola vez y, si lanza o se rechaza, se repite sin fundido.
 
 **Áreas seguras.** `ios.contentInset: 'never'`: con `'automatic'` iOS pone su propio margen, los
 `env()` valen 0 y el fondo no llega bajo la isla. Tres pantallas sin cromo no tenían su margen y lo
@@ -998,7 +1013,7 @@ Lo pidió el propietario del producto después de recorrerlo en un teléfono. So
 tres cosas y ninguna cambia el modelo de datos ni el copy:
 
 - **La apertura sale despacio.** El video ya no corta: su último fotograma
-  —que es el logo sobre el crema de la marca— se desvanece sobre el velo, hay un
+  —que es el logo sobre fondo índigo (44,39,75) desde `a1de26c`— se desvanece sobre el velo, hay un
   instante de pantalla lisa y el velo se retira dejando aparecer lo de detrás.
   Alarga la apertura ~1,4 s. Está descrito arriba, en §2.
 - **El onboarding cabe en una pantalla.** El marco mide `100dvh` con `100vh` de
@@ -1018,9 +1033,11 @@ tres cosas y ninguna cambia el modelo de datos ni el copy:
   —`appearance: none`, `min-width: 0` y el valor alineado a la izquierda, que en
   iOS se pinta al otro lado— más `min-w-0` en cada renglón.
 
-**Lo que no se tocó, y conviene saber por qué:** el tono del velo de noche sigue
-siendo el índigo del momento y no el crema del video, así que a esa hora el
-fotograma se ve con bandas a los lados. Cambiarlo obligaría a que los dos
+**Lo que no se tocó, y conviene saber por qué:** el tono del velo sigue siendo
+el del momento —papel de día, índigo `#191428` de noche— y no el fondo del
+video, que desde `a1de26c` es índigo (44,39,75), así que el fotograma se ve con
+bandas: arriba y abajo en un teléfono, a los lados en una pantalla apaisada.
+Cambiarlo obligaría a que los dos
 instantes de arranque —resolver el uid, preguntar si queda onboarding— supieran
 si va a haber umbral, o meterían el fogonazo que hoy evitan. **Está sin decidir**,
 y es del propietario del producto.
@@ -1729,6 +1746,17 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
 - **El `_redirects` de Netlify no existe.** Mientras el router sea `HashRouter` no hace falta.
 - **Con dos pestañas abiertas sobre el mismo día, la última escritura gana.** Sin bloqueo optimista.
   Es el comportamiento de todo el producto y está asumido.
+- **El velo del umbral y el fondo del video de apertura ya no tienen el mismo tono** (anotado el
+  13 oct 2026, sin decidir). La despedida del video se escribió el 26 de agosto contando con que el
+  último fotograma se desvanecía sobre un velo «del mismo tono que el fondo del propio video», que
+  entonces era el crema de la marca. **En `a1de26c` cambió el video y el velo se quedó donde
+  estaba**: hoy el fondo del video es índigo (44,39,75) y el velo es `#191428` (25,20,40) de noche y
+  papel `#FBF8F4` de día. De noche la diferencia es pequeña y en la grabación del iPhone 17 no se vio
+  costura —el video entra gradual—. **De día no se ha mirado**, y por código es la grande: un
+  rectángulo índigo con bandas de papel arriba y abajo. Si la intención era que coincidieran, es
+  deuda de diseño y no de documento, y **la decide el propietario del producto**: acercar el velo al
+  video, el video al velo, o aceptarlo. Los comentarios de `TransicionLuz.jsx` y `globals.css` que
+  repiten «del mismo tono» siguen sin corregir, a la espera de esa decisión.
 
 ### Onboarding — cómo quedó (decidido y construido el 25 ago 2026)
 

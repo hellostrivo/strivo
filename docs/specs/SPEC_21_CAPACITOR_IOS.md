@@ -40,7 +40,7 @@ No hay otros textos.
 ## 5. Interfaz, accesibilidad y consistencia
 
 - `viewport-fit=cover` en el `index.html` y `env(safe-area-inset-*)` aplicados en `NavStrivo` y en el contenedor raíz. Claude Code verifica que ninguna pantalla use `100vh` fijo; si lo hace, cambia a `100dvh` o al patrón que ya use el proyecto.
-- Barra de estado: estilo claro sobre PM, oscuro sobre AM, sincronizada con el toggle Mañana/Noche vía `@capacitor/status-bar`.
+- Barra de estado: estilo claro sobre PM, oscuro sobre AM, sincronizada con el toggle Mañana/Noche vía `@capacitor/status-bar`. *(Sustituido en 21.1: la barra sigue a la capa del cromo, no a la paleta; ver §2 de `INSTRUCCION_SPEC_21_1_CAPACITOR_IOS.md`.)*
 - El WebView respeta `prefers-reduced-motion` y Dynamic Type del sistema (verificar que la tipografía escale; si el proyecto fija `px`, reportar).
 
 ## 6. Requisitos técnicos

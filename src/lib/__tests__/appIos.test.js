@@ -6,7 +6,6 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'fs'
 import { execFileSync } from 'child_process'
-import { opcionesDeOcultar, FUNDIDO_DE_SALIDA } from '../pantallaArranque.js'
 
 const leer = (ruta) => readFileSync(ruta, 'utf8')
 
@@ -211,17 +210,5 @@ describe('ios/App/App/Info.plist', () => {
   it('las versiones salen de los ajustes del proyecto, no de un literal', () => {
     expect(valor('CFBundleShortVersionString')).toBe('<string>$(MARKETING_VERSION)</string>')
     expect(valor('CFBundleVersion')).toBe('<string>$(CURRENT_PROJECT_VERSION)</string>')
-  })
-})
-
-describe('la pantalla de arranque se retira (SPEC_21.1 §4.7)', () => {
-  it('con un fundido corto, dentro del rango de movimiento de la marca', () => {
-    expect(opcionesDeOcultar(false)).toEqual({ fadeOutDuration: FUNDIDO_DE_SALIDA })
-    expect(FUNDIDO_DE_SALIDA).toBeGreaterThanOrEqual(120)
-    expect(FUNDIDO_DE_SALIDA).toBeLessThanOrEqual(900)
-  })
-
-  it('sin fundido con «reducir movimiento»', () => {
-    expect(opcionesDeOcultar(true)).toEqual({ fadeOutDuration: 0 })
   })
 })

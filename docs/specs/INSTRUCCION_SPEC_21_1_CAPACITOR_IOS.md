@@ -47,6 +47,7 @@
 | Apple se activa en esta SPEC (instrucciones del proyecto) | `PROVEEDORES_WEB = ['google']` en `src/lib/cuenta.js` | Pasa a 21.2. |
 | — | `getAuth()` en `src/lib/firebase.js` carga el resolvedor de popup/redirect (un iframe de `authDomain`), que en WKWebView puede colgar `authStateReady()` | Ver §4.3. |
 | Ícono 1024×1024 por producir (DP-21.4) y pantalla de arranque «a partir del símbolo» | `assets/icon-only.png`, `icon-foreground.png` e `icon-background.png` ya existen (`ff562e9`) | Solo se generan iOS y la pantalla de arranque. Los dos de Android no se tocan (son de SPEC_26). |
+| Barra de estado: «estilo claro sobre PM, oscuro sobre AM» (decidir por la paleta) | La cabecera llega hasta el borde de arriba y su fondo es el contratono oscuro `#1D1833` en la Mañana y en las otras cuatro secciones; claro solo en la Noche de Hoy (`globals.css`, `.cromo-espacio`). Por la paleta, la hora saldría oscura sobre oscuro en casi toda la app | La barra sigue a la **capa del cromo**, no a la paleta: la tabla aprobada vive en `src/lib/barraEstado.js` (`textoDeBarra`) y se prueba fila por fila. Aprobado en el reporte previo y en `6210f7c`; verificado en iPhone (13 oct 2026). Ver §4.8 y criterio 13. |
 
 ---
 
@@ -130,7 +131,7 @@
 
 ### 4.8 Barra de estado
 **Ubicación:** donde se decide la paleta Mañana/Noche (lo identificas en el reporte previo), más un módulo pequeño en `src/lib/` que envuelva `@capacitor/status-bar`.
-**Esperado:** en nativo, texto oscuro sobre la paleta Mañana y texto claro sobre la paleta Noche, actualizado cada vez que cambia el conmutador o la franja horaria. En web no hace nada. La correspondencia paleta → estilo es una función pura testeable. La barra se superpone al contenido (`overlay`), y las áreas seguras evitan que algo quede debajo.
+**Esperado:** en nativo, el color del texto de la barra lo decide **la capa que hay debajo de ella, no la paleta** (ver §2): el cromo cuando está —contratono oscuro, texto claro, en la Mañana y en Journal, Respiración, Historial y Tu perfil; cromo claro, texto oscuro, en la Noche de Hoy— y el fondo de la pantalla cuando el cromo se oculta o algo se pinta encima (arranque y umbral, onboarding, presentación, escritura, cierres, sesión de respiración, confirmación). Se actualiza cada vez que cambia el conmutador, la franja horaria o la capa. En web no hace nada. La tabla completa y la función pura que la aplica (`textoDeBarra`) viven en `src/lib/barraEstado.js`, probadas fila por fila. La barra se superpone al contenido (`overlay`), y las áreas seguras evitan que algo quede debajo.
 **Regla que roza:** ninguna; sin texto visible.
 
 ### 4.9 Áreas seguras
@@ -163,7 +164,7 @@
 10. Journal: crear PIN, salir, volver a entrar: pide el PIN y lo acepta, igual que en web.
 11. Respiración: corre en primer plano con sonido activado; al bloquear la pantalla no hay error visible al volver.
 12. P7 y Tu perfil: no aparece el botón de Google; no queda ningún separador huérfano.
-13. Nada queda bajo la Dynamic Island ni el indicador de inicio en Hoy (Mañana y Noche), Journal, Respiración, Historial, Tu perfil, el onboarding y el umbral. La barra de estado cambia de tono con el conmutador.
+13. Nada queda bajo la Dynamic Island ni el indicador de inicio en Hoy (Mañana y Noche), Journal, Respiración, Historial, Tu perfil, el onboarding y el umbral. La hora y la batería se leen en todas esas pantallas: el tono de la barra sigue a la capa del cromo que hay debajo (tabla en `src/lib/barraEstado.js`), y cambia con el conmutador de Hoy porque cambia el cromo.
 14. Lo mismo que el 13 en el **simulador de Xcode con un iPhone con notch** (p. ej. iPhone 13). Sustituye al segundo iPhone físico que pedía la SPEC madre.
 15. Aprovechando la build: «Cómo son tus días» en Tu perfil sin desbordamiento, y el buen deseo al cerrar la mañana se ve bien.
 
