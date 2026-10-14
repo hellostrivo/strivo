@@ -26,6 +26,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { clsx } from 'clsx'
 import Button from '@components/ui/Button'
+import { despertarAlVolver } from '@lib/audio/contextoAudio'
 import { crearAudioRespiracion } from '@lib/audioRespiracion'
 import { CICLOS, OPACIDAD_ESTATICA, escalaEn, faseEn } from '@lib/ritmoRespiracion'
 
@@ -74,6 +75,8 @@ export default function Respiracion({
   const transcurrido = useRef(0)
   const desde = useRef(0)
   const faseActual = useRef(null)
+  // Cancela la espera para despertar el audio al volver a la app (D-21.13).
+  const cancelarDespertar = useRef(null)
 
   const parar = useCallback(() => {
     if (cuadro.current) cancelAnimationFrame(cuadro.current)
@@ -82,12 +85,48 @@ export default function Respiracion({
 
   /** RN-AUD-04 — Al salir no queda ni un nodo vivo ni un temporizador suelto. */
   const limpiar = useCallback(() => {
+    cancelarDespertar.current?.()
+    cancelarDespertar.current = null
     parar()
     audio.current?.detener()
     audio.current = null
   }, [parar])
 
   useEffect(() => limpiar, [limpiar])
+
+  /**
+   * D-21.13 — Al volver a la app, el sonido vuelve (RN-RE-SND-24).
+   *
+   * En iOS WebKit deja el contexto `'interrupted'` al pasar a segundo plano y
+   * puede exigir un gesto para despertarlo. Es el mismo camino que la sección
+   * de Respiración (`despertarAlVolver`): se intenta ya y, si no corre, con el
+   * siguiente toque en esta pantalla, una sola vez. Cuando corre se vuelve a
+   * poner el silencio que tocaba y se olvida la fase, para que el siguiente
+   * fotograma reprograme la envolvente desde donde va el círculo y no desde
+   * donde se quedó el reloj del audio.
+   */
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined
+
+    function alCambiarVisibilidad() {
+      if (document.visibilityState !== 'visible' || !audio.current) return
+      const guia = audio.current
+      cancelarDespertar.current?.()
+      cancelarDespertar.current = despertarAlVolver(
+        document,
+        () => {
+          cancelarDespertar.current = null
+          if (audio.current !== guia) return
+          guia.restablecer()
+          faseActual.current = null
+        },
+        { reanudar: () => guia.reanudar() },
+      )
+    }
+
+    document.addEventListener('visibilitychange', alCambiarVisibilidad)
+    return () => document.removeEventListener('visibilitychange', alCambiarVisibilidad)
+  }, [])
 
   const terminar = useCallback(() => {
     limpiar()

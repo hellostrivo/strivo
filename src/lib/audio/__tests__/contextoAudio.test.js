@@ -6,11 +6,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   actual,
   adquirir,
+  despertarAlVolver,
   haySoporte,
   liberar,
   prestamosVivos,
   reanudar,
   reanudarConElSiguienteToque,
+  reanudarContexto,
   reiniciarParaPruebas,
 } from '../contextoAudio.js'
 import { crearContextoFalso } from '@/breathing/audio/__tests__/dobleAudio.js'
@@ -334,5 +336,87 @@ describe('D-21.13 — reanudar al volver a la app (RN-RE-SND-24)', () => {
 
   it('sin objetivo no rompe nada', () => {
     expect(() => reanudarConElSiguienteToque(null, () => {})()).not.toThrow()
+  })
+})
+
+describe('D-21.13 — la misma regla para cualquier contexto y para los dos sitios', () => {
+  function objetivoFalso() {
+    const oyentes = new Map()
+    return {
+      addEventListener: vi.fn((tipo, fn) => oyentes.set(tipo, fn)),
+      removeEventListener: vi.fn((tipo, fn) => {
+        if (oyentes.get(tipo) === fn) oyentes.delete(tipo)
+      }),
+      tocar(tipo = 'touchend') {
+        oyentes.get(tipo)?.({ type: tipo })
+      },
+      oyentes,
+    }
+  }
+  const asentar = () => new Promise((resolver) => setTimeout(resolver, 0))
+
+  it('`reanudarContexto` reanuda un contexto propio, sin pasar por el de la app', async () => {
+    const propio = crearContextoFalso()
+    propio.state = 'interrupted'
+    expect(await reanudarContexto(propio)).toBe(true)
+    expect(propio.resume).toHaveBeenCalledTimes(1)
+    expect(actual()).toBeNull()
+    expect(await reanudarContexto(null)).toBe(false)
+  })
+
+  it('si despierta solo, `alCorrer` se llama una vez y no se espera ningún toque', async () => {
+    const objetivo = objetivoFalso()
+    const alCorrer = vi.fn()
+    despertarAlVolver(objetivo, alCorrer, { reanudar: async () => true })
+    await asentar()
+    expect(alCorrer).toHaveBeenCalledTimes(1)
+    expect(objetivo.addEventListener).not.toHaveBeenCalled()
+  })
+
+  it('si no despierta, espera al siguiente toque y entonces sí, una vez', async () => {
+    const objetivo = objetivoFalso()
+    const alCorrer = vi.fn()
+    const intentos = vi.fn().mockResolvedValueOnce(false).mockResolvedValue(true)
+    despertarAlVolver(objetivo, alCorrer, { reanudar: intentos })
+    await asentar()
+    expect(alCorrer).not.toHaveBeenCalled()
+    expect(objetivo.oyentes.size).toBeGreaterThan(0)
+
+    objetivo.tocar('touchend')
+    await asentar()
+    expect(alCorrer).toHaveBeenCalledTimes(1)
+    expect(objetivo.oyentes.size).toBe(0)
+    expect(intentos).toHaveBeenCalledTimes(2)
+  })
+
+  it('cancelarlo antes de que vuelva el intento no deja nada armado', async () => {
+    const objetivo = objetivoFalso()
+    const alCorrer = vi.fn()
+    const cancelar = despertarAlVolver(objetivo, alCorrer, { reanudar: async () => false })
+    cancelar()
+    await asentar()
+    expect(objetivo.addEventListener).not.toHaveBeenCalled()
+    expect(alCorrer).not.toHaveBeenCalled()
+  })
+
+  it('cancelarlo con el toque armado lo retira', async () => {
+    const objetivo = objetivoFalso()
+    const alCorrer = vi.fn()
+    const cancelar = despertarAlVolver(objetivo, alCorrer, { reanudar: async () => false })
+    await asentar()
+    expect(objetivo.oyentes.size).toBeGreaterThan(0)
+    cancelar()
+    expect(objetivo.oyentes.size).toBe(0)
+  })
+
+  it('por defecto despierta el contexto de la app', async () => {
+    const contexto = crearContextoFalso()
+    contexto.state = 'interrupted'
+    adquirir({ crear: () => contexto })
+    const alCorrer = vi.fn()
+    despertarAlVolver(objetivoFalso(), alCorrer)
+    await asentar()
+    expect(contexto.resume).toHaveBeenCalledTimes(1)
+    expect(alCorrer).toHaveBeenCalledTimes(1)
   })
 })

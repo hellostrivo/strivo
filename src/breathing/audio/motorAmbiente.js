@@ -134,6 +134,19 @@ export function crearMotorAmbiente(ctx, { destino, azar = Math.random } = {}) {
       mezclador.aplicarEstado({ ...siguiente, estadoSesion, volumenAmbiente: volumen })
     },
 
+    /**
+     * RN-RE-SND-24 — Al volver a la app con el contexto ya corriendo, el
+     * ambiente vuelve a su volumen con la rampa propia de esa vuelta
+     * (`FUNDIDOS.reanudarContexto`), no con la de pausa (D-21.13).
+     */
+    restablecer(siguiente = {}) {
+      estadoSesion = siguiente.estadoSesion ?? estadoSesion
+      if (siguiente.volumenAmbiente !== undefined) {
+        volumen = normalizarVolumen(siguiente.volumenAmbiente)
+      }
+      mezclador.restablecer(volumen, estadoSesion)
+    },
+
     ajustarVolumen(siguiente) {
       volumen = normalizarVolumen(siguiente)
       mezclador.ajustarVolumenAmbiente(volumen, estadoSesion)
