@@ -5,9 +5,26 @@
 
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'fs'
+import { execFileSync } from 'child_process'
 import { opcionesDeOcultar, FUNDIDO_DE_SALIDA } from '../pantallaArranque.js'
 
 const leer = (ruta) => readFileSync(ruta, 'utf8')
+
+/**
+ * Un archivo tal como entraría al próximo commit: el del índice de git, que es
+ * el de HEAD salvo lo que ya se haya preparado con `git add`. `null` si git no
+ * está o el archivo no está en el índice; quien lo use se salta, no falla.
+ */
+function enElIndice(ruta) {
+  try {
+    return execFileSync('git', ['show', `:${ruta}`], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+  } catch {
+    return null
+  }
+}
 
 describe('capacitor.config.json', () => {
   const config = JSON.parse(leer('capacitor.config.json'))
@@ -106,11 +123,23 @@ describe('ios/App/App.xcodeproj/project.pbxproj', () => {
     expect(ids).toEqual(['com.hellostrivo.strivo', 'com.hellostrivo.strivo'])
   })
 
-  it('firma automática y sin equipo: lo elige la fundadora en Xcode', () => {
-    expect(proyecto).not.toMatch(/DEVELOPMENT_TEAM/)
-    const estilos = [...proyecto.matchAll(/CODE_SIGN_STYLE = (\w+);/g)].map((m) => m[1])
-    expect(estilos).toEqual(['Automatic', 'Automatic'])
-  })
+  // **Se lee lo que entraría al commit, no el disco** (§4.6). El equipo de firma
+  // lo elige la fundadora en Xcode y vive en su copia de este archivo de forma
+  // permanente: lo que hay que garantizar es que no se comitee, no que no exista
+  // en su Mac. Leerlo del disco dejaba esta prueba en rojo en cada máquina que
+  // firma. Se lee el índice y no HEAD para que también salte si alguien prepara
+  // el archivo con su equipo dentro, antes de comitearlo. Sin git —un paquete
+  // sin `.git`— no hay commit que vigilar, y la prueba se salta.
+  const comiteable = enElIndice('ios/App/App.xcodeproj/project.pbxproj')
+
+  it.skipIf(comiteable === null)(
+    'firma automática y sin equipo en lo que se comitea: lo elige la fundadora en Xcode',
+    () => {
+      expect(comiteable).not.toMatch(/DEVELOPMENT_TEAM/)
+      const estilos = [...comiteable.matchAll(/CODE_SIGN_STYLE = (\w+);/g)].map((m) => m[1])
+      expect(estilos).toEqual(['Automatic', 'Automatic'])
+    },
+  )
 
   it('versión 1.0.0, compilación 1', () => {
     expect([...proyecto.matchAll(/MARKETING_VERSION = ([^;]+);/g)].map((m) => m[1])).toEqual([
