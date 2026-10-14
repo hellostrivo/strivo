@@ -693,7 +693,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**87 archivos de prueba · 2.282 casos · los seis comandos y `validar:frases` en verde.**
+**87 archivos de prueba · 2.286 casos · los seis comandos y `validar:frases` en verde.**
 
 ### App iOS (SPEC_21.1, 12 oct 2026)
 
