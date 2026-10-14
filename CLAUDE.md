@@ -779,8 +779,8 @@ La instrucción completa y sus decisiones están en `docs/specs/SPEC_29_FRASES_P
 «Una pausa», que ya iba por SPEC_28.5 en su rama; renombrarla a ella habría tocado unas 500 menciones.
 
 - **Catálogo v2** en `src/content/frases-v2/`: 1 000 originales aprobadas en siete audiencias
-  (universal, secular, espiritual general y cuatro tradiciones) y 25 citas candidatas en
-  `pendiente_revision`. **El selector solo ve las aprobadas.** Cada perfil ve 500 o más y 100 por
+  (universal, secular, espiritual general y cuatro tradiciones), 464 citas aprobadas del lote C3 y
+  25 candidatas del lote C2 en `pendiente_revision`. **El selector solo ve las aprobadas.** Cada perfil ve 500 o más y 100 por
   tema. **Solo se añade al final de cada lista**: el id de una original sale de su posición.
 - **Las originales van sin comillas y sin pie**; ya no firman «Versión Strivo inspirada en…». Las
   citas, entre «», con «Autor · Obra, ubicación», y solo con expediente en
@@ -795,8 +795,23 @@ La instrucción completa y sus decisiones están en `docs/specs/SPEC_29_FRASES_P
 - **`separacion.test.js` busca `\britual`**: «espiritual» contiene «ritual».
 
 **Pendiente de esto:** revisión editorial de las 1 000 originales por la propietaria del producto;
-aprobar citas hasta el 25–35 % (hoy 0 %; hinduismo sin ninguna fuente en dominio público en
-México); revisión legal del aviso de privacidad y de la exportación (SPEC_24); verlo en un teléfono.
+revisión legal del aviso de privacidad y de la exportación (SPEC_24); verlo en un teléfono.
+
+**Lote C3 de citas (14 oct 2026): 464 aprobadas**, con las dos firmas. La proporción de citas va del
+20 % (secular y espiritual general) al 38 % (cristianismo con estoicismo y budismo). Cambian tres
+cosas, y conviene saberlas:
+
+- **Se admiten licencias abiertas de uso comercial**, no solo dominio público. La Biblia en Español
+  Sencillo es **CC BY 4.0 y exige atribución**: va en el campo `atribucion` de cada cita
+  («… · La Biblia en Español Sencillo (AudioBiblia.org / Irma Flores, CC BY 4.0)») y la app la pinta
+  tal cual en `FraseDelDia` y en las fuentes de Tu perfil. Quitar o recortar esa cadena rompe la
+  licencia. Las ediciones de SuttaCentral y Standard Ebooks son CC0.
+- **Hay traducciones editoriales de Strivo**, hechas por IA y aprobadas sin revisión de una persona
+  traductora; su atribución lo dice. El criterio completo está en `docs/frases-v2-fuentes.md`.
+- **El selector reparte las afinidades en proporción a su tamaño**, y ahora los tamaños difieren
+  (cristianismo 238, estoicismo 186, budismo 170, hinduismo 144). Con las cuatro elegidas,
+  hinduismo puede salir una sola vez en 30 días. Las pruebas miden contra la proporción desde este
+  lote (SPEC_29 §8). **Igualar el reparto está sin decidir y es del propietario del producto.**
 
 ### Marca: el logo oficial y el video de apertura (25 ago 2026)
 

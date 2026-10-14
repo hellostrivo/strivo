@@ -15,6 +15,7 @@ import { guardarPreferencias, restablecerPreferencias } from '@/referencias/alma
 import FraseDelDia from '@components/diario/FraseDelDia'
 import {
   TEMA_DE_RESPALDO,
+  ciclosDe,
   elegirFrase,
   fraseDeRespaldo,
   resolverAsignacion,
@@ -38,6 +39,24 @@ const TODAS = [
   { modo: 'guiadas', afinidades: [] },
   null,
 ]
+
+/**
+ * Cuántas veces debería salir cada afinidad en un tramo si el reparto es
+ * proporcional a lo que aporta: la suma, día a día, de su parte en el ciclo
+ * del tema de ese día.
+ */
+function repartoProporcional(preferencias, dias, desde = INICIO) {
+  const perfil = perfilDeFrases(preferencias)
+  const ciclos = ciclosDe(perfil)
+  const esperado = Object.fromEntries(perfil.afinidades.map((a) => [a, 0]))
+  for (let i = 0; i < dias; i += 1) {
+    const ciclo = ciclos[temaDelDia(sumarDias(desde, i))]
+    for (const a of perfil.afinidades) {
+      esperado[a] += ciclo.filter((f) => f.audiencias.includes(a)).length / ciclo.length
+    }
+  }
+  return esperado
+}
 
 function serie(preferencias, dias, { desde = INICIO, ...opciones } = {}) {
   return Array.from({ length: dias }, (_, i) =>
@@ -117,16 +136,24 @@ describe('frase del día · audiencias', () => {
     }
   })
 
+  // El reparto es proporcional a lo que aporta cada afinidad, no a partes
+  // iguales: el ciclo pasa por cada frase una vez, así que una tradición con
+  // más frases sale más a menudo. Hasta el lote C3 todas tenían 100 y las dos
+  // cosas coincidían; desde entonces se mide contra la proporción.
   it('las afinidades elegidas aparecen y se reparten en cualquier tramo de 30 días', () => {
     for (const perfil of perfilesPosibles().filter((p) => p.afinidades.length > 0)) {
+      const preferencias = preferenciasDe(perfil)
       for (let s = 0; s < 365; s += 11) {
+        const desde = sumarDias(INICIO, s)
         const cuenta = Object.fromEntries(perfil.afinidades.map((a) => [a, 0]))
-        for (const frase of serie(preferenciasDe(perfil), 30, { desde: sumarDias(INICIO, s) })) {
+        for (const frase of serie(preferencias, 30, { desde })) {
           frase.audiencias.filter((a) => a in cuenta).forEach((a) => (cuenta[a] += 1))
         }
-        const valores = Object.values(cuenta)
-        expect(Math.min(...valores), perfil.clave).toBeGreaterThanOrEqual(2)
-        expect(Math.max(...valores) - Math.min(...valores), perfil.clave).toBeLessThanOrEqual(3)
+        const esperado = repartoProporcional(preferencias, 30, desde)
+        for (const a of perfil.afinidades) {
+          expect(cuenta[a], `${perfil.clave} · ${a}`).toBeGreaterThanOrEqual(1)
+          expect(Math.abs(cuenta[a] - esperado[a]), `${perfil.clave} · ${a}`).toBeLessThanOrEqual(3)
+        }
       }
     }
   })
@@ -137,8 +164,10 @@ describe('frase del día · audiencias', () => {
     for (const frase of serie(todas, 500)) {
       frase.audiencias.filter((a) => a in cuenta).forEach((a) => (cuenta[a] += 1))
     }
-    const valores = Object.values(cuenta)
-    expect(Math.max(...valores) - Math.min(...valores)).toBeLessThanOrEqual(2)
+    const esperado = repartoProporcional(todas, 500)
+    for (const a of AFINIDADES) {
+      expect(Math.abs(cuenta[a] - esperado[a]), a).toBeLessThanOrEqual(2)
+    }
   })
 
   it('el modo espiritual general no depende de ninguna tradición', () => {
