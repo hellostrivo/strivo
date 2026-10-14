@@ -623,6 +623,23 @@ describe('el sonido suena de verdad (24 ago)', () => {
     expect(asegurar).toMatch(/reanudar\(\)/)
   })
 
+  it('al volver a la app, si el contexto no despierta solo, espera al siguiente toque (D-21.13)', () => {
+    // En iOS el contexto vuelve `interrupted` y WebKit puede exigir un gesto.
+    // Sin esto la sesión seguía y ya no sonaba nada (RN-RE-SND-24).
+    const visibilidad = hook.slice(
+      hook.indexOf('function alCambiarVisibilidad'),
+      hook.indexOf("document.addEventListener('visibilitychange'"),
+    )
+    expect(visibilidad).toMatch(/reanudar\(\)\.then/)
+    expect(visibilidad).toMatch(/reanudarConElSiguienteToque\(document,/)
+    // Y al salir de la pantalla no queda nadie esperando.
+    const soltar = hook.slice(
+      hook.indexOf('const soltarTodo'),
+      hook.indexOf('const soltarTodo') + 300,
+    )
+    expect(soltar).toMatch(/retirarEsperaDeToque\.current\?\.\(\)/)
+  })
+
   it('un solo motor de ambiente para la vista previa y la sesión', () => {
     // Dos motores sobre el mismo contexto son dos grafos sonando a la vez, que
     // es exactamente cómo se superponen los sonidos. `empezar()` reutiliza el

@@ -21,7 +21,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { ESTADOS, crearMaquina } from '@lib/respiracion/maquinaSesion'
 import { resolverEstado } from '@lib/respiracion/motorRitmo'
-import { adquirir, liberar, reanudar } from '@lib/audio/contextoAudio'
+import { adquirir, liberar, reanudar, reanudarConElSiguienteToque } from '@lib/audio/contextoAudio'
 import { crearAudioRespiracion } from '@lib/audioRespiracion'
 import { crearMotorAmbiente } from '../audio/motorAmbiente.js'
 import { ID_SILENCIO } from '../data/catalogoSonidos.js'
@@ -45,6 +45,8 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
   const guia = useRef(null)
   const frame = useRef(null)
   const oculta = useRef(null)
+  /** Retira el oyente que espera un toque para despertar el audio (D-21.13). */
+  const retirarEsperaDeToque = useRef(null)
   const config = useRef(configuracion)
 
   /**
@@ -101,6 +103,8 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
 
   /** Suelta absolutamente todo. Idempotente (RN-RE-SND-22). */
   const soltarTodo = useCallback(() => {
+    retirarEsperaDeToque.current?.()
+    retirarEsperaDeToque.current = null
     pararBucle()
     maquina.current?.detener()
     maquina.current = null
@@ -143,9 +147,22 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
       oculta.current = null
       if (desde === null) return
       maquina.current?.notificarAusencia(Date.now() - desde)
-      // RN-RE-SND-24 — Al volver el foco, el contexto puede venir suspendido.
+      // RN-RE-SND-24 — Al volver el foco, el contexto puede venir suspendido, o
+      // `'interrupted'` en iOS (D-21.13).
       reanudar().then((corriendo) => {
-        if (corriendo) aplicarAudio(maquina.current?.instantanea()?.estado)
+        if (corriendo) {
+          aplicarAudio(maquina.current?.instantanea()?.estado)
+          return
+        }
+        // WebKit puede exigir un gesto para despertarlo. Sin el gesto la sesión
+        // seguía y el sonido no volvía nunca: se espera al siguiente toque en
+        // esta pantalla, una vez, y entonces se vuelve a aplicar el audio. Solo
+        // si hay audio que despertar y nadie lo está esperando ya.
+        if (ambiente.current === null || retirarEsperaDeToque.current !== null) return
+        retirarEsperaDeToque.current = reanudarConElSiguienteToque(document, () => {
+          retirarEsperaDeToque.current = null
+          aplicarAudio(maquina.current?.instantanea()?.estado)
+        })
       })
     }
 
