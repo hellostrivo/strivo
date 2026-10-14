@@ -152,6 +152,35 @@ describe('ios/App/App.xcodeproj/project.pbxproj', () => {
   })
 })
 
+// **D-21.11 (14 oct 2026).** Lo que se ve mientras iOS agranda el ícono es este
+// storyboard, y la imagen `Splash` tarda un instante en pintarse: en ese hueco se
+// ve el fondo de la vista. Con `systemBackgroundColor` ese fondo es negro en modo
+// oscuro, y la grabación lo midió así —hasta 67 ms en negro puro antes del
+// papel—. El arranque es papel de día y de noche, y no cambia con el modo del
+// sistema (DP-21.1): el fondo va fijo, en sRGB.
+describe('ios/App/App/Base.lproj/LaunchScreen.storyboard', () => {
+  const storyboard = leer('ios/App/App/Base.lproj/LaunchScreen.storyboard')
+  const vista = storyboard.match(/<imageView key="view"[^>]*>[\s\S]*?<\/imageView>/)[0]
+
+  it('el fondo de la vista es papel #FBF8F4, en sRGB', () => {
+    const fondo = vista.match(/<color key="backgroundColor"([^>]*)\/>/)[1]
+    const canal = (nombre) => Number(fondo.match(new RegExp(`${nombre}="([\\d.]+)"`))[1])
+    const rgb = ['red', 'green', 'blue'].map((c) => Math.round(canal(c) * 255))
+    expect(rgb).toEqual([0xfb, 0xf8, 0xf4])
+    expect(canal('alpha')).toBe(1)
+    expect(fondo).toMatch(/customColorSpace="sRGB"/)
+  })
+
+  it('ningún color del sistema: el modo oscuro no lo cambia', () => {
+    expect(storyboard).not.toMatch(/systemBackgroundColor/)
+  })
+
+  it('la imagen sigue siendo Splash, a sangre', () => {
+    expect(vista).toMatch(/image="Splash"/)
+    expect(vista).toMatch(/contentMode="scaleAspectFill"/)
+  })
+})
+
 describe('ios/App/App/Info.plist', () => {
   const plist = leer('ios/App/App/Info.plist')
   /** El valor que sigue a una clave, como texto XML. */
