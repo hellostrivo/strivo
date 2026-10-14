@@ -167,14 +167,30 @@ resolver cualquier asignación v1.
 
 **Medido:**
 
-- En cualquier tramo de 30 días, cada afinidad elegida aparece **2 veces como mínimo**.
-- Entre afinidades elegidas, la diferencia es de 3 como máximo.
-- Con las cuatro elegidas, la diferencia en 500 días es de 2 como máximo.
+- En cualquier tramo de 30 días, cada afinidad elegida aparece **1 vez como mínimo** y se separa 3 como
+  máximo de su parte proporcional.
+- Con las cuatro elegidas, en 500 días cada afinidad se separa 2 como máximo de su parte proporcional.
+
+**El reparto es proporcional, no a partes iguales** (14 oct 2026, lote C3). El ciclo pasa una vez por
+cada frase, así que una tradición con más frases aparece más a menudo. Mientras todas tenían 100
+originales las dos cosas coincidían, y se medían «2 como mínimo en 30 días» y «diferencia de 3 como
+máximo entre afinidades». Con las citas del lote C3 cristianismo tiene 238 frases, estoicismo 186,
+budismo 170 e hinduismo 144: con las cuatro elegidas, hinduismo puede salir una sola vez en un tramo de
+30 días. **Si se quiere un reparto a partes iguales, es una decisión de producto**: o se igualan los
+tamaños en el catálogo o se cambia el selector, que hoy no puede hacerlo sin dejar frases fuera del
+ciclo.
 - Con ánimo bajo todo el año, la repetición más cercana llega a los 122 días.
 
 ## 9. Citas: estado y lo que falta
 
-Hay 25 candidatas en `citas.js`, todas en `pendiente_revision`. Su expediente está en `docs/frases-v2-fuentes.md`.
+**Lote C3 (14 oct 2026): 464 citas aprobadas**, con firma editorial y jurídica: 126 universales, 138
+cristianas, 86 estoicas, 70 budistas y 44 hinduistas. Abrió el criterio a licencias abiertas de uso
+comercial (CC BY 4.0 con atribución, CC0) y a traducciones editoriales de Strivo; el resumen está en
+«Criterio» de `docs/frases-v2-fuentes.md`. Con ellas la proporción de citas va del 20 % (secular y
+espiritual general, que no tienen citas propias) al 38 %.
+
+Lo que sigue es el **lote C2**: 25 candidatas en `citas.js`, todas en `pendiente_revision`. Su expediente
+está en `docs/frases-v2-fuentes.md`.
 
 | Grupo | Candidatas | Fuente | Qué falta |
 |---|---|---|---|
