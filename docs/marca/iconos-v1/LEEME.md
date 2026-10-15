@@ -10,6 +10,8 @@ Misma composición que el avatar aprobado (D-26, D-27): la «S» con sus dos pun
 | `app/assets/` | `assets/` (raíz del repo) | Fuente para `npx @capacitor/assets generate` cuando exista Capacitor (SPEC_21 iOS, SPEC_26 Android). Genera el AppIcon de iOS y el ícono adaptativo de Android |
 | `tiendas/` | `docs/marca/iconos-v1/` | `google-play_512.png` se sube a mano en Play Console. `app-store_1024.png` es de referencia: App Store toma el ícono del propio build |
 
+**Pantalla de arranque de iOS (SPEC_21.1).** Sus fuentes son `assets/splash.png` y `assets/splash-dark.png` —iguales a propósito: el modo oscuro no cambia el arranque—, la «S» en color original centrada sobre papel #FBF8F4 en 2732 × 2732. No se dibujan a mano: las compone `scripts/componer-arranque.js` (`npm run ios:arranque`) desde `docs/marca/logotipo-v1/STRIVO_simbolo_original.svg`, sin tocar trazos ni color. Los tamaños de iOS salen de ahí y de `icon-only.png` con `npx @capacitor/assets@3.0.5 generate --ios` (`npm run ios:recursos`), fijado y fuera de `package.json`.
+
 ## Archivos
 
 - **iOS:** `icon-only.png` 1024 × 1024, opaco, sin esquinas redondeadas (iOS aplica la máscara).

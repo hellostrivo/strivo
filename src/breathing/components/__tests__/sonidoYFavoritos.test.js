@@ -64,9 +64,16 @@ describe('el repo no engorda por audio (criterios 35 y 36, RN-RE-SND-00)', () =>
     expect(deAudio).toEqual([])
   })
 
-  it('las dependencias son las mismas ocho de siempre', () => {
+  // Las ocho de siempre más las cinco de Capacitor que aprobó SPEC_21.1 (la app
+  // de iPhone). Ninguna de las cinco trae audio: el sonido sigue sintetizado.
+  it('las dependencias son las ocho de siempre y las cinco de la app de iPhone', () => {
     const paquete = JSON.parse(readFileSync('package.json', 'utf8'))
     expect(Object.keys(paquete.dependencies).sort()).toEqual([
+      '@capacitor/app',
+      '@capacitor/core',
+      '@capacitor/ios',
+      '@capacitor/splash-screen',
+      '@capacitor/status-bar',
       '@fontsource-variable/inter',
       'clsx',
       'date-fns',

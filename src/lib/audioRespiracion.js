@@ -33,7 +33,7 @@
 // su contexto. Es lo correcto además de lo compatible: un contexto de mentira
 // no tiene por qué pasar por el registro de préstamos de la app.
 
-import { adquirir, liberar } from './audio/contextoAudio.js'
+import { adquirir, liberar, reanudarContexto } from './audio/contextoAudio.js'
 
 /** §6.12.1 — Ganancia máxima contenida: alguien en la cama, con su pareja al lado. */
 export const GANANCIA_MAX = 0.05
@@ -58,6 +58,7 @@ const SUAVIZADO = 0.08
  *   también significa quedarse con la propiedad del contexto: quien lo crea, lo
  *   cierra. Sin ella se usa el único de la app, que se suelta en vez de cerrarse.
  * @returns {{iniciar: Function, fase: Function, silenciar: Function,
+ *            reanudar: Function, restablecer: Function,
  *            detener: Function, activo: Function}}
  */
 export function crearAudioRespiracion({ crearContexto = null } = {}) {
@@ -114,10 +115,33 @@ export function crearAudioRespiracion({ crearContexto = null } = {}) {
       maestro.connect(contexto.destination)
       oscilador.start()
 
-      // Los navegadores entregan el contexto suspendido si no hubo gesto. Como
-      // `iniciar()` se llama desde el gesto, esto lo reanuda ahí mismo.
-      if (contexto.state === 'suspended') await contexto.resume()
+      // Los navegadores entregan el contexto suspendido si no hubo gesto —o
+      // `'interrupted'`, en iOS, si es el de la app y viene de segundo plano—.
+      // Como `iniciar()` se llama desde el gesto, esto lo reanuda ahí mismo.
+      await reanudarContexto(contexto)
       return true
+    },
+
+    /**
+     * D-21.13 — Despierta el contexto al volver a la app. Es la misma regla que
+     * la de la Respiración: todo estado salvo `'running'` y `'closed'`, con el
+     * mismo techo. Se pregunta aquí y no al singleton porque el contexto puede
+     * ser propio.
+     *
+     * @returns {Promise<boolean>} Si quedó corriendo.
+     */
+    reanudar() {
+      if (!contexto || cerrado) return Promise.resolve(false)
+      return reanudarContexto(contexto)
+    },
+
+    /**
+     * Vuelve a poner el silencio o el sonido que tocaba. Lo pide quien vuelve
+     * a la app con el contexto ya corriendo: la envolvente de la fase la
+     * reprograma el bucle de quien lo monta.
+     */
+    restablecer() {
+      if (contexto && !cerrado) aplicarSilencio(ahora())
     },
 
     /**

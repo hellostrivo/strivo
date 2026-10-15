@@ -99,7 +99,9 @@ export default function PantallaSesion({
       onPointerDown={despertar}
       data-atenuado={atenuado ? 'si' : 'no'}
     >
-      <header className="flex items-center px-5 py-4">
+      {/* Sin cromo durante la sesión, esta es la franja de arriba: `pt-safe` la
+          baja de la isla del iPhone y en web sigue midiendo 16 px (SPEC_21.1). */}
+      <header className="flex items-center px-5 pb-4 pt-safe">
         <button
           type="button"
           onClick={() => {

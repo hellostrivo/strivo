@@ -118,8 +118,11 @@ async function instanciaDeAuth() {
  *
  * Es una lectura local —IndexedDB, `firebaseLocalStorageDb`— y funciona sin
  * red. Se espera con `authStateReady()` (Firebase 10.14.1 la trae) y, si no
- * existiera, con la primera emisión de `onAuthStateChanged`. **No se fija
- * persistencia** (SPEC_19 §0, punto 2): la de fábrica en web ya es IndexedDB.
+ * existiera, con la primera emisión de `onAuthStateChanged`. **En web no se
+ * fija persistencia** (SPEC_19 §0, punto 2): la de fábrica ya es IndexedDB. **En
+ * la app de iPhone sí** (SPEC_21.1 §4.3): `firebase.js` la declara al crear la
+ * instancia, porque ahí no se usa `getAuth`. Es la misma IndexedDB, dicha en voz
+ * alta.
  *
  * @returns {Promise<{configurado: boolean, usuario: ?{uid: string, email: ?string}}>}
  */

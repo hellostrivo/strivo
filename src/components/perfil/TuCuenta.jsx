@@ -28,7 +28,7 @@ import Button from '@components/ui/Button'
 import { CampoLinea } from '@components/shared/Campo'
 import Confirmacion from '@components/shared/Confirmacion'
 import { copy, interpolate } from '@copy'
-import { MOTIVOS, PROVEEDORES_WEB, recuperarContrasena } from '@lib/cuenta'
+import { MOTIVOS, proveedoresDisponibles, recuperarContrasena } from '@lib/cuenta'
 import { SALIDA } from '@lib/salidaCuenta'
 import { ESTADOS_SESION } from '@lib/sesion'
 import { useSesion } from '@lib/useSesion'
@@ -181,7 +181,7 @@ export default function TuCuenta() {
           {creando ? P7.create : textos.formulario.entrar}
         </Button>
 
-        {PROVEEDORES_WEB.map((proveedor) => (
+        {proveedoresDisponibles().map((proveedor) => (
           <Button key={proveedor} type="button" variant="surface" fullWidth onClick={conProveedor}>
             {P7[proveedor]}
           </Button>

@@ -46,6 +46,41 @@ function codigoDe(ruta) {
     .replace(/^\s*\/\/.*$/gm, '')
 }
 
+/**
+ * Ancho y alto de la pista de video de un `.mp4`, leídos de su `tkhd`
+ * (moov → trak → tkhd). La pista de audio declara 0×0, así que se toma la
+ * primera que tiene tamaño. Sin dependencias: es recorrer cajas.
+ */
+function dimensionesDelVideo(ruta) {
+  const datos = readFileSync(ruta)
+  const cajas = (inicio, fin) => {
+    const lista = []
+    for (let i = inicio; i + 8 <= fin;) {
+      let tamano = datos.readUInt32BE(i)
+      const tipo = datos.toString('latin1', i + 4, i + 8)
+      let cabecera = 8
+      if (tamano === 1) {
+        tamano = Number(datos.readBigUInt64BE(i + 8))
+        cabecera = 16
+      } else if (tamano === 0) {
+        tamano = fin - i
+      }
+      lista.push({ tipo, cuerpo: i + cabecera, fin: i + tamano })
+      i += tamano
+    }
+    return lista
+  }
+  const moov = cajas(0, datos.length).find((c) => c.tipo === 'moov')
+  for (const trak of cajas(moov.cuerpo, moov.fin).filter((c) => c.tipo === 'trak')) {
+    const tkhd = cajas(trak.cuerpo, trak.fin).find((c) => c.tipo === 'tkhd')
+    const desplazamiento = tkhd.cuerpo + (datos[tkhd.cuerpo] === 1 ? 88 : 76)
+    const ancho = datos.readUInt32BE(desplazamiento) / 65536
+    const alto = datos.readUInt32BE(desplazamiento + 4) / 65536
+    if (ancho > 0 && alto > 0) return { ancho, alto }
+  }
+  throw new Error(`${ruta} no tiene pista de video`)
+}
+
 beforeEach(() => {
   olvidarUltima()
 })
@@ -406,9 +441,25 @@ describe('el video de apertura: se reproduce una vez y se va', () => {
   //
   // No lo cazó ninguna prueba porque ninguna miraba el encaje, solo el
   // comportamiento. Esta mira el encaje.
-  it('el fotograma entero cabe en la pantalla, sea cual sea', () => {
-    expect(video).toMatch(/object-contain/)
-    expect(video).not.toMatch(/object-cover/)
+  //
+  // **Y el 14 oct 2026, después de grabarlo en un iPhone (D-21.12).** `contain`
+  // sin condición tenía el defecto contrario en un teléfono: un iPhone es más
+  // alargado que 9:16, sobraba alto y de día el velo lo llenaba con dos bandas de
+  // papel, ~79 pt arriba y ~75 abajo, alrededor de un rectángulo índigo. Ahora
+  // `cover` entra solo cuando la pantalla es más alargada que el video, que es
+  // justo cuando `cover` recorta los lados y no el alto. Portátil e iPad siguen
+  // en `contain`. Lo que esta prueba vigila es que `cover` no vuelva suelto.
+  it('el fotograma entero cabe en la pantalla, salvo donde la pantalla es más alargada', () => {
+    const clases = video.match(/className="([^"]*)"/)[1].split(/\s+/)
+    expect(clases).toContain('object-contain')
+    const cubren = clases.filter((c) => c.includes('object-cover'))
+    expect(cubren).toEqual(['[@media(max-aspect-ratio:9/16)]:object-cover'])
+  })
+
+  it('la proporción de esa condición es la del archivo de video', () => {
+    const [, ancho, alto] = video.match(/max-aspect-ratio:(\d+)\/(\d+)/).map(Number)
+    const archivo = dimensionesDelVideo('src/assets/marca/strivo_apertura.mp4')
+    expect(ancho * archivo.alto).toBe(alto * archivo.ancho)
   })
 
   it('y va centrado, sin salirse por ninguna orilla', () => {

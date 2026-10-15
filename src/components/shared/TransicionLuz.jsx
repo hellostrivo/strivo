@@ -272,7 +272,16 @@ export default function TransicionLuz({ onTerminar, conFrase = true, conVideo = 
           // `contain` hace lo contrario: mete el fotograma entero dentro de la
           // pantalla, centrado y sin recortar, sea cual sea. Lo que sobra a los
           // lados lo llena el velo, que ya está detrás.
-          className="transicion-entrada-video pointer-events-none absolute inset-0 h-full w-full object-contain"
+          //
+          // **Salvo en una pantalla más alargada que el video** (D-21.12, 14 oct
+          // 2026). Un iPhone es ~9:19,5 y el video 9:16: con `contain` sobra
+          // alto, y de día el velo lo llenaba con dos bandas de papel encima y
+          // debajo de un rectángulo índigo. Ahí, y solo ahí, va `cover`: en un
+          // iPhone 17 recorta ~45 pt por lado, y la «S» y STRIVO quedan dentro.
+          // Portátil e iPad son más anchos que 9:16 y siguen en `contain`.
+          // **El 9/16 sale del archivo (1080×1920)**: si llega otro video con
+          // otra proporción, hay que cambiar ese número.
+          className="transicion-entrada-video pointer-events-none absolute inset-0 h-full w-full object-contain [@media(max-aspect-ratio:9/16)]:object-cover"
         />
       </span>
     )

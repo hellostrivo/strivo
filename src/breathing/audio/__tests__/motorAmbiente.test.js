@@ -279,3 +279,47 @@ describe('el estado de la sesión llega al mezclador', () => {
     expect(motor.mezclador.entradaAmbiente.gain.rampas.at(-1).valor).toBeCloseTo(0.12, 6)
   })
 })
+
+describe('D-21.13 — al volver a la app, el ambiente vuelve con su rampa (RN-RE-SND-24)', () => {
+  it('restablecer usa la rampa de 0,4 s de la vuelta, no la de pausa', () => {
+    const { ctx, motor } = montar()
+    motor.cambiarSonido('lluvia')
+    motor.aplicarEstado({ estadoSesion: 'activo', volumenAmbiente: 0.6, guiaActiva: false })
+    ctx.currentTime = 10
+
+    motor.restablecer({ estadoSesion: 'activo', volumenAmbiente: 0.6 })
+
+    const ultima = motor.mezclador.entradaAmbiente.gain.rampas.at(-1)
+    expect(FUNDIDOS.reanudarContexto).toBe(0.4)
+    expect(FUNDIDOS.reanudarContexto).not.toBe(FUNDIDOS.pausa)
+    expect(ultima.tipo).toBe('lineal')
+    expect(ultima.t).toBeCloseTo(10 + FUNDIDOS.reanudarContexto, 10)
+    expect(ultima.valor).toBeCloseTo(0.6, 6)
+    expect(ctx.registro.asignacionesDirectas).toEqual([])
+  })
+
+  it('en pausa vuelve al volumen agachado, con la misma rampa', () => {
+    const { ctx, motor } = montar()
+    motor.cambiarSonido('lluvia')
+    ctx.currentTime = 4
+
+    motor.restablecer({ estadoSesion: 'pausado', volumenAmbiente: 0.6 })
+
+    const ultima = motor.mezclador.entradaAmbiente.gain.rampas.at(-1)
+    expect(ultima.t).toBeCloseTo(4 + FUNDIDOS.reanudarContexto, 10)
+    expect(ultima.valor).toBeCloseTo(0.18, 6)
+  })
+
+  it('sin argumentos recuerda el volumen y el estado que ya tenía', () => {
+    const { ctx, motor } = montar()
+    motor.ajustarVolumen(0.4)
+    motor.aplicarEstado({ estadoSesion: 'activo', guiaActiva: false })
+    ctx.currentTime = 2
+
+    motor.restablecer()
+
+    const ultima = motor.mezclador.entradaAmbiente.gain.rampas.at(-1)
+    expect(ultima.valor).toBeCloseTo(0.4, 6)
+    expect(ultima.t).toBeCloseTo(2 + FUNDIDOS.reanudarContexto, 10)
+  })
+})

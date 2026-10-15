@@ -21,13 +21,25 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { ESTADOS, crearMaquina } from '@lib/respiracion/maquinaSesion'
 import { resolverEstado } from '@lib/respiracion/motorRitmo'
-import { adquirir, liberar, reanudar } from '@lib/audio/contextoAudio'
+import { adquirir, despertarAlVolver, liberar, reanudar } from '@lib/audio/contextoAudio'
 import { crearAudioRespiracion } from '@lib/audioRespiracion'
 import { crearMotorAmbiente } from '../audio/motorAmbiente.js'
 import { ID_SILENCIO } from '../data/catalogoSonidos.js'
 
 /** Las fases en las que suena la guía. En las retenciones, el silencio marca. */
 const FASES_CON_PULSO = new Set(['inhalar', 'exhalar'])
+
+/**
+ * Los estados en los que, al volver a la app, el ambiente vuelve a su volumen.
+ * En `completado` ya se fue con su fundido de salida y en `inactivo` no hay
+ * sesión: restablecerlo ahí lo haría sonar otra vez sobre el cierre.
+ */
+const ESTADOS_QUE_SUENAN = new Set([
+  ESTADOS.ACOMODANDO,
+  ESTADOS.ACTIVO,
+  ESTADOS.PAUSADO,
+  ESTADOS.CERRANDO,
+])
 
 /**
  * @param {object} configuracion - patrón, visual, sonido, volúmenes y duración.
@@ -45,6 +57,8 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
   const guia = useRef(null)
   const frame = useRef(null)
   const oculta = useRef(null)
+  /** Cancela la espera para despertar el audio al volver a la app (D-21.13). */
+  const retirarEsperaDeToque = useRef(null)
   const config = useRef(configuracion)
 
   /**
@@ -101,6 +115,8 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
 
   /** Suelta absolutamente todo. Idempotente (RN-RE-SND-22). */
   const soltarTodo = useCallback(() => {
+    retirarEsperaDeToque.current?.()
+    retirarEsperaDeToque.current = null
     pararBucle()
     maquina.current?.detener()
     maquina.current = null
@@ -143,15 +159,38 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
       oculta.current = null
       if (desde === null) return
       maquina.current?.notificarAusencia(Date.now() - desde)
-      // RN-RE-SND-24 — Al volver el foco, el contexto puede venir suspendido.
-      reanudar().then((corriendo) => {
-        if (corriendo) aplicarAudio(maquina.current?.instantanea()?.estado)
+      // RN-RE-SND-24 — Al volver el foco, el contexto puede venir suspendido, o
+      // `'interrupted'` en iOS (D-21.13). Se intenta ya; si WebKit exige un
+      // gesto, se espera al siguiente toque en esta pantalla. Sin eso la sesión
+      // seguía y el sonido no volvía nunca. Cuando corre, el volumen vuelve con
+      // la rampa de la vuelta, una sola vez.
+      if (ambiente.current === null) return
+      retirarEsperaDeToque.current?.()
+      retirarEsperaDeToque.current = despertarAlVolver(document, () => {
+        retirarEsperaDeToque.current = null
+        restablecerAudio(maquina.current?.instantanea()?.estado)
       })
     }
 
     document.addEventListener('visibilitychange', alCambiarVisibilidad)
     return () => document.removeEventListener('visibilitychange', alCambiarVisibilidad)
   }, [])
+
+  /**
+   * RN-RE-SND-24 — Al volver a la app con el contexto ya corriendo, el ambiente
+   * vuelve a su volumen con `restablecer()` —la rampa de 0,4 s de
+   * `FUNDIDOS.reanudarContexto`— y no con la de pausa de `aplicarAudio`
+   * (D-21.13). La guía no pasa por el mezclador: se vuelve a callar o no según
+   * el estado, igual que en `aplicarAudio`.
+   */
+  function restablecerAudio(estado) {
+    if (!ambiente.current || !ESTADOS_QUE_SUENAN.has(estado)) return
+    ambiente.current.restablecer({
+      estadoSesion: estado,
+      volumenAmbiente: config.current.volumenAmbiente,
+    })
+    guia.current?.silenciar(estado === ESTADOS.PAUSADO || !config.current.guiaSonoraActiva)
+  }
 
   /** Traduce el estado de sesión a volúmenes. La regla vive en el mezclador. */
   function aplicarAudio(estado) {

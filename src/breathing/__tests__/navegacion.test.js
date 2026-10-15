@@ -623,6 +623,53 @@ describe('el sonido suena de verdad (24 ago)', () => {
     expect(asegurar).toMatch(/reanudar\(\)/)
   })
 
+  it('al volver a la app, si el contexto no despierta solo, espera al siguiente toque (D-21.13)', () => {
+    // En iOS el contexto vuelve `interrupted` y WebKit puede exigir un gesto.
+    // Sin esto la sesión seguía y ya no sonaba nada (RN-RE-SND-24).
+    const visibilidad = hook.slice(
+      hook.indexOf('function alCambiarVisibilidad'),
+      hook.indexOf("document.addEventListener('visibilitychange'"),
+    )
+    expect(visibilidad).toMatch(/despertarAlVolver\(document,/)
+    // Y al salir de la pantalla no queda nadie esperando.
+    const soltar = hook.slice(
+      hook.indexOf('const soltarTodo'),
+      hook.indexOf('const soltarTodo') + 300,
+    )
+    expect(soltar).toMatch(/retirarEsperaDeToque\.current\?\.\(\)/)
+  })
+
+  it('al volver a la app el volumen vuelve con `restablecer`, no con la rampa de pausa (D-21.13)', () => {
+    // `aplicarAudio` pasa por `aplicarEstado`, que rampa con FUNDIDOS.pausa.
+    // La vuelta tiene la suya: FUNDIDOS.reanudarContexto, por `restablecer`.
+    const visibilidad = hook.slice(
+      hook.indexOf('function alCambiarVisibilidad'),
+      hook.indexOf("document.addEventListener('visibilitychange'"),
+    )
+    expect(visibilidad).toMatch(/restablecerAudio\(/)
+    expect(visibilidad).not.toMatch(/aplicarAudio\(/)
+
+    const restablecer = hook.slice(
+      hook.indexOf('function restablecerAudio'),
+      hook.indexOf('function aplicarAudio'),
+    )
+    expect(restablecer).toMatch(/ambiente\.current\.restablecer\(/)
+    expect(restablecer).not.toMatch(/aplicarEstado/)
+    expect(restablecer).toMatch(/ESTADOS_QUE_SUENAN\.has\(estado\)/)
+  })
+
+  it('al volver sobre el cierre, el ambiente no vuelve a sonar', () => {
+    // En `completado` ya se fue con su fundido de salida: restablecerlo lo
+    // subiría otra vez sobre la pantalla de cierre.
+    const estados = hook.slice(
+      hook.indexOf('const ESTADOS_QUE_SUENAN'),
+      hook.indexOf('export function useSesionRespiracion'),
+    )
+    expect(estados).toMatch(/ESTADOS\.ACTIVO/)
+    expect(estados).toMatch(/ESTADOS\.PAUSADO/)
+    expect(estados).not.toMatch(/COMPLETADO|INACTIVO/)
+  })
+
   it('un solo motor de ambiente para la vista previa y la sesión', () => {
     // Dos motores sobre el mismo contexto son dos grafos sonando a la vez, que
     // es exactamente cómo se superponen los sonidos. `empezar()` reutiliza el

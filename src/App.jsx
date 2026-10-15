@@ -30,6 +30,7 @@ import { useEffect, useRef, useState } from 'react'
 import { clsx } from 'clsx'
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { momentoDe } from '@lib/timeSlot'
+import { useBarraDeEstado } from '@lib/barraEstado'
 
 import ArranqueProvisional from '@/components/ArranqueProvisional'
 import Onboarding from '@components/onboarding/Onboarding'
@@ -276,6 +277,16 @@ function Secciones({ uid }) {
   useEffect(() => {
     if (entrando) cruzarUmbral('diario')
   }, [entrando])
+
+  // La hora y la batería, en la app de iPhone (SPEC_21.1 §4.8). Mientras se
+  // cruza el umbral manda su velo; después, el cromo si se ve y el fondo si no.
+  // La tabla entera, y por qué es el cromo y no la paleta, está en
+  // `lib/barraEstado`.
+  useBarraDeEstado(
+    entrando
+      ? { capa: 'pantalla', momento: momentoDe() }
+      : { capa: 'secciones', cromo: !hideNav, momentoHoy },
+  )
 
   return (
     // `data-moment` lo decide el reloj y elige la paleta; `data-surface` sigue

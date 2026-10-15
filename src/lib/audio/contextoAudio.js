@@ -79,24 +79,173 @@ export function liberar() {
 }
 
 /**
- * Reanuda el contexto si el navegador lo tenía suspendido.
+ * Los estados en los que no hay nada que reanudar. Todos los demás se intentan.
+ *
+ * D-21.13 — **No basta con mirar `'suspended'`.** WebKit en iOS tiene un cuarto
+ * estado, `'interrupted'`, fuera del estándar: es en el que deja el contexto
+ * cuando la app pasa a segundo plano. Preguntar solo por `'suspended'` hacía que
+ * al volver no se intentara nada y la Respiración siguiera muda. Se enumera lo
+ * que se excluye y no lo que se incluye, para que un estado que todavía no
+ * conocemos se intente en vez de ignorarse.
+ */
+const NO_SE_REANUDA = new Set(['running', 'closed'])
+
+/**
+ * Cuánto se espera a `resume()` antes de dar el intento por perdido.
+ *
+ * WebKit puede dejar la promesa sin resolver cuando el contexto está
+ * interrumpido y no hubo gesto: espera al gesto en lugar de rechazar. Sin techo,
+ * quien espera `reanudar()` se quedaría colgado y nunca llegaría a pedir el
+ * siguiente toque. Que llegue tarde no se pierde: si el contexto acaba
+ * corriendo, el siguiente toque lo encuentra así y aplica el audio.
+ */
+export const ESPERA_DE_REANUDAR_MS = 1000
+
+/**
+ * Reanuda un contexto cualquiera si no está corriendo.
+ *
+ * Es la regla de D-21.13 sin el singleton: la usan `reanudar()`, sobre el único
+ * contexto de la app, y la guía de «Respira un momento», que en las pruebas
+ * trae su propio contexto y no puede pasar por el registro de préstamos.
+ *
+ * `resume()` se llama **antes del primer `await`**, así que llamado desde el
+ * manejador de un toque corre dentro del gesto, que es lo que pide WebKit.
+ *
+ * @param {?AudioContext} ctx
+ * @param {{espera?: number}} [opciones] - El techo existe para las pruebas.
+ * @returns {Promise<boolean>} Si quedó corriendo.
+ */
+export async function reanudarContexto(ctx, { espera = ESPERA_DE_REANUDAR_MS } = {}) {
+  if (!ctx) return false
+  if (!NO_SE_REANUDA.has(ctx.state)) {
+    let techo = null
+    try {
+      await Promise.race([
+        ctx.resume(),
+        new Promise((resolver) => {
+          techo = setTimeout(resolver, espera)
+        }),
+      ])
+    } catch {
+      return false
+    } finally {
+      clearTimeout(techo)
+    }
+  }
+  return ctx.state === 'running'
+}
+
+/**
+ * Reanuda el contexto de la app si no está corriendo.
  *
  * RN-RE-SND-24 — Al recuperar el foco no basta con `resume()`: el volumen se
  * restablece con rampa, y de eso se encarga el mezclador. Aquí solo se despierta
  * el contexto.
  *
+ * @param {{espera?: number}} [opciones]
  * @returns {Promise<boolean>} Si quedó corriendo.
  */
-export async function reanudar() {
-  if (contexto === null) return false
-  if (contexto.state === 'suspended') {
-    try {
-      await contexto.resume()
-    } catch {
-      return false
-    }
+export async function reanudar(opciones) {
+  const ctx = contexto
+  if (ctx === null) return false
+  const corriendo = await reanudarContexto(ctx, opciones)
+  // Si mientras tanto se soltó y se creó otro, este ya no es el de nadie.
+  return corriendo && ctx === contexto
+}
+
+/**
+ * Los eventos que WebKit cuenta como gesto. Se escuchan todos porque un mismo
+ * toque dispara varios y no todos los navegadores dan permiso en el mismo:
+ * `touchend` en iOS, `pointerup` y `click` en el resto, `keydown` con teclado.
+ */
+const EVENTOS_DE_GESTO = ['touchend', 'pointerup', 'click', 'keydown']
+
+/**
+ * D-21.13 — Reanuda el contexto con el siguiente toque de la persona.
+ *
+ * Es el camino de vuelta cuando reanudar no lo consiguió por su cuenta: al
+ * volver a la app, WebKit puede exigir un gesto para despertar el contexto. No
+ * se pide ese gesto —no hay texto ni botón nuevo—; se aprovecha el primero que
+ * llegue, sea cual sea.
+ *
+ * Escucha en fase de captura y en pasivo: no impide nada ni cambia lo que el
+ * toque hace donde cae. **`alCorrer` se llama una sola vez**, cuando el contexto
+ * queda corriendo, y en ese momento se retira. Un toque que el navegador no
+ * cuente como gesto —uno que acaba en desplazamiento— no la gasta: el oyente
+ * sigue esperando al siguiente.
+ *
+ * @param {EventTarget} objetivo - Normalmente `document`.
+ * @param {Function} alCorrer - Qué hacer cuando vuelve a sonar.
+ * @param {{reanudar?: Function}} [opciones] - Qué contexto despertar; por
+ *   defecto, el de la app.
+ * @returns {Function} Retira el oyente. Idempotente.
+ */
+export function reanudarConElSiguienteToque(
+  objetivo,
+  alCorrer,
+  { reanudar: intentar = reanudar } = {},
+) {
+  if (!objetivo?.addEventListener) return () => {}
+  let vivo = true
+
+  function retirar() {
+    if (!vivo) return
+    vivo = false
+    EVENTOS_DE_GESTO.forEach((tipo) => objetivo.removeEventListener(tipo, alTocar, true))
   }
-  return contexto.state === 'running'
+
+  function alTocar() {
+    if (!vivo) return
+    intentar().then((corriendo) => {
+      if (!vivo || !corriendo) return
+      retirar()
+      alCorrer()
+    })
+  }
+
+  EVENTOS_DE_GESTO.forEach((tipo) =>
+    objetivo.addEventListener(tipo, alTocar, { capture: true, passive: true }),
+  )
+  return retirar
+}
+
+/**
+ * D-21.13 — Despierta el audio al volver a la app: lo intenta ya y, si no
+ * corre, espera al siguiente toque. `alCorrer` se llama una sola vez, en
+ * cuanto el contexto vuelve a correr por cualquiera de los dos caminos.
+ *
+ * Es lo que comparten la Respiración y «Respira un momento». Cada uno decide
+ * qué es volver a aplicar su audio; esto solo decide cuándo.
+ *
+ * @param {EventTarget} objetivo - Normalmente `document`.
+ * @param {Function} alCorrer
+ * @param {{reanudar?: Function}} [opciones]
+ * @returns {Function} Lo cancela todo: el intento en vuelo y el oyente.
+ */
+export function despertarAlVolver(objetivo, alCorrer, { reanudar: intentar = reanudar } = {}) {
+  let vivo = true
+  let retirarToque = null
+  intentar().then((corriendo) => {
+    if (!vivo) return
+    if (corriendo) {
+      vivo = false
+      alCorrer()
+      return
+    }
+    retirarToque = reanudarConElSiguienteToque(
+      objetivo,
+      () => {
+        vivo = false
+        alCorrer()
+      },
+      { reanudar: intentar },
+    )
+  })
+  return () => {
+    vivo = false
+    retirarToque?.()
+    retirarToque = null
+  }
 }
 
 /** El contexto vivo, o `null`. Lo usan el mezclador y las pruebas. */

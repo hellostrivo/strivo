@@ -151,3 +151,33 @@ describe('silencio por defecto (§6.12, A-03)', () => {
     expect(codigoDe('src/lib/db/shared.js')).toMatch(/soundEnabled: false/)
   })
 })
+
+describe('al volver a la app, el sonido vuelve (D-21.13, RN-RE-SND-24)', () => {
+  const componente = codigoDe(COMPONENTE)
+
+  it('escucha la vuelta a la app y la suelta al desmontar', () => {
+    expect(componente).toMatch(/addEventListener\('visibilitychange'/)
+    expect(componente).toMatch(/removeEventListener\('visibilitychange'/)
+  })
+
+  it('reutiliza el camino de la Respiración, sobre su propio contexto', () => {
+    // Una copia de la regla envejecería distinto que la original.
+    expect(componente).toMatch(/import \{ despertarAlVolver \} from '@lib\/audio\/contextoAudio'/)
+    expect(componente).toMatch(/despertarAlVolver\(\s*document,/)
+    expect(componente).toMatch(/reanudar: \(\) => guia\.reanudar\(\)/)
+  })
+
+  it('al volver a sonar restablece el silencio y resincroniza la fase', () => {
+    const alCorrer = componente.slice(componente.indexOf('despertarAlVolver('))
+    expect(alCorrer).toMatch(/guia\.restablecer\(\)/)
+    expect(alCorrer).toMatch(/faseActual\.current = null/)
+  })
+
+  it('al salir no queda nadie esperando un toque', () => {
+    const limpiar = componente.slice(
+      componente.indexOf('const limpiar'),
+      componente.indexOf('const limpiar') + 200,
+    )
+    expect(limpiar).toMatch(/cancelarDespertar\.current\?\.\(\)/)
+  })
+})
