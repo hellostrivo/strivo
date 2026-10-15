@@ -15,6 +15,8 @@
 
 ## 1. D-21.11 — La ventana pasa por negro mientras iOS abre la app
 
+Causa refutada el 14 oct (noche): ver la fila D-21.11 de §2 de la instrucción 21.1.
+
 **Lo que se vio.** Mientras iOS agranda el ícono para abrir la app, la ventana se oscurece antes de que aparezca el papel. En el primer arranque tras instalar llegó a negro puro unos 67 ms (4 cuadros con brillo < 10 de 255). En los otros dos arranques bajó a un gris muy oscuro (~30). Después sube al papel en ~300 ms, con saltos de hasta +25 por cuadro. El fundido propio de la app no pasa de −14.
 
 **Causa (confirmada el 14 oct: el iPhone de la fundadora está en modo oscuro).** En `ios/App/App/Base.lproj/LaunchScreen.storyboard` el `imageView` tiene `backgroundColor` = `systemBackgroundColor`, que es blanco en modo claro y **negro en modo oscuro**. La imagen `Splash` (2732×2732) tarda un instante en pintarse, y en ese hueco se ve el fondo. En modo claro el mismo hueco saldría blanco: con fondo fijo de papel, los dos modos quedan iguales.
