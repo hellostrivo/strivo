@@ -1,0 +1,183 @@
+// src/components/shared/__tests__/respiracion.test.js
+// Los criterios de SPEC_08 que se comprueban leyendo el código, no
+// ejecutándolo: que la respiración no se abre sola, que no guarda nada y que el
+// componente compartido lo es de verdad.
+//
+// **Revisión del paso 8 del plan de separación técnica (25 ago 2026).** La regla
+// de RN-LU-RESP-02 sigue viva y pierde una de sus tres mitades: el componente
+// tenía que no conocer los dos productos ni la capa de datos, y ahora solo hay
+// un producto que no puede conocer. Es el mismo recorte que hizo la regla de
+// arquitectura de `eslint.config.js`, que pasó de tres partes a dos.
+
+import { readFileSync } from 'fs'
+import { describe, expect, it } from 'vitest'
+
+import { copy } from '@copy'
+import { COLLECTIONS, FIELDS } from '@/lib/db/schema.js'
+
+const COMPONENTE = 'src/components/shared/Respiracion.jsx'
+const RITMO = 'src/lib/ritmoRespiracion.js'
+const AUDIO = 'src/lib/audioRespiracion.js'
+const HOY = 'src/pages/diario/Hoy.jsx'
+
+/** El código sin comentarios: lo que se ejecuta, no lo que se explica. */
+function codigoDe(ruta) {
+  return readFileSync(ruta, 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '')
+}
+
+describe('un solo componente para los dos sitios (RN-LU-RESP-02)', () => {
+  it('no conoce la sección que lo monta, ni la capa de datos', () => {
+    ;[COMPONENTE, RITMO, AUDIO].forEach((ruta) => {
+      const imports = codigoDe(ruta).match(/^\s*import[\s\S]*?from\s+'[^']+'/gm) ?? []
+      imports.forEach((linea) => {
+        expect(`${ruta}: ${linea}`).not.toMatch(/diario|lib\/db/i)
+      })
+    })
+  })
+
+  it('todo lo que necesita llega por props, incluido el copy', () => {
+    const codigo = codigoDe(COMPONENTE)
+    expect(codigo).not.toMatch(/from '@copy'/)
+    expect(codigo).toMatch(/\btextos\b/)
+  })
+
+  it('el ritmo por defecto son tres ciclos, los mismos que usará P1', () => {
+    expect(codigoDe(COMPONENTE)).toMatch(/ciclos = CICLOS/)
+  })
+})
+
+describe('no se abre sola (RN-LU-RESP-01, criterio 2)', () => {
+  const componente = codigoDe(COMPONENTE)
+  const hoy = codigoDe(HOY)
+
+  it('el ejercicio no arranca al montarse: hace falta un gesto', () => {
+    // `arrancar` es lo que crea el contexto de audio y pone el reloj en marcha.
+    // Si apareciera dentro de un efecto, la respiración se dispararía sola y
+    // los 39 segundos pasarían a ser un peaje diario.
+    const efectos = componente.match(/useEffect\([\s\S]*?\n {2}\}/g) ?? []
+    efectos.forEach((efecto) => expect(efecto).not.toMatch(/arrancar/))
+    expect(componente).toMatch(/onClick=\{corriendo \? pausar : arrancar\}/)
+  })
+
+  it('entrar en la sección Mañana no la dispara: se abre desde un toque', () => {
+    // El toque es el de la tarjeta, que es toda ella el control. La entrada
+    // cambió de forma —era un enlace de apoyo— pero no de naturaleza: sigue
+    // siendo un gesto de quien mira y nunca algo que la pantalla decida.
+    expect(hoy).toMatch(/onAbrir=\{\(\) => abrir\('respiracion'\)\}/)
+    expect(hoy).toMatch(/<TarjetaRespiracion/)
+    // La vista solo cambia a 'respiracion' por ese toque, nunca por un efecto.
+    const efectos = hoy.match(/useEffect\([\s\S]*?\n {2}\}/g) ?? []
+    efectos.forEach((efecto) => expect(efecto).not.toMatch(/respiracion/))
+  })
+
+  it('la salida está desde el primer fotograma, sin confirmación', () => {
+    expect(componente).toMatch(/onClick=\{terminar\}/)
+    expect(componente).not.toMatch(/confirm/i)
+  })
+})
+
+describe('no se registra en ninguna parte (criterio 9)', () => {
+  it('el modelo canónico no tiene dónde guardar una respiración', () => {
+    const todo = JSON.stringify({ COLLECTIONS, FIELDS })
+    expect(todo).not.toMatch(/breath|respiracion/i)
+  })
+
+  it('ninguno de los tres archivos guarda nada en ningún sitio', () => {
+    // Sin la capa de datos —que la prueba de arriba ya prohíbe importar— la
+    // única vía que quedaría para persistir algo es un almacén global.
+    ;[COMPONENTE, RITMO, AUDIO].forEach((ruta) => {
+      expect(`${ruta}: ${codigoDe(ruta)}`).not.toMatch(
+        /localStorage|indexedDB|sessionStorage|fetch\(/,
+      )
+    })
+  })
+})
+
+describe('el copy invita, no vende (SPEC_08 §8)', () => {
+  const textos = copy.diario.respiracion
+
+  function cadenasDe(nodo, ruta) {
+    if (typeof nodo === 'string') return [[ruta, nodo]]
+    if (nodo && typeof nodo === 'object') {
+      return Object.entries(nodo).flatMap(([clave, hijo]) => cadenasDe(hijo, `${ruta}.${clave}`))
+    }
+    return []
+  }
+
+  const CADENAS = cadenasDe(textos, 'copy.diario.respiracion')
+
+  it('no promete ningún beneficio ni usa lenguaje de meditación guiada', () => {
+    const prohibido =
+      /te vas a sentir|te sentir[áa]s|te ayudar[áa]|paz interior|energ[íi]a|medita|mindful|conecta con/i
+    CADENAS.forEach(([ruta, texto]) => expect(`${ruta}: ${texto}`).not.toMatch(prohibido))
+  })
+
+  it('no queda rastro del copy de Fase 0, que presuponía un ritual detrás', () => {
+    CADENAS.forEach(([ruta, texto]) => expect(`${ruta}: ${texto}`).not.toMatch(/antes de empezar/i))
+  })
+
+  it('dice lo que dura y que se puede salir, antes de empezar', () => {
+    // RN-LU-RESP-01 sigue cumpliéndose, y se cumple donde importa: `lead` es la
+    // pantalla que tiene el botón "Empezar", así que lo que dura y que se puede
+    // salir se leen justo antes de arrancar el ejercicio.
+    expect(textos.lead).toMatch(/tres ciclos/i)
+    expect(textos.lead).toMatch(/salir/i)
+  })
+
+  it('la entrada de Hoy no anuncia la duración: es una invitación, no una ficha', () => {
+    // "Poco más de medio minuto" se retiró de las dos secciones. En la tarjeta
+    // era el único texto secundario y la devolvía al registro informativo del
+    // que se la quiso sacar. La entrada tiene un solo rótulo y nada más.
+    expect(Object.keys(textos.entrada)).toEqual(['abrir'])
+    expect(textos.entrada.abrir).toBe('Respira un momento')
+    const entrada = JSON.stringify(textos.entrada)
+    expect(entrada).not.toMatch(/minuto|segundo|dura/i)
+  })
+
+  it('el copy de fase es la única señal textual: sin números ni cuenta atrás', () => {
+    expect(Object.keys(textos.fases).sort()).toEqual(['exhalar', 'inhalar', 'pausa'])
+    CADENAS.forEach(([ruta, texto]) => expect(`${ruta}: ${texto}`).not.toMatch(/\d\s*(s|seg)\b/i))
+  })
+})
+
+describe('silencio por defecto (§6.12, A-03)', () => {
+  it('el componente arranca silenciado si nadie dice lo contrario', () => {
+    expect(codigoDe(COMPONENTE)).toMatch(/sonido = false/)
+  })
+
+  it('un usuario nuevo nace con el sonido apagado', () => {
+    expect(codigoDe('src/lib/db/shared.js')).toMatch(/soundEnabled: false/)
+  })
+})
+
+describe('al volver a la app, el sonido vuelve (D-21.13, RN-RE-SND-24)', () => {
+  const componente = codigoDe(COMPONENTE)
+
+  it('escucha la vuelta a la app y la suelta al desmontar', () => {
+    expect(componente).toMatch(/addEventListener\('visibilitychange'/)
+    expect(componente).toMatch(/removeEventListener\('visibilitychange'/)
+  })
+
+  it('reutiliza el camino de la Respiración, sobre su propio contexto', () => {
+    // Una copia de la regla envejecería distinto que la original.
+    expect(componente).toMatch(/import \{ despertarAlVolver \} from '@lib\/audio\/contextoAudio'/)
+    expect(componente).toMatch(/despertarAlVolver\(\s*document,/)
+    expect(componente).toMatch(/reanudar: \(\) => guia\.reanudar\(\)/)
+  })
+
+  it('al volver a sonar restablece el silencio y resincroniza la fase', () => {
+    const alCorrer = componente.slice(componente.indexOf('despertarAlVolver('))
+    expect(alCorrer).toMatch(/guia\.restablecer\(\)/)
+    expect(alCorrer).toMatch(/faseActual\.current = null/)
+  })
+
+  it('al salir no queda nadie esperando un toque', () => {
+    const limpiar = componente.slice(
+      componente.indexOf('const limpiar'),
+      componente.indexOf('const limpiar') + 200,
+    )
+    expect(limpiar).toMatch(/cancelarDespertar\.current\?\.\(\)/)
+  })
+})

@@ -1,0 +1,266 @@
+// src/diario/noche.js
+// La noche, en tres momentos (actualización del 23 ago a §5.4).
+//
+// El recorrido pregunta, por este orden:
+//
+//   1. ¿Qué quiero reconocer de hoy?          (lista de 1 a 5, uno al abrir)
+//   2. Una reflexión breve                    (`nocheReflexion.js`)
+//   3. ¿Cómo me siento al cerrar el día?      (`nocheEmociones.js`)
+//   +  Si quieres, deja algo aquí             (por la emoción, o a mano)
+//   →  El cierre: "Tu día puede terminar aquí."
+//   →  La pantalla de consulta: lo respondido, con las preguntas delante
+//
+// **La noche no evalúa el día.** No pide que nada haya salido bien —"reconocer"
+// admite lo que costó y lo que se atravesó, que es justo lo que "agradecer" no
+// admitía—, no exige una lección, no compara la mañana con la noche y no cuenta
+// nada de lo escrito. Se fue con esta actualización la síntesis que decía "Hoy
+// encontraste 2 cosas que agradecer": un recuento es un balance, y §10 los
+// prohíbe expresamente.
+//
+// **Ninguna pregunta bloquea y todas se pueden dejar en blanco.** No hay
+// "incompleto", no hay "te faltó" y no hay nada en rojo. Lo que no se contestó
+// se anota en `skipped` para saber qué se preguntó, no para reprochárselo a
+// nadie, y solo se anota lo que llegó a preguntarse.
+//
+// El indicador cuenta **momentos, no campos**. La descarga opcional no entra en
+// la cuenta: no está todas las noches, y un total que cambia de una noche a
+// otra deja de orientar. Es la misma decisión que la pausa de la mañana.
+
+import { copy } from '@copy'
+import { CIERRE, animoDeCierre } from './nocheEmociones.js'
+import { reconocimientoDeLaNoche } from './nocheReconocimiento.js'
+import { animoDerivado } from './estadoSueno.js'
+import { preguntaGuardada } from './nocheReflexion.js'
+
+export { marcaLocal } from './fechas.js'
+
+/**
+ * Versión del recorrido, guardada con cada noche.
+ *
+ * 1 — los cinco bloques de §5.4 (gratitud, aprendizaje, estado de sueño).
+ * 2 — los tres momentos de esta actualización.
+ *
+ * Sirve para leer una noche vieja sabiendo qué se le preguntó: las de la
+ * versión 1 no traen el campo y se reconocen por su ausencia.
+ */
+export const VERSION = 2
+
+/** Ids estables de las preguntas. Es lo que se anota en `skipped` (§11). */
+export const PREGUNTAS = Object.freeze({
+  reconocimiento: 'reconocimiento',
+  reflexion: 'reflexion',
+  emocion: 'emocion',
+  descarga: 'descarga',
+})
+
+/** Los momentos que se cuentan en el indicador. La descarga no es uno. */
+export const MOMENTOS = Object.freeze(['reconocimiento', 'reflexion', 'emocion'])
+
+// Ninguna respuesta abierta de la noche tiene tope de caracteres. El
+// reconocimiento cabe en palabras desde el 12 de septiembre de 2026
+// (`LIMITES.reconocimiento`) y la reflexión y la descarga desde el 20 de
+// octubre (`LIMITE_DE_RESPUESTA`): los dos en `filas.js`, cuatrocientas por
+// respuesta.
+
+// ─── Lectura de una noche guardada ────────────────────────────────────────────
+
+export function hayReconocimiento(entrada) {
+  return (entrada?.recognized?.length ?? 0) > 0
+}
+
+export function hayReflexion(entrada) {
+  return String(entrada?.reflection ?? '').trim() !== ''
+}
+
+/**
+ * Cómo se cerró el día, en lista.
+ *
+ * La pregunta admite hasta tres desde el 10 de septiembre de 2026 y se guarda en
+ * `closingFeelings`; las noches anteriores guardaron un solo id en
+ * `closingFeeling` y se siguen leyendo tal cual, sin migrarlas ni reescribirlas
+ * (RN-DB-04). Nadie vuelve a escribir el campo en singular. Es lo mismo que hace
+ * `animosDeManana` con las mañanas de agosto.
+ */
+export function emocionesDeCierre(entrada) {
+  if (Array.isArray(entrada?.closingFeelings)) return entrada.closingFeelings
+  return entrada?.closingFeeling ? [entrada.closingFeeling] : []
+}
+
+export function hayEmocion(entrada) {
+  return emocionesDeCierre(entrada).length > 0
+}
+
+export function hayDescarga(entrada) {
+  return String(entrada?.release ?? '').trim() !== ''
+}
+
+/** ¿Se cerró la noche? Lo dice la marca de cierre, no cuánto se escribió. */
+export function estaCerrada(entrada) {
+  return Boolean(entrada?.completedAt)
+}
+
+/** ¿Hay algo escrito? Incluye los campos de las noches de la versión 1. */
+export function hayAlgoEscrito(entrada) {
+  if (!entrada) return false
+  return (
+    hayReconocimiento(entrada) ||
+    hayReflexion(entrada) ||
+    hayEmocion(entrada) ||
+    hayDescarga(entrada) ||
+    // Versión 1: gratitud, aprendizaje y estado de sueño. Ya nadie los escribe,
+    // pero las noches que los tienen siguen siendo noches con algo escrito.
+    (entrada.gratitude?.length ?? 0) > 0 ||
+    String(entrada.learning ?? '').trim() !== '' ||
+    (entrada.sleepState?.length ?? 0) > 0
+  )
+}
+
+/**
+ * Qué quedó en blanco (§11, "campos omitidos").
+ *
+ * `conDescarga` dice si la tarjeta llegó a mostrarse: una pregunta que no se
+ * hizo no es una pregunta omitida.
+ */
+export function camposOmitidos(entrada, { conDescarga = false } = {}) {
+  const omitidos = []
+  if (!hayReconocimiento(entrada)) omitidos.push(PREGUNTAS.reconocimiento)
+  if (!hayReflexion(entrada)) omitidos.push(PREGUNTAS.reflexion)
+  if (!hayEmocion(entrada)) omitidos.push(PREGUNTAS.emocion)
+  if (conDescarga && !hayDescarga(entrada)) omitidos.push(PREGUNTAS.descarga)
+  return omitidos
+}
+
+/**
+ * Cómo se leen las emociones de cierre de una noche guardada: cada una con su
+ * texto y su emoji, en el orden en que se eligieron.
+ *
+ * Mismas fichas que la mañana, y por lo mismo: la palabra propia no lleva emoji
+ * y lo que no resuelve a nada —un id de una versión anterior del catálogo— se
+ * cae en vez de pintarse en blanco.
+ */
+export function fichasDeCierre(entrada, genero) {
+  return CIERRE.fichasDeRespuesta(emocionesDeCierre(entrada), entrada?.closingFeelingOther, genero)
+}
+
+/**
+ * El ánimo de cinco estados de una noche, o `null` si no declaró ninguno.
+ *
+ * Lee las dos versiones: la emoción de cierre de esta actualización y, en las
+ * noches viejas, el estado de sueño. Es una **vista** y no se persiste nunca
+ * (§5.4.1): lo consumen el punto del calendario y el repertorio de frases.
+ */
+export function animoDeNoche(night) {
+  // Con más de una emoción gana la más pesada, que es la misma regla que ya
+  // aplicaba `animoDerivado` a las noches de la versión 1 (`nocheEmociones.js`).
+  if (hayEmocion(night)) return animoDeCierre(emocionesDeCierre(night))
+  if ((night?.sleepState?.length ?? 0) > 0) return animoDerivado(night.sleepState)
+  return null
+}
+
+// ─── Cierre (§10) ─────────────────────────────────────────────────────────────
+
+/**
+ * Lo que se muestra en el cierre, o `null`.
+ *
+ * §10 permite enseñar **uno** de los elementos reconocidos, no todos: la
+ * pantalla final es un descanso, no un repaso. Se elige el primero porque es el
+ * que se escribió primero, no porque sea el mejor — la app no ordena por
+ * importancia lo que alguien nombró.
+ */
+export function algoQueReconoces(entrada) {
+  const primero = (entrada?.recognized ?? [])
+    .map((linea) => String(linea ?? '').trim())
+    .find((linea) => linea !== '')
+  return primero ?? null
+}
+
+// ─── La pantalla de consulta ──────────────────────────────────────────────────
+
+/**
+ * La noche ya escrita, en bloques de pregunta y respuesta.
+ *
+ * **Devuelve las preguntas, no etiquetas resumidas**, igual que la mañana: con
+ * la pregunta delante, volver a leerlo es volver a lo que se preguntó, y la
+ * pantalla se ve igual que las del recorrido.
+ *
+ * La reflexión trae **la pregunta que salió esa noche** —rota, así que sin
+ * `reflectionId` no se sabría cuál se contestó— y la reconstruye con la
+ * intención de esa misma mañana cuando fue la ligada a ella. El reconocimiento
+ * hace lo mismo por otro camino: la suya se deriva de la emoción de cierre y de
+ * la fecha, que están las dos guardadas, así que no hace falta un campo más
+ * para poder releerla tal como se preguntó.
+ *
+ * **Lo que quedó en blanco no aparece.** Sin marcador de ausencia y sin "sin
+ * responder": una noche a medias se lee entera, no incompleta.
+ *
+ * **`numerado` dice qué bloque es una lista** (12 sep 2026): el reconocimiento,
+ * que admite varias respuestas y las devuelve una debajo de otra con su número,
+ * en el orden en que se añadieron. Lo demás escrito es una sola respuesta y no
+ * lleva número. Lo decide esto y no la pantalla, que solo pinta.
+ *
+ * @returns {Array<{id: string, titulo: string, forma: 'chip'|'texto',
+ *                   numerado: boolean,
+ *                   fichas: Array<{texto: string, emoji: ?string}>,
+ *                   lineas: string[]}>}
+ */
+export function resumenDeNoche(entrada, morning, genero, fecha) {
+  const textos = copy.diario.noche
+  const bloques = []
+
+  if (hayReconocimiento(entrada)) {
+    bloques.push({
+      id: PREGUNTAS.reconocimiento,
+      // La pregunta que se contestó, no una genérica: se rehace con la emoción
+      // que quedó guardada y con la fecha de la noche, que son las dos cosas de
+      // las que salió. Sin fecha sale la primera de su grupo — que se relea
+      // ligeramente distinta es preferible a rotularla con una etiqueta que
+      // nadie llegó a leer.
+      titulo: reconocimientoDeLaNoche(emocionesDeCierre(entrada), fecha).titulo,
+      forma: 'texto',
+      numerado: true,
+      fichas: [],
+      lineas: entrada.recognized
+        .map((linea) => String(linea ?? '').trim())
+        .filter((linea) => linea !== ''),
+    })
+  }
+
+  const pregunta = preguntaGuardada(entrada, morning, genero)
+  if (pregunta && hayReflexion(entrada)) {
+    bloques.push({
+      id: PREGUNTAS.reflexion,
+      titulo: pregunta.titulo,
+      forma: 'texto',
+      numerado: false,
+      fichas: [],
+      lineas: [String(entrada.reflection).trim()],
+    })
+  }
+
+  const emociones = fichasDeCierre(entrada, genero)
+  if (emociones.length > 0) {
+    bloques.push({
+      id: PREGUNTAS.emocion,
+      titulo: textos.emocion.titulo,
+      forma: 'chip',
+      numerado: false,
+      // Hasta tres fichas, como la mañana. Se leen todas y en el orden en que se
+      // eligieron: lo que se contestó es lo que se relee, no una muestra.
+      fichas: emociones,
+      lineas: [],
+    })
+  }
+
+  if (hayDescarga(entrada)) {
+    bloques.push({
+      id: PREGUNTAS.descarga,
+      titulo: textos.descarga.titulo,
+      forma: 'texto',
+      numerado: false,
+      fichas: [],
+      lineas: [String(entrada.release).trim()],
+    })
+  }
+
+  return bloques
+}

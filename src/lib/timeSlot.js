@@ -28,16 +28,19 @@ export function timeToMinutes(hhmm) {
  * @returns {'amanecer'|'dia'|'atardecer'|'noche'|'madrugada'}
  */
 export function getTimeSlot(horaDespertar = '07:00', horaDormir = '23:00', diaTerminaA = '03:00') {
-  const now        = new Date()
+  const now = new Date()
   const currentMin = now.getHours() * 60 + now.getMinutes()
 
-  const despertar  = timeToMinutes(horaDespertar)
-  const dormir     = timeToMinutes(horaDormir)
-  const termina    = timeToMinutes(diaTerminaA)
+  const despertar = timeToMinutes(horaDespertar)
+  const dormir = timeToMinutes(horaDormir)
+  // `diaTerminaA` cierra la franja de noche, pero la rama de noche es la
+  // devolución por defecto y todavía no lo consulta. Se conserva en la firma
+  // porque quien llama ya lo pasa; resolverlo es trabajo de SPEC_10.
+  const _termina = timeToMinutes(diaTerminaA)
 
   // Amanecer: [max(04:00, despertar - 60) .. min(11:30, despertar + 300)]
   const amanecerStart = Math.max(4 * 60, despertar - 60)
-  const amanecerEnd   = Math.min(11 * 60 + 30, despertar + 5 * 60)
+  const amanecerEnd = Math.min(11 * 60 + 30, despertar + 5 * 60)
 
   // Atardecer: [dormir - 240 .. dormir]
   const atardecerStart = dormir - 4 * 60
@@ -46,14 +49,28 @@ export function getTimeSlot(horaDespertar = '07:00', horaDormir = '23:00', diaTe
   // Madrugada: [00:00 .. 04:00]
   const madrugadaEnd = 4 * 60
 
-  if (currentMin < madrugadaEnd)               return 'madrugada'
-  if (currentMin >= amanecerStart &&
-      currentMin <  amanecerEnd)               return 'amanecer'
-  if (currentMin >= amanecerEnd &&
-      currentMin <  atardecerStart)            return 'dia'
-  if (currentMin >= atardecerStart &&
-      currentMin <  dormir)                    return 'atardecer'
+  if (currentMin < madrugadaEnd) return 'madrugada'
+  if (currentMin >= amanecerStart && currentMin < amanecerEnd) return 'amanecer'
+  if (currentMin >= amanecerEnd && currentMin < atardecerStart) return 'dia'
+  if (currentMin >= atardecerStart && currentMin < dormir) return 'atardecer'
   // Noche: desde hora de dormir hasta final del día (termina)
+  return 'noche'
+}
+
+/**
+ * El momento que viste una pantalla cuando lo decide el reloj.
+ *
+ * Es la traducción de las cinco franjas a las dos paletas de marca, y vive aquí
+ * porque la hacían dos pantallas por su cuenta —`App` para el cromo y el
+ * onboarding para su fondo— y dos copias de la misma regla envejecen distinto.
+ *
+ * No es lo mismo que el conmutador de Hoy: aquel lo decide quien mira, y esa
+ * pantalla sigue mandando sobre lo suyo (RN-HOY-05).
+ *
+ * @returns {'manana'|'noche'}
+ */
+export function momentoDe(franja = getTimeSlot()) {
+  if (franja === 'amanecer' || franja === 'dia') return 'manana'
   return 'noche'
 }
 
@@ -73,7 +90,7 @@ export function isRitualMananaWindow() {
  */
 export function isRitualNocheWindow() {
   const now = new Date()
-  const h   = now.getHours()
+  const h = now.getHours()
   return h >= 19 || h < 3
 }
 
@@ -83,7 +100,7 @@ export function isRitualNocheWindow() {
  */
 export function getWeekDay() {
   const d = new Date().getDay() // 0=Dom en JS
-  return d === 0 ? 6 : d - 1   // convertir a 0=Lun
+  return d === 0 ? 6 : d - 1 // convertir a 0=Lun
 }
 
 /**

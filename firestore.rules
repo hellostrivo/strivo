@@ -1,0 +1,21 @@
+rules_version = '2';
+
+// Reglas mínimas de Fase 1 (SPEC_02 §10): cada persona ve solo su árbol.
+// Nada más entra aquí. La validación de forma de los datos vive en
+// src/lib/db/schema.js, no en el servidor.
+//
+// RN-DB-04 — `lumia/pinConfig` no aparece en ninguna regla porque nunca se
+// sincroniza: no sale del dispositivo.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

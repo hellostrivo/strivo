@@ -1,0 +1,17 @@
+dist
+dev-dist
+node_modules
+docs/blueprint
+
+# El CSS queda fuera a propósito, por dos razones concretas:
+#
+#  1. Los bloques de tokens están alineados a mano por columnas. Prettier los
+#     colapsa a un espacio y se pierde de un vistazo qué token vale qué.
+#  2. Prettier pasa los hexes a minúsculas, y los de marca están en mayúsculas
+#     **para poder compararlos literalmente con el manual**. Es lo que sostiene
+#     los criterios 1, 3 y 4 de SPEC_12: `marca.test.js` comprueba que cada hex
+#     de los tokens aparece tal cual en `BRAND_MANUAL`.
+*.css
+
+# Los tokens son datos, no código: el orden y los comentarios son del manual.
+src/tokens/design-tokens.json

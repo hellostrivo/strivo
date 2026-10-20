@@ -1,7 +1,33 @@
 {
-  "version": "1.0",
-  "date": "4 ago 2026",
-  "description": "Tokens de diseño de Strivo del blueprint v3, §6.3–6.9",
+  "version": "1.1",
+  "date": "11 ago 2026",
+  "description": "Tokens de diseño de Strivo. Comportamiento: Blueprint de Producto v5.0, cap. 10. Color, símbolos y tipografía: BRAND_MANUAL_STRIVO v2.0, que es la fuente única de lo cromático (blueprint §10.1).",
+  "brand": {
+    "comment": "Neutros y símbolo, del manual §4.2 y §3.1, copiados sin corregir. La paleta de los dos momentos vive en `src/styles/tokens-strivo.css`, que es su fuente única en código. La paleta de marca dice QUÉ SUPERFICIE usar; el sistema de contraste de `semantic` sigue decidiendo QUÉ TEXTO va encima (manual §4.6, nota técnica).",
+    "strivo": {
+      "comment": "Neutros conectores. Constantes: Strivo no cambia con el momento del día. Los pasos 700 y 800 los añadió SPEC_14: la escala de cinco no alcanzaba para separar las cuatro fases de la respiración cumpliendo RN-RE-VIS-16, porque sobre `strivo-50` solo 600 y 900 llegan a 3:1. Están interpolados sobre el eje neutro que ya existía entre 600 y 900, así que no introducen tono: Strivo sigue siendo acromático (manual §4.1).",
+      "50": "#F6F4F1",
+      "100": "#E9E7E3",
+      "300": "#D4D1CD",
+      "600": "#6E6A73",
+      "700": "#58545D",
+      "800": "#423E47",
+      "900": "#2B2730"
+    },
+    "simbolos": {
+      "comment": "Manual §3.1 y §3.2 — Del logo oficial (`Strivo_Logo_Oficial.svg`, 25 ago 2026), que es un lockup vertical: símbolo y palabra en el mismo trazado. El tono de firma sigue SIN coincidir con el primario de su paleta, y sigue sin forzarse. Se usa solo para el logo: cabecera, ícono de app, favicon. `strokeLinecap` y `strokeLinejoin` se RETIRAN: describían el símbolo de trazo anterior y el archivo oficial es de relleno, sin un solo `stroke`.",
+      "strivo": "#2B282F",
+      "puntos": "#776F79",
+      "viewBox": "0 0 1016 920"
+    },
+    "respiracion": {
+      "comment": "SPEC_14 §5 — Las cuatro fases de la herramienta de Respiración. Salen íntegramente de la escala Strivo madre (RN-RE-VIS-00: cero tokens de sección). §5 describía un eje cálido→frío; en una escala acromática ese eje no existe, así que las fases se separan por LUMINANCIA. No es una pérdida: RN-RE-VIS-17 ya prohíbe comunicar la fase solo por color, y el texto de `EtiquetaFase` más la geometría del disco llevan el dato.",
+      "inhalar": { "token": "strivo.900", "hex": "#2B2730", "rol": "El más presente. Apertura." },
+      "sosten": { "token": "strivo.800", "hex": "#423E47", "rol": "Un paso atrás. Suspensión." },
+      "exhalar": { "token": "strivo.700", "hex": "#58545D", "rol": "Se retira. Soltar." },
+      "descanso": { "token": "strivo.600", "hex": "#6E6A73", "rol": "El más apagado. Reposo." }
+    }
+  },
   "colors": {
     "semantic": {
       "ink": "#241E33",
@@ -52,40 +78,35 @@
   },
   "typography": {
     "fontFamilies": {
-      "display": "Fraunces",
-      "interface": "Satoshi",
+      "comment": "UNA SOLA FAMILIA: Inter (manual §5.1, confirmada ✅). La jerarquía se construye con peso y tamaño, nunca con familias distintas (manual §5.2). Sustituye a Fraunces + Satoshi: el manual manda en tipografía (blueprint §10.1).",
+      "base": "Inter Variable",
+      "display": "Inter Variable",
+      "interface": "Inter Variable",
       "fallback": "system-ui, -apple-system, sans-serif"
     },
     "scales": {
       "baseSize": "16px",
       "ratio": 1.25,
-      "comment": "Escala: 12, 16, 20, 25, 32, 40, 50, 64, 80, 100px",
+      "comment": "En `rem`, no en px: con la escala en píxeles absolutos, subir el tamaño de fuente del sistema no cambiaba nada y §6.14 pide escalar hasta el 200 %. 1rem = 16px mientras nadie toque la raíz.",
       "sizes": {
-        "xs": "12px",
-        "sm": "16px",
-        "base": "16px",
-        "md": "20px",
-        "lg": "25px",
-        "xl": "32px",
-        "2xl": "40px",
-        "3xl": "50px",
-        "4xl": "64px",
-        "5xl": "80px",
-        "6xl": "100px"
+        "xs": "0.75rem",
+        "sm": "0.875rem",
+        "base": "1rem",
+        "md": "1.25rem",
+        "lg": "1.5625rem",
+        "xl": "2rem",
+        "2xl": "2.5rem",
+        "3xl": "3.125rem",
+        "4xl": "4rem"
       }
     },
     "weights": {
-      "display": {
-        "regular": 400,
-        "medium": 500,
-        "bold": 700,
-        "comment": "Fraunces: para títulos grandes (Hoy, etapas de ritual)"
-      },
-      "interface": {
-        "regular": 400,
-        "medium": 500,
-        "bold": 700,
-        "comment": "Satoshi: para cuerpo, botones, labels"
+      "comment": "Manual §5.2 — La jerarquía de marca se construye con peso dentro de Inter.",
+      "strivo": {
+        "cuerpo": 400,
+        "enfasis": 500,
+        "display": 600,
+        "comment": "Neutro, confiable, estructurado."
       }
     },
     "lineHeights": {

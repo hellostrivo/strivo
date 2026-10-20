@@ -1,17 +1,45 @@
 /* src/styles/globals.css */
+
+/* ─── Fuentes ───────────────────────────────────────────────────────────────
+   **Inter, y solo Inter**, para las tres marcas (manual §5.1, confirmada ✅).
+   Se diferencian por peso y tratamiento, nunca por familia: §5.2.
+
+   Sustituye a Fraunces + Satoshi del blueprint §6.4.1. El capítulo 12 lo
+   concede en su propio preámbulo — la especificación de tipografía vive en el
+   manual y manda sobre él (§C0.6).
+
+   Va por npm y no por CDN, como pide el manual §5.1: sin dependencia de red,
+   sin latencia de carga y sin enviar la IP de nadie a un tercero al abrir la
+   app (§7.9).
+
+   Los `@import` van antes que todo lo demás: CSS los ignora si aparecen
+   después de una regla.
+*/
+@import '@fontsource-variable/inter';
+
+/* La cursiva **real** de Inter, no la que el navegador se inventa.
+   `@fontsource-variable/inter` solo trae los cortes verticales; sin esta
+   segunda hoja, cualquier `font-style: italic` se resuelve inclinando la
+   vertical por software —una falsa cursiva, con las curvas deformadas— y eso
+   es exactamente lo que el manual §5.1 evita al fijar una sola familia bien
+   servida. Los subconjuntos van por `unicode-range`, así que un navegador de
+   aquí descarga el latino (~52 kB) y ni un byte de los demás. La usa el rótulo
+   de la frase del día. */
+@import '@fontsource-variable/inter/wght-italic.css';
+
+/* La paleta de marca y sus dos momentos (manual §4). Ya no hay entre qué
+   elegir: los hexes van en la raíz y `data-moment` decide el momento. */
+@import './tokens-strivo.css';
+
+/* La capa visual de Respiración (SPEC_14). Se carga siempre, como las paletas:
+   sus clases solo existen dentro de `src/breathing/`, así que no alcanzan a
+   ninguna otra pantalla de la app. */
+@import '../breathing/styles/respiracion.css';
+
 /* Tailwind */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* ─── Fuentes ───────────────────────────────────────────────────────────────
-   Fraunces (display): https://fonts.google.com/specimen/Fraunces
-   Satoshi (UI):       https://fontsource.org/fonts/satoshi  (o CDN de Fontshare)
-   En producción: self-hosted para privacidad.
-   En dev: Google Fonts / Fontshare CDN para velocidad.
-*/
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700&display=swap');
-@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap');
 
 /* ─── Variables CSS globales (de design-tokens.json) ────────────────────────
    Usado por componentes que necesitan acceso en tiempo de ejecución.
@@ -31,13 +59,529 @@
   --sab: env(safe-area-inset-bottom, 0px);
 }
 
+/* ─── Tokens de contraste por superficie (§6.3.7) ────────────────────────────
+   Tokens de **rol**, no de color. El contenedor declara sobre qué está pintado
+   y los hijos heredan el color correcto sin saber en qué tema están. Es lo que
+   evita la clase de defecto del Bloque 03: texto oscuro sobre fondo nocturno.
+
+   RN-SURF-01 — Ningún componente fija un color de texto literal ni lee
+   --color-ink. Usa var(--color-text) y hereda.
+   RN-SURF-02 — Toda pantalla o sección con fondo propio declara data-surface.
+   RN-SURF-03 — Es independiente del modo claro/oscuro del sistema.
+
+   Desviación anotada: §6.3.7 fija #5B5470 para el texto secundario sobre
+   claro. Sobre `paper` se queda en 6,7:1 y Fase 1 pide AAA.
+
+   **Recalibrado en SPEC_12.** Valía #4F4A5A, que daba 8,1:1 sobre `paper` pero
+   solo 5,5:1 sobre la más oscura de las cabeceras teñidas de marca (#FFC29C, de
+   la paleta que se retiró después). Aplicar la paleta lo sacó de AAA sin que se
+   viera a simple vista; lo cazó `npm run lint:contraste`. Ahora vale #3A3546,
+   que da 7,57:1 en el peor fondo de toda la app y sigue subiendo desde ahí.
+*/
+:root {
+  --color-text-on-light:       #241E33;
+  --color-text-on-light-soft:  #3A3546;
+  --color-text-on-light-faint: #8E88A0;
+  --color-text-on-dark:        #F2EEF7;
+  --color-text-on-dark-soft:   #B4ACC6;
+  --color-text-on-dark-faint:  #8F87A6;
+  --color-border-on-light:     rgba(36, 30, 51, .12);
+  --color-border-on-dark:      rgba(242, 238, 247, .16);
+  /* La superficie elevada, con nombre y no escrita a mano en cada sitio. Los
+     dos valores ya existían dentro de `[data-surface]`; salen aquí porque el
+     cromo los necesita **sin** declarar una superficie propia: la franja de
+     arriba y la de abajo invierten su tinta desde `.cromo-espacio`, y una
+     `rgba()` copiada allí sería la tercera copia de la paleta escrita a mano
+     que la recalibración v2.1 tuvo que ir a buscar en decimal. */
+  --color-raised-on-light:     rgba(255, 255, 255, .72);
+  --color-raised-on-dark:      rgba(242, 238, 247, .12);
+
+  /* Cambio de tema de la pantalla Hoy (§5.2.1, token dur-theme). */
+  --dur-theme: 320ms;
+
+  /* Peso del tratamiento display (manual §5.2). Con un solo producto ya no lo
+     reescribe nadie: las dos reglas por espacio se fueron con el segundo
+     producto. */
+  --peso-display: 600;
+}
+
+/* ─── Neutros conectores de Strivo (manual §4.2) ─────────────────────────────
+   Son el valor por defecto del cromo cuando no hay espacio activo: el arranque
+   de sesión, o cualquier superficie que viva por encima de los dos productos.
+   Strivo es el conector y su paleta no cambia con el momento del día (§4.1).
+
+   No es una pestaña ni un destino: la marca madre no se usa directamente
+   (§C0.2). Aquí solo viste lo que queda fuera de los dos espacios.
+*/
+:root {
+  --strivo-50: #F6F4F1;
+  --strivo-100: #E9E7E3;
+  --strivo-300: #D4D1CD;
+  --strivo-600: #6E6A73;
+  /* SPEC_14 — Dos pasos nuevos sobre el eje neutro que ya existia entre 600 y
+     900. Los pidio la respiracion: sobre `strivo-50` solo 600 (4,82:1) y 900
+     (13,32:1) llegan al 3:1 de WCAG 1.4.11, y §5 necesita cuatro fases
+     distinguibles. Interpolados, no inventados: no introducen tono, asi que
+     Strivo sigue siendo acromatico (manual §4.1). */
+  --strivo-700: #58545D;
+  --strivo-800: #423E47;
+  --strivo-900: #2B2730;
+
+  --espacio-base: var(--strivo-50);
+  --espacio-cabecera: var(--strivo-100);
+  --espacio-borde: var(--strivo-600);
+  --espacio-acento: var(--strivo-900);
+
+  /* El contratono: el bloque oscuro del cromo —la franja de arriba y la de
+     abajo— y, dentro de Hoy, el conmutador Mañana/Noche. **Su literal vive aquí
+     y solo aquí desde el 9 de septiembre de 2026**, cuando el cromo dejó de ser
+     crema fuera de Hoy: antes lo declaraba la Mañana, porque era el único sitio
+     que lo usaba. La Mañana lo hereda; la Noche de Hoy es la única que lo
+     invierte, más abajo. Dos declaraciones del mismo tono se habrían separado
+     el día que alguien retocara una.
+
+     No sale del manual: lo fijó el propietario del producto. */
+  --strivo-conmutador: #1D1833;
+
+  /* SPEC_14 §5 — Las cuatro fases de Respiracion.
+     Se separan por LUMINANCIA y no por tono: §5 pedia un eje calido→frio, y una
+     escala acromatica no lo tiene. RN-RE-VIS-17 ya exige que la fase nunca se
+     comunique solo por color, asi que el dato lo llevan el texto de
+     `EtiquetaFase` y la geometria del disco; el color solo acompana.
+     RN-RE-VIS-00 — ni un token de seccion entra aqui. */
+  --respiracion-fase-inhalar: var(--strivo-900);
+  --respiracion-fase-sosten: var(--strivo-800);
+  --respiracion-fase-exhalar: var(--strivo-700);
+  --respiracion-fase-descanso: var(--strivo-600);
+
+  /* Los tres trazos del dibujo, que antes iban escritos dentro de
+     `respiracion.css` como `--strivo-600/700/900`. Salieron aqui para que cada
+     espacio pueda vestirlos sin que aquella hoja nombre a ninguno (24 ago).
+       · `trazo`       — la onda de la linea. Es la figura.
+       · `trazo-suave` — anillo, halo, marcas de fase y guia de recorrido. Es el
+                         andamiaje: se lee cuando se busca y desaparece cuando no.
+       · `tinta`       — el marcador de movimiento reducido y las barras de pausa.
+                         Son señales de estado, no decoracion, y van al maximo. */
+  --respiracion-trazo: var(--strivo-700);
+  --respiracion-trazo-suave: var(--strivo-600);
+  --respiracion-tinta: var(--strivo-900);
+}
+
+/* ─── Respiración dentro de la app (24 ago) ──────────────────────────────────
+   Respiración dejó de colgar de un vestíbulo y es una sección más, así
+   que se viste con la paleta del momento. **`respiracion.css` no se enteró**: pide siete
+   variables semánticas y aquí se decide qué son, que es la misma división que
+   sostienen el velo de `TransicionLuz` (SPEC_10) y la barra (SPEC_11).
+
+   Las cuatro fases conservan **el orden de luminancia de SPEC_14** —inhalar la
+   más oscura, descanso la más clara— porque esa rampa es lo que hace que el
+   cambio de fase se lea de reojo. Lo que cambia es de qué escala salen.
+
+   Medido sobre las dos superficies del producto (`strivo-am-50` de día y
+   `strivo-pm-50` de noche), que es donde se pintan:
+
+     inhalar   color-ink       #241E33   14,57:1 / 13,77:1
+     sostén    strivo-pm-700    #5D5260    6,71:1 /  6,34:1
+     exhalar   strivo-pm-500    #7A5A5F    5,52:1 /  5,22:1
+     descanso  strivo-pm-400    #8A7E9B    3,44:1 /  3,25:1
+
+   Las cuatro pasan el 3:1 de WCAG 1.4.11 (RN-RE-VIS-16), y el `lint:contraste`
+   las mide. **Entre fases contiguas hay entre 1,22:1 y 2,17:1**, igual que
+   pasaba con la escala de Strivo: no basta para nombrar una fase por su color, y
+   por eso RN-RE-VIS-17 —palabra y forma siempre— no es aquí un adorno de
+   accesibilidad sino lo que sostiene la lectura.
+
+   `--color-ink` es el token compartido del manual §4.5, no un hex escrito a
+   mano: es la tinta de toda la app.
+
+   El primario de marca (`strivo-pm-500`) cae en `exhalar` y no es casualidad: es
+   la fase más larga de casi todos los patrones y la que la marca quiere firmar. */
+[data-moment] {
+  --respiracion-fase-inhalar: var(--color-ink);
+  --respiracion-fase-sosten: var(--strivo-pm-700);
+  --respiracion-fase-exhalar: var(--strivo-pm-500);
+  --respiracion-fase-descanso: var(--strivo-pm-400);
+
+  --respiracion-trazo: var(--strivo-pm-500);
+  --respiracion-trazo-suave: var(--strivo-pm-400);
+  --respiracion-tinta: var(--color-ink);
+}
+
+[data-surface='light'] {
+  --color-text:       var(--color-text-on-light);
+  --color-text-soft:  var(--color-text-on-light-soft);
+  --color-text-faint: var(--color-text-on-light-faint);
+  --color-border:     var(--color-border-on-light);
+  --color-raised:     var(--color-raised-on-light);
+}
+
+[data-surface='dark'] {
+  --color-text:       var(--color-text-on-dark);
+  --color-text-soft:  var(--color-text-on-dark-soft);
+  --color-text-faint: var(--color-text-on-dark-faint);
+  --color-border:     var(--color-border-on-dark);
+  --color-raised:     var(--color-raised-on-dark);
+}
+
+/* ─── Superficies del momento ────────────────────────────────────────────────
+   Mañana: claridad suave. Noche: azul oscuro (§5.2.1, comportamiento vigente).
+   La tarjeta va en un tono distinto del fondo para que destaque por luminancia
+   y no solo por borde (RN-HOY-07).
+
+   Los degradados se definen aquí, en un solo sitio, porque SPEC_12 los
+   sustituye por los de la paleta de marca sin tocar ningún componente.
+*/
+[data-momento='manana'] {
+  --strivo-base: var(--strivo-am-50);
+  --strivo-fondo: linear-gradient(168deg, var(--strivo-am-50) 0%, var(--strivo-am-300) 62%, var(--strivo-am-100) 100%);
+  --strivo-tarjeta: rgba(255, 255, 255, .72);
+  --strivo-campo: rgba(255, 255, 255, .58);
+  /* El conmutador va en contratono: de día, oscuro. Es el primer elemento
+     interactivo de Hoy y no comparte superficie con nada más, así que declara
+     su propio `data-surface` y el texto se invierte con él.
+
+     **El tono lo hereda de `:root`**, que es donde vive el contratono desde que
+     lo comparte con el cromo de todas las secciones. Aquí solo queda el velo
+     del lado activo, que sí es suyo. */
+  --strivo-conmutador-activo: rgba(242, 238, 247, .16);
+  /* La frase del día va en el secundario de la paleta —`strivo-am-200`, el
+     durazno quemado de la mañana— y no en otro velo blanco: es la única
+     superficie teñida de Hoy, así que se separa del resto por color y no por un
+     tercer escalón de luminancia, que la habría puesto a competir con la
+     tarjeta de respiración (RN-HOY-07). Medido con la paleta v2.1: la tinta
+     sobre ella da 9,6:1 y el secundario 7,1:1, los dos AAA. El borde es el azul
+     violáceo ceniza de la misma paleta. */
+  --strivo-frase: var(--strivo-am-200);
+  --strivo-frase-borde: var(--strivo-pm-400);
+}
+
+[data-momento='noche'] {
+  --strivo-base: #191428;
+  --strivo-fondo: linear-gradient(168deg, #191428 0%, #221B3A 58%, #2C2350 100%);
+  --strivo-tarjeta: rgba(242, 238, 247, .10);
+  --strivo-campo: rgba(242, 238, 247, .07);
+  /* De noche el contratono se invierte: el conmutador es la pieza clara. */
+  --strivo-conmutador: #F2DDE7;
+  --strivo-conmutador-activo: rgba(36, 30, 51, .12);
+  /* De noche el secundario entra como velo y no como color plano: `strivo-pm-400`
+     en sólido no llegaría a AAA por ninguno de los dos lados, mientras que al
+     20 % sobre el degradado tiñe sin aclarar y el cuerpo se queda entre 9,7:1 y
+     12,1:1. El borde es la arena ámbar de la mañana, que es la que se ve sobre
+     el velo.
+
+     **Los dos salían escritos a mano en `rgba()`** —los canales de `#8D82B6` y
+     `#DCCFF1`, copiados de la paleta v2.0— y por eso el barrido de hexes de la
+     recalibración v2.1 no los veía: un hex en decimal no se parece a un hex.
+     Ahora piden el token y le aplican la opacidad con `color-mix`, que es lo
+     que ya hacía la cuadrícula de más abajo. Era una violación de RN-VIS-02
+     anterior a este cambio, y la habría dejado en lavanda bajo una paleta que
+     ya no lo es. */
+  --strivo-frase: color-mix(in srgb, var(--strivo-pm-400) 20%, transparent);
+  --strivo-frase-borde: color-mix(in srgb, var(--strivo-am-100) 30%, transparent);
+  /* §6.3.9 — El acento de la respiración es el naranja del amanecer y de
+     noche no funciona: se pinta sobre un degradado frío y oscuro, que es lo
+     contrario del fondo para el que se eligió. De noche toma la arena ámbar de
+     la paleta (`strivo-am-100`), que sobre el degradado nocturno se lee a
+     11,4:1 en su extremo más oscuro y a 9,1:1 en el más claro. El halo pedía
+     ese mismo tono escrito a mano en `rgba()`; ahora lo pide por su token. */
+  --color-breath: var(--strivo-am-100);
+  --color-breath-halo: color-mix(in srgb, var(--strivo-am-100) 28%, transparent);
+  /* Un velo crema a las once de la noche sería un fogonazo. */
+  --transicion-velo: #191428;
+  --transicion-luz: radial-gradient(circle, rgba(232, 165, 74, .18) 0%, rgba(232, 165, 74, 0) 70%);
+}
+
+/* La atribución de la frase del día, de noche.
+   El secundario de una superficie oscura (`#B4ACC6`) llega a AAA sobre el
+   degradado —8,2:1— y se queda en 5,0:1 sobre el recuadro de la frase, que es
+   más claro que el fondo contra el que se eligió. La atribución es texto de
+   cuerpo a 14 px, así que su umbral sigue siendo 7:1 y ahí no llega.
+   No se arregla en el componente, que no sabe qué hora es: lo arregla la
+   superficie que sí lo sabe, subiendo su propio secundario a la arena ámbar de
+   la paleta (7,1:1). El componente sigue pidiendo `text-on-surface-soft` por el
+   papel que cumple (RN-VIS-02). De día no hace falta: el secundario oscuro da
+   7,1:1 sobre el durazno quemado. */
+[data-momento='noche'] .bg-strivo-frase {
+  --color-text-soft: var(--strivo-am-100);
+}
+
+/* ─── El cromo de la sección en la Mañana ────────────────────────────────────
+   **Se llamaba `.cabecera-espacio` hasta el 26 de agosto.** Dejó de ser exacto
+   cuando la barra inferior volvió con el Historial y el Perfil: es la misma
+   decisión de contratono para las dos piezas de cromo, arriba y abajo, y una
+   clase que dice "cabecera" en la barra de abajo es de las que llevan a que
+   alguien duplique la regla en lugar de reutilizarla.
+
+   Sobre `strivo-am-300` —una crema cálida— la franja se comía con la mañana clara,
+   así que toma el mismo contratono que el conmutador Mañana/Noche, que es la
+   otra pieza de cromo de esa pantalla. Las dos leen `--strivo-conmutador`, así
+   que no pueden separarse.
+
+   Va aquí y no en props porque `NavStrivo` no nombra ni un color: pide
+   superficies por su papel (RN-SURF-01) y quien decide qué son es el tema. Es
+   la misma decisión que SPEC_10 tomó con el velo de `TransicionLuz`.
+
+   **En todas las secciones menos en la Noche de Hoy** (9 sep 2026). Hasta ahora
+   la regla pedía `[data-momento='manana']`, que es un atributo que solo existe
+   mientras Hoy está montada: en el Journal, en Respiración, en el Historial y en
+   Tu perfil no había atributo, no había regla, y las dos franjas se quedaban en
+   el crema del rango claro. Eso hacía que el cromo —que es la única pieza que
+   acompaña a las cinco pantallas— cambiara de color al cambiar de destino, y el
+   cromo es justo lo que no debería moverse al navegar. Lo pidió el propietario
+   del producto.
+
+   Por eso son dos selectores y no uno: `[data-moment]:not([data-momento])` es la
+   raíz de la app fuera de Hoy —`data-moment`, el del reloj, lo lleva siempre; el
+   `data-momento` del conmutador solo en Hoy—, y `[data-momento='manana']` es la
+   Mañana, que ya lo llevaba. **La Noche de Hoy se queda fuera a propósito** y
+   conserva su rango claro (`strivo-am-100`, la arena ámbar): es lo que decidió
+   SPEC_12 para que el texto siga saliendo de los tokens AAA sobre claro, y no
+   estaba en el encargo.
+
+   Las secciones conservan forma, peso y borde. Lo único que cambia es la
+   superficie que tienen debajo, y con ella su tinta: son texto sobre la
+   cabecera, así que no podían quedarse literalmente iguales sin volverse
+   ilegibles.
+*/
+[data-moment]:not([data-momento]) .cromo-espacio,
+[data-momento='manana'] .cromo-espacio {
+  background-color: var(--strivo-conmutador);
+  /* Igual que abajo: lo que separa la franja es el bloque de color entero, no
+     una línea. Contra la mañana clara el borde ya no tiene nada que hacer. */
+  border-bottom-color: transparent;
+  --color-text:       var(--color-text-on-dark);
+  --color-text-soft:  var(--color-text-on-dark-soft);
+  --color-text-faint: var(--color-text-on-dark-faint);
+  --color-border:     var(--color-border-on-dark);
+  /* **La superficie elevada se invierte con la tinta, y hasta hoy no lo hacía.**
+     La sección activa se pinta con `bg-raised`, y `--color-raised` seguía siendo
+     el de la superficie clara —blanco al 72 %—: sobre el contratono daba un
+     bloque gris claro con la tinta clara encima, 1,6:1, el rótulo de la sección
+     en la que estás prácticamente sin leerse. El velo claro al 12 % da 10,7:1.
+     Se veía solo en la Mañana; sin esto pasaría a verse en las cinco pantallas,
+     que es lo que obligó a mirarlo. Los dos valores los mide
+     `npm run lint:contraste`. */
+  --color-raised:     var(--color-raised-on-dark);
+  /* El acento marca el borde de la sección activa. `strivo-pm-500` sobre el
+     contratono cae a 2,97:1 y se queda por debajo del 3:1 que WCAG 1.4.11 pide
+     a un indicador; el lavanda claro de la misma paleta da 11,57:1. Sigue siendo
+     color de la marca, y el estado activo además lleva peso y relleno, así que
+     nunca se comunica solo por color (criterio 7 de SPEC_11). */
+  --espacio-acento: var(--strivo-am-100);
+}
+
+/* El símbolo sale del `.svg` en su tono de firma, #2B2730 (manual §3.2), y sobre
+   el contratono de la mañana se queda en **1,17:1**: invisible. En monocromo
+   blanco da 17,06:1. Es la **versión monocromática** que el manual §9 tiene
+   pendiente: "se puede derivar de los SVG actuales cambiando el stroke a un solo
+   valor, pero conviene que el diseñador la apruebe". Está derivada aquí con un
+   filtro y no como archivo nuevo para que aprobarla —o sustituirla por la del
+   diseñador— sea borrar tres líneas. **Pendiente de esa aprobación.**
+
+   La regla es la misma que llevaba la vela, y el problema también: aquella se
+   quedaba en 3,33:1 —pasaba el umbral de no-texto, pero se apagaba— y esta ni
+   eso. En la Noche de Hoy la cabecera es clara y el símbolo se pinta tal cual:
+   9,92:1. **Los dos selectores son los de la regla de arriba, y tienen que
+   seguirla:** donde hay contratono hay monocromo, y un logo en su tono de firma
+   sobre el bloque oscuro del Journal sería el mismo 1,17:1 que en la Mañana. */
+[data-moment]:not([data-momento]) .cromo-espacio img,
+[data-momento='manana'] .cromo-espacio img {
+  filter: brightness(0) invert(1);
+}
+
+/* ─── Paleta de ánimo del Historial (§6.3.5) ─────────────────────────────────
+   Cinco tonos, deliberadamente **no** de rojo a verde: eso convertiría el ánimo
+   en una calificación. La escala va de frío-apagado a fresco-luminoso, sin
+   connotación de éxito ni de fracaso.
+
+   Viven aquí y no en el componente porque ninguna pieza del diario fija un color
+   literal (RN-SURF-01): `CalendarioAnimo` conoce el id del ánimo y nada más.
+*/
+:root {
+  --animo-agotado:   #7A7290;
+  --animo-inquieto:  #9B86A8;
+  --animo-normal:    #A9A2B8;
+  --animo-tranquilo: #93A9C4;
+  --animo-en_paz:    #7E9E86;
+}
+
+/* ─── Transición de entrada (§C7.5) ──────────────────────────────────────────
+   Luz tenue y frase. El velo y la luz se definen aquí y no en el componente
+   porque `TransicionLuz` es compartido y no conoce ninguna sección: se monta en la
+   entrada a la app y en la entrada a la mañana, y hereda el tono de donde esté.
+
+   La variante nocturna vive junto al resto del tema, más abajo, con los demás
+   `[data-momento='noche']`.
+*/
+:root {
+  --transicion-velo: #FBF8F4;
+  --transicion-luz: radial-gradient(circle, rgba(232, 165, 74, .28) 0%, rgba(232, 165, 74, 0) 70%);
+}
+
+/* El umbral se monta también en la raíz de la app, donde el tema que manda es
+   `data-moment` —el reloj— y no el `data-momento` de la pantalla Hoy. De noche,
+   sin esta regla, abrir la app daba un velo crema a las once: el mismo fogonazo
+   que la variante de abajo evita dentro de Hoy. */
+[data-moment='noche'] {
+  --transicion-velo: var(--color-night);
+  --transicion-luz: radial-gradient(circle, rgba(232, 165, 74, .18) 0%, rgba(232, 165, 74, 0) 70%);
+}
+
+/* El logo quieto que el umbral pone en lugar del video cuando la preferencia de
+   movimiento reducido está activada (25 ago). Sobre el velo crema va tal cual
+   —13,70:1—; sobre el velo nocturno su tono de firma daría 2,09:1 y se pasa a
+   monocromo blanco (17,92:1), con el mismo filtro y por el mismo motivo que en
+   la cabecera de la Mañana (manual §3.3).
+
+   El color lo sigue trayendo el `.svg` y el componente sigue sin tocarlo: quien
+   sabe sobre qué velo cae es el tema, y es quien lo corrige (RN-VIS-02). */
+[data-moment='noche'] .velo-transicion img {
+  filter: brightness(0) invert(1);
+}
+
+/* ─── La presentación de las secciones ───────────────────────────────────────
+   Las cuatro composiciones que se ven una vez, entre el onboarding y la primera
+   entrada a Hoy. Van aquí y no en el componente por lo de siempre: quien sabe
+   qué hora es —y por tanto sobre qué fondo cae el dibujo— es el tema, no la
+   pieza que lo pinta (RN-VIS-02).
+
+   Tres papeles y no una paleta nueva: los tres salen de los ocho tonos de la
+   marca, y cada momento elige cuál cumple cada papel.
+
+     trazo     la línea que dibuja la forma. Es lo que hace legible la
+               composición, así que se le pide el 3:1 de WCAG 1.4.11 sobre las
+               dos paradas del degradado que le tocan (5,52:1 y 4,69:1 de día,
+               11,37:1 y 10,36:1 de noche).
+     profundo  el segundo tono, el que da volumen. También por encima del 3:1
+               (5,70:1 de día, 4,31:1 de noche).
+     calido    el relleno suave, y el único de los tres que **no** llega al 3:1
+               de día: la arena ámbar sobre una crema es 1,52:1. No lo necesita
+               y por eso está medido como informativo — es relleno de una forma
+               que ya tiene su línea, y lo que hay que leer lo dice el texto. Es
+               la misma liga del círculo de la respiración (§6.3.9).
+
+   `lint:contraste` mide los seis pares. */
+[data-momento='manana'] {
+  --presentacion-trazo: var(--strivo-pm-500);
+  --presentacion-profundo: var(--strivo-pm-700);
+  --presentacion-calido: var(--strivo-am-200);
+}
+
+[data-momento='noche'] {
+  --presentacion-trazo: var(--strivo-am-100);
+  --presentacion-profundo: var(--strivo-pm-400);
+  --presentacion-calido: var(--strivo-am-200);
+}
+
+/* ─── Acento de la respiración (§6.3.9) ──────────────────────────────────────
+   Naranja/dorado deliberadamente más saturado que `amber` (#E5A25C): tiene que
+   destacar sobre el degradado de amanecer, que ya es cálido. Usar el ámbar del
+   sistema fue justo el origen del defecto que corrige el Bloque 05 — el círculo
+   se pintaba del color del fondo y el ejercicio era invisible.
+
+   Uso exclusivo: este token no se usa en ningún otro componente.
+*/
+:root {
+  --color-breath:      #E8A54A;
+  --color-breath-halo: rgba(232, 165, 74, .35);
+}
+
+/* ─── Tarjetas de sección del Journal (§6.3.10) ──────────────────────────────
+   El contraste cálido/frío es funcional, no decorativo: separa "lo que siento"
+   de "lo que escribo" sin líneas ni títulos pesados. Las dos son superficies
+   claras y declaran `data-surface="light"`.
+*/
+:root {
+  --journal-card-warm:        #F3E7D8;
+  --journal-card-warm-border: #E4D2BC;
+  --journal-card-cool:        #E4EDF5;
+  --journal-card-cool-border: #CBDCE9;
+}
+
+/* La frase entra despacio, se queda y se va. Cinco segundos en total, que es
+   la duración calmada de P1 (§C7.5, "Motion"). */
+@keyframes transicion-entrada {
+  0%   { opacity: 0; }
+  18%  { opacity: 1; }
+  78%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* La entrada del video de apertura (25 ago).
+   **Entra y se queda**: no tiene la salida de arriba porque no es el reloj
+   quien decide cuándo se va, es el video —`onEnded` desmonta la pieza entera—.
+   Con la curva de siempre habría empezado a desvanecerse al 78 % de cinco
+   segundos, o sea a mitad de fotograma, y el video se vería apagarse antes de
+   acabar. La entrada es más corta que la de la frase por el mismo motivo: no
+   hay nada que leer, hay algo que empieza.
+
+   **Anima el video, no el velo** (26 ago). Hasta ahora esta curva se aplicaba al
+   velo entero, así que durante sus 480 ms el velo era semitransparente y dejaba
+   ver justo lo que el umbral viene a tapar: al abrir la app, un destello de la
+   pantalla de detrás antes de que empezara el logo. El velo es opaco desde el
+   primer fotograma y lo que aparece despacio es el fotograma, que es lo que se
+   quería suave. Un umbral que enseña lo que tapa no está tapando nada. */
+@keyframes transicion-entrada-video {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* La salida del video de apertura (26 ago).
+
+   **Un video que se acaba y un velo que desaparece en el mismo fotograma es un
+   corte.** Hasta ahora `onEnded` desmontaba el umbral entero y la pantalla de
+   detrás aparecía de golpe. Estas dos curvas son la misma salida contada en dos
+   tiempos: primero se va el último fotograma sobre el velo —que es liso y del
+   mismo tono que el fondo del propio video—, y el velo se queda solo un
+   instante; después se retira el velo, y lo que aparece debajo es lo que ya
+   estaba montado.
+
+   El desvanecido del fotograma termina antes que su curva: el 25 % final es esa
+   pausa en la que solo se ve el velo. Va dentro de la misma animación y no en un
+   temporizador aparte porque es la misma espera, y dos relojes para un mismo
+   gesto se desincronizan en cuanto alguien toca uno.
+
+   Las dos duraciones se repiten en `TransicionLuz.jsx` —`DESPEDIDA` y
+   `RETIRADA`—, que es quien encadena los tiempos, y hay una prueba que compara
+   las dos parejas. */
+@keyframes transicion-salida-logo {
+  0%   { opacity: 1; }
+  75%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes transicion-salida-velo {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Bienvenida del Home de Strivo. **Sin texto**: el símbolo aparece y respira una
+   vez, y con él la luz que lo rodea. Dentro del rango de motion del proyecto
+   (120–900 ms) y en el extremo lento, que es donde vive la marca madre.
+
+   Con `prefers-reduced-motion` no se anula a mano: la regla global de más abajo
+   deja las dos en 0,01 ms, así que el símbolo simplemente ya está ahí. */
+@keyframes bienvenida-simbolo {
+  0%   { opacity: 0; transform: scale(.94); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes bienvenida-luz {
+  0%   { opacity: 0; transform: scale(.5); }
+  55%  { opacity: .55; }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+
 /* ─── Base ───────────────────────────────────────────────────────────────────
    Reset mínimo que respeta las preferencias del sistema.
 */
 @layer base {
   html {
-    font-family: 'Satoshi', system-ui, -apple-system, sans-serif;
-    font-size: 16px;
+    font-family: 'Inter Variable', system-ui, -apple-system, sans-serif;
+    /* Sin `font-size` fijo: la raíz la manda el navegador, que es donde vive la
+       preferencia de tamaño de quien lee. Con la escala en `rem`, subir el
+       cuerpo de letra del sistema al 200 % ahora sí agranda toda la app
+       (§6.14). Fijarla aquí era lo que lo impedía. */
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -57,21 +601,193 @@
     }
   }
 
-  /* Escalado de fuente hasta 200% sin romper layout */
-  @media (max-width: 480px) {
-    html { font-size: clamp(14px, 4vw, 18px); }
-  }
+  /* Aquí había `html { font-size: clamp(14px, 4vw, 18px) }` en móvil. Se retira:
+     ataba el cuerpo de letra al ancho de la ventana y, con la escala en `rem`,
+     habría pisado la preferencia del sistema — justo lo contrario de lo que
+     pide §6.14. El tamaño de letra lo elige quien lee, no el viewport. */
 }
 
 /* ─── Utilidades personalizadas ─────────────────────────────────────────────
 */
 @layer utilities {
+  /* Color heredado de la superficie (§6.3.7). Nunca un color literal. */
+  .text-on-surface       { color: var(--color-text); }
+  .text-on-surface-soft  { color: var(--color-text-soft); }
+  .text-on-surface-faint { color: var(--color-text-faint); }
+  .border-on-surface     { border-color: var(--color-border); }
+  /* Elemento elevado sobre la superficie: se distingue por luminancia, no solo
+     por el borde (RN-HOY-07). Sirve en los dos temas sin invertir nada. */
+  .bg-raised             { background-color: var(--color-raised); }
+
+  /* Fondo y tarjetas del momento activo.
+     `bg-strivo-base` es el color plano del momento, debajo del degradado: si el
+     degradado se queda corto —rebote de scroll, captura larga, un contenedor
+     más alto que la ventana— lo que asoma es el tono del tema, no el papel de
+     la app. Sin él, un rebote en la noche enseña una franja crema. */
+  .bg-strivo-base    { background-color: var(--strivo-base); }
+  .bg-strivo         { background-image: var(--strivo-fondo); }
+  .bg-strivo-tarjeta { background-color: var(--strivo-tarjeta); }
+  .bg-strivo-campo   { background-color: var(--strivo-campo); }
+
+  /* El recuadro de la frase del día. Va aparte de las superficies del momento
+     porque no es un escalón más de la misma escala: es el secundario de la
+     paleta, la única superficie teñida de Hoy. */
+  .bg-strivo-frase     { background-color: var(--strivo-frase); }
+  .border-strivo-frase { border-color: var(--strivo-frase-borde); }
+
+  /* El conmutador Mañana/Noche y su segmento activo. Van aparte de las
+     superficies del momento porque son el contratono: no acompañan al fondo,
+     lo contradicen. */
+  .bg-strivo-conmutador        { background-color: var(--strivo-conmutador); }
+  .bg-strivo-conmutador-activo { background-color: var(--strivo-conmutador-activo); }
+
+  /* Punto de ánimo del calendario (§6.3.5). El componente pone la clase a
+     partir del id que devuelve `animoDerivado`; el color vive arriba. */
+  .bg-animo-agotado   { background-color: var(--animo-agotado); }
+  .bg-animo-inquieto  { background-color: var(--animo-inquieto); }
+  .bg-animo-normal    { background-color: var(--animo-normal); }
+  .bg-animo-tranquilo { background-color: var(--animo-tranquilo); }
+  .bg-animo-en_paz    { background-color: var(--animo-en_paz); }
+
+  /* Tarjetas de sección del Journal (§6.3.10). */
+  .bg-journal-warm     { background-color: var(--journal-card-warm); }
+  .border-journal-warm { border-color: var(--journal-card-warm-border); }
+  .bg-journal-cool     { background-color: var(--journal-card-cool); }
+  .border-journal-cool { border-color: var(--journal-card-cool-border); }
+
+  /* Cross-fade de 320 ms al cambiar de momento (§5.2.1).
+     Con "reducir movimiento" el cambio es inmediato: lo resuelve la regla
+     global de prefers-reduced-motion de más arriba, que anula la transición.
+
+     Los degradados no interpolan, así que el fondo son dos capas superpuestas
+     que se cruzan por opacidad (.transicion-fondo). El color del texto sí
+     interpola y acompaña al cruce sin salto intermedio (.transicion-tema). */
+  .transicion-fondo {
+    transition: opacity var(--dur-theme) cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .transicion-tema {
+    transition: background-color var(--dur-theme) cubic-bezier(0.4, 0, 0.2, 1),
+                color var(--dur-theme) cubic-bezier(0.4, 0, 0.2, 1),
+                border-color var(--dur-theme) cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Transición de entrada (§C7.5): el velo, la luz y su entrada y salida.
+
+     Es una sola pieza que aparece y se va. No hay estados intermedios porque no
+     hay pasos: el día que a esto se le añada un segundo fotograma con algo que
+     tocar, habrá vuelto el wizard del Anexo E. */
+  .velo-transicion  { background-color: var(--transicion-velo); }
+  .luz-transicion   { background-image: var(--transicion-luz); }
+
+  .transicion-entrada {
+    animation: transicion-entrada 5000ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  /* Va sobre el `<video>`, no sobre el velo: el velo ya es opaco por
+     `.velo-transicion` y no debe dejar ver nada mientras esto entra. */
+  .transicion-entrada-video {
+    animation: transicion-entrada-video 480ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  /* Los dos tiempos de la salida. `forwards` en los dos: lo que se va no
+     vuelve, y sin él el fotograma reaparecería entero justo debajo del velo que
+     se está yendo. */
+  .transicion-salida-logo {
+    animation: transicion-salida-logo 840ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .transicion-salida-velo {
+    animation: transicion-salida-velo 560ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .bienvenida-simbolo {
+    animation: bienvenida-simbolo 720ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  }
+
+  .bienvenida-luz {
+    animation: bienvenida-luz 900ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    background-image: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--strivo-600) 22%, transparent) 0%,
+      transparent 70%
+    );
+  }
+
+  /* Círculo del ejercicio de respiración (§6.3.9).
+
+     El halo crece y decrece con el círculo sin ser un elemento aparte: la
+     escala se aplica al elemento y la sombra escala con él. La escala la
+     escribe `Respiracion.jsx` fotograma a fotograma con el mismo reloj que
+     gobierna el tono, así que aquí no hay ni transición ni animación que
+     pudieran desfasarse con el audio. */
+  .circulo-respiracion {
+    background-color: var(--color-breath);
+    box-shadow: 0 0 40px 12px var(--color-breath-halo);
+  }
+
   /* Safe area para barra de navegación inferior */
   .pb-safe { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
   .pt-safe { padding-top: max(16px, env(safe-area-inset-top)); }
 
-  /* Fuente display para títulos emocionales */
-  .font-display { font-family: 'Fraunces', serif; }
+  /* Exactamente la pantalla, ni un píxel más (26 ago 2026).
+
+     `100vh` en un teléfono es la ventana **sin** la barra del navegador, así que
+     una pantalla que dice medir eso mide de más y empuja sus últimos elementos
+     por debajo del borde: en el onboarding eran "Atrás" y "Continuar", que hay
+     que ir a buscar con el dedo. `100dvh` es la ventana que de verdad se ve, y
+     se encoge y crece con la barra.
+
+     Las dos declaraciones y en este orden: la segunda la aplica quien la
+     entiende y la ignora quien no, que es el respaldo sin `@supports`. */
+  .alto-pantalla {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  /* El campo de hora de P5 (26 ago 2026).
+
+     Un `input[type="time"]` no es una caja de texto: el navegador le da un ancho
+     propio, calculado con su tipografía y sus separadores, y en un teléfono ese
+     ancho es mayor que el hueco que tiene. Como es un elemento flexible, su
+     `min-width: auto` le impide encoger, así que empujaba a su contenedor hacia
+     fuera y el bloque entero se iba a la derecha, con desplazamiento lateral de
+     regalo.
+
+     `appearance: none` le quita el atavío del sistema, `min-width: 0` le
+     devuelve el permiso de encoger, y el valor se alinea a la izquierda como el
+     de cualquier otro campo: en iOS se pinta dentro de su propia caja, que por
+     defecto lo lleva al otro lado. */
+  .campo-hora {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .campo-hora::-webkit-date-and-time-value {
+    text-align: left;
+    margin: 0;
+  }
+
+  /* Tratamiento display para títulos emocionales.
+     Ya no cambia de familia —hay una sola, Inter— sino de **peso y tracking**,
+     que es como el manual §5.2 diferencia las marcas. La clase se conserva con
+     su nombre para no tocar los veinte componentes que la usan: esta spec
+     aplica marca, no rediseña componentes (SPEC_12 §10). */
+  .font-display {
+    font-weight: var(--peso-display, 600);
+    letter-spacing: -0.011em;
+  }
+
+  /* Superficies de marca del espacio activo (manual §4). Ningún componente
+     escribe un hex: pide la superficie por su papel y el espacio decide cuál. */
+  .bg-espacio            { background-color: var(--espacio-base); }
+  .bg-espacio-cabecera   { background-color: var(--espacio-cabecera); }
+  .border-espacio        { border-color: var(--espacio-borde); }
+  .border-espacio-acento { border-color: var(--espacio-acento); }
+  .text-espacio-acento   { color: var(--espacio-acento); }
+  .bg-espacio-acento     { background-color: var(--espacio-acento); }
 
   /* Scroll suave sin overscroll bounce (para pantallas modales) */
   .scroll-smooth-no-bounce {
@@ -90,4 +806,102 @@
   .gradient-transition {
     transition: background 900ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
+
+  /* Las cuatro composiciones de la presentación. Un `stroke` y un `fill` no se
+     pueden pedir con las utilidades de texto y fondo, así que tienen las suyas
+     y por el mismo motivo: el componente nombra el papel, el tema pone el tono. */
+  .trazo-presentacion     { stroke: var(--presentacion-trazo); }
+  .trazo-presentacion-profundo { stroke: var(--presentacion-profundo); }
+  .trazo-presentacion-calido   { stroke: var(--presentacion-calido); }
+  .relleno-presentacion   { fill: var(--presentacion-trazo); }
+  .relleno-presentacion-profundo { fill: var(--presentacion-profundo); }
+  .relleno-presentacion-calido   { fill: var(--presentacion-calido); }
+
+  /* El aliento del visual de Respiración: doce segundos por ciclo, que es más
+     lento que cualquier patrón real de la sección y lo bastante para que se
+     note sin pedir que se mire. No hay nada que leer dentro de la forma y no
+     hay nada que esperar a que termine: la tarjeta se puede pasar en cualquier
+     momento del ciclo.
+
+     `transform-box: fill-box` es lo que hace que el centro de la escala sea el
+     centro de la propia forma y no el origen del lienzo, donde el dibujo se
+     iría de viaje en vez de respirar.
+
+     Con "reducir movimiento" la regla global de más arriba la deja en un
+     fotograma; `animation-play-state` la detiene además en un punto medio, que
+     es la forma en reposo y no un extremo del recorrido (RN-VIS-05). */
+  .aliento-presentacion {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: aliento-presentacion 12000ms cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  }
+
+  /* La salida de la presentación: dos segundos de desvanecido y nada más.
+
+     **Solo opacidad.** Ni escala, ni desplazamiento, ni un tono que entre por
+     encima: lo de detrás ya está montado —la app entera, con su degradado del
+     momento— así que lo único que hace falta es que esto se vaya. Un velo de
+     color en medio metería un cambio de color donde no lo hay, y una escala
+     convertiría la salida en un gesto.
+
+     **La curva es la de los velos de la casa, no la de sus entradas** (9 sep
+     2026). Llevaba la de `bienvenida-*` —`ease-smooth`, que arranca rápido y se
+     posa despacio—, que es la buena para algo que entra y la mala para algo que
+     se disuelve: la opacidad caía casi entera en el primer tercio, así que la
+     app quedaba descubierta enseguida y el segundo largo que faltaba no tenía
+     ya nada que enseñar. Eso es lo que hacía que la puerta se sintiera un corte
+     con una espera detrás.
+
+     Ahora lleva `ease-in-out`, que es la del umbral de entrada y la de su
+     despedida (`transicion-entrada`, `transicion-salida-velo`): sale despacio,
+     se disuelve por el medio y se posa. Es el único sitio del producto donde
+     dos pantallas se cruzan, y ahora las dos se cruzan como se cruza el umbral.
+
+     `forwards` porque lo que se va no vuelve: sin él, el último fotograma
+     reaparecería entero justo antes de desmontarse. La duración vive en
+     `Presentacion.jsx` (`SALIDA`) y una prueba compara las dos.
+
+     Con "reducir movimiento" la regla global de más arriba la deja en un
+     fotograma, y el componente además no espera: entrar es inmediato
+     (RN-VIS-05). */
+  .salida-presentacion {
+    animation: salida-presentacion 2000ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  /* La despedida de la noche se va sola (12 sep 2026): "Buenas noches." se lee
+     cinco segundos y después se desvanece en medio segundo sobre Hoy, que ya
+     está montada debajo con la noche escrita. Es el mismo movimiento que la
+     salida de la presentación —solo opacidad, la curva de los velos, `forwards`
+     para que el último fotograma no reaparezca antes de desmontarse— y más
+     corto, porque aquí no se cruza una puerta: se apaga una luz. La duración
+     vive en `CierreDeLaNoche.jsx` (`SALIDA`) y una prueba compara las dos.
+
+     Desde el 12 de octubre de 2026 la usa también el buen deseo de la mañana
+     (`AperturaDelDia.jsx`), con las mismas dos cifras: es el mismo gesto con
+     la otra luz. Otra prueba compara las tres.
+
+     Con "reducir movimiento" el componente no la pone: a los cinco segundos se
+     vuelve, sin desvanecido (RN-VIS-05). */
+  .salida-cierre {
+    animation: salida-cierre 500ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .aliento-presentacion { animation: none; }
+  }
+}
+
+@keyframes aliento-presentacion {
+  0%, 100% { transform: scale(0.92); opacity: 0.72; }
+  50%      { transform: scale(1.06); opacity: 1; }
+}
+
+@keyframes salida-presentacion {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes salida-cierre {
+  from { opacity: 1; }
+  to   { opacity: 0; }
 }
