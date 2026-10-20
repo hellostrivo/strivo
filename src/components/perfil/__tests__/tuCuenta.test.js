@@ -16,6 +16,10 @@ import Confirmacion from '@components/shared/Confirmacion'
 
 const BLOQUE = 'src/components/perfil/TuCuenta.jsx'
 const DIALOGO = 'src/components/shared/Confirmacion.jsx'
+// Los dos formularios salieron del bloque a `components/shared/` (SPEC_30,
+// D30-8). Lo que se comprueba de ellos es lo mismo; cambia dónde se lee.
+const FORMULARIO = 'src/components/shared/FormularioEntrar.jsx'
+const CUENTA_LIB = 'src/lib/cuenta.js'
 
 function codigoDe(ruta) {
   return readFileSync(ruta, 'utf8')
@@ -25,6 +29,8 @@ function codigoDe(ruta) {
 
 const bloque = codigoDe(BLOQUE)
 const dialogo = codigoDe(DIALOGO)
+const formulario = codigoDe(FORMULARIO)
+const cuentaLib = codigoDe(CUENTA_LIB)
 
 describe('el copy de Tu cuenta es el de la SPEC §4, literal', () => {
   it('copy.cuenta, clave por clave', () => {
@@ -81,7 +87,8 @@ describe('el copy de Tu cuenta es el de la SPEC §4, literal', () => {
     expect(copy.diario.onboarding.p7.create).toBe('Crear cuenta')
     expect(bloque).toMatch(/copy\.diario\.onboarding\.p7/)
     expect(bloque).toMatch(/P7\.create/)
-    expect(bloque).toMatch(/P7\[proveedor\]/)
+    expect(bloque).toMatch(/proveedores: P7/)
+    expect(formulario).toMatch(/botones\.proveedores\[proveedor\]/)
   })
 
   it('el bloque tiene su título donde lo tienen todos, y es el mismo objeto', () => {
@@ -103,34 +110,40 @@ describe('el bloque Tu cuenta', () => {
   })
 
   it('las vistas son vistas: sin rutas nuevas', () => {
-    expect(bloque).not.toMatch(/react-router|navigate|<Route/i)
+    ;[bloque, formulario].forEach((codigo) =>
+      expect(codigo).not.toMatch(/react-router|navigate|<Route/i),
+    )
     expect(bloque).toMatch(/entrar: 'entrar'/)
     expect(bloque).toMatch(/crear: 'crear'/)
-    expect(bloque).toMatch(/recuperar: 'recuperar'/)
+    expect(formulario).toMatch(/recuperar: 'recuperar'/)
   })
 
   it('autocomplete según la SPEC §5', () => {
-    expect(bloque).toMatch(/autoComplete="email"/)
-    expect(bloque).toMatch(/creando \? 'new-password' : 'current-password'/)
+    expect(formulario).toMatch(/autoComplete="email"/)
+    expect(formulario).toMatch(/creando \? 'new-password' : 'current-password'/)
   })
 
   it('los errores se anuncian con aria-describedby y llevan el foco al primer campo', () => {
-    expect(bloque).toMatch(/aria-describedby=\{descrito\}/)
-    expect(bloque).toMatch(/if \(error\) campoCorreo\.current\?\.focus\(\)/)
+    expect(formulario).toMatch(/aria-describedby=\{descrito\}/)
+    expect(formulario).toMatch(/if \(error\) campoCorreo\.current\?\.focus\(\)/)
   })
 
   it('nada bloquea: ni disabled, ni required, ni aria-invalid, y el navegador no valida', () => {
-    expect(bloque).not.toMatch(/\b(disabled|required|aria-invalid)\b/)
-    expect(bloque).toMatch(/noValidate/)
+    ;[bloque, formulario].forEach((codigo) =>
+      expect(codigo).not.toMatch(/\b(disabled|required|aria-invalid)\b/),
+    )
+    expect(formulario).toMatch(/noValidate/)
   })
 
   it('criterio 12: los proveedores salen de proveedoresDisponibles y Apple no aparece', () => {
-    expect(bloque).toMatch(/proveedoresDisponibles\(\)\.map/)
-    expect(bloque).not.toMatch(/apple/i)
+    expect(bloque).toMatch(/proveedores=\{proveedoresDisponibles\(\)\}/)
+    expect(formulario).toMatch(/proveedores\.map/)
+    ;[bloque, formulario].forEach((codigo) => expect(codigo).not.toMatch(/apple/i))
   })
 
   it('cerrar la ventana de Google no es un error que haya que decir', () => {
-    expect(bloque).toMatch(/if \(motivo === MOTIVOS\.rechazado\) return null/)
+    expect(cuentaLib).toMatch(/if \(motivo === MOTIVOS\.rechazado\) return null/)
+    expect(bloque).toMatch(/errorDe=\{claveDeError\}/)
   })
 
   it('con cosas sin subir, la confirmación solo ofrece quedarse', () => {
@@ -141,7 +154,7 @@ describe('el bloque Tu cuenta', () => {
   })
 
   it('ningún texto vive en el componente (RN-VOZ-01) ni hay tonalidades literales', () => {
-    ;[bloque, dialogo].forEach((codigo) => {
+    ;[bloque, dialogo, formulario].forEach((codigo) => {
       expect(codigo.match(/>[^<>{}\n]{12,}</g) ?? []).toEqual([])
       expect(codigo).not.toMatch(/#[0-9a-f]{3,8}\b/i)
       expect(codigo).not.toMatch(/\b(?:bg|text|border)-(?:white|black|gray-\d+)\b/)
