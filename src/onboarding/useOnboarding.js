@@ -15,6 +15,12 @@
 // terminado. Y mientras la mudanza a esa cuenta esté pendiente, todo se lee y
 // se escribe bajo el uid de origen: dónde, lo decide `escritura.js`.
 //
+// **Desde SPEC_30 también se entra desde la bienvenida.** La vista de entrar
+// no es un paso: es `entrada` —desde dónde se abrió y con qué aviso—, y no se
+// guarda. Al entrar a una cuenta que ya existía, el recorrido que se monta tras
+// el velo retoma en el paso de la cuenta, o vuelve a la vista si lo suyo no
+// terminó de llegar.
+//
 // **P7 entra por la sesión, como Tu perfil** (`conectar`, que es
 // `pasarACuenta` de `ArranqueProvisional`): un solo camino a la cuenta, y un
 // solo escritor de `strivo.uid.local`. Este hook ya no cambia el uid de nadie.
@@ -36,7 +42,8 @@ import {
   respuestasDe,
   terminarRecorrido,
 } from './escritura.js'
-import { conectarConTraspaso, retomarTrasCuenta } from './traspaso.js'
+import { conectarConTraspaso, pasoTrasEntrar, retomarTrasCuenta } from './traspaso.js'
+import { mudanzaPendiente } from '@lib/entradaCuenta'
 
 /** §5.6 — El mismo retraso que el resto del producto: 800 ms sin teclear. */
 export const RETRASO_AUTOGUARDADO = 800
@@ -54,6 +61,9 @@ export function useOnboarding(uid, { conectar, sello = 0 } = {}) {
   const [paso, setPaso] = useState(null)
   const [cargando, setCargando] = useState(true)
   const [motivoCuenta, setMotivoCuenta] = useState(null)
+  // La vista de entrar (SPEC_30): `null`, o `{ desde, aviso }`. Es navegación
+  // y no se escribe en ningún sitio.
+  const [entrada, setEntrada] = useState(null)
 
   // El uid de la sesión y el árbol del que salieron las respuestas. Viven en
   // referencias porque las escrituras en fila se resuelven después del render
@@ -123,9 +133,17 @@ export function useOnboarding(uid, { conectar, sello = 0 } = {}) {
       // Lo que dejó dicho el recorrido de antes del velo, si lo hubo. Se toma
       // aquí, al aplicar, y no al empezar a leer: el doble montaje de
       // `StrictMode` lanza dos cargas y solo la vigente puede gastarlo.
-      const retomar = retomarTrasCuenta(uid, expediente?.currentStep)
+      const retomar = retomarTrasCuenta(
+        uid,
+        expediente?.currentStep,
+        Boolean(mudanzaPendiente(uid)),
+      )
       setPaso(retomar.paso)
       setMotivoCuenta(retomar.motivo)
+      // Solo se abre, nunca se cierra al cargar: con una cuenta nueva el uid
+      // cambia sin velo, este recorrido sigue montado y la vista tiene que
+      // seguir abierta para decir que la cuenta es nueva (C4).
+      if (retomar.entrada) setEntrada(retomar.entrada)
       setCargando(false)
     }
 
@@ -256,14 +274,20 @@ export function useOnboarding(uid, { conectar, sello = 0 } = {}) {
    * mudanza falló. Si al volver este recorrido sigue montado —una cuenta nueva,
    * o la misma cuenta de la sesión, que no pasan por el velo—, lo aplica él.
    *
+   * `desde` dice si se entra desde P7 o desde la bienvenida (SPEC_30): desde
+   * la bienvenida no se apunta el paso siguiente a P7, se retoma en el de la
+   * cuenta.
+   *
    * @returns {Promise<{ok: boolean, motivo?: string}>}
    */
   const conectarCuenta = useCallback(
-    async (cuenta) => {
+    async (cuenta, { desde } = {}) => {
       await guardarAhora()
       await cola.current
 
-      const r = await conectarConTraspaso(uidSesion.current, cuenta, conectar, () => vivo.current)
+      const r = await conectarConTraspaso(uidSesion.current, cuenta, conectar, () => vivo.current, {
+        desde,
+      })
       // La mudanza ya está hecha: lo siguiente que se escriba va a la cuenta
       // aunque el uid nuevo todavía no haya llegado por props.
       if (r.ok && cuenta.nueva) uidSesion.current = cuenta.uid
@@ -272,6 +296,28 @@ export function useOnboarding(uid, { conectar, sello = 0 } = {}) {
     },
     [conectar, guardarAhora],
   )
+
+  // ─── La vista de entrar (SPEC_30) ───────────────────────────────────────
+
+  const abrirEntrada = useCallback((desde) => setEntrada({ desde, aviso: null }), [])
+  const cerrarEntrada = useCallback(() => setEntrada(null), [])
+  const avisarEntrada = useCallback(
+    (aviso) => setEntrada((actual) => (actual ? { ...actual, aviso } : actual)),
+    [],
+  )
+
+  /**
+   * Lo de la cuenta terminó de llegar con la vista de entrar abierta (C7): se
+   * cierra y se sigue en el paso de la cuenta, nunca en la bienvenida. Solo se
+   * mueve el paso: la cuenta ya lo tiene guardado, y las respuestas las recarga
+   * el sello (E4).
+   */
+  const retomarCuenta = useCallback(async () => {
+    const { expediente } = await leerRecorrido(uidSesion.current)
+    if (!vivo.current) return
+    setEntrada(null)
+    setPaso(pasoTrasEntrar(expediente?.currentStep))
+  }, [])
 
   /**
    * Termina el recorrido. Lo que se escribe y dónde está en
@@ -294,6 +340,7 @@ export function useOnboarding(uid, { conectar, sello = 0 } = {}) {
     paso,
     cargando,
     motivoCuenta,
+    entrada,
     genero: generoDe(respuestas.genero),
     acciones: {
       responder,
@@ -303,6 +350,10 @@ export function useOnboarding(uid, { conectar, sello = 0 } = {}) {
       guardarReferencias,
       guardarRecordatorios,
       conectarCuenta,
+      abrirEntrada,
+      cerrarEntrada,
+      avisarEntrada,
+      retomarCuenta,
       terminar,
     },
   }

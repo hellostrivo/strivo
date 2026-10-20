@@ -219,3 +219,11 @@ entrar: {
 
 - Actualizar `CLAUDE.md`: el bloque de «Onboarding — cómo quedó» (P1 ofrece entrar) y una entrada nueva en §13 con lo que se decidió aquí, sus residuos (C4 y la recarga en la vista) y lo que no se ha visto en un teléfono.
 - Una adenda de validación con M1–M7 cuando la propietaria del producto los recorra.
+
+---
+
+## 10. Desvíos al implementar (20 oct 2026)
+
+- **El enlace vive en `copy.diario.onboarding.entrar.enlace`**, no en `p1.yaTengoCuenta`: lo leen P1 y P7, y una clave de P1 leída desde P7 invitaba a duplicarla. El texto es el de §6.
+- **`pasarACuenta` no devuelve `pendiente`** (§5.5). El recorrido que se monta tras el velo lo sabe preguntando `mudanzaPendiente(uid)` al cargar (`retomarTrasCuenta`), que no depende de en qué orden lleguen la vuelta de la sesión y la carga.
+- **La nota `sinCuenta` se muestra siempre en la vista desde P1**, no solo tras un error de credenciales (C5): Firebase no distingue un correo sin cuenta de una contraseña equivocada, y la nota no depende de eso.

@@ -54,6 +54,19 @@ export const MOTIVOS = Object.freeze({
 })
 
 /**
+ * Qué frase de `copy.cuenta.error` toca para cada motivo al entrar, crear o
+ * recuperar. `null` es no decir nada: cerrar la ventana de Google no es un
+ * error. Vive aquí y no en una pantalla porque la leen Tu perfil y el
+ * onboarding (SPEC_30), y `FormularioEntrar` la recibe por props.
+ */
+export function claveDeError(motivo) {
+  if (motivo === MOTIVOS.rechazado) return null
+  if (motivo === MOTIVOS.credenciales || motivo === MOTIVOS.correoEnUso) return 'credenciales'
+  if (motivo === MOTIVOS.sinConexion) return 'sinConexion'
+  return 'generico'
+}
+
+/**
  * Los proveedores que se ofrecen en web (DP-19.4). Apple sale de la lista hasta
  * SPEC_21.2: en web pide un Service ID y una cuenta de desarrollador que todavía
  * no existen, y un botón que no puede funcionar es peor que su ausencia. P7 y

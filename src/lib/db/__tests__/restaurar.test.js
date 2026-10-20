@@ -117,14 +117,16 @@ describe('criterio 1: nadie más lee de Firestore', () => {
       }
     }
     recorrer('src')
-    // `entradaCuenta.test.js` y `cuentaExistente.test.js` no leen de
-    // Firestore: montan el mismo doble que estas pruebas para que
-    // `entrarACuenta` restaure de verdad (SPEC_19.1 y 19.2).
+    // `entradaCuenta.test.js`, `cuentaExistente.test.js` y
+    // `entrarDesdeBienvenida.test.js` no leen de Firestore: montan el mismo
+    // doble que estas pruebas para que `entrarACuenta` restaure de verdad
+    // (SPEC_19.1, 19.2 y 30).
     expect(encontrados.sort()).toEqual([
       'src/lib/__tests__/entradaCuenta.test.js',
       'src/lib/db/__tests__/restaurar.test.js',
       'src/lib/db/restaurar.js',
       'src/onboarding/__tests__/cuentaExistente.test.js',
+      'src/onboarding/__tests__/entrarDesdeBienvenida.test.js',
     ])
   })
 })
