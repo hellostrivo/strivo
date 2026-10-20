@@ -42,7 +42,7 @@
 // mismo aspecto que las del recorrido y un enlace discreto para cambiar algo.
 // No hay etiqueta de "hecho": el contenido está delante.
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import AperturaDelDia from './manana/AperturaDelDia'
 import MomentoAnimo from './manana/MomentoAnimo'
 import MomentoGratitud from './manana/MomentoGratitud'
@@ -50,6 +50,7 @@ import MomentoIntencionAccion from './manana/MomentoIntencionAccion'
 import MomentoPausa from './manana/MomentoPausa'
 import ResumenManana from './manana/ResumenManana'
 import { IndicadorPasos, NavegacionPasos } from './Pasos'
+import { volverAlInicio } from '@lib/volverAlInicio'
 import { copy } from '@copy'
 import { LIMITES, desdeTextos, filasIniciales, textosDe } from '@/diario/filas'
 import {
@@ -97,6 +98,11 @@ export default function DiarioManana({ estado, acciones, soloLectura = false }) 
   // Una guarda y no `disabled`: nada bloquea, pero un segundo toque mientras
   // el primero está de camino no tiene que cerrar la mañana dos veces.
   const cerrando = useRef(false)
+  // El cierre se monta aparte de la vista: mientras se desvanece, debajo ya
+  // está la consulta, y eso es lo que hace que irse sea un paso y no un corte.
+  const [conCierre, setConCierre] = useState(false)
+  // Al volver del cierre la pantalla va arriba del todo, no a la tarjeta.
+  const alInicio = useRef(false)
   const vivo = useRef(true)
   const marco = useRef(null)
   const primerRender = useRef(true)
@@ -120,6 +126,8 @@ export default function DiarioManana({ estado, acciones, soloLectura = false }) 
     setVista(estaCerrada(morning) ? 'resumen' : 'recorrido')
     setPaso(0)
     cerrando.current = false
+    setConCierre(false)
+    alInicio.current = false
     // Solo al cambiar de día: releer en cada guardado pisaría lo que se escribe.
   }, [estado.fecha])
 
@@ -132,9 +140,18 @@ export default function DiarioManana({ estado, acciones, soloLectura = false }) 
 
   // Cambiar de momento lleva la tarjeta arriba del todo. Sin esto, con el
   // teclado abierto la pregunta nueva puede quedar fuera de la ventana.
-  useEffect(() => {
+  //
+  // Volver del cierre es otra cosa: es volver a Hoy, y Hoy se lee desde su
+  // principio. Se hace antes de pintar —por eso `useLayoutEffect`— y con el
+  // cierre todavía delante, así que nadie ve el salto.
+  useLayoutEffect(() => {
     if (primerRender.current) {
       primerRender.current = false
+      return
+    }
+    if (alInicio.current) {
+      alInicio.current = false
+      volverAlInicio(marco.current)
       return
     }
     marco.current?.scrollIntoView({ block: 'start', behavior: 'auto' })
@@ -239,6 +256,7 @@ export default function DiarioManana({ estado, acciones, soloLectura = false }) 
   const terminar = () => {
     if (cerrando.current) return
     cerrando.current = true
+    setConCierre(true)
     setVista('cierre')
     persistir()
   }
@@ -272,36 +290,44 @@ export default function DiarioManana({ estado, acciones, soloLectura = false }) 
     )
   }
 
-  if (vista === 'cierre') {
-    return (
-      <AperturaDelDia
-        lineas={lineasDeCierre(entradaActual(), estado.genero)}
-        deseo={deseo}
-        guardado={guardado}
-        onReintentar={persistir}
-        // Al irse el buen deseo se vuelve a la consulta, que es donde llevaba
-        // "Comenzar mi día" antes de que hubiera despedida. Desde ahí, "Cambiar
-        // algo" reabre el recorrido con todo lo escrito; volver a cerrar no
-        // duplica nada y devuelve la misma frase.
-        onTerminar={() => {
-          cerrando.current = false
-          setVista('resumen')
-        }}
-      />
-    )
-  }
+  const cierre = conCierre && (
+    <AperturaDelDia
+      lineas={lineasDeCierre(entradaActual(), estado.genero)}
+      deseo={deseo}
+      guardado={guardado}
+      onReintentar={persistir}
+      // Al irse el buen deseo se vuelve a la consulta, que es donde llevaba
+      // "Comenzar mi día" antes de que hubiera despedida. Desde ahí, "Cambiar
+      // algo" reabre el recorrido con todo lo escrito; volver a cerrar no
+      // duplica nada y devuelve la misma frase.
+      onVolver={() => {
+        cerrando.current = false
+        alInicio.current = true
+        setVista('resumen')
+      }}
+      onTerminar={() => setConCierre(false)}
+    />
+  )
 
-  if (vista === 'resumen') {
+  // El cierre y la consulta comparten árbol a propósito: si el cierre fuera
+  // la raíz en una vista y un hijo en la otra, React lo desmontaría al empezar
+  // a irse y la despedida volvería a su primera pantalla.
+  if (vista === 'cierre' || vista === 'resumen') {
     return (
-      <div ref={marco}>
-        <ResumenManana
-          bloques={resumenDeManana(morning, estado.genero)}
-          onEditar={() => {
-            setPaso(0)
-            setVista('recorrido')
-          }}
-        />
-      </div>
+      <>
+        {vista === 'resumen' && (
+          <div ref={marco}>
+            <ResumenManana
+              bloques={resumenDeManana(morning, estado.genero)}
+              onEditar={() => {
+                setPaso(0)
+                setVista('recorrido')
+              }}
+            />
+          </div>
+        )}
+        {cierre}
+      </>
     )
   }
 

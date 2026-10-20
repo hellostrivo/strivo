@@ -15,11 +15,16 @@
 // **Y desde el 12 de octubre de 2026 se despide** como lo hace la noche. Hasta
 // entonces "Comenzar mi día" devolvía a la consulta sin más; ahora deja delante
 // un buen deseo —"Que tengas un día sereno."— y debajo, en voz baja, "Puedes
-// volver y cambiar lo que quieras." Se lee cinco segundos, se desvanece en
-// medio segundo y vuelve a la consulta, que es donde llevaba el botón antes.
-// Tocarla salta la espera —un toque es alguien diciendo que ya— y con "reducir
-// movimiento" no hay desvanecido: a los cinco segundos, se vuelve. La frase la
-// decide `diario/mananaDeseo.js`; aquí solo se pinta.
+// volver y cambiar lo que quieras." Se lee cinco segundos, se desvanece y
+// vuelve a la consulta, que es donde llevaba el botón antes. Tocarla salta la
+// espera —un toque es alguien diciendo que ya— y con "reducir movimiento" no
+// hay desvanecido: a los cinco segundos, se vuelve. La frase la decide
+// `diario/mananaDeseo.js`; aquí solo se pinta.
+//
+// **Hoy ya está debajo cuando empieza a irse** (20 oct 2026): irse avisa
+// primero (`onVolver`), el padre monta la consulta y devuelve la pantalla
+// arriba mientras esto aún la tapa, y después se desvanece en 700 ms sobre
+// ella. Un toque salta la espera, no el desvanecido.
 //
 // **El buen deseo solo se dice con la mañana guardada.** La escritura la hace
 // `DiarioManana` mientras esta pantalla ya está delante y llega aquí como
@@ -45,13 +50,14 @@ const error = copy.diario.error.save
 /** Cuánto se lee el buen deseo antes de irse, en milisegundos. */
 export const DESPEDIDA_VISIBLE = 5000
 /** Cuánto tarda en desvanecerse. La misma cifra va en `.salida-cierre`. */
-export const SALIDA = 500
+export const SALIDA = 700
 
 export default function AperturaDelDia({
   lineas,
   deseo,
   guardado = 'listo',
   onReintentar,
+  onVolver,
   onTerminar,
 }) {
   // Va encima de todo, cromo incluido: en la app de iPhone, la hora se lee
@@ -66,6 +72,9 @@ export default function AperturaDelDia({
   // puede cambiar de identidad; el reloj no se reinicia por eso.
   const alTerminar = useRef(onTerminar)
   alTerminar.current = onTerminar
+  const alVolver = useRef(onVolver)
+  alVolver.current = onVolver
+  const yendose = useRef(false)
 
   const terminar = () => {
     if (terminado.current) return
@@ -73,16 +82,30 @@ export default function AperturaDelDia({
     alTerminar.current?.()
   }
 
+  // Irse empieza una sola vez, venga del reloj o de un toque. Lo primero es
+  // pedir que Hoy se prepare debajo —la consulta montada y arriba del todo—
+  // mientras esta pantalla todavía la tapa entera; después se desvanece sobre
+  // ella. Con "reducir movimiento" no hay desvanecido: se vuelve en el acto.
+  const irse = () => {
+    if (yendose.current) return
+    yendose.current = true
+    alVolver.current?.()
+    if (prefiereMenosMovimiento()) return terminar()
+    setSaliendo(true)
+  }
+
   useEffect(() => {
     if (!despidiendo || guardado !== 'listo') return undefined
-    const sinMovimiento = prefiereMenosMovimiento()
-    const relojes = [
-      setTimeout(() => (sinMovimiento ? terminar() : setSaliendo(true)), DESPEDIDA_VISIBLE),
-    ]
-    if (!sinMovimiento) relojes.push(setTimeout(terminar, DESPEDIDA_VISIBLE + SALIDA))
+    const reloj = setTimeout(irse, DESPEDIDA_VISIBLE)
     // Al desmontarse no queda ningún reloj que dispare sobre lo que ya no está.
-    return () => relojes.forEach(clearTimeout)
+    return () => clearTimeout(reloj)
   }, [despidiendo, guardado])
+
+  useEffect(() => {
+    if (!saliendo) return undefined
+    const reloj = setTimeout(terminar, SALIDA)
+    return () => clearTimeout(reloj)
+  }, [saliendo])
 
   return (
     <div
@@ -98,7 +121,7 @@ export default function AperturaDelDia({
       {despidiendo && guardado === 'listo' && (
         <button
           type="button"
-          onClick={terminar}
+          onClick={irse}
           className="flex max-w-md flex-col items-center gap-3 rounded-md p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30"
         >
           <p

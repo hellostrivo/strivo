@@ -693,7 +693,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**87 archivos de prueba · 2.286 casos · los seis comandos y `validar:frases` en verde.**
+**88 archivos de prueba · 2.343 casos · los seis comandos y `validar:frases` en verde.**
 
 ### App iOS (SPEC_21.1, 12 oct 2026)
 
@@ -1454,6 +1454,35 @@ de la noche caben en cuatrocientas cada uno. Eran 240, 180, 400 y 400 **caracter
 
 **Lo que sigue sin verse en un teléfono:** si un paso de la mañana de varios párrafos sigue
 cabiendo en un recorrido de uno o dos minutos.
+
+### La vuelta a Hoy después de los dos cierres (20 oct 2026)
+
+Lo pidió el propietario del producto: el paso del buen deseo o de «Buenas noches.» a Hoy se sentía
+un corte, y Hoy aparecía a media página, donde la había dejado el recorrido. **Las dos cosas tenían
+la misma causa**: la consulta solo se montaba cuando el cierre se desmontaba, así que el
+desvanecido destapaba un hueco, la consulta entraba de golpe al final y el `scrollIntoView` del
+cambio de vista la llevaba a la tarjeta y no al principio.
+
+- **Hoy ya está debajo cuando el cierre empieza a irse.** El cierre avisa primero (`onVolver`) y
+  después se desvanece; el contenedor monta la consulta y la pantalla vuelve arriba mientras el
+  velo aún la tapa entera. `conCierre` es estado aparte de `vista`, y **el cierre y la consulta
+  comparten árbol**: si el cierre fuera la raíz en una vista y un hijo en la otra, React lo
+  remontaría a media salida.
+- **Arriba del todo, antes de pintar** (`useLayoutEffect`, con `alInicio`). Lo hace
+  `lib/volverAlInicio.js`, que pone a cero los antepasados desplazados y el documento: hoy Hoy se
+  desplaza con el documento, y si mañana vive en un contenedor propio sigue funcionando.
+- **700 ms, solo opacidad, la curva de los velos** (`.salida-cierre`, `SALIDA` en los dos
+  componentes, y una prueba que compara los tres). **Hoy no lleva un fundido propio, a
+  propósito**: bajo un velo opaco que se va, «esto se va» y «Hoy aparece» son el mismo fotograma, y
+  dos capas translúcidas a la vez dejarían ver el papel del `body` entre las dos (la misma razón que
+  en «Entrar a Strivo», 9 sep).
+- **Un toque salta la espera, ya no el desvanecido.** Cortaba en seco, que era justo lo que se
+  pedía quitar. Con «reducir movimiento» sigue sin haber desvanecido: se vuelve en el acto.
+
+**Sin cambios en el copy, el modelo de datos ni el guardado.** Verificado en Chromium a 375 px: en
+los dos rituales, la consulta montada y el scroll en 0 en el fotograma en que empieza el
+desvanecido, y el velo retirado a los 702 ms. **Lo que sigue sin verse en un teléfono:** si 700 ms
+se sienten un paso o se notan.
 
 ### Lo que subió a la nube vuelve a bajar (SPEC_17A, 17 sep 2026)
 

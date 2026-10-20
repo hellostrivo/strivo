@@ -6,7 +6,7 @@
 // gratitud y del reconocimiento cabe en cuatrocientas palabras y se escribe
 // en una tarjeta que crece con el texto; lo guardado vuelve numerado, entero y
 // con sus párrafos en la consulta y en el Historial; y "Buenas noches" se va
-// sola, cinco segundos y medio de desvanecido, sin dejar que "Listo" espere a
+// sola, cinco segundos y un desvanecido, sin dejar que "Listo" espere a
 // la base de datos ni que un segundo toque cierre la noche dos veces.
 //
 // Como en el resto del diario, lo que más se comprueba es lo que **no** hay:
@@ -403,14 +403,15 @@ describe('"Listo" responde en el acto y guarda detrás', () => {
   })
 })
 
-describe('la despedida se va sola: cinco segundos y medio de desvanecido', () => {
+describe('la despedida se va sola: cinco segundos y 700 ms de desvanecido', () => {
   const regla = CSS.match(/\.salida-cierre \{[\s\S]*?\n {2}\}/)[0]
 
   it('dura lo que pide el encargo', () => {
     expect(DESPEDIDA_VISIBLE).toBe(5000)
-    expect(SALIDA).toBe(500)
-    expect(SALIDA).toBeGreaterThanOrEqual(400)
-    expect(SALIDA).toBeLessThanOrEqual(600)
+    expect(SALIDA).toBe(700)
+    // El margen que admite el encargo del 20 oct 2026.
+    expect(SALIDA).toBeGreaterThanOrEqual(600)
+    expect(SALIDA).toBeLessThanOrEqual(900)
   })
 
   it('el desvanecido dura lo mismo en el componente y en la hoja', () => {
@@ -430,16 +431,17 @@ describe('la despedida se va sola: cinco segundos y medio de desvanecido', () =>
 
   it('el reloj arranca con la despedida y vuelve a Hoy al acabar el desvanecido', () => {
     expect(CIERRE).toMatch(/if \(!despidiendo \|\| guardado !== 'listo'\) return undefined/)
-    expect(CIERRE).toMatch(/setSaliendo\(true\)\), DESPEDIDA_VISIBLE\)/)
-    expect(CIERRE).toMatch(/setTimeout\(terminar, DESPEDIDA_VISIBLE \+ SALIDA\)/)
+    expect(CIERRE).toMatch(/setTimeout\(irse, DESPEDIDA_VISIBLE\)/)
+    expect(CIERRE).toMatch(/setTimeout\(terminar, SALIDA\)/)
     expect(CIERRE).toMatch(/saliendo && 'salida-cierre'/)
     expect(CONTENEDOR).toMatch(
-      /onTerminar=\{\(\) => \{\s*cerrando\.current = false\s*setVista\('resumen'\)/,
+      /onVolver=\{\(\) => \{\s*cerrando\.current = false\s*alInicio\.current = true\s*setVista\('resumen'\)/,
     )
+    expect(CONTENEDOR).toMatch(/onTerminar=\{\(\) => setConCierre\(false\)\}/)
   })
 
   it('los relojes se limpian al desmontarse y terminar es una sola vez', () => {
-    expect(CIERRE).toMatch(/return \(\) => relojes\.forEach\(clearTimeout\)/)
+    expect(CIERRE).toMatch(/return \(\) => clearTimeout\(reloj\)/)
     expect(CIERRE).toMatch(/if \(terminado\.current\) return/)
     // La forma de volver se lee por referencia: que el padre vuelva a pintar
     // no reinicia la cuenta.
@@ -447,16 +449,16 @@ describe('la despedida se va sola: cinco segundos y medio de desvanecido', () =>
     expect(CIERRE).toMatch(/\}, \[despidiendo, guardado\]\)/)
   })
 
-  it('tocar la despedida sigue saltando la espera', () => {
-    expect(CIERRE).toMatch(/onClick=\{terminar\}/)
+  it('tocar la despedida salta la espera, no el desvanecido', () => {
+    expect(CIERRE).toMatch(/onClick=\{irse\}/)
+    expect(CIERRE).toMatch(/if \(yendose\.current\) return/)
   })
 
   it('con "reducir movimiento" no hay desvanecido: se vuelve a los cinco segundos', () => {
     expect(CIERRE).toMatch(
       /import \{ prefiereMenosMovimiento \} from '@components\/shared\/TransicionLuz'/,
     )
-    expect(CIERRE).toMatch(/sinMovimiento \? terminar\(\) : setSaliendo\(true\)/)
-    expect(CIERRE).toMatch(/if \(!sinMovimiento\) relojes\.push/)
+    expect(CIERRE).toMatch(/if \(prefiereMenosMovimiento\(\)\) return terminar\(\)/)
   })
 
   it('la despedida dice lo de siempre, y nada más', () => {
