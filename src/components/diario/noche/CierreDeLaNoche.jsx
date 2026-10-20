@@ -27,10 +27,21 @@
 // **Y la despedida se va sola** (12 sep 2026). Hasta ahora se quedaba en
 // pantalla hasta que alguien la tocaba, y era un botón sin aspecto de botón:
 // quien no lo adivinaba se quedaba mirando "Buenas noches." sin saber que la
-// app estaba esperándole a él. Ahora se lee cinco segundos, se desvanece en
-// medio segundo y devuelve a Hoy con la noche ya escrita debajo. Tocarla sigue
-// saltando la espera —un toque es alguien diciendo que ya— y con "reducir
-// movimiento" no hay desvanecido: a los cinco segundos, se vuelve.
+// app estaba esperándole a él. Ahora se lee cinco segundos, se desvanece y
+// devuelve a Hoy con la noche ya escrita debajo. Tocarla sigue saltando la
+// espera —un toque es alguien diciendo que ya— y con "reducir movimiento" no
+// hay desvanecido: a los cinco segundos, se vuelve.
+//
+// **Y Hoy ya está debajo cuando empieza a irse** (20 oct 2026). Hasta entonces
+// el desvanecido destapaba un hueco: la consulta solo se montaba al desmontarse
+// esto, así que aparecía de golpe al final y además a media página, donde la
+// había dejado el recorrido. Ahora irse avisa primero (`onVolver`): el padre
+// monta la consulta y devuelve la pantalla arriba mientras esto aún la tapa
+// entera, y después se desvanece en 700 ms sobre ella. Un toque ya no corta:
+// salta la espera, no el desvanecido. Hoy no lleva un fundido propio a
+// propósito: debajo de un velo opaco que se va, "esto se va" y "Hoy aparece"
+// son el mismo fotograma, y dos capas translúcidas a la vez dejarían ver el
+// papel del `body` entre las dos.
 //
 // **La despedida solo se dice cuando la noche está guardada.** La escritura la
 // hace `DiarioNoche` mientras esta pantalla ya está delante —el toque en
@@ -56,13 +67,14 @@ const error = copy.diario.error.save
 /** Cuánto se lee "Buenas noches." antes de irse, en milisegundos. */
 export const DESPEDIDA_VISIBLE = 5000
 /** Cuánto tarda en desvanecerse. La misma cifra va en `.salida-cierre`. */
-export const SALIDA = 500
+export const SALIDA = 700
 
 export default function CierreDeLaNoche({
   reconocido,
   conDescarga,
   guardado = 'listo',
   onReintentar,
+  onVolver,
   onTerminar,
 }) {
   // Va encima de todo, cromo incluido: en la app de iPhone, la hora se lee
@@ -78,6 +90,9 @@ export default function CierreDeLaNoche({
   // reiniciarse por eso: lee la última por la referencia y no por el cierre.
   const alTerminar = useRef(onTerminar)
   alTerminar.current = onTerminar
+  const alVolver = useRef(onVolver)
+  alVolver.current = onVolver
+  const yendose = useRef(false)
 
   const terminar = () => {
     if (terminado.current) return
@@ -85,17 +100,30 @@ export default function CierreDeLaNoche({
     alTerminar.current?.()
   }
 
+  // Irse empieza una sola vez, venga del reloj o de un toque. Lo primero es
+  // pedir que Hoy se prepare debajo —la consulta montada y arriba del todo—
+  // mientras esta pantalla todavía la tapa entera; después se desvanece sobre
+  // ella. Con "reducir movimiento" no hay desvanecido: se vuelve en el acto.
+  const irse = () => {
+    if (yendose.current) return
+    yendose.current = true
+    alVolver.current?.()
+    if (prefiereMenosMovimiento()) return terminar()
+    setSaliendo(true)
+  }
+
   useEffect(() => {
     if (!despidiendo || guardado !== 'listo') return undefined
-    const sinMovimiento = prefiereMenosMovimiento()
-    const relojes = [
-      setTimeout(() => (sinMovimiento ? terminar() : setSaliendo(true)), DESPEDIDA_VISIBLE),
-    ]
-    if (!sinMovimiento) relojes.push(setTimeout(terminar, DESPEDIDA_VISIBLE + SALIDA))
-    // Al desmontarse —porque se volvió, o porque se cambió de pantalla— no
-    // queda ningún reloj que dispare sobre lo que ya no está.
-    return () => relojes.forEach(clearTimeout)
+    const reloj = setTimeout(irse, DESPEDIDA_VISIBLE)
+    // Al desmontarse no queda ningún reloj que dispare sobre lo que ya no está.
+    return () => clearTimeout(reloj)
   }, [despidiendo, guardado])
+
+  useEffect(() => {
+    if (!saliendo) return undefined
+    const reloj = setTimeout(terminar, SALIDA)
+    return () => clearTimeout(reloj)
+  }, [saliendo])
 
   return (
     <div
@@ -109,7 +137,7 @@ export default function CierreDeLaNoche({
       {despidiendo && guardado === 'listo' && (
         <button
           type="button"
-          onClick={terminar}
+          onClick={irse}
           className="flex flex-col items-center gap-3 rounded-md p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30"
         >
           <p className="font-display text-lg text-on-surface">{textos.despedida}</p>
