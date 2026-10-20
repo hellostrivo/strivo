@@ -32,7 +32,8 @@
 // lo aplica `escribirEn` con el límite que declara la lista. No se anuncia por
 // adelantado: hasta las trescientas no se dice nada, y desde ahí un aviso al
 // pie dice cuántas quedan —«Te quedan 44 palabras»— y, al llegar, que se llegó.
-// Cuándo toca avisar lo decide `palabrasRestantes`, en `filas.js`. Al llegar,
+// Cuándo toca avisar lo decide `palabrasRestantes`, en `filas.js`, y qué frase
+// se dice, `avisoDePalabras`, que comparte con `CampoRespuesta`. Al llegar,
 // las palabras que ya están se cambian o se borran igual; la que no cabe no
 // entra.
 //
@@ -57,16 +58,16 @@
 import { useId, useState } from 'react'
 import { clsx } from 'clsx'
 import { CampoParrafo } from '@components/shared/Campo'
-import { copy, interpolate } from '@copy'
+import { copy } from '@copy'
 import {
   alSalirDeFila,
   escribirEn,
-  palabrasRestantes,
   pideConfirmacion,
   puedeAnadir,
   quitarFila,
   topeAlcanzado,
 } from '@/diario/filas'
+import { avisoDePalabras } from './avisoDePalabras'
 
 const textos = copy.diario.filas
 
@@ -78,15 +79,6 @@ const ENLACE = [
   'text-on-surface-soft hover:text-on-surface',
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30',
 ]
-
-/** Lo que se dice al pie cuando queda poco sitio, o `null` cuando no toca. */
-function avisoDe(texto, limites) {
-  const restantes = palabrasRestantes(texto, limites)
-  if (restantes === null) return null
-  if (restantes === 0) return interpolate(textos.limiteTemplate, { max: limites.palabras })
-  if (restantes === 1) return textos.quedaUna
-  return interpolate(textos.quedanTemplate, { n: restantes })
-}
 
 export default function FilasDinamicas({
   filas,
@@ -128,7 +120,7 @@ export default function FilasDinamicas({
     <div className="flex flex-col gap-3">
       {filas.map((fila, indice) => {
         const conTexto = fila.texto.trim() !== ''
-        const aviso = avisoDe(fila.texto, limites)
+        const aviso = avisoDePalabras(fila.texto, limites)
 
         return (
           <div key={indice} className="flex flex-col gap-2">

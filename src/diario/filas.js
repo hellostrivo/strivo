@@ -58,6 +58,15 @@ export const MAX_PALABRAS_POR_RESPUESTA = 400
  */
 export const PALABRAS_DE_AVISO = 100
 
+/**
+ * El tope de las preguntas abiertas de un solo campo, que no son lista: el paso
+ * de la mañana, su pausa, la reflexión y la descarga de la noche. **Desde el 20
+ * de octubre de 2026 caben en las mismas cuatrocientas palabras que cada
+ * respuesta de las listas**, y no en 180, 240 o 400 caracteres: una respuesta
+ * abierta del día mide lo mismo la escriba quien la escriba y donde la escriba.
+ */
+export const LIMITE_DE_RESPUESTA = Object.freeze({ palabras: MAX_PALABRAS_POR_RESPUESTA })
+
 export const LIMITES = Object.freeze({
   gratitudManana: Object.freeze({
     min: 1,
@@ -122,7 +131,7 @@ export function escribirEn(filas, indice, texto, { max, crecerSola = true, palab
   const siguientes = [...actuales]
   siguientes[indice] = {
     ...siguientes[indice],
-    texto: cabeEn(siguientes[indice].texto, escrito, palabras),
+    texto: escribirConTope(siguientes[indice].texto, escrito, palabras),
   }
 
   const esUltima = indice === siguientes.length - 1
@@ -143,7 +152,14 @@ export function palabrasRestantes(texto, { palabras = null }) {
   return restantes > PALABRAS_DE_AVISO ? null : restantes
 }
 
-function cabeEn(previo, escrito, palabras) {
+/**
+ * Lo que queda en una respuesta al escribir `escrito` donde había `previo`, con
+ * un tope de `palabras`. Es la regla de `escribirEn` para una sola respuesta, y
+ * por eso la usan también los campos que no son lista —el paso de la mañana, su
+ * pausa, la reflexión y la descarga de la noche— desde el 20 de octubre de
+ * 2026: un tope escrito en dos sitios se separa en cuanto alguien cambia uno.
+ */
+export function escribirConTope(previo, escrito, palabras) {
   if (palabras === null || contarPalabras(escrito) <= palabras) return escrito
   if (contarPalabras(previo) >= palabras) return String(previo ?? '')
   return recortarAPalabras(escrito, palabras)

@@ -8,11 +8,13 @@
 // escriba aquí **no es una afirmación positiva** y no se llama así en ningún
 // sitio: cabe el ánimo, el permiso, la perspectiva o el trato amable, sin
 // ninguna obligación de sonar optimista.
+//
+// Cabe en cuatrocientas palabras (`CampoRespuesta`), como toda respuesta
+// abierta del día.
 
 import { clsx } from 'clsx'
-import { CampoTexto } from '@components/shared/Campo'
 import { copy } from '@copy'
-import { MAX_REFLEXION } from '@/diario/manana'
+import CampoRespuesta from '../CampoRespuesta'
 
 const textos = copy.diario.manana.reflexion
 
@@ -30,11 +32,10 @@ export default function MomentoPausa({ pregunta, valor, onCambiar, onVolcar, onO
           <p className="text-sm text-on-surface-soft">{pregunta.lead}</p>
         </div>
 
-        <CampoTexto
+        <CampoRespuesta
           filas={3}
           value={valor}
-          maxLength={MAX_REFLEXION}
-          onChange={(evento) => onCambiar(evento.target.value)}
+          onCambiar={onCambiar}
           onBlur={onVolcar}
           aria-label={pregunta.titulo}
         />

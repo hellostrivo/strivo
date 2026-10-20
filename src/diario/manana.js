@@ -53,15 +53,10 @@ export const PREGUNTAS = Object.freeze({
 /** Los momentos que se cuentan en el indicador. La pausa no es uno de ellos. */
 export const MOMENTOS = Object.freeze(['animo', 'gratitud', 'intencion-accion'])
 
-/**
- * §4 y §5 — extensiones sugeridas. Ninguna es un error al alcanzarse.
- *
- * La gratitud ya no tiene tope de caracteres: desde el 12 de septiembre de 2026
- * cada respuesta cabe en palabras, y cuántas lo dice `LIMITES.gratitudManana`
- * en `filas.js`, junto a cuántas respuestas caben.
- */
-export const MAX_ACCION = 240
-export const MAX_REFLEXION = 180
+// Ninguna respuesta abierta de la mañana tiene tope de caracteres. La gratitud
+// cabe en palabras desde el 12 de septiembre de 2026 (`LIMITES.gratitudManana`)
+// y el paso y la pausa desde el 20 de octubre (`LIMITE_DE_RESPUESTA`): los dos
+// en `filas.js`, cuatrocientas por respuesta.
 
 /**
  * Fecha y hora local, con su desfase horario (§9).

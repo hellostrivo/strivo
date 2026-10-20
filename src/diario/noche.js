@@ -56,15 +56,11 @@ export const PREGUNTAS = Object.freeze({
 /** Los momentos que se cuentan en el indicador. La descarga no es uno. */
 export const MOMENTOS = Object.freeze(['reconocimiento', 'reflexion', 'emocion'])
 
-/**
- * §3, §4 y §8 — extensiones sugeridas. Ninguna es un error al alcanzarse.
- *
- * El reconocimiento ya no tiene tope de caracteres: desde el 12 de septiembre
- * de 2026 cada respuesta cabe en palabras, y cuántas lo dice
- * `LIMITES.reconocimiento` en `filas.js`, junto a cuántas respuestas caben.
- */
-export const MAX_REFLEXION = 400
-export const MAX_DESCARGA = 400
+// Ninguna respuesta abierta de la noche tiene tope de caracteres. El
+// reconocimiento cabe en palabras desde el 12 de septiembre de 2026
+// (`LIMITES.reconocimiento`) y la reflexión y la descarga desde el 20 de
+// octubre (`LIMITE_DE_RESPUESTA`): los dos en `filas.js`, cuatrocientas por
+// respuesta.
 
 // ─── Lectura de una noche guardada ────────────────────────────────────────────
 

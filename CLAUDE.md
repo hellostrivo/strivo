@@ -1,6 +1,6 @@
 # CLAUDE.md — Strivo
 
-**Última actualización:** 12 oct 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
+**Última actualización:** 20 oct 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
 **Blueprint (documento rector):** `/docs/blueprint/Strivo_Blueprint_de_Producto_v5_0_24-08-2026.md`
 **Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO.md`
 **Plan operativo del repliegue:** `/docs/Strivo_Plan_de_Separacion_Tecnica_v1_24-08-2026.md`
@@ -1429,6 +1429,31 @@ permite pintar un componente a HTML en una prueba sin `import React`.
 se sigue sintiendo un refugio y no un formulario, y si cinco segundos de despedida son un descanso
 o una espera. ~~`DiarioManana.terminar` conserva la espera y sin guarda contra el doble toque~~:
 saldado el 12 de octubre de 2026, con el buen deseo de la mañana (abajo).
+
+### Toda respuesta abierta del día cabe en cuatrocientas palabras (20 oct 2026)
+
+Lo pidió el propietario del producto. **El tope de la gratitud y del reconocimiento pasa a todas las
+preguntas abiertas de la mañana y de la noche**, y cada campo tiene el suyo: tres respuestas de
+gratitud son tres veces cuatrocientas, y el paso de la mañana, su pausa, la reflexión y la descarga
+de la noche caben en cuatrocientas cada uno. Eran 240, 180, 400 y 400 **caracteres** en un
+`maxLength`. **El modelo de datos no cambia**: siguen siendo cadenas y nada de lo escrito se toca.
+
+- **Una sola regla, un solo número.** Los cuatro campos montan `CampoRespuesta`
+  (`components/diario/`), que aplica `escribirConTope` —la misma regla que `escribirEn` usa en cada
+  fila, ahora exportada— con `LIMITE_DE_RESPUESTA`, que sale de `MAX_PALABRAS_POR_RESPUESTA`. Los
+  dos viven en `filas.js`. `MAX_ACCION`, `MAX_REFLEXION` (de las dos) y `MAX_DESCARGA` salen del
+  código.
+- **El mismo aviso que las filas**: nada hasta las trescientas, y desde ahí cuántas quedan. La frase
+  la elige `avisoDePalabras`, que comparten `FilasDinamicas` y `CampoRespuesta`.
+- **Los cuatro campos crecen con lo escrito y no se desplazan por dentro** (`CampoParrafo`), con las
+  líneas de salida que ya tenían. `CampoTexto` contaba saltos de línea, así que cuatrocientas
+  palabras sin ninguno se habrían leído en tres líneas con barra.
+- **«Algo más» se queda fuera a propósito.** La palabra propia de los catálogos emocionales no es una
+  pregunta abierta: es un nombre dentro de una píldora, y sigue en `MAX_PALABRA_PROPIA` (30
+  caracteres). Lo mismo el Journal, que no es ni mañana ni noche.
+
+**Lo que sigue sin verse en un teléfono:** si un paso de la mañana de varios párrafos sigue
+cabiendo en un recorrido de uno o dos minutos.
 
 ### Lo que subió a la nube vuelve a bajar (SPEC_17A, 17 sep 2026)
 

@@ -14,6 +14,7 @@ import { copy } from '@copy'
 import { FIELDS } from '@/lib/db/schema'
 import {
   LIMITES,
+  LIMITE_DE_RESPUESTA,
   MAX_PALABRAS_POR_RESPUESTA,
   alSalirDeFila,
   escribirEn,
@@ -22,8 +23,6 @@ import {
   textosDe,
 } from '@/diario/filas'
 import {
-  MAX_ACCION,
-  MAX_REFLEXION,
   MOMENTOS,
   PREGUNTAS,
   VERSION,
@@ -408,12 +407,13 @@ describe('criterio 5 — la acción es texto libre con ideas ligadas a la intenc
     expect(linea).not.toMatch(/guardar|escribir/)
   })
 
-  it('el campo es libre, de tres líneas y hasta 240 caracteres', () => {
-    expect(MAX_ACCION).toBe(240)
+  it('el campo es libre, abre con tres líneas y cabe en cuatrocientas palabras', () => {
+    // Eran 240 caracteres hasta el 20 de octubre de 2026.
+    expect(LIMITE_DE_RESPUESTA.palabras).toBe(MAX_PALABRAS_POR_RESPUESTA)
     const accion = MOMENTO('MomentoIntencionAccion')
-    expect(accion).toMatch(/<CampoTexto/)
+    expect(accion).toMatch(/<CampoRespuesta/)
     expect(accion).toMatch(/filas=\{3\}/)
-    expect(accion).toMatch(/maxLength=\{MAX_ACCION\}/)
+    expect(accion).not.toMatch(/maxLength|MAX_ACCION|CampoTexto/)
   })
 })
 
@@ -540,7 +540,11 @@ describe('criterio 7 — la pausa opcional rota y respeta sus límites', () => {
     expect(textos.reflexion.opcional).toBe('Opcional')
     expect(textos.reflexion.omitir).toBe('Ahora no')
     expect(JSON.stringify(textos)).not.toMatch(/afirmaci[óo]n/i)
-    expect(MAX_REFLEXION).toBe(180)
+    // Cabía en 180 caracteres hasta el 20 de octubre de 2026; ahora, en
+    // cuatrocientas palabras, como toda respuesta abierta.
+    const pausa = MOMENTO('MomentoPausa')
+    expect(pausa).toMatch(/<CampoRespuesta/)
+    expect(pausa).not.toMatch(/maxLength|MAX_REFLEXION|CampoTexto/)
   })
 })
 

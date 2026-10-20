@@ -19,13 +19,16 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 
 import { copy, interpolate } from '@copy'
+import { avisoDePalabras } from '@components/diario/avisoDePalabras'
 import ListaNumerada from '@components/diario/ListaNumerada'
 import { SALIDA, DESPEDIDA_VISIBLE } from '@components/diario/noche/CierreDeLaNoche'
 import {
   LIMITES,
+  LIMITE_DE_RESPUESTA,
   MAX_PALABRAS_POR_RESPUESTA,
   PALABRAS_DE_AVISO,
   desdeTextos,
+  escribirConTope,
   escribirEn,
   palabrasRestantes,
   textosDe,
@@ -40,6 +43,7 @@ const codigoDe = (ruta) =>
     .replace(/^\s*\/\/.*$/gm, '')
 
 const FILAS = codigoDe('src/components/diario/FilasDinamicas.jsx')
+const AVISO = codigoDe('src/components/diario/avisoDePalabras.js')
 const CAMPO = codigoDe('src/components/shared/Campo.jsx')
 const LISTA = codigoDe('src/components/diario/ListaNumerada.jsx')
 const CIERRE = codigoDe('src/components/diario/noche/CierreDeLaNoche.jsx')
@@ -180,10 +184,12 @@ describe('cada respuesta cabe en cuatrocientas palabras', () => {
     expect(contadorTemplate).toBeUndefined()
     expect(FILAS).not.toMatch(/contadorTemplate|contarPalabras/)
     // Lo decide la regla de las filas, no la pantalla: la pantalla solo elige
-    // la frase.
-    expect(FILAS).toMatch(/palabrasRestantes\(texto, limites\)/)
-    expect(FILAS).toMatch(/restantes === 0/)
-    expect(FILAS).toMatch(/restantes === 1/)
+    // la frase, y la elige en un solo sitio que comparten las filas y el campo
+    // de una sola respuesta.
+    expect(AVISO).toMatch(/palabrasRestantes\(texto, limites\)/)
+    expect(AVISO).toMatch(/restantes === 0/)
+    expect(AVISO).toMatch(/restantes === 1/)
+    expect(FILAS).toMatch(/avisoDePalabras\(fila\.texto, limites\)/)
     // El campo sabe que ese aviso habla de él.
     expect(FILAS).toMatch(/aria-describedby=\{aviso \? `\$\{idAviso\}-\$\{indice\}` : undefined\}/)
   })
@@ -456,5 +462,59 @@ describe('la despedida se va sola: cinco segundos y medio de desvanecido', () =>
   it('la despedida dice lo de siempre, y nada más', () => {
     expect(copy.diario.noche.cierre.despedida).toBe('Buenas noches.')
     expect(copy.diario.noche.cierre.reabrir).toBe('Puedes volver y cambiar lo que quieras.')
+  })
+})
+
+// ─── Las preguntas abiertas de un solo campo (20 oct 2026) ────────────────────
+
+describe('las preguntas abiertas de un solo campo caben en cuatrocientas palabras', () => {
+  const MOMENTOS = [
+    'src/components/diario/manana/MomentoIntencionAccion.jsx',
+    'src/components/diario/manana/MomentoPausa.jsx',
+    'src/components/diario/noche/MomentoReflexion.jsx',
+    'src/components/diario/noche/MomentoDescarga.jsx',
+  ]
+  const CAMPO_RESPUESTA = codigoDe('src/components/diario/CampoRespuesta.jsx')
+  const aviso = (texto) => avisoDePalabras(texto, LIMITE_DE_RESPUESTA)
+
+  it('el paso, la pausa, la reflexión y la descarga montan el mismo campo, sin caracteres', () => {
+    MOMENTOS.forEach((ruta) => {
+      const codigo = codigoDe(ruta)
+      expect(codigo).toMatch(/<CampoRespuesta/)
+      expect(codigo).not.toMatch(/maxLength|<CampoTexto|MAX_ACCION|MAX_REFLEXION|MAX_DESCARGA/)
+    })
+  })
+
+  it('el tope es el mismo que el de cada respuesta de las listas', () => {
+    expect(LIMITE_DE_RESPUESTA.palabras).toBe(MAX_PALABRAS_POR_RESPUESTA)
+    expect(LIMITE_DE_RESPUESTA.palabras).toBe(LIMITES.gratitudManana.palabras)
+    expect(LIMITE_DE_RESPUESTA.palabras).toBe(LIMITES.reconocimiento.palabras)
+    // Y lo aplica la misma regla que a las filas, no una copia.
+    expect(CAMPO_RESPUESTA).toMatch(
+      /escribirConTope\(texto, evento\.target\.value, LIMITE_DE_RESPUESTA\.palabras\)/,
+    )
+  })
+
+  it('al tope lo que no cabe se rechaza, y lo que llega de golpe se recorta', () => {
+    const tope = palabras(400)
+    expect(escribirConTope(tope, `${tope} e`, 400)).toBe(tope)
+    expect(contarPalabras(escribirConTope('', palabras(500), 400))).toBe(400)
+    // Lo que cabe entra tal cual, párrafos incluidos.
+    const parrafos = 'Primero.\n\nSegundo.'
+    expect(escribirConTope('', parrafos, 400)).toBe(parrafos)
+  })
+
+  it('crece con lo escrito y no se desplaza por dentro', () => {
+    expect(CAMPO_RESPUESTA).toMatch(/<CampoParrafo/)
+    expect(CAMPO_RESPUESTA).not.toMatch(/CampoTexto|maxLength/)
+  })
+
+  it('avisa como las filas: nada hasta las trescientas, y desde ahí cuántas quedan', () => {
+    expect(aviso(palabras(299))).toBe(null)
+    expect(aviso(palabras(356))).toBe('Te quedan 44 palabras')
+    expect(aviso(palabras(399))).toBe('Te queda 1 palabra')
+    expect(aviso(palabras(400))).toBe('Llegaste al límite de 400 palabras')
+    // El campo sabe que ese aviso habla de él, y solo cuando lo hay.
+    expect(CAMPO_RESPUESTA).toMatch(/aria-describedby=\{aviso \? idAviso : undefined\}/)
   })
 })

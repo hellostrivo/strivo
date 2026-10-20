@@ -22,8 +22,9 @@
 // línea que sugiera que hay algo que mejorar. Empezar cansado y querer estar en
 // calma es exactamente lo que estas preguntas esperaban encontrar.
 //
-// Y el paso es **uno**, no una lista de pendientes: el campo son tres líneas y
-// el marcador de posición empieza la frase en primera persona.
+// Y el paso es **uno**, no una lista de pendientes: el campo abre con tres
+// líneas, el marcador de posición empieza la frase en primera persona y cabe
+// en cuatrocientas palabras (`CampoRespuesta`), como toda respuesta abierta.
 //
 // Las ideas son eso, ideas. Tocar una la deja en el campo entera y editable, y
 // **no se guarda como respuesta hasta que la persona continúa o termina** (§5):
@@ -37,9 +38,8 @@
 
 import { clsx } from 'clsx'
 import ChipsCatalogo from '../ChipsCatalogo'
-import { CampoTexto } from '@components/shared/Campo'
+import CampoRespuesta from '../CampoRespuesta'
 import { copy } from '@copy'
-import { MAX_ACCION } from '@/diario/manana'
 import { INTENCION } from '@/diario/mananaEmociones'
 
 const textos = copy.diario.manana
@@ -106,11 +106,10 @@ export default function MomentoIntencionAccion({
           <p className="text-sm text-on-surface-soft">{textos.accion.lead}</p>
         </div>
 
-        <CampoTexto
+        <CampoRespuesta
           filas={3}
           value={valores.accion}
-          maxLength={MAX_ACCION}
-          onChange={(evento) => onCambiarAccion(evento.target.value)}
+          onCambiar={onCambiarAccion}
           onBlur={onVolcar}
           placeholder={textos.accion.placeholder}
           aria-label={textos.accion.titulo}

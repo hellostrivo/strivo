@@ -23,8 +23,6 @@ import {
   textosDe,
 } from '@/diario/filas'
 import {
-  MAX_DESCARGA,
-  MAX_REFLEXION,
   MOMENTOS,
   PREGUNTAS,
   VERSION,
@@ -491,11 +489,12 @@ describe('criterio 3 — la reflexión rota, y rota de forma predecible', () => 
     expect(CONTENEDOR.match(/<MomentoReflexion/g) ?? []).toHaveLength(1)
   })
 
-  it('el campo abre con tres líneas, cabe en 400 caracteres y dice "Opcional"', () => {
-    expect(MAX_REFLEXION).toBe(400)
+  it('el campo abre con tres líneas, cabe en 400 palabras y dice "Opcional"', () => {
+    // Eran 400 caracteres hasta el 20 de octubre de 2026.
     const bloque = MOMENTO('MomentoReflexion')
+    expect(bloque).toMatch(/<CampoRespuesta/)
     expect(bloque).toMatch(/filas=\{3\}/)
-    expect(bloque).toMatch(/maxLength=\{MAX_REFLEXION\}/)
+    expect(bloque).not.toMatch(/maxLength|MAX_REFLEXION|CampoTexto/)
     expect(bloque).toMatch(/textos\.opcional/)
   })
 
@@ -866,7 +865,11 @@ describe('criterio 8 — la descarga aparece cuando corresponde, o cuando se pid
     expect(textos.descarga.omitir).toBe('Ahora no')
     expect(textos.descarga.cta).toBe('Dejarlo aquí y cerrar mi día')
     expect(textos.descarga.abrir).toBe('Necesito soltar algo antes de cerrar')
-    expect(MAX_DESCARGA).toBe(400)
+    // Cabía en 400 caracteres hasta el 20 de octubre de 2026; ahora, en
+    // cuatrocientas palabras.
+    const descarga = MOMENTO('MomentoDescarga')
+    expect(descarga).toMatch(/<CampoRespuesta/)
+    expect(descarga).not.toMatch(/maxLength|MAX_DESCARGA|CampoTexto/)
   })
 
   it('las cuatro emociones que la ofrecen son las de §8, y solo esas', () => {

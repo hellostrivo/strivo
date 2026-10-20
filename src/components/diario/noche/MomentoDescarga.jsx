@@ -18,12 +18,14 @@
 // Dos salidas, las dos válidas: "Ahora no" pasa de largo y "Dejarlo aquí y
 // cerrar mi día" guarda lo escrito. Ninguna se deshabilita: con el campo vacío,
 // la principal cierra igual.
+//
+// Cabe en cuatrocientas palabras (`CampoRespuesta`), como toda respuesta
+// abierta del día.
 
 import { clsx } from 'clsx'
 import Button from '@components/ui/Button'
-import { CampoTexto } from '@components/shared/Campo'
 import { copy } from '@copy'
-import { MAX_DESCARGA } from '@/diario/noche'
+import CampoRespuesta from '../CampoRespuesta'
 
 const textos = copy.diario.noche.descarga
 
@@ -50,11 +52,10 @@ export default function MomentoDescarga({
         <p className="text-sm text-on-surface-soft">{textos.lead}</p>
       </div>
 
-      <CampoTexto
+      <CampoRespuesta
         filas={4}
         value={valor}
-        maxLength={MAX_DESCARGA}
-        onChange={(evento) => onCambiar(evento.target.value)}
+        onCambiar={onCambiar}
         onBlur={onVolcar}
         placeholder={textos.placeholder}
         aria-label={textos.titulo}

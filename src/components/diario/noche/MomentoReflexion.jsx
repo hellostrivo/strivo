@@ -10,14 +10,14 @@
 // **Lleva su "Opcional" a la vista y su propia salida.** Nada bloquea: se puede
 // pasar de largo sin escribir una palabra y la noche se cierra igual.
 //
-// El campo abre con tres líneas y crece con el texto. No hay contador de
-// caracteres a la vista: un número que sube mientras alguien escribe sobre su
-// día es una vigilancia, no una ayuda.
+// El campo abre con tres líneas, crece con el texto y cabe en cuatrocientas
+// palabras (`CampoRespuesta`). No hay contador a la vista: un número que sube
+// mientras alguien escribe sobre su día es una vigilancia, no una ayuda. Solo
+// desde las trescientas se dice, en voz baja, cuántas quedan.
 
 import { clsx } from 'clsx'
-import { CampoTexto } from '@components/shared/Campo'
 import { copy } from '@copy'
-import { MAX_REFLEXION } from '@/diario/noche'
+import CampoRespuesta from '../CampoRespuesta'
 
 const textos = copy.diario.noche.reflexion
 
@@ -30,11 +30,10 @@ export default function MomentoReflexion({ pregunta, valor, onCambiar, onVolcar,
         <p className="text-sm text-on-surface-soft">{pregunta.lead}</p>
       </div>
 
-      <CampoTexto
+      <CampoRespuesta
         filas={3}
         value={valor}
-        maxLength={MAX_REFLEXION}
-        onChange={(evento) => onCambiar(evento.target.value)}
+        onCambiar={onCambiar}
         onBlur={onVolcar}
         placeholder={textos.placeholder}
         aria-label={pregunta.titulo}
