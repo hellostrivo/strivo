@@ -247,9 +247,9 @@ describe('la pantalla del cierre', () => {
 describe('se va sola, como "Buenas noches."', () => {
   const regla = CSS.match(/\.salida-cierre \{[\s\S]*?\n {2}\}/)[0]
 
-  it('cinco segundos a la vista y medio de desvanecido, las mismas cifras que la noche', () => {
+  it('cinco segundos a la vista y 700 ms de desvanecido, las mismas cifras que la noche', () => {
     expect(DESPEDIDA_VISIBLE).toBe(5000)
-    expect(SALIDA).toBe(500)
+    expect(SALIDA).toBe(700)
     expect(DESPEDIDA_VISIBLE).toBe(Noche.DESPEDIDA_VISIBLE)
     expect(SALIDA).toBe(Noche.SALIDA)
   })
@@ -263,21 +263,23 @@ describe('se va sola, como "Buenas noches."', () => {
   it('el reloj arranca con la despedida, respeta el movimiento reducido y se limpia', () => {
     expect(APERTURA).toMatch(/if \(!despidiendo \|\| guardado !== 'listo'\) return undefined/)
     expect(APERTURA).toMatch(/prefiereMenosMovimiento\(\)/)
-    expect(APERTURA).toMatch(/setSaliendo\(true\)\), DESPEDIDA_VISIBLE\)/)
-    expect(APERTURA).toMatch(/setTimeout\(terminar, DESPEDIDA_VISIBLE \+ SALIDA\)/)
-    expect(APERTURA).toMatch(/return \(\) => relojes\.forEach\(clearTimeout\)/)
+    expect(APERTURA).toMatch(/setTimeout\(irse, DESPEDIDA_VISIBLE\)/)
+    expect(APERTURA).toMatch(/setTimeout\(terminar, SALIDA\)/)
+    expect(APERTURA).toMatch(/return \(\) => clearTimeout\(reloj\)/)
     expect(APERTURA).toMatch(/motion-reduce:animate-none/)
   })
 
-  it('tocarla salta la espera, y terminar es una sola vez', () => {
-    expect(APERTURA).toMatch(/onClick=\{terminar\}/)
+  it('tocarla salta la espera y no el desvanecido, y terminar es una sola vez', () => {
+    expect(APERTURA).toMatch(/onClick=\{irse\}/)
+    expect(APERTURA).toMatch(/if \(yendose\.current\) return/)
     expect(APERTURA).toMatch(/if \(terminado\.current\) return/)
   })
 
   it('al irse vuelve a la consulta, que es donde llevaba "Comenzar mi día"', () => {
     expect(CONTENEDOR).toMatch(
-      /onTerminar=\{\(\) => \{\s*cerrando\.current = false\s*setVista\('resumen'\)/,
+      /onVolver=\{\(\) => \{\s*cerrando\.current = false\s*alInicio\.current = true\s*setVista\('resumen'\)/,
     )
+    expect(CONTENEDOR).toMatch(/onTerminar=\{\(\) => setConCierre\(false\)\}/)
     // Y desde la consulta se reabre el recorrido con todo lo escrito.
     expect(CONTENEDOR).toMatch(/onEditar=\{\(\) => \{\s*setPaso\(0\)\s*setVista\('recorrido'\)/)
   })

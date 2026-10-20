@@ -41,7 +41,7 @@
 // §5.4.3 — El contenedor de Hoy declara `data-surface="dark"` y todo el texto
 // hereda el color claro. Ningún componente de aquí fija un color literal.
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import CierreDeLaNoche from './noche/CierreDeLaNoche'
 import MomentoDescarga from './noche/MomentoDescarga'
 import MomentoEmocion from './noche/MomentoEmocion'
@@ -49,6 +49,7 @@ import MomentoReconocimiento from './noche/MomentoReconocimiento'
 import MomentoReflexion from './noche/MomentoReflexion'
 import ResumenNoche from './noche/ResumenNoche'
 import { IndicadorPasos, NavegacionPasos } from './Pasos'
+import { volverAlInicio } from '@lib/volverAlInicio'
 import { copy, interpolate } from '@copy'
 import { LIMITES, desdeTextos, filasIniciales, textosDe } from '@/diario/filas'
 import { diaDeLaSemana } from '@/diario/fechas'
@@ -99,6 +100,11 @@ export default function DiarioNoche({ estado, acciones, soloLectura = false }) {
   // Una guarda y no `disabled`: nada bloquea, pero un segundo toque en "Listo"
   // mientras el primero está de camino no tiene que cerrar la noche dos veces.
   const cerrando = useRef(false)
+  // El cierre se monta aparte de la vista: mientras se desvanece, debajo ya
+  // está la consulta, y eso es lo que hace que irse sea un paso y no un corte.
+  const [conCierre, setConCierre] = useState(false)
+  // Al volver del cierre la pantalla va arriba del todo, no a la tarjeta.
+  const alInicio = useRef(false)
   const vivo = useRef(true)
   const marco = useRef(null)
   const primerRender = useRef(true)
@@ -121,6 +127,8 @@ export default function DiarioNoche({ estado, acciones, soloLectura = false }) {
     setPaso(0)
     setDescargaPedida(false)
     cerrando.current = false
+    setConCierre(false)
+    alInicio.current = false
     // Solo al cambiar de día: releer en cada guardado pisaría lo que se escribe.
   }, [estado.fecha])
 
@@ -133,9 +141,18 @@ export default function DiarioNoche({ estado, acciones, soloLectura = false }) {
 
   // Cambiar de momento lleva la tarjeta arriba del todo. Sin esto, con el
   // teclado abierto la pregunta nueva puede quedar fuera de la ventana.
-  useEffect(() => {
+  //
+  // Volver del cierre es otra cosa: es volver a Hoy, y Hoy se lee desde su
+  // principio. Se hace antes de pintar —por eso `useLayoutEffect`— y con el
+  // cierre todavía delante, así que nadie ve el salto.
+  useLayoutEffect(() => {
     if (primerRender.current) {
       primerRender.current = false
+      return
+    }
+    if (alInicio.current) {
+      alInicio.current = false
+      volverAlInicio(marco.current)
       return
     }
     marco.current?.scrollIntoView({ block: 'start', behavior: 'auto' })
@@ -263,6 +280,7 @@ export default function DiarioNoche({ estado, acciones, soloLectura = false }) {
   const terminar = () => {
     if (cerrando.current) return
     cerrando.current = true
+    setConCierre(true)
     setVista('cierre')
     persistir()
   }
@@ -298,35 +316,43 @@ export default function DiarioNoche({ estado, acciones, soloLectura = false }) {
     )
   }
 
-  if (vista === 'cierre') {
-    return (
-      <CierreDeLaNoche
-        reconocido={algoQueReconoces(entradaActual())}
-        conDescarga={hayDescarga(entradaActual())}
-        guardado={guardado}
-        onReintentar={persistir}
-        // Al terminar la ceremonia se vuelve al día, que sigue debajo: no hay
-        // pantalla anterior a la que salir y el día no se bloquea. Reabrir y
-        // volver a cerrar no duplica nada (RN-VN-05).
-        onTerminar={() => {
-          cerrando.current = false
-          setVista('resumen')
-        }}
-      />
-    )
-  }
+  const cierre = conCierre && (
+    <CierreDeLaNoche
+      reconocido={algoQueReconoces(entradaActual())}
+      conDescarga={hayDescarga(entradaActual())}
+      guardado={guardado}
+      onReintentar={persistir}
+      // Al terminar la ceremonia se vuelve al día, que sigue debajo: no hay
+      // pantalla anterior a la que salir y el día no se bloquea. Reabrir y
+      // volver a cerrar no duplica nada (RN-VN-05).
+      onVolver={() => {
+        cerrando.current = false
+        alInicio.current = true
+        setVista('resumen')
+      }}
+      onTerminar={() => setConCierre(false)}
+    />
+  )
 
-  if (vista === 'resumen') {
+  // El cierre y la consulta comparten árbol a propósito: si el cierre fuera
+  // la raíz en una vista y un hijo en la otra, React lo desmontaría al empezar
+  // a irse y la despedida volvería a su primera pantalla.
+  if (vista === 'cierre' || vista === 'resumen') {
     return (
-      <div ref={marco}>
-        <ResumenNoche
-          bloques={resumenDeNoche(night, estado.morning, estado.genero, estado.fecha)}
-          onEditar={() => {
-            setPaso(0)
-            setVista('recorrido')
-          }}
-        />
-      </div>
+      <>
+        {vista === 'resumen' && (
+          <div ref={marco}>
+            <ResumenNoche
+              bloques={resumenDeNoche(night, estado.morning, estado.genero, estado.fecha)}
+              onEditar={() => {
+                setPaso(0)
+                setVista('recorrido')
+              }}
+            />
+          </div>
+        )}
+        {cierre}
+      </>
     )
   }
 
