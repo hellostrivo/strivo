@@ -638,6 +638,12 @@ el componente.**
   las pantallas de consulta y los del onboarding. **Subió de `diario/` a `shared/` en F-1B**, junto
   con `Campo.jsx`, cuando el onboarding pasó a montarlos: ninguno de los dos importa nada ni nombra
   una sección, que es lo que los hacía mudables.
+- `src/components/shared/FormularioEntrar.jsx` → entrar o crear con correo y recuperar el
+  acceso, **todo por props**. Lo montan Tu cuenta y la vista de entrar del onboarding (SPEC_30);
+  qué frase toca a cada motivo es `claveDeError`, en `lib/cuenta.js`.
+- `src/onboarding/traspaso.js` → lo que cruza el velo al entrar a una cuenta: el paso, el motivo y,
+  desde la bienvenida, si hay que volver a la vista de entrar (`AVISOS_DE_ENTRADA`). Donde se
+  retoma tras entrar desde P1 es `pasoTrasEntrar`: el paso de la cuenta, nunca P1.
 - `src/onboarding/pasos.js` → el orden del recorrido y qué cuenta en el indicador. Es el **único**
   sitio que sabe que el género no gasta número.
 - `src/onboarding/genero.js` → las cuatro opciones, los tres valores del modelo y el camino de
@@ -693,7 +699,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**88 archivos de prueba · 2.343 casos · los seis comandos y `validar:frases` en verde.**
+**89 archivos de prueba · 2.366 casos · los seis comandos y `validar:frases` en verde.**
 
 ### App iOS (SPEC_21.1, 12 oct 2026)
 
@@ -1484,6 +1490,35 @@ los dos rituales, la consulta montada y el scroll en 0 en el fotograma en que em
 desvanecido, y el velo retirado a los 702 ms. **Lo que sigue sin verse en un teléfono:** si 700 ms
 se sienten un paso o se notan.
 
+### Entrar a una cuenta desde la bienvenida (SPEC_30, 20 oct 2026)
+
+Lo pidió el propietario del producto. La spec está en `docs/specs/SPEC_30_ENTRAR_DESDE_LA_BIENVENIDA.md`.
+Quien cambiaba de teléfono contestaba seis pantallas y, al llegar a P7 y entrar, **la mudanza
+descartaba en silencio todo lo que acababa de decir** (en `shared/*` gana la cuenta, DP-19.5).
+
+- **«Ya tengo una cuenta» es un enlace en P1, no una pregunta** (D30-1), debajo de «Empezar» y solo
+  con la sesión en `sinCuenta`. Quien llega por primera vez no gasta un toque más. Y es el momento
+  técnico más limpio: en P1 el árbol es semilla y la cuenta gana sin un solo choque.
+- **La vista de entrar no es un paso.** Es `entrada` en `useOnboarding` (`{ desde, aviso }`), no se
+  guarda y no escribe nada; mientras está abierta no hay indicador ni franja de abajo. Desde P1
+  **solo se entra** (`entrarConCorreo`), nunca se crea (D30-2).
+- **Tras entrar se retoma en el paso de la cuenta, nunca en P1** (`pasoTrasEntrar`); con el
+  onboarding terminado, a Hoy. Las frases y los avisos no se vuelven a preguntar (D30-3).
+- **Si lo de la cuenta no termina de llegar, se vuelve a la vista** con «Intentar de nuevo»
+  (`reintentarRestauracion`, en la sesión: solo restaura) y «Empezar mientras tanto». Antes, el
+  recorrido se habría montado en P1 como si nada y la puerta lo habría sacado a Hoy a mitad de P3.
+  El recorrido lo sabe al montarse preguntando `mudanzaPendiente`, no por un valor que devuelva la
+  sesión: así no hay carrera entre el velo y la carga.
+- **P7 tiene el mismo enlace** y avisa antes de entrar de que gana lo guardado en la cuenta; con la
+  cuenta ya conectada, P7 se ve lista y no se salta (D30-5).
+- **El formulario de Tu cuenta subió a `components/shared/FormularioEntrar.jsx`** (D30-8). Tu
+  perfil se ve y se comporta igual; sus pruebas leen ahora el archivo compartido.
+
+**Sin cambios en el modelo de datos ni en las reglas de fusión.** Verificado en Chromium a 375 px
+sin enviar credenciales: el enlace, la vista desde P1 y desde P7, recuperar, «Volver» y Tu perfil.
+**Lo que falta:** los criterios manuales M1–M7 de la spec contra `strivo-fe04f` —entrar de verdad,
+con correo y con Google, y cortar la red en medio— y verlo en un teléfono.
+
 ### Lo que subió a la nube vuelve a bajar (SPEC_17A, 17 sep 2026)
 
 Hasta aquí Firestore era de solo escritura: la cola subía y nada volvía. Quien reinstalaba la app
@@ -1841,7 +1876,7 @@ entra en la cuenta del indicador, igual que la pausa opcional de la Mañana no e
 
 | Paso | Pantalla | Nota |
 |---|---|---|
-| P1 | Bienvenida | Transición ~5 s + degradado horario |
+| P1 | Bienvenida | Transición ~5 s + degradado horario. «Ya tengo una cuenta» abre la vista de entrar (SPEC_30) |
 | P2 | Nombre | |
 | P2A | Género | Para los pronombres del copy: masculino · femenino · prefiero no contestar · otro |
 | P3 | Motivo | «¿Qué te gustaría encontrar aquí?»: paz, avance, escucha, sueño, espacio, otro |

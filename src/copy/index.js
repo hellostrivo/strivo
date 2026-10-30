@@ -275,6 +275,27 @@ export const copy = {
         skipNote: 'Sin cuenta también funciona todo. La puedes crear después.',
       },
 
+      // SPEC_30 — Entrar a una cuenta que ya existe, desde la bienvenida (P1)
+      // o desde P7. **No es un paso**: es una vista que se abre con un enlace
+      // y se cierra con «Volver». El formulario, la recuperación y los errores
+      // son los de `copy.cuenta`, y «Continuar con Google» el de P7: aquí solo
+      // lo que dice esta vista y nada más.
+      //
+      // `apoyoDesdeCuenta` es la de P7, donde ya hay respuestas dadas: dice
+      // antes de entrar que gana lo guardado en la cuenta, que es lo que antes
+      // pasaba en silencio (D30-4). `sinCuenta` va solo en la de P1.
+      entrar: {
+        enlace: 'Ya tengo una cuenta',
+        titulo: 'Entra a tu cuenta',
+        apoyo: 'Traemos lo que ya tenías guardado. No hace falta contestar nada otra vez.',
+        apoyoDesdeCuenta:
+          'Si tu cuenta ya tenía respuestas, seguimos con las que guardaste en ella.',
+        sinCuenta: 'Si es tu primera vez aquí, puedes empezar sin cuenta y crearla al final.',
+        nueva:
+          'Esta cuenta es nueva y todavía no tiene nada guardado. Puedes seguir con ella o entrar con otra.',
+        empezarMientras: 'Empezar mientras tanto',
+      },
+
       // El cierre saluda por el nombre, en el género del perfil, y no dice
       // nada más. **Un solo mensaje y un botón**: la frase que se armaba con
       // la identidad central se fue con la pantalla que la preguntaba, y la

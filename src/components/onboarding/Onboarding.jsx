@@ -64,6 +64,20 @@
 // vuelve a montar; si no, el recorrido continúa en el paso siguiente a P7. Lo
 // contestado en la sesión no reemplaza lo de la cuenta (DP-19.5).
 //
+// ─── Entrar desde la bienvenida (SPEC_30) ────────────────────────────────────
+//
+// Quien ya tiene cuenta lo dice en P1, con un enlace debajo de «Empezar», y no
+// recorre seis pantallas que después descartaría la mudanza. P7 tiene el mismo
+// enlace. Los dos abren la vista de entrar (`Entrar.jsx`), que **no es un
+// paso**: mientras está abierta no hay indicador ni franja de abajo, y cerrarla
+// no escribe nada. Desde la bienvenida solo se entra (`entrarConCorreo`):
+// crear sigue siendo de P7 y de Tu perfil (D30-2).
+//
+// Al entrar a una cuenta que ya existía, la sesión pasa por el velo como en P7;
+// el recorrido que se monte al volver retoma en el paso de la cuenta o vuelve
+// a esta vista si lo suyo no terminó de llegar (`traspaso.js`). Con la cuenta
+// ya conectada, P7 se ve lista y no se salta: el indicador no da saltos.
+//
 // ─── Nada bloquea ────────────────────────────────────────────────────────────
 //
 // Ningún control lleva `disabled`, `required` ni `aria-invalid`. "Continuar"
@@ -89,6 +103,7 @@ import Horarios from './Horarios'
 import Recordatorios from './Recordatorios'
 import { PreguntaAfinidades, PreguntaModo } from '@components/shared/PreguntasReferencias'
 import CuentaPaso from './Cuenta'
+import Entrar from './Entrar'
 import Cierre from './Cierre'
 
 import { PASOS } from '@/onboarding/pasos'
@@ -97,10 +112,24 @@ import { alternar as alternarGenero } from '@/onboarding/genero'
 import { alternar as alternarMotivo } from '@/onboarding/motivos'
 import { pedirPermiso } from '@/onboarding/recordatorios'
 import { alternarAfinidad, alternarModo } from '@/referencias/preferencias'
-import { crearConCorreo, entrarConProveedor } from '@lib/cuenta'
+import { AVISOS_DE_ENTRADA } from '@/onboarding/traspaso'
+import {
+  claveDeError,
+  crearConCorreo,
+  entrarConCorreo,
+  entrarConProveedor,
+  proveedoresDisponibles,
+  recuperarContrasena,
+} from '@lib/cuenta'
+import { mudanzaPendiente } from '@lib/entradaCuenta'
+import { ESTADOS_SESION } from '@lib/sesion'
 import { useSesion } from '@lib/useSesion'
 
 const textos = copy.diario.onboarding
+
+// La vista de entrar lee el formulario de Tu cuenta y los botones de P7: el
+// mismo texto en los dos sitios, sin copias.
+const BOTONES = { crear: textos.p7.create, proveedores: textos.p7 }
 
 /** Los pasos cuyo avance es un "Continuar" y nada más. */
 const CON_CONTINUAR = [
@@ -123,11 +152,14 @@ function hayUmbral() {
 }
 
 export default function Onboarding({ uid, onTerminado }) {
-  const { conectarCuenta, selloRestauracion } = useSesion()
-  const { respuestas, paso, cargando, motivoCuenta, genero, acciones } = useOnboarding(uid, {
-    conectar: conectarCuenta,
-    sello: selloRestauracion,
-  })
+  const { conectarCuenta, selloRestauracion, estado, reintentarRestauracion } = useSesion()
+  const { respuestas, paso, cargando, motivoCuenta, entrada, genero, acciones } = useOnboarding(
+    uid,
+    {
+      conectar: conectarCuenta,
+      sello: selloRestauracion,
+    },
+  )
 
   // El umbral de entrada, una vez por sesión y compartido con el resto de la
   // app. No espera a que cargue el recorrido —para eso es un velo— y **nace
@@ -172,6 +204,56 @@ export default function Onboarding({ uid, onTerminado }) {
   const crearCuenta = async (correo, contrasena) =>
     conectar(await crearConCorreo(correo, contrasena))
 
+  // ─── La vista de entrar (SPEC_30) ──────────────────────────────────────
+  const conectado = estado === ESTADOS_SESION.conCuenta
+  const desdeBienvenida = entrada?.desde === PASOS.bienvenida
+
+  /**
+   * Con la sesión de Firebase abierta desde la vista de entrar, la lleva a la
+   * cuenta. Devuelve el resultado al formulario, que dice el error si lo hay.
+   * Una cuenta que ya existía pasa por el velo y esta pieza se desmonta; una
+   * nueva se queda: desde la bienvenida lo dice (C4), desde P7 deja P7 lista.
+   */
+  const conectarDesdeEntrada = async (resultado) => {
+    if (!resultado.ok) return resultado
+    const desde = entrada?.desde
+    const r = await acciones.conectarCuenta(resultado, { desde })
+    if (!r.ok) return r
+    if (resultado.nueva) {
+      if (desde === PASOS.bienvenida) {
+        acciones.avisarEntrada(AVISOS_DE_ENTRADA.nueva)
+      } else {
+        acciones.cerrarEntrada()
+        setCuenta({ listo: true, motivo: null })
+      }
+    }
+    return { ok: true }
+  }
+
+  const entrarConCorreoYa = async (correo, contrasena) => {
+    const r = await entrarConCorreo(correo, contrasena)
+    return r.ok ? conectarDesdeEntrada({ ...r, nueva: false }) : r
+  }
+
+  const entrarConProveedorYa = async (proveedor) =>
+    conectarDesdeEntrada(await entrarConProveedor(proveedor))
+
+  /** Con una cuenta nueva desde la bienvenida, o lo suyo todavía en camino: a P2. */
+  const seguirSinEsperar = () => {
+    acciones.cerrarEntrada()
+    acciones.avanzar()
+  }
+
+  // **Lo de la cuenta terminó de llegar con la vista abierta** (C7): por el
+  // reintento o por la bajada que siguió por detrás. La mudanza se completó y
+  // el sello lo avisa; si la cuenta ya había terminado el onboarding, la puerta
+  // saca de aquí, y si no, se sigue en su paso.
+  const { retomarCuenta } = acciones
+  const esperandoCuenta = entrada?.aviso === AVISOS_DE_ENTRADA.restauracion
+  useEffect(() => {
+    if (esperandoCuenta && !mudanzaPendiente(uid)) retomarCuenta()
+  }, [esperandoCuenta, retomarCuenta, selloRestauracion, uid])
+
   // SPEC_29 — Las referencias de las frases. Se guardan al tocar y solo en el
   // dispositivo. Las respuestas que se guardan son las de este toque: el
   // estado de React todavía no las tiene.
@@ -202,7 +284,15 @@ export default function Onboarding({ uid, onTerminado }) {
   }
 
   const pantallas = {
-    [PASOS.bienvenida]: () => <Bienvenida textos={textos.p1} onContinuar={acciones.avanzar} />,
+    [PASOS.bienvenida]: () => (
+      <Bienvenida
+        textos={textos.p1}
+        enlace={textos.entrar.enlace}
+        conEntrar={estado === ESTADOS_SESION.sinCuenta}
+        onContinuar={acciones.avanzar}
+        onEntrar={() => acciones.abrirEntrada(PASOS.bienvenida)}
+      />
+    ),
     [PASOS.nombre]: () => (
       <Nombre
         textos={textos.p2}
@@ -265,10 +355,12 @@ export default function Onboarding({ uid, onTerminado }) {
     [PASOS.cuenta]: () => (
       <CuentaPaso
         textos={textos.p7}
+        enlace={textos.entrar.enlace}
         motivo={cuenta.motivo ?? motivoCuenta}
-        listo={cuenta.listo}
+        listo={cuenta.listo || conectado}
         onProveedor={entrarCon}
         onCrear={crearCuenta}
+        onEntrar={() => acciones.abrirEntrada(PASOS.cuenta)}
         onSaltar={acciones.avanzar}
       />
     ),
@@ -279,10 +371,13 @@ export default function Onboarding({ uid, onTerminado }) {
 
   // Los dos pasos que esperan algo de fuera muestran "Continuar" en cuanto
   // saben en qué quedó: hasta entonces, su propia salida es "Ahora no".
+  // Con la vista de entrar abierta no hay ninguno de los dos: trae su propio
+  // «Volver», y no es un paso del que avanzar.
   const hayContinuar =
-    CON_CONTINUAR.includes(paso) ||
-    (paso === PASOS.recordatorios && avisos !== null) ||
-    (paso === PASOS.cuenta && cuenta.listo)
+    !entrada &&
+    (CON_CONTINUAR.includes(paso) ||
+      (paso === PASOS.recordatorios && avisos !== null) ||
+      (paso === PASOS.cuenta && (cuenta.listo || conectado)))
 
   const marco = (contenido) => (
     // `overflow-hidden` no es maquetación defensiva: el marco mide la ventana y
@@ -312,14 +407,37 @@ export default function Onboarding({ uid, onTerminado }) {
           la franja se queda con su margen, que es lo que evita que el paso de
           debajo dé un salto al entrar y al salir de él. */}
       <header className="shrink-0 pt-safe pb-4">
-        <Progreso textos={textos.nav} paso={paso} />
+        {!entrada && <Progreso textos={textos.nav} paso={paso} />}
       </header>
 
       {/* La única franja que se desplaza, y solo si el paso no cabe.
           `min-h-0` es lo que se lo permite: sin él, un hijo alto estira la
           columna en vez de desplazarse por dentro, y lo que se sale por abajo
           son los dos controles. */}
-      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">{pantallas[paso]()}</main>
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        {entrada ? (
+          <Entrar
+            textos={textos.entrar}
+            cuenta={copy.cuenta}
+            restauracion={copy.shared.restauracion}
+            botones={BOTONES}
+            continuar={textos.nav.continue}
+            desdeBienvenida={desdeBienvenida}
+            aviso={entrada.aviso}
+            proveedores={proveedoresDisponibles()}
+            errorDe={claveDeError}
+            onCorreo={entrarConCorreoYa}
+            onProveedor={entrarConProveedorYa}
+            onRecuperar={recuperarContrasena}
+            onVolver={acciones.cerrarEntrada}
+            onContinuar={seguirSinEsperar}
+            onReintentar={reintentarRestauracion}
+            onEmpezar={seguirSinEsperar}
+          />
+        ) : (
+          pantallas[paso]()
+        )}
+      </main>
 
       {/* Abajo y siempre a la vista, por dentro del área segura del
           dispositivo: en un teléfono sin marco, `pb-safe` es lo que separa
@@ -330,7 +448,7 @@ export default function Onboarding({ uid, onTerminado }) {
             {textos.nav.continue}
           </Button>
         )}
-        {paso !== PASOS.bienvenida && (
+        {paso !== PASOS.bienvenida && !entrada && (
           <button
             type="button"
             onClick={acciones.retroceder}

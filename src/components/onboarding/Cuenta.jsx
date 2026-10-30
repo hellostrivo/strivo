@@ -10,16 +10,31 @@
 // demás se cuenta con la frase amable de siempre, **sin un código a la vista**
 // (RN-EST-04). Nada de esta pantalla vibra.
 //
+// **Quien ya tiene cuenta tiene por dónde decirlo** (SPEC_30, D30-4): «Ya
+// tengo una cuenta» abre la vista de entrar, que avisa antes de entrar de que
+// sigue lo guardado en la cuenta. Crear con un correo que ya existe sigue
+// entrando sin decirlo (D30-9).
+//
 // Ningún control lleva `disabled` ni `required`: los campos vacíos no frenan
 // nada, y lo que salga se cuenta en palabras.
 
 import { useState } from 'react'
 import Button from '@components/ui/Button'
 import { CampoLinea } from '@components/shared/Campo'
+import { ENLACE } from '@components/shared/FormularioEntrar'
 import { copy } from '@copy'
 import { MOTIVOS, proveedoresDisponibles } from '@lib/cuenta'
 
-export default function Cuenta({ textos, motivo, listo, onProveedor, onCrear, onSaltar }) {
+export default function Cuenta({
+  textos,
+  enlace,
+  motivo,
+  listo,
+  onProveedor,
+  onCrear,
+  onEntrar,
+  onSaltar,
+}) {
   const [conCorreo, setConCorreo] = useState(false)
   const [correo, setCorreo] = useState('')
   const [contrasena, setContrasena] = useState('')
@@ -84,6 +99,10 @@ export default function Cuenta({ textos, motivo, listo, onProveedor, onCrear, on
               {textos.email}
             </Button>
           )}
+
+          <button type="button" className={ENLACE} onClick={onEntrar}>
+            {enlace}
+          </button>
         </div>
       )}
 

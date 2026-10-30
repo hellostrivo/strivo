@@ -74,7 +74,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { alTerminarRestauracion, hayMarcaDeRestauracion, startSync } from '@/lib/db'
+import { alTerminarRestauracion, hayMarcaDeRestauracion, restaurar, startSync } from '@/lib/db'
 import {
   ESTADOS_SESION,
   escucharUsuario,
@@ -385,6 +385,23 @@ export default function ArranqueProvisional({ children }) {
     return r.ok ? pasarACuenta(r) : r
   }, [pasarACuenta])
 
+  /**
+   * Vuelve a intentar bajar lo de la cuenta cuando una entrada la dejó con la
+   * mudanza pendiente (SPEC_30, D30-7). Es el botón de la vista de entrar del
+   * onboarding, no el evento de la red: por eso no reutiliza
+   * `reintentarEntradaAlVolverLaRed`.
+   *
+   * **Solo restaura.** Si termina bien, el oyente de mudanzas completa la
+   * mudanza y el sello relee la puerta, como al volver la red. Sin mudanza
+   * pendiente no hay nada que traer y no toca nada.
+   */
+  const reintentarRestauracion = useCallback(async () => {
+    const cuenta = uidVigente.current
+    if (!mudanzaPendiente(cuenta)) return { ok: true }
+    const r = await restaurar(cuenta).catch(() => null)
+    return { ok: r?.ok === true }
+  }, [])
+
   /** ¿Se puede salir ya, o queda algo por subir? Intenta subirlo antes de contestar. */
   const comprobarSalida = useCallback(() => comprobarCola(uidVigente.current), [])
 
@@ -426,6 +443,7 @@ export default function ArranqueProvisional({ children }) {
       entrar,
       crear,
       entrarConGoogle,
+      reintentarRestauracion,
       comprobarSalida,
       salir,
     }),
@@ -438,6 +456,7 @@ export default function ArranqueProvisional({ children }) {
       entrar,
       crear,
       entrarConGoogle,
+      reintentarRestauracion,
       comprobarSalida,
       salir,
     ],

@@ -4,7 +4,8 @@
 //
 // **Cuatro vistas dentro del bloque, sin rutas nuevas**: el estado con sus
 // acciones, el formulario de entrar o crear, el de recuperar el acceso y la
-// confirmación de salir. Son vistas y no pantallas para no tocar el router, y
+// confirmación de salir. Los dos formularios son `FormularioEntrar`, de
+// `components/shared/`, que comparte con el onboarding (SPEC_30). Son vistas y no pantallas para no tocar el router, y
 // porque ninguna es un sitio al que se vuelva: se entra, se hace y se regresa
 // al estado.
 //
@@ -23,12 +24,12 @@
 // ofrece crearla. Con la sesión vencida, lo escrito sigue aquí y se dice; lo
 // que se ofrece es volver a entrar.
 
-import { useEffect, useId, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import Button from '@components/ui/Button'
-import { CampoLinea } from '@components/shared/Campo'
 import Confirmacion from '@components/shared/Confirmacion'
+import FormularioEntrar from '@components/shared/FormularioEntrar'
 import { copy, interpolate } from '@copy'
-import { MOTIVOS, proveedoresDisponibles, recuperarContrasena } from '@lib/cuenta'
+import { claveDeError, proveedoresDisponibles, recuperarContrasena } from '@lib/cuenta'
 import { SALIDA } from '@lib/salidaCuenta'
 import { ESTADOS_SESION } from '@lib/sesion'
 import { useSesion } from '@lib/useSesion'
@@ -37,49 +38,20 @@ const textos = copy.cuenta
 
 // P7 ya dice "Continuar con Google" y "Crear cuenta": se leen de allí.
 const P7 = copy.diario.onboarding.p7
+const BOTONES = { crear: P7.create, proveedores: P7 }
 
 const VISTAS = Object.freeze({
   estado: 'estado',
   entrar: 'entrar',
   crear: 'crear',
-  recuperar: 'recuperar',
 })
-
-/** Qué frase toca para cada motivo. `null` es no decir nada: cerrar la ventana de Google no es un error. */
-function errorDe(motivo) {
-  if (motivo === MOTIVOS.rechazado) return null
-  if (motivo === MOTIVOS.credenciales || motivo === MOTIVOS.correoEnUso) return 'credenciales'
-  if (motivo === MOTIVOS.sinConexion) return 'sinConexion'
-  return 'generico'
-}
-
-const ENLACE =
-  'self-start rounded-full px-3 py-2 min-h-touch-sm text-sm text-on-surface-soft hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30'
 
 export default function TuCuenta() {
   const sesion = useSesion()
   const [vista, setVista] = useState(VISTAS.estado)
-  const [correo, setCorreo] = useState('')
-  const [contrasena, setContrasena] = useState('')
-  const [error, setError] = useState(null)
-  const [enviado, setEnviado] = useState(false)
   const [salida, setSalida] = useState(null)
 
   const ocupado = useRef(false)
-  const campoCorreo = useRef(null)
-  const idError = useId()
-
-  // Un error lleva el foco al primer campo, que es el que lo explica.
-  useEffect(() => {
-    if (error) campoCorreo.current?.focus()
-  }, [error])
-
-  const ir = (destino) => {
-    setVista(destino)
-    setError(null)
-    setEnviado(false)
-    setContrasena('')
-  }
 
   /** Un toque a la vez: el segundo, mientras el primero está en camino, no hace nada. */
   const unaVez = async (trabajo) => {
@@ -90,39 +62,6 @@ export default function TuCuenta() {
     } finally {
       ocupado.current = false
     }
-  }
-
-  const tras = (resultado) => {
-    if (resultado.ok) {
-      ir(VISTAS.estado)
-      return
-    }
-    setError(errorDe(resultado.motivo))
-  }
-
-  const enviarFormulario = (evento) => {
-    evento.preventDefault()
-    unaVez(async () => {
-      setError(null)
-      const accion = vista === VISTAS.crear ? sesion.crear : sesion.entrar
-      tras(await accion(correo, contrasena))
-    })
-  }
-
-  const conProveedor = () =>
-    unaVez(async () => {
-      setError(null)
-      tras(await sesion.entrarConGoogle())
-    })
-
-  const enviarRecuperacion = (evento) => {
-    evento.preventDefault()
-    unaVez(async () => {
-      setError(null)
-      const r = await recuperarContrasena(correo)
-      if (r.ok) setEnviado(true)
-      else setError(errorDe(r.motivo))
-    })
   }
 
   const pedirSalida = () =>
@@ -136,100 +75,24 @@ export default function TuCuenta() {
       if (!r.ok) setSalida(SALIDA.pendiente)
     })
 
-  const mensajeDeError = error && (
-    <p id={idError} className="text-base text-on-surface" aria-live="polite">
-      {textos.error[error]}
-    </p>
-  )
-  const descrito = error ? idError : undefined
-
-  // ─── Formulario de entrar o crear ──────────────────────────────────────
+  // ─── Formulario de entrar o crear, y recuperar el acceso ───────────────
+  // Es el de `components/shared/` (SPEC_30, D30-8): el mismo que monta el
+  // onboarding para entrar desde la bienvenida.
   if (vista === VISTAS.entrar || vista === VISTAS.crear) {
     const creando = vista === VISTAS.crear
     return (
-      <form className="flex flex-col gap-4" onSubmit={enviarFormulario} noValidate>
-        <h3 className="font-display text-base text-on-surface">
-          {creando ? textos.formulario.tituloCrear : textos.formulario.tituloEntrar}
-        </h3>
-
-        <label className="flex flex-col gap-2">
-          <span className="text-sm text-on-surface-soft">{textos.formulario.correo}</span>
-          <CampoLinea
-            ref={campoCorreo}
-            type="email"
-            autoComplete="email"
-            value={correo}
-            aria-describedby={descrito}
-            onChange={(evento) => setCorreo(evento.target.value)}
-          />
-        </label>
-
-        <label className="flex flex-col gap-2">
-          <span className="text-sm text-on-surface-soft">{textos.formulario.contrasena}</span>
-          <CampoLinea
-            type="password"
-            autoComplete={creando ? 'new-password' : 'current-password'}
-            value={contrasena}
-            aria-describedby={descrito}
-            onChange={(evento) => setContrasena(evento.target.value)}
-          />
-        </label>
-
-        {mensajeDeError}
-
-        <Button type="submit" variant="surface" fullWidth>
-          {creando ? P7.create : textos.formulario.entrar}
-        </Button>
-
-        {proveedoresDisponibles().map((proveedor) => (
-          <Button key={proveedor} type="button" variant="surface" fullWidth onClick={conProveedor}>
-            {P7[proveedor]}
-          </Button>
-        ))}
-
-        {!creando && (
-          <button type="button" className={ENLACE} onClick={() => ir(VISTAS.recuperar)}>
-            {textos.formulario.olvide}
-          </button>
-        )}
-        <button type="button" className={ENLACE} onClick={() => ir(VISTAS.estado)}>
-          {textos.formulario.volver}
-        </button>
-      </form>
-    )
-  }
-
-  // ─── Recuperar el acceso ───────────────────────────────────────────────
-  if (vista === VISTAS.recuperar) {
-    return (
-      <form className="flex flex-col gap-4" onSubmit={enviarRecuperacion} noValidate>
-        <h3 className="font-display text-base text-on-surface">{textos.recuperar.titulo}</h3>
-        <p className="text-sm text-on-surface-soft leading-relaxed">{textos.recuperar.texto}</p>
-
-        <label className="flex flex-col gap-2">
-          <span className="text-sm text-on-surface-soft">{textos.formulario.correo}</span>
-          <CampoLinea
-            ref={campoCorreo}
-            type="email"
-            autoComplete="email"
-            value={correo}
-            aria-describedby={descrito}
-            onChange={(evento) => setCorreo(evento.target.value)}
-          />
-        </label>
-
-        {mensajeDeError}
-        <div aria-live="polite">
-          {enviado && <p className="text-base text-on-surface">{textos.recuperar.enviado}</p>}
-        </div>
-
-        <Button type="submit" variant="surface" fullWidth>
-          {textos.recuperar.boton}
-        </Button>
-        <button type="button" className={ENLACE} onClick={() => ir(VISTAS.entrar)}>
-          {textos.formulario.volver}
-        </button>
-      </form>
+      <FormularioEntrar
+        modo={creando ? 'crear' : 'entrar'}
+        textos={textos}
+        botones={BOTONES}
+        proveedores={proveedoresDisponibles()}
+        errorDe={claveDeError}
+        onEnviar={creando ? sesion.crear : sesion.entrar}
+        onProveedor={() => sesion.entrarConGoogle()}
+        onRecuperar={recuperarContrasena}
+        onHecho={() => setVista(VISTAS.estado)}
+        onVolver={() => setVista(VISTAS.estado)}
+      />
     )
   }
 
@@ -248,11 +111,16 @@ export default function TuCuenta() {
 
       {(estado === ESTADOS_SESION.sinCuenta || estado === ESTADOS_SESION.vencida) && (
         <div className="flex flex-col gap-3">
-          <Button type="button" variant="surface" fullWidth onClick={() => ir(VISTAS.entrar)}>
+          <Button type="button" variant="surface" fullWidth onClick={() => setVista(VISTAS.entrar)}>
             {textos.acciones.entrar}
           </Button>
           {estado === ESTADOS_SESION.sinCuenta && (
-            <Button type="button" variant="surface" fullWidth onClick={() => ir(VISTAS.crear)}>
+            <Button
+              type="button"
+              variant="surface"
+              fullWidth
+              onClick={() => setVista(VISTAS.crear)}
+            >
               {textos.acciones.crear}
             </Button>
           )}

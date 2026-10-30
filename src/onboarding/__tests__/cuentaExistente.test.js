@@ -417,7 +417,9 @@ describe('criterio 9: P7 no tiene camino propio a la cuenta', () => {
   })
 
   it('P7 conecta por la sesión', () => {
-    expect(contenedor).toMatch(/const \{ conectarCuenta, selloRestauracion \} = useSesion\(\)/)
+    expect(contenedor).toMatch(
+      /const \{ conectarCuenta, selloRestauracion[\w, ]*\} = useSesion\(\)/,
+    )
     expect(contenedor).toMatch(/acciones\.conectarCuenta\(resultado\)/)
     expect(hook).toMatch(/conectarConTraspaso\(uidSesion\.current, cuenta, conectar/)
   })
