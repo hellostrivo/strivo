@@ -250,7 +250,7 @@ está en `docs/frases-v2-fuentes.md`.
 - [x] La preferencia y las asignaciones no salen del dispositivo.
 - [x] Las originales no llevan comillas ni atribución, y las citas solo se muestran aprobadas.
 - [x] Pasan los seis comandos de `CLAUDE.md` §12 y `validar:frases`. La única falla es la prueba intermitente conocida de `journal.test.js`.
-- [ ] **Revisión editorial de las 1 000 originales por la propietaria del producto.** Las redactó la implementación; qué se le dice a alguien al abrir el día es decisión de producto.
+- [x] **Revisión editorial de las 1 000 originales por la propietaria del producto.** Terminada el 30 oct 2026: las 1 000 marcadas como bien, después de reescribir las que pidió cambiar en lotes. No se retiró ninguna.
 - [ ] **Aprobación editorial y jurídica de citas hasta llegar al 25–35 %.** Hoy es 0 %.
 - [ ] Revisión legal del aviso de privacidad (§6).
 - [ ] Recorrido en un teléfono real.
