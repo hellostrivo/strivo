@@ -1,6 +1,6 @@
 # CLAUDE.md — Strivo
 
-**Última actualización:** 20 oct 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
+**Última actualización:** 31 oct 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
 **Blueprint (documento rector):** `/docs/blueprint/Strivo_Blueprint_de_Producto_v5_0_24-08-2026.md`
 **Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO.md`
 **Plan operativo del repliegue:** `/docs/Strivo_Plan_de_Separacion_Tecnica_v1_24-08-2026.md`
@@ -661,6 +661,11 @@ el componente.**
 
 - `src/lib/plataforma.js` → `esNativa()`: el **único** sitio que pregunta si la app corre dentro
   del iPhone. Nadie más importa `@capacitor/core` para eso; hay una prueba que recorre `src/`.
+- `src/lib/credencialNativa.js` → el **único** sitio que importa `@capacitor-firebase/authentication`,
+  y bajo demanda: la credencial de Google o Apple en la app de iPhone, qué es cancelar
+  (`esCancelacion`) y el cierre de la sesión del plugin. Hay una prueba que recorre `src/`.
+- `src/lib/reautenticacion.js` → `metodoDeSesion` (con qué se entró, según el token) y
+  `reautenticarConProveedor`. Lo leen el PIN y, cuando llegue, el borrado de SPEC_24.
 - `src/lib/barraEstado.js` → `textoDeBarra`: de qué color va la hora y la batería en la app de
   iPhone, con la tabla entera. Lo deciden el cromo y lo que se pinta encima, no la paleta.
 
@@ -699,19 +704,119 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**89 archivos de prueba · 2.366 casos · los seis comandos y `validar:frases` en verde.**
+**95 archivos de prueba · 2.482 casos · los seis comandos y `validar:frases` en verde.**
+
+### Google y Apple en la app de iPhone (SPEC_21.2, 31 oct 2026)
+
+La instrucción completa está en `docs/specs/INSTRUCCION_SPEC_21_2_GOOGLE_Y_APPLE.md` (v1.1, con
+las decisiones del reporte previo en su §1.2 y sus desvíos en §2).
+
+**El camino de la credencial.** `@capacitor-firebase/authentication` **8.5.2**, versión exacta, con
+`skipNativeAuth: true`: el plugin abre la hoja nativa de Apple o de Google y devuelve el token; la
+sesión se abre en el **SDK de JavaScript** con `signInWithCredential` (en `cuenta.js`) o
+`reauthenticateWithCredential` (en `lib/reautenticacion.js`). **Hay una sola sesión**, la que leen
+la cola, la restauración, las reglas de Firestore y el PIN; el plugin no abre otra. Todo lo nativo
+vive en `src/lib/credencialNativa.js`, que **es el único que importa el plugin, y bajo demanda**:
+en web y en las pruebas no se carga nunca, y una prueba recorre `src/` para comprobarlo.
+
+**Qué hay en cada plataforma** (`proveedoresDisponibles`): en web, `['google']`; en la app de
+iPhone, `['apple', 'google']`, **Apple primero** (DP-21.2.4). Apple en web sigue fuera hasta que
+DP-21.5 decida si la PWA sigue pública (DP-21.2.2). Los tres sitios con botones —P7, la vista de
+entrar de SPEC_30 y Tu perfil— pintan `components/shared/BotonProveedor.jsx`, todo por props.
+`entrarConGoogle` ya no existe: la sesión ofrece `entrarConProveedor(cual)`, y Tu perfil le pasa
+el proveedor tocado (antes el botón de Apple habría entrado con Google).
+
+**El override de `firebase`, y por qué existe.** El plugin pide `firebase ^12.6.0` como par
+opcional y la app usa la 10.14.1; sin más, `npm install` falla con `ERESOLVE`. El `overrides` de
+`package.json` va **acotado al plugin** (`{ "@capacitor-firebase/authentication": { "firebase":
+"$firebase" } }`) y le da la del repo. Es seguro porque la única parte del plugin que importa
+firebase es su implementación web, que se carga en un chunk aparte y la app no pide nunca. **Al
+actualizar el plugin hay que volver a comprobar que `vite build` resuelve sus importaciones contra
+la 10** (hoy pasa: todos los nombres que importa existen en la 10.14). `appIos.test.js` falla si el
+lockfile tiene más de un `firebase`. **Deuda: subir a firebase 12 después del lanzamiento**, y con
+eso retirar el override.
+
+**SPM.** `capacitor.config.json` lleva `experimental.ios.spm` con `swiftToolsVersion: "6.1"`,
+`packageOptions` con `symlink: true` (evita una colisión de identidad de paquetes) y
+**`packageTraits: { "@capacitor-firebase/authentication": ["Google"] }`**: los traits de fábrica
+traen también el SDK de Facebook, y listarlos lo deja fuera. Pide Xcode 16.3 o más. El enlace que
+crea `cap sync` (`ios/App/CapApp-SPM/symlinks/`) está en `ios/.gitignore`.
+
+**`GoogleService-Info.plist` está fuera de git**, como `.env.local` (DP-21.2.3), y va en
+`ios/App/App/`. `npm run ios:build` corre antes `scripts/comprobar-ios.mjs`, que termina con una
+frase en español si falta, si es de otro `BUNDLE_ID`, si no trae `CLIENT_ID` —la hoja de Google no
+se abriría y la llamada no volvería nunca— o si el `REVERSED_CLIENT_ID` no está en
+`CFBundleURLSchemes` de `Info.plist` —GoogleSignIn cerraría la app al tocar el botón—. **Sin el
+archivo la app arranca igual**: el plugin no configura Firebase nativo, lo anota y sigue. Por eso
+el `signOut` del plugin **solo se llama si la sesión entró con Google o Apple**: sin Firebase
+nativo configurado, cerraría la app, y haber entrado con un proveedor es la prueba de que el
+archivo estaba. No hace falta tocar `AppDelegate` ni `SceneDelegate`: el plugin configura Firebase
+solo, y GoogleSignIn vuelve por la sesión web del sistema y no por una URL abierta.
+
+**Cómo comitear `project.pbxproj` sin el Team.** El Team (`DEVELOPMENT_TEAM`) lo pone la fundadora
+en Xcode y vive en su copia para siempre. Los cambios del proyecto se hacen **editando el texto**
+(así entraron `CODE_SIGN_ENTITLEMENTS = App/App.entitlements` y la referencia al plist) y se
+comitean **por ruta**, nunca con `git add -A`, `git add .` ni `git commit -a`. Antes de cada commit
+que toque el archivo, `git show :ios/App/App.xcodeproj/project.pbxproj | grep DEVELOPMENT_TEAM`
+tiene que salir vacío, y `appIos.test.js` lo exige sobre el índice.
+
+**Los errores.** Los proveedores tienen **su propio mapeo** (`comoMotivoDeProveedor`): un
+`auth/invalid-credential` de Google o Apple es un token que Firebase no aceptó y nunca se dice como
+«ese correo ya existe».
+- **Cancelar no es un error** (`rechazado`, sin texto). Ni Apple ni Google traen código al cancelar,
+  así que `esCancelacion` mira dos patrones del mensaje: «error 1001» (Apple, en cualquier idioma)
+  y «The user canceled the sign-in flow.» (Google). **Cualquier otro rechazo sin código es
+  `generico`, nunca `falloRed`.**
+- **Mismo correo, otra forma de entrar** (`auth/account-exists-with-different-credential`) es
+  `otroMetodo` y tiene su frase en P7, en la vista de entrar y en Tu perfil (DP-21.2.7). **No se
+  vinculan cuentas.**
+- En el PIN, cancelar la hoja es `cancelado`: la pantalla se queda como estaba, sin nota.
+
+**Apple pide nombre y correo, y el nombre no sale de `credencialNativa`** (DP-21.2.5, reescrita).
+En iOS el plugin pide los dos ámbitos y no hay forma de pedir solo el correo. Lo que se toma de la
+respuesta es el token y el nonce, y una prueba lo vigila. **P2 tiene que seguir siendo opcional**:
+Apple puede rechazar una app que exige el nombre después de Iniciar sesión con Apple. Con el
+correo oculto (`…@privaterelay.appleid.com`), Tu cuenta dice «Entraste con Apple. Tu correo se
+queda oculto.» en lugar de la dirección (DP-21.2.6, `esCorreoOculto`).
+
+**Cerrar sesión** (DP-21.2.8, reescrita) cierra la sesión de Strivo y la del SDK de Google en el
+teléfono; **la del navegador del sistema, no**. La próxima vez Google vuelve a preguntar con qué
+cuenta, pero la anterior puede seguir en la lista. Con Apple no hay nada que cerrar. Si el cierre
+del plugin falla, la salida sigue.
+
+**Recuperar el PIN y, después, borrar la cuenta.** `reautenticar` decide el método por el de la
+sesión —`metodoDeSesion`, el `signInProvider` del token—, no por `providerData[0]`, cuyo orden no
+está garantizado. Con Google o Apple pasa por `reautenticarConProveedor`, en `lib/`, porque SPEC_24
+la va a necesitar. La revocación del token de Apple al borrar está anotada al final de SPEC_24, sin
+elegir camino.
+
+**Excepción de marca a RN-VIS-03, solo para el botón de Apple.** Sus pautas admiten el botón blanco
+o el negro y nada más. Va **blanco en los dos momentos**: de día con borde, texto y logo negros
+(`#000000`); de noche, sin borde. Es el único negro puro de la app y vive en dos tokens de
+`globals.css` (`--proveedor-tinta-apple`, `--proveedor-borde-apple`). En `lint:contraste` va como
+excepción con nombre (`EXCEPCIONES_DE_MARCA`), no entre los pares generales, y una prueba falla si
+`#000000` aparece en cualquier otra línea de la hoja. **Google** va igual —blanco, con borde solo
+sobre superficie clara— en **Inter y no en Roboto**, y con el gris de borde `#5F6368`: el de sus
+pautas actuales (`#747775`) se queda en 2,87:1 sobre la parada más oscura de la mañana.
+
+**Lo que no se ha visto en un teléfono:** que las dos hojas abran, que cancelar no diga nada (los
+patrones del mensaje se comprobaron en el código del plugin, no en un aparato), que la sesión
+sobreviva a cerrar la app, que Google vuelva a preguntar tras salir, qué pasa con el mismo correo
+por dos caminos (N8, que depende de la protección contra la enumeración de correos de Firebase),
+la recuperación del PIN con las dos hojas, y si la capacidad de «Sign in with Apple» aparece en
+Xcode al elegir el Team. Son N1–N15 de la instrucción.
 
 ### App iOS (SPEC_21.1, 12 oct 2026)
 
 La instrucción completa está en `docs/specs/INSTRUCCION_SPEC_21_1_CAPACITOR_IOS.md`, con la SPEC
 madre en `SPEC_21_CAPACITOR_IOS.md`. **La misma app, empaquetada dentro de un binario de iPhone**:
 ninguna pantalla cambia salvo las áreas seguras. Google nativo e Iniciar sesión con Apple son de
-SPEC_21.2.
+SPEC_21.2 (arriba).
 
 **Cómo se construye y se abre:**
 
 ```bash
-npm run ios:build      # vite build --mode ios && cap sync ios
+npm run ios:build      # comprueba GoogleService-Info.plist, vite build --mode ios y cap sync ios
 npm run ios:abrir      # cap open ios: abre Xcode
 npm run ios:arranque   # compone assets/splash.png y splash-dark.png desde el símbolo
 npm run ios:recursos   # npx --yes @capacitor/assets@3.0.5 generate --ios
@@ -740,7 +845,7 @@ si alguno cambia.
 Capacitor 8 es 15.0 y no basta: el arranque usa `crypto.randomUUID` sin guarda y Tu perfil usa
 `.at()` (los dos desde 15.4), y `globals.css` pide `color-mix()` (desde 16.2). **No se añaden
 guardas para 15.x**: lo decidió la fundadora, y ningún iPhone que pueda tener iOS 16 se queda
-fuera. `cap sync` no lo revierte, y la prueba lo vigila. `CapApp-SPM/Package.swift` dice `.v15` y
+fuera. `cap sync` no lo revierte, y la prueba lo vigila. `CapApp-SPM/Package.swift` dice `.v16` y
 es correcto: es el mínimo del paquete, no el de la app, y lo reescribe la CLI.
 
 **Swift Package Manager, no CocoaPods.** Es lo que usa Capacitor 8 por defecto. `Package.swift` lo
@@ -753,8 +858,8 @@ service worker podría servir una versión vieja tras una actualización. Netlif
 **Auth en nativo es `initializeAuth` con IndexedDB y sin `popupRedirectResolver`**
 (`opcionesDeAuth`, en `firebase.js`). `getAuth` carga el resolvedor de ventanas emergentes —un
 iframe de `authDomain`— que dentro del WebView puede no cargar nunca y dejar colgado
-`authStateReady()`. Sin resolvedor no hay ventana emergente, así que **en nativo P7 y Tu perfil solo
-ofrecen el correo** (`proveedoresDisponibles`, en `cuenta.js`). En web, nada cambia.
+`authStateReady()`. Sin resolvedor no hay ventana emergente, así que **en nativo Google y Apple
+entran por la hoja nativa y `signInWithCredential`** (SPEC_21.2, arriba). En web, nada cambia.
 
 **La barra de estado la decide el cromo, no la paleta.** La cabecera llega hasta el borde de arriba
 y es el contratono oscuro en todas partes salvo en la Noche de Hoy, así que la regla de la SPEC

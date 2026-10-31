@@ -113,3 +113,9 @@ Undécimo. Requiere 21, 17B y 25. Es prerequisito de SPEC_27.
 - **DP-26.2** Versión mínima de Chrome WebView soportada. Propuesta: la que tenga `crypto.subtle`, `dvh` y las APIs que el inventario de SPEC_21 haya listado; Claude Code propone un número con evidencia.
 - **DP-26.3** `minSdk`. Propuesta: 26 (Android 8.0) para cubrir la mayoría de equipos en México sin arrastrar WebViews imposibles. Claude Code reporta el porcentaje de dispositivos que quedarían fuera según la distribución vigente.
 - **DP-26.4** `allowBackup`. Recomendado: `false`. El Journal viajaría al backup de Google en claro; la restauración real la hace Firestore (SPEC_17), así que no se pierde nada.
+
+---
+
+## Nota de SPEC_21.2 (31 oct 2026) — Iniciar sesión con Apple en Android
+
+En Android no hay hoja nativa de Apple: **Apple pide el flujo web, con un Service ID** dado de alta en developer.apple.com y el dominio verificado. El plugin elegido en 21.2 (`@capacitor-firebase/authentication`) lo soporta en Android. Es la misma dependencia que tiene Apple en la PWA (DP-21.2.2): conviene decidirlas juntas. En iOS, 21.2 usa `skipNativeAuth: true` y la sesión del SDK de JavaScript; en Android debería ser igual, para que haya una sola sesión en las dos plataformas.
