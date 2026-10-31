@@ -47,6 +47,7 @@ vi.mock('firebase/auth', () => ({
     return contestar(respuestas.entrar)
   },
   signInWithPopup: async () => contestar(respuestas.popup),
+  signInWithCredential: async () => contestar(respuestas.popup),
   getAdditionalUserInfo: () =>
     respuestas.isNewUser === undefined ? null : { isNewUser: respuestas.isNewUser },
   sendPasswordResetEmail: async () => {
@@ -238,8 +239,8 @@ describe('SPEC_21.1 §4.2: proveedores según la plataforma', () => {
     expect(proveedoresDisponibles(false)).toEqual(['google'])
   })
 
-  it('en la app de iPhone, ninguno: queda el correo', () => {
-    expect(proveedoresDisponibles(true)).toEqual([])
+  it('en la app de iPhone, Apple y luego Google (SPEC_21.2, DP-21.2.4)', () => {
+    expect(proveedoresDisponibles(true)).toEqual(['apple', 'google'])
   })
 
   it('sin decirle la plataforma pregunta a esNativa, que en las pruebas es web', () => {

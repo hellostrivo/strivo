@@ -34,14 +34,17 @@
 
 import { mudarUid, shared } from '@/lib/db'
 import { esNativa } from '@lib/plataforma'
+import { cerrarSesionNativa, credencialNativa, esCancelacion } from '@lib/credencialNativa'
 
 /**
  * Lo que puede salir mal, sin un solo código de error a la vista (RN-EST-04).
  *
- * Los cuatro primeros son los de P7 y no cambian. Los tres últimos son los de
- * entrar y recuperar desde Tu perfil (SPEC_19 §4): ahí sí importa distinguir
+ * Los cuatro primeros son los de P7 y no cambian. Los tres siguientes son los
+ * de entrar y recuperar desde Tu perfil (SPEC_19 §4): ahí sí importa distinguir
  * unas credenciales que no coinciden de una conexión caída, porque cada una
- * tiene su frase.
+ * tiene su frase. `otroMetodo` es de Google y Apple (SPEC_21.2, DP-21.2.7): el
+ * correo ya tiene cuenta con otra forma de entrar, y decirle a alguien que
+ * falló la red sería mandarle a reintentar algo que no va a salir.
  */
 export const MOTIVOS = Object.freeze({
   sinConfigurar: 'sin_configurar',
@@ -51,6 +54,7 @@ export const MOTIVOS = Object.freeze({
   credenciales: 'credenciales',
   sinConexion: 'sin_conexion',
   generico: 'generico',
+  otroMetodo: 'otro_metodo',
 })
 
 /**
@@ -63,6 +67,7 @@ export function claveDeError(motivo) {
   if (motivo === MOTIVOS.rechazado) return null
   if (motivo === MOTIVOS.credenciales || motivo === MOTIVOS.correoEnUso) return 'credenciales'
   if (motivo === MOTIVOS.sinConexion) return 'sinConexion'
+  if (motivo === MOTIVOS.otroMetodo) return 'otroMetodo'
   return 'generico'
 }
 
@@ -76,16 +81,30 @@ export function claveDeError(motivo) {
 export const PROVEEDORES_WEB = Object.freeze(['google'])
 
 /**
- * Los proveedores que se ofrecen aquí, según dónde corre la app (SPEC_21.1
- * §4.2). **En la app de iPhone, ninguno**: Google entra por ventana emergente y
- * dentro de la app no hay ventana que abrir, así que su botón no podría
- * funcionar. Queda el correo, que es la cuenta entera. Google nativo y Apple
- * llegan con SPEC_21.2.
+ * Los de la app de iPhone (SPEC_21.2, DP-21.2.4): **Apple primero**, luego
+ * Google, y el correo después de los dos. Entran por la hoja nativa
+ * (`credencialNativa`), no por ventana emergente.
+ */
+export const PROVEEDORES_NATIVOS = Object.freeze(['apple', 'google'])
+
+/**
+ * Los proveedores que se ofrecen aquí, según dónde corre la app. En web, solo
+ * Google (DP-21.2.2: Apple en web pide un Service ID y verificar el dominio);
+ * en la app de iPhone, Apple y Google. P7, la vista de entrar y Tu perfil
+ * pintan sus botones desde aquí.
  *
  * @param {boolean} [nativa] - Existe para las pruebas.
  */
 export function proveedoresDisponibles(nativa = esNativa()) {
-  return nativa ? [] : PROVEEDORES_WEB
+  return nativa ? PROVEEDORES_NATIVOS : PROVEEDORES_WEB
+}
+
+/**
+ * ¿Es el correo que inventa Apple cuando alguien elige ocultar el suyo?
+ * Tu cuenta no lo enseña (DP-21.2.6): dice que se entra con Apple.
+ */
+export function esCorreoOculto(correo) {
+  return /@privaterelay\.appleid\.com$/i.test(String(correo ?? '').trim())
 }
 
 async function auth() {
@@ -123,6 +142,27 @@ const CODIGOS_DE_CREDENCIALES = new Set([
   'auth/invalid-email',
 ])
 
+/**
+ * Para Google y Apple, con su propio mapeo (SPEC_21.2). El de P7 no sirve: allí
+ * `invalid-credential` es una contraseña que no coincide, y aquí es un token
+ * que Firebase no aceptó. Decirle a alguien que entró con Google «prueba con
+ * tu contraseña de siempre» no tiene sentido. Lo que no se reconoce es
+ * `generico`, nunca `falloRed`.
+ */
+const CANCELACIONES_WEB = new Set([
+  'auth/popup-closed-by-user',
+  'auth/cancelled-popup-request',
+  'auth/user-cancelled',
+])
+
+function comoMotivoDeProveedor(error) {
+  const codigo = String(error?.code ?? '')
+  if (esCancelacion(error) || CANCELACIONES_WEB.has(codigo)) return MOTIVOS.rechazado
+  if (codigo === 'auth/account-exists-with-different-credential') return MOTIVOS.otroMetodo
+  if (codigo === 'auth/network-request-failed') return MOTIVOS.sinConexion
+  return MOTIVOS.generico
+}
+
 function comoMotivoDeEntrada(error) {
   const codigo = String(error?.code ?? '')
   if (CODIGOS_DE_CREDENCIALES.has(codigo)) return MOTIVOS.credenciales
@@ -137,17 +177,33 @@ function comoMotivoDeEntrada(error) {
  * ignora; Tu perfil lo usa para decidir si hay algo que bajar antes de mudar
  * el árbol (`adoptarArbol` si es nueva, `entrarACuenta` si ya existía).
  *
+ * **Solo cambia cómo se consigue la credencial** (SPEC_21.2 §4.2): en web, por
+ * ventana emergente; en la app de iPhone, por la hoja nativa y
+ * `signInWithCredential`. La sesión es en los dos casos la del SDK de
+ * JavaScript, y la respuesta tiene la misma forma.
+ *
+ * @param {'apple'|'google'} cual
+ * @param {object} [opciones]
+ * @param {boolean} [opciones.nativa] - Existe para las pruebas.
  * @returns {Promise<{ok: boolean, uid?: string, email?: ?string, nueva?: boolean, motivo?: string}>}
  */
-export async function entrarConProveedor(cual) {
+export async function entrarConProveedor(cual, { nativa = esNativa() } = {}) {
   const instancia = await auth()
   if (!instancia) return { ok: false, motivo: MOTIVOS.sinConfigurar }
 
   try {
-    const [{ appleProvider, googleProvider }, { getAdditionalUserInfo, signInWithPopup }] =
-      await Promise.all([import('@lib/firebase'), import('firebase/auth')])
-    const proveedor = cual === 'apple' ? appleProvider : googleProvider
-    const resultado = await signInWithPopup(instancia, proveedor)
+    const { getAdditionalUserInfo, signInWithCredential, signInWithPopup } =
+      await import('firebase/auth')
+    let resultado
+    if (nativa) {
+      resultado = await signInWithCredential(instancia, await credencialNativa(cual))
+    } else {
+      const { appleProvider, googleProvider } = await import('@lib/firebase')
+      resultado = await signInWithPopup(
+        instancia,
+        cual === 'apple' ? appleProvider : googleProvider,
+      )
+    }
     const { user } = resultado
     return {
       ok: true,
@@ -156,7 +212,7 @@ export async function entrarConProveedor(cual) {
       nueva: getAdditionalUserInfo(resultado)?.isNewUser === true,
     }
   } catch (error) {
-    return { ok: false, motivo: comoMotivo(error) }
+    return { ok: false, motivo: comoMotivoDeProveedor(error) }
   }
 }
 
@@ -244,12 +300,37 @@ export async function recuperarContrasena(correo) {
   return { ok: true }
 }
 
-/** Cierra la sesión de Firebase. Sin configuración no hay nada que cerrar. */
-export async function cerrarSesion() {
+/** ¿Esta sesión entró con Google o con Apple? Sin poder saberlo, no. */
+async function entroConProveedor(usuario) {
+  try {
+    const { metodoDeSesion } = await import('@lib/reautenticacion')
+    const metodo = await metodoDeSesion(usuario)
+    return metodo === 'google.com' || metodo === 'apple.com'
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Cierra la sesión de Firebase. Sin configuración no hay nada que cerrar.
+ *
+ * **En la app de iPhone cierra también la del plugin** (DP-21.2.8), pero solo
+ * si se entró con Google o con Apple: sin `GoogleService-Info.plist` el plugin
+ * no configura Firebase, y su `signOut` cerraría la app; entrar con un
+ * proveedor es la prueba de que el archivo estaba. Lo que dice si se entró así
+ * se pregunta antes de cerrar, porque después ya no hay usuario. Si el cierre
+ * del plugin falla, la salida sigue.
+ *
+ * @param {object} [opciones]
+ * @param {boolean} [opciones.nativa] - Existe para las pruebas.
+ */
+export async function cerrarSesion({ nativa = esNativa() } = {}) {
   const instancia = await auth()
   if (!instancia) return
+  const conProveedor = nativa && (await entroConProveedor(instancia.currentUser))
   const { signOut } = await import('firebase/auth')
   await signOut(instancia)
+  if (conProveedor) await cerrarSesionNativa()
 }
 
 /**

@@ -42,7 +42,8 @@ const firebaseConfig = {
  * emergentes, que monta un iframe de `authDomain`; dentro del WebView puede no
  * llegar a cargar nunca, y con él se quedaría colgado `authStateReady()`, que es
  * lo que espera el arranque. Sin resolvedor, `signInWithPopup` no funciona — y
- * por eso en nativo no se ofrece Google (`proveedoresDisponibles`).
+ * por eso en nativo Google y Apple no entran por ventana emergente sino por la
+ * hoja nativa y `signInWithCredential` (`lib/credencialNativa`, SPEC_21.2).
  *
  * @param {boolean} nativa
  * @returns {?{persistence: object}}
