@@ -29,14 +29,19 @@ import Button from '@components/ui/Button'
 import Confirmacion from '@components/shared/Confirmacion'
 import FormularioEntrar from '@components/shared/FormularioEntrar'
 import { copy, interpolate } from '@copy'
-import { claveDeError, proveedoresDisponibles, recuperarContrasena } from '@lib/cuenta'
+import {
+  claveDeError,
+  esCorreoOculto,
+  proveedoresDisponibles,
+  recuperarContrasena,
+} from '@lib/cuenta'
 import { SALIDA } from '@lib/salidaCuenta'
 import { ESTADOS_SESION } from '@lib/sesion'
 import { useSesion } from '@lib/useSesion'
 
 const textos = copy.cuenta
 
-// P7 ya dice "Continuar con Google" y "Crear cuenta": se leen de allí.
+// P7 ya dice "Continuar con Apple", "Continuar con Google" y "Crear cuenta": se leen de allí.
 const P7 = copy.diario.onboarding.p7
 const BOTONES = { crear: P7.create, proveedores: P7 }
 
@@ -88,7 +93,7 @@ export default function TuCuenta() {
         proveedores={proveedoresDisponibles()}
         errorDe={claveDeError}
         onEnviar={creando ? sesion.crear : sesion.entrar}
-        onProveedor={() => sesion.entrarConGoogle()}
+        onProveedor={sesion.entrarConProveedor}
         onRecuperar={recuperarContrasena}
         onHecho={() => setVista(VISTAS.estado)}
         onVolver={() => setVista(VISTAS.estado)}
@@ -98,10 +103,14 @@ export default function TuCuenta() {
 
   // ─── El estado y sus acciones ──────────────────────────────────────────
   const { estado } = sesion
+  // El correo que inventa Apple al ocultar el de verdad no se enseña: no dice
+  // nada a quien lo lee (DP-21.2.6).
   const frase =
-    estado === ESTADOS_SESION.conCuenta
-      ? interpolate(textos.estado.conCuenta, { correo: sesion.correo ?? '' })
-      : textos.estado[estado]
+    estado !== ESTADOS_SESION.conCuenta
+      ? textos.estado[estado]
+      : esCorreoOculto(sesion.correo)
+        ? textos.estado.conApple
+        : interpolate(textos.estado.conCuenta, { correo: sesion.correo ?? '' })
 
   return (
     <div className="flex flex-col gap-4">
