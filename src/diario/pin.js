@@ -205,7 +205,15 @@ export async function desactivarPin(uid, pin) {
  *     `EmailAuthProvider.credential`. Es el camino de casi cualquier persona.
  *     **La contraseña no se guarda, no se registra y no sale de aquí** más que
  *     hacia Firebase: vive en el estado del componente que la pide.
- *   - **Google** y **Apple**: por ventana emergente, como siempre.
+ *   - **Google** y **Apple**: en web, por ventana emergente; en la app de
+ *     iPhone, con la hoja nativa (SPEC_21.2 §4.6). Lo hace
+ *     `reautenticarConProveedor`, en `lib/`, porque SPEC_24 la necesita para
+ *     borrar la cuenta. Cerrar la hoja es `cancelado`: no es un error y la
+ *     pantalla no dice nada.
+ *
+ * **El método es el de esta sesión** (`metodoDeSesion`, el `signInProvider`
+ * del token), no `providerData[0]`: con más de un método en la cuenta, el
+ * orden de esa lista no está garantizado.
  *
  * Sin sesión de Firebase —sin cuenta, o con la sesión vencida— no hay a quién
  * reautenticar y esto devuelve `sin-sesion`. Se dice tal cual en pantalla en
@@ -214,7 +222,7 @@ export async function desactivarPin(uid, pin) {
  * @param {string} uid
  * @param {object} [opciones]
  * @param {string} [opciones.contrasena] - solo con cuenta de correo.
- * @returns {Promise<{ok: boolean, motivo?: 'sin-metodo'|'sin-sesion'|'pide-contrasena'|'credenciales'|'sin-conexion'|'no-verificado'}>}
+ * @returns {Promise<{ok: boolean, motivo?: 'sin-metodo'|'sin-sesion'|'pide-contrasena'|'credenciales'|'sin-conexion'|'cancelado'|'no-verificado'}>}
  */
 export async function reautenticar(uid, { contrasena } = {}) {
   if ((await metodoDeRecuperacion(uid)) === null) return { ok: false, motivo: 'sin-metodo' }
@@ -226,13 +234,18 @@ export async function reautenticar(uid, { contrasena } = {}) {
     // dependa de la capa de autenticación es esa misma frase, dicha en código.
     const [
       { auth, appleProvider, googleProvider },
-      { EmailAuthProvider, reauthenticateWithCredential, reauthenticateWithPopup },
-    ] = await Promise.all([import('@/lib/firebase'), import('firebase/auth')])
+      { EmailAuthProvider, reauthenticateWithCredential },
+      { metodoDeSesion, reautenticarConProveedor },
+    ] = await Promise.all([
+      import('@/lib/firebase'),
+      import('firebase/auth'),
+      import('@/lib/reautenticacion'),
+    ])
 
     const usuario = auth?.currentUser ?? null
     if (!usuario) return { ok: false, motivo: 'sin-sesion' }
 
-    const proveedor = usuario.providerData?.[0]?.providerId
+    const proveedor = await metodoDeSesion(usuario)
     if (proveedor === 'password') {
       if (!contrasena) return { ok: false, motivo: 'pide-contrasena' }
       await reauthenticateWithCredential(
@@ -242,13 +255,12 @@ export async function reautenticar(uid, { contrasena } = {}) {
       return { ok: true }
     }
 
-    await reauthenticateWithPopup(
-      usuario,
-      proveedor === 'apple.com' ? appleProvider : googleProvider,
-    )
+    await reautenticarConProveedor(usuario, proveedor, {
+      proveedores: { appleProvider, googleProvider },
+    })
     return { ok: true }
   } catch (error) {
-    return { ok: false, motivo: motivoDeReautenticacion(error) }
+    return { ok: false, motivo: await motivoDeReautenticacion(error) }
   }
 }
 
@@ -259,9 +271,22 @@ const CODIGOS_DE_CREDENCIALES = new Set([
   'auth/invalid-login-credentials',
 ])
 
-/** Lo que puede salir mal al reautenticar, sin un solo código a la vista (RN-EST-04). */
-function motivoDeReautenticacion(error) {
+/** Cerrar la ventana emergente de Google o de Apple, en web. */
+const CODIGOS_DE_CANCELACION = new Set([
+  'auth/popup-closed-by-user',
+  'auth/cancelled-popup-request',
+  'auth/user-cancelled',
+])
+
+/**
+ * Lo que puede salir mal al reautenticar, sin un solo código a la vista
+ * (RN-EST-04). Qué es cancelar la hoja nativa lo sabe `credencialNativa`, y se
+ * pregunta aquí dentro para no cargarlo antes de hacer falta.
+ */
+async function motivoDeReautenticacion(error) {
   const codigo = String(error?.code ?? '')
+  const { esCancelacion } = await import('@/lib/credencialNativa')
+  if (CODIGOS_DE_CANCELACION.has(codigo) || esCancelacion(error)) return 'cancelado'
   if (CODIGOS_DE_CREDENCIALES.has(codigo)) return 'credenciales'
   if (codigo === 'auth/network-request-failed') return 'sin-conexion'
   return 'no-verificado'
