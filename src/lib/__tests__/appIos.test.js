@@ -60,6 +60,23 @@ describe('capacitor.config.json', () => {
   it('la barra de estado va encima del contenido y abre con texto oscuro, sobre papel', () => {
     expect(config.plugins.StatusBar).toEqual({ overlaysWebView: true, style: 'LIGHT' })
   })
+
+  // SPEC_21.2 (DP-21.2.1): el plugin solo consigue la credencial. La sesión es
+  // la del SDK de JavaScript, la que leen la cola, la restauración y el PIN.
+  it('Google y Apple: el plugin nunca abre su propia sesión (skipNativeAuth)', () => {
+    expect(config.plugins.FirebaseAuthentication).toEqual({
+      skipNativeAuth: true,
+      providers: ['apple.com', 'google.com'],
+    })
+  })
+
+  it('SPM: el plugin entra por enlace y sin el SDK de Facebook', () => {
+    const spm = config.experimental.ios.spm
+    expect(spm.swiftToolsVersion).toBe('6.1')
+    expect(spm.packageOptions).toEqual({ '@capacitor-firebase/authentication': { symlink: true } })
+    // Listar los rasgos sustituye a los de fábrica, que traen Facebook.
+    expect(spm.packageTraits).toEqual({ '@capacitor-firebase/authentication': ['Google'] })
+  })
 })
 
 describe('vite.config.js: sin service worker solo en el build nativo (DP-21.7)', async () => {
@@ -84,8 +101,10 @@ describe('vite.config.js: sin service worker solo en el build nativo (DP-21.7)',
 describe('package.json', () => {
   const paquete = JSON.parse(leer('package.json'))
 
-  it('ios:build construye en modo ios y sincroniza', () => {
-    expect(paquete.scripts['ios:build']).toBe('vite build --mode ios && cap sync ios')
+  it('ios:build comprueba lo de Google, construye en modo ios y sincroniza', () => {
+    expect(paquete.scripts['ios:build']).toBe(
+      'node scripts/comprobar-ios.mjs && vite build --mode ios && cap sync ios',
+    )
     expect(paquete.scripts['ios:abrir']).toBe('cap open ios')
   })
 
@@ -99,6 +118,30 @@ describe('package.json', () => {
 
   it('@capacitor/browser no entra en 21.1', () => {
     expect(paquete.dependencies['@capacitor/browser']).toBeUndefined()
+  })
+
+  it('el plugin de Google y Apple va en versión exacta (DP-21.2.1)', () => {
+    expect(paquete.dependencies['@capacitor-firebase/authentication']).toBe('8.5.2')
+  })
+
+  // El plugin pide firebase 12 como par opcional y la app usa la 10. Su parte
+  // web —la única que importa firebase— nunca se carga, así que se le da la del
+  // repo. El override va acotado al plugin: ningún otro paquete lo hereda.
+  it('el override de firebase va acotado al plugin y apunta a la del repo', () => {
+    expect(paquete.overrides).toEqual({
+      '@capacitor-firebase/authentication': { firebase: '$firebase' },
+    })
+  })
+})
+
+describe('package-lock.json', () => {
+  const lock = JSON.parse(leer('package-lock.json'))
+
+  it('un solo firebase en todo el árbol: el override no deja una segunda copia', () => {
+    const copias = Object.keys(lock.packages).filter((ruta) =>
+      /(^|\/)node_modules\/firebase$/.test(ruta),
+    )
+    expect(copias).toEqual(['node_modules/firebase'])
   })
 })
 
@@ -140,6 +183,18 @@ describe('ios/App/App.xcodeproj/project.pbxproj', () => {
     },
   )
 
+  it('Iniciar sesión con Apple: los entitlements, en Debug y en Release', () => {
+    const rutas = [...proyecto.matchAll(/CODE_SIGN_ENTITLEMENTS = ([^;]+);/g)].map((m) => m[1])
+    expect(rutas).toEqual(['App/App.entitlements', 'App/App.entitlements'])
+    expect(proyecto).toMatch(/path = App\.entitlements;/)
+  })
+
+  it('GoogleService-Info.plist va en los recursos, aunque no esté en git', () => {
+    expect(proyecto).toMatch(/GoogleService-Info\.plist in Resources \*\/ = \{isa = PBXBuildFile/)
+    const recursos = proyecto.match(/\/\* Resources \*\/ = \{[\s\S]*?files = \(([\s\S]*?)\);/)[1]
+    expect(recursos).toMatch(/GoogleService-Info\.plist in Resources/)
+  })
+
   it('versión 1.0.0, compilación 1', () => {
     expect([...proyecto.matchAll(/MARKETING_VERSION = ([^;]+);/g)].map((m) => m[1])).toEqual([
       '1.0.0',
@@ -158,6 +213,34 @@ describe('ios/App/App.xcodeproj/project.pbxproj', () => {
 // oscuro, y la grabación lo midió así —hasta 67 ms en negro puro antes del
 // papel—. El arranque es papel de día y de noche, y no cambia con el modo del
 // sistema (DP-21.1): el fondo va fijo, en sRGB.
+describe('ios/App/App/App.entitlements', () => {
+  it('Iniciar sesión con Apple, y nada más', () => {
+    const derechos = leer('ios/App/App/App.entitlements')
+    expect([...derechos.matchAll(/<key>([^<]+)<\/key>/g)].map((m) => m[1])).toEqual([
+      'com.apple.developer.applesignin',
+    ])
+    expect(derechos).toMatch(
+      /<key>com\.apple\.developer\.applesignin<\/key>\s*<array>\s*<string>Default<\/string>\s*<\/array>/,
+    )
+  })
+})
+
+describe('.gitignore: lo que no se sube (DP-21.2.3)', () => {
+  it('GoogleService-Info.plist queda fuera, como .env.local', () => {
+    const lineas = leer('.gitignore').split('\n')
+    expect(lineas).toContain('ios/App/App/GoogleService-Info.plist')
+    expect(lineas).toContain('.env.local')
+  })
+
+  it('los enlaces de SPM que crea cap sync quedan fuera', () => {
+    expect(leer('ios/.gitignore').split('\n')).toContain('App/CapApp-SPM/symlinks/')
+  })
+
+  it.skipIf(enElIndice('.gitignore') === null)('el plist no está en el índice', () => {
+    expect(enElIndice('ios/App/App/GoogleService-Info.plist')).toBeNull()
+  })
+})
+
 describe('ios/App/App/Base.lproj/LaunchScreen.storyboard', () => {
   const storyboard = leer('ios/App/App/Base.lproj/LaunchScreen.storyboard')
   const vista = storyboard.match(/<imageView key="view"[^>]*>[\s\S]*?<\/imageView>/)[0]
@@ -234,6 +317,19 @@ describe('ios/App/App/Info.plist', () => {
   it('la barra abre con texto oscuro, sobre la pantalla de arranque de papel', () => {
     expect(valor('UIStatusBarStyle')).toBe('<string>UIStatusBarStyleDarkContent</string>')
     expect(valor('UIViewControllerBasedStatusBarAppearance')).toBe('<true/>')
+  })
+
+  // El valor es el REVERSED_CLIENT_ID del GoogleService-Info.plist. No es
+  // secreto: es el esquema por el que vuelve Google, y sin él GoogleSignIn
+  // cierra la app al tocar el botón. Que coincida con el plist lo comprueba
+  // `scripts/comprobar-ios.mjs` antes de cada build.
+  it('el esquema de vuelta de Google está declarado', () => {
+    const esquemas = [...valor('CFBundleURLTypes').matchAll(/<string>([^<]+)<\/string>/g)].map(
+      (m) => m[1],
+    )
+    expect(esquemas).toContain(
+      'com.googleusercontent.apps.993205123093-4da1rah1uba8kf7i4k6jicgkhhlrhs6o',
+    )
   })
 
   it('las versiones salen de los ajustes del proyecto, no de un literal', () => {

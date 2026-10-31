@@ -15,7 +15,7 @@
     "lint:contraste": "node scripts/lint-contraste.js",
     "validar:frases": "node scripts/validar-frases.js",
     "format:check": "prettier --check \"src/**/*.{js,jsx}\"",
-    "ios:build": "vite build --mode ios && cap sync ios",
+    "ios:build": "node scripts/comprobar-ios.mjs && vite build --mode ios && cap sync ios",
     "ios:abrir": "cap open ios",
     "ios:arranque": "node scripts/componer-arranque.js",
     "ios:recursos": "npx --yes @capacitor/assets@3.0.5 generate --ios"
