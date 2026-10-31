@@ -802,7 +802,9 @@ pautas actuales (`#747775`) se queda en 2,87:1 sobre la parada más oscura de la
 **Lo que no se ha visto en un teléfono:** que las dos hojas abran, que cancelar no diga nada (los
 patrones del mensaje se comprobaron en el código del plugin, no en un aparato), que la sesión
 sobreviva a cerrar la app, que Google vuelva a preguntar tras salir, qué pasa con el mismo correo
-por dos caminos (N8, que depende de la protección contra la enumeración de correos de Firebase),
+por dos caminos (N8: la protección contra la enumeración de correos está **activada** en
+`strivo-fe04f`, así que lo esperable es que el mensaje de otro método no aparezca; `otroMetodo`
+queda para cuando Firebase sí devuelva el error),
 la recuperación del PIN con las dos hojas, y si la capacidad de «Sign in with Apple» aparece en
 Xcode al elegir el Team. Son N1–N15 de la instrucción.
 
