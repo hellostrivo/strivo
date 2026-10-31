@@ -22,9 +22,20 @@
 /** Los dos proveedores nativos, por el nombre que usa la app y el de Firebase. */
 export const PROVEEDOR_DE_FIREBASE = Object.freeze({ apple: 'apple.com', google: 'google.com' })
 
+/**
+ * Carga el plugin y lo devuelve **envuelto**, nunca suelto.
+ *
+ * El plugin es un Proxy de Capacitor que contesta a cualquier propiedad con un
+ * método nativo, también a `then`. Si saliera suelto de esta función `async`,
+ * resolver la promesa lo tomaría por otra promesa: llamaría a su `then`, el
+ * lado nativo no lo tiene, el envoltorio rechaza sin avisar a nadie y el
+ * `await` se queda colgado para siempre —en el iPhone, los botones de Apple y
+ * de Google no hacían nada—. Dentro de un objeto no se mira: el plugin no
+ * cruza nunca una promesa, y quien lo usa lo saca después del `await`.
+ */
 async function cargarPlugin() {
   const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication')
-  return FirebaseAuthentication
+  return { plugin: FirebaseAuthentication }
 }
 
 /**
@@ -81,10 +92,10 @@ export function datosDeCredencial(cual, respuesta) {
  */
 export async function credencialNativa(
   cual,
-  { plugin = cargarPlugin, firebaseAuth = () => import('firebase/auth') } = {},
+  { cargar = cargarPlugin, firebaseAuth = () => import('firebase/auth') } = {},
 ) {
-  const [nativo, { GoogleAuthProvider, OAuthProvider }] = await Promise.all([
-    plugin(),
+  const [{ plugin: nativo }, { GoogleAuthProvider, OAuthProvider }] = await Promise.all([
+    cargar(),
     firebaseAuth(),
   ])
   if (cual === 'apple') {
@@ -107,9 +118,10 @@ export async function credencialNativa(
  *
  * Nunca lanza: si falla, la salida sigue.
  */
-export async function cerrarSesionNativa({ plugin = cargarPlugin } = {}) {
+export async function cerrarSesionNativa({ cargar = cargarPlugin } = {}) {
   try {
-    await (await plugin()).signOut()
+    const { plugin } = await cargar()
+    await plugin.signOut()
     return true
   } catch {
     return false

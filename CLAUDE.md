@@ -718,6 +718,12 @@ sesión se abre en el **SDK de JavaScript** con `signInWithCredential` (en `cuen
 la cola, la restauración, las reglas de Firestore y el PIN; el plugin no abre otra. Todo lo nativo
 vive en `src/lib/credencialNativa.js`, que **es el único que importa el plugin, y bajo demanda**:
 en web y en las pruebas no se carga nunca, y una prueba recorre `src/` para comprobarlo.
+**El plugin nunca sale suelto de una promesa** (31 oct 2026): es un Proxy de Capacitor que contesta
+también a `then`, y resolver una promesa con él deja el `await` colgado para siempre, sin error —en
+el iPhone, los botones de Apple y Google no hacían nada—. `cargarPlugin` lo devuelve envuelto
+(`{ plugin }`). Los dobles de las pruebas son un Proxy igual (`__tests__/dobleDeCapacitor.js`), con
+tiempo límite: un objeto normal no lo ve. `SplashScreen` y `StatusBar` se importan arriba y solo
+se llaman, así que no les afecta.
 
 **Qué hay en cada plataforma** (`proveedoresDisponibles`): en web, `['google']`; en la app de
 iPhone, `['apple', 'google']`, **Apple primero** (DP-21.2.4). Apple en web sigue fuera hasta que

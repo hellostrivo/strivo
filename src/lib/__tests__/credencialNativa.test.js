@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest'
 import { readdirSync, readFileSync, statSync } from 'fs'
 import { join } from 'path'
 
+import { aTiempo, pluginDeCapacitor } from './dobleDeCapacitor.js'
 import {
   PROVEEDOR_DE_FIREBASE,
   cerrarSesionNativa,
@@ -36,20 +37,24 @@ const RESPUESTA_GOOGLE = {
 
 function dobles({ apple = RESPUESTA_APPLE, google = RESPUESTA_GOOGLE } = {}) {
   const llamadas = { apple: [], google: [], oauth: [], salir: 0 }
-  const plugin = async () => ({
-    signInWithApple: async (opciones) => {
-      llamadas.apple.push(opciones)
-      if (apple instanceof Error) throw apple
-      return apple
-    },
-    signInWithGoogle: async (opciones) => {
-      llamadas.google.push(opciones)
-      if (google instanceof Error) throw google
-      return google
-    },
-    signOut: async () => {
-      llamadas.salir += 1
-    },
+  // El plugin es un Proxy como el de Capacitor, y llega envuelto como lo
+  // entrega `cargarPlugin`.
+  const cargar = async () => ({
+    plugin: pluginDeCapacitor({
+      signInWithApple: async (opciones) => {
+        llamadas.apple.push(opciones)
+        if (apple instanceof Error) throw apple
+        return apple
+      },
+      signInWithGoogle: async (opciones) => {
+        llamadas.google.push(opciones)
+        if (google instanceof Error) throw google
+        return google
+      },
+      signOut: async () => {
+        llamadas.salir += 1
+      },
+    }),
   })
   const firebaseAuth = async () => ({
     OAuthProvider: class {
@@ -63,7 +68,7 @@ function dobles({ apple = RESPUESTA_APPLE, google = RESPUESTA_GOOGLE } = {}) {
     },
     GoogleAuthProvider: { credential: (idToken) => ({ proveedor: 'google.com', idToken }) },
   })
-  return { llamadas, plugin, firebaseAuth }
+  return { llamadas, cargar, firebaseAuth }
 }
 
 describe('datosDeCredencial: el token y el nonce, y nada más', () => {
@@ -89,8 +94,8 @@ describe('datosDeCredencial: el token y el nonce, y nada más', () => {
 
 describe('credencialNativa: la hoja nativa y la credencial de Firebase', () => {
   it('Apple: OAuthProvider("apple.com") con idToken y rawNonce', async () => {
-    const { llamadas, plugin, firebaseAuth } = dobles()
-    const credencial = await credencialNativa('apple', { plugin, firebaseAuth })
+    const { llamadas, cargar, firebaseAuth } = dobles()
+    const credencial = await aTiempo(credencialNativa('apple', { cargar, firebaseAuth }))
     expect(llamadas.oauth).toEqual([
       { id: 'apple.com', datos: { idToken: 'token-de-apple', rawNonce: 'nonce-en-claro' } },
     ])
@@ -102,31 +107,31 @@ describe('credencialNativa: la hoja nativa y la credencial de Firebase', () => {
   })
 
   it('Google: GoogleAuthProvider.credential(idToken)', async () => {
-    const { plugin, firebaseAuth } = dobles()
-    expect(await credencialNativa('google', { plugin, firebaseAuth })).toEqual({
+    const { cargar, firebaseAuth } = dobles()
+    expect(await aTiempo(credencialNativa('google', { cargar, firebaseAuth }))).toEqual({
       proveedor: 'google.com',
       idToken: 'token-de-google',
     })
   })
 
   it('pide siempre skipNativeAuth: el plugin nunca abre su propia sesión', async () => {
-    const { llamadas, plugin, firebaseAuth } = dobles()
-    await credencialNativa('apple', { plugin, firebaseAuth })
-    await credencialNativa('google', { plugin, firebaseAuth })
+    const { llamadas, cargar, firebaseAuth } = dobles()
+    await aTiempo(credencialNativa('apple', { cargar, firebaseAuth }))
+    await aTiempo(credencialNativa('google', { cargar, firebaseAuth }))
     expect(llamadas.apple).toEqual([{ skipNativeAuth: true }])
     expect(llamadas.google).toEqual([{ skipNativeAuth: true }])
   })
 
   it('el nombre que devuelve Apple no llega a la credencial', async () => {
-    const { plugin, firebaseAuth } = dobles()
-    const credencial = await credencialNativa('apple', { plugin, firebaseAuth })
+    const { cargar, firebaseAuth } = dobles()
+    const credencial = await aTiempo(credencialNativa('apple', { cargar, firebaseAuth }))
     expect(JSON.stringify(credencial)).not.toMatch(/Alejandra|displayName|fullName/)
   })
 
   it('lo que lanza el plugin se deja pasar tal cual', async () => {
     const cancelar = new Error('The user canceled the sign-in flow.')
-    const { plugin, firebaseAuth } = dobles({ google: cancelar })
-    await expect(credencialNativa('google', { plugin, firebaseAuth })).rejects.toBe(cancelar)
+    const { cargar, firebaseAuth } = dobles({ google: cancelar })
+    await expect(credencialNativa('google', { cargar, firebaseAuth })).rejects.toBe(cancelar)
   })
 
   it('los nombres de Firebase de los dos proveedores', () => {
@@ -188,25 +193,27 @@ describe('esCancelacion: cerrar la hoja no es un error', () => {
 
 describe('cerrarSesionNativa: cierra la de Google, y nunca frena la salida', () => {
   it('llama a signOut del plugin', async () => {
-    const { llamadas, plugin } = dobles()
-    expect(await cerrarSesionNativa({ plugin })).toBe(true)
+    const { llamadas, cargar } = dobles()
+    expect(await aTiempo(cerrarSesionNativa({ cargar }))).toBe(true)
     expect(llamadas.salir).toBe(1)
   })
 
   it('si el plugin falla, no lanza', async () => {
-    const plugin = async () => ({
-      signOut: async () => {
-        throw new Error('sin Firebase')
-      },
+    const cargar = async () => ({
+      plugin: pluginDeCapacitor({
+        signOut: async () => {
+          throw new Error('sin Firebase')
+        },
+      }),
     })
-    await expect(cerrarSesionNativa({ plugin })).resolves.toBe(false)
+    await expect(aTiempo(cerrarSesionNativa({ cargar }))).resolves.toBe(false)
   })
 
   it('si el plugin ni siquiera carga, tampoco', async () => {
-    const plugin = async () => {
+    const cargar = async () => {
       throw new Error('no está')
     }
-    await expect(cerrarSesionNativa({ plugin })).resolves.toBe(false)
+    await expect(cerrarSesionNativa({ cargar })).resolves.toBe(false)
   })
 })
 

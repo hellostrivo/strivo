@@ -3,6 +3,7 @@
 // iPhone. La usa hoy el PIN y la usará SPEC_24 para borrar la cuenta.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { aTiempo } from './dobleDeCapacitor.js'
 
 const llamadas = { conCredencial: [], popup: [] }
 const plugin = { apple: null, google: null, llamadas: { apple: 0, google: 0 } }
@@ -27,20 +28,25 @@ vi.mock('firebase/auth', () => ({
   GoogleAuthProvider: { credential: (idToken) => ({ proveedor: 'google.com', idToken }) },
 }))
 
-vi.mock('@capacitor-firebase/authentication', () => ({
-  FirebaseAuthentication: {
-    signInWithApple: async () => {
-      plugin.llamadas.apple += 1
-      if (plugin.apple instanceof Error) throw plugin.apple
-      return plugin.apple
-    },
-    signInWithGoogle: async () => {
-      plugin.llamadas.google += 1
-      if (plugin.google instanceof Error) throw plugin.google
-      return plugin.google
-    },
-  },
-}))
+// Un Proxy como el de Capacitor, que contesta también a `then`: si el plugin
+// sale de una promesa, reautenticar se cuelga.
+vi.mock('@capacitor-firebase/authentication', async () => {
+  const { pluginDeCapacitor } = await import('./dobleDeCapacitor.js')
+  return {
+    FirebaseAuthentication: pluginDeCapacitor({
+      signInWithApple: async () => {
+        plugin.llamadas.apple += 1
+        if (plugin.apple instanceof Error) throw plugin.apple
+        return plugin.apple
+      },
+      signInWithGoogle: async () => {
+        plugin.llamadas.google += 1
+        if (plugin.google instanceof Error) throw plugin.google
+        return plugin.google
+      },
+    }),
+  }
+})
 
 const { metodoDeSesion, reautenticarConProveedor } = await import('../reautenticacion.js')
 
@@ -87,13 +93,13 @@ describe('metodoDeSesion: con qué se entró, según el token', () => {
 
 describe('reautenticarConProveedor en la app de iPhone', () => {
   it('Google: la hoja nativa y reauthenticateWithCredential', async () => {
-    await reautenticarConProveedor(USUARIO, 'google.com', { nativa: true })
+    await aTiempo(reautenticarConProveedor(USUARIO, 'google.com', { nativa: true }))
     expect(llamadas.conCredencial).toEqual([{ proveedor: 'google.com', idToken: 'token-google' }])
     expect(llamadas.popup).toEqual([])
   })
 
   it('Apple: con idToken y rawNonce', async () => {
-    await reautenticarConProveedor(USUARIO, 'apple.com', { nativa: true })
+    await aTiempo(reautenticarConProveedor(USUARIO, 'apple.com', { nativa: true }))
     expect(llamadas.conCredencial).toEqual([
       { proveedor: 'apple.com', idToken: 'token-apple', rawNonce: 'nonce' },
     ])
@@ -102,9 +108,9 @@ describe('reautenticarConProveedor en la app de iPhone', () => {
 
   it('cerrar la hoja se deja pasar: quien llama lo traduce', async () => {
     plugin.google = new Error('The user canceled the sign-in flow.')
-    await expect(reautenticarConProveedor(USUARIO, 'google.com', { nativa: true })).rejects.toThrow(
-      'canceled',
-    )
+    await expect(
+      aTiempo(reautenticarConProveedor(USUARIO, 'google.com', { nativa: true })),
+    ).rejects.toThrow('canceled')
     expect(llamadas.conCredencial).toEqual([])
   })
 })

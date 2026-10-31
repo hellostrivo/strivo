@@ -8,6 +8,7 @@
 // se reconoce es genérico y nunca «falló la red».
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { aTiempo } from './dobleDeCapacitor.js'
 
 const instancia = { currentUser: null }
 const firebase = { auth: instancia }
@@ -67,11 +68,13 @@ vi.mock('firebase/auth', () => ({
 }))
 
 // El plugin: la fábrica cuenta cuántas veces se carga, que es lo que dice si
-// la web lo tocó.
-vi.mock('@capacitor-firebase/authentication', () => {
+// la web lo tocó. Es un Proxy como el de Capacitor, que contesta también a
+// `then`: si el plugin sale de una promesa, entrar y salir se cuelgan.
+vi.mock('@capacitor-firebase/authentication', async () => {
+  const { pluginDeCapacitor } = await import('./dobleDeCapacitor.js')
   plugin.cargado += 1
   return {
-    FirebaseAuthentication: {
+    FirebaseAuthentication: pluginDeCapacitor({
       signInWithApple: async () => {
         plugin.llamadas.apple += 1
         return contestar(plugin.apple)
@@ -84,7 +87,7 @@ vi.mock('@capacitor-firebase/authentication', () => {
         plugin.llamadas.salir += 1
         return contestar(plugin.salir)
       },
-    },
+    }),
   }
 })
 
@@ -139,7 +142,7 @@ describe('en web el plugin no se carga (criterio 3)', () => {
 
 describe('en la app de iPhone: la hoja nativa y signInWithCredential', () => {
   it('Apple llega a signInWithCredential con idToken y rawNonce', async () => {
-    const r = await entrarConProveedor('apple', NATIVA)
+    const r = await aTiempo(entrarConProveedor('apple', NATIVA))
     expect(r).toEqual({ ok: true, uid: 'UidDeFirebase', email: 'ale@ejemplo.com', nueva: false })
     expect(llamadas.credencial).toEqual([
       { proveedor: 'apple.com', idToken: 'token-apple', rawNonce: 'nonce' },
@@ -148,25 +151,25 @@ describe('en la app de iPhone: la hoja nativa y signInWithCredential', () => {
   })
 
   it('Google llega con su idToken', async () => {
-    await entrarConProveedor('google', NATIVA)
+    await aTiempo(entrarConProveedor('google', NATIVA))
     expect(llamadas.credencial).toEqual([{ proveedor: 'google.com', idToken: 'token-google' }])
     expect(plugin.llamadas).toMatchObject({ apple: 0, google: 1 })
   })
 
   it('el botón de Apple nunca abre la hoja de Google', async () => {
-    await entrarConProveedor('apple', NATIVA)
+    await aTiempo(entrarConProveedor('apple', NATIVA))
     expect(plugin.llamadas).toMatchObject({ apple: 1, google: 0 })
   })
 
   it('`nueva` sale de isNewUser, como en web', async () => {
     respuestas.isNewUser = true
-    expect((await entrarConProveedor('apple', NATIVA)).nueva).toBe(true)
+    expect((await aTiempo(entrarConProveedor('apple', NATIVA))).nueva).toBe(true)
     respuestas.isNewUser = false
-    expect((await entrarConProveedor('google', NATIVA)).nueva).toBe(false)
+    expect((await aTiempo(entrarConProveedor('google', NATIVA))).nueva).toBe(false)
   })
 
   it('el nombre que devuelve Apple no sale en la respuesta', async () => {
-    const r = await entrarConProveedor('apple', NATIVA)
+    const r = await aTiempo(entrarConProveedor('apple', NATIVA))
     expect(Object.keys(r).sort()).toEqual(['email', 'nueva', 'ok', 'uid'])
     expect(JSON.stringify(r)).not.toMatch(/Ale"|displayName/)
   })
@@ -191,7 +194,7 @@ describe('en web: la ventana emergente de siempre, y el plugin ni se carga', () 
 describe('cancelar no es un error (SPEC_21.2 §4.2)', () => {
   it('Apple: rechazado, y ningún texto', async () => {
     plugin.apple = CANCELAR_APPLE
-    const r = await entrarConProveedor('apple', NATIVA)
+    const r = await aTiempo(entrarConProveedor('apple', NATIVA))
     expect(r).toEqual({ ok: false, motivo: MOTIVOS.rechazado })
     expect(claveDeError(r.motivo)).toBeNull()
   })
@@ -200,14 +203,14 @@ describe('cancelar no es un error (SPEC_21.2 §4.2)', () => {
     plugin.apple = new Error(
       'No se ha podido completar la operación. (Error de com.apple.AuthenticationServices.AuthorizationError 1001).',
     )
-    const r = await entrarConProveedor('apple', NATIVA)
+    const r = await aTiempo(entrarConProveedor('apple', NATIVA))
     expect(r).toEqual({ ok: false, motivo: MOTIVOS.rechazado })
     expect(claveDeError(r.motivo)).toBeNull()
   })
 
   it('Google: rechazado, y ningún texto', async () => {
     plugin.google = CANCELAR_GOOGLE
-    const r = await entrarConProveedor('google', NATIVA)
+    const r = await aTiempo(entrarConProveedor('google', NATIVA))
     expect(r.motivo).toBe(MOTIVOS.rechazado)
     expect(claveDeError(r.motivo)).toBeNull()
   })
@@ -221,7 +224,7 @@ describe('cancelar no es un error (SPEC_21.2 §4.2)', () => {
 describe('los tropiezos de un proveedor tienen su propio mapeo', () => {
   it('account-exists-with-different-credential es otroMetodo, con su frase', async () => {
     respuestas.credencial = errorDeAuth('auth/account-exists-with-different-credential')
-    const r = await entrarConProveedor('google', NATIVA)
+    const r = await aTiempo(entrarConProveedor('google', NATIVA))
     expect(r.motivo).toBe(MOTIVOS.otroMetodo)
     expect(claveDeError(r.motivo)).toBe('otroMetodo')
   })
@@ -234,7 +237,7 @@ describe('los tropiezos de un proveedor tienen su propio mapeo', () => {
   it('invalid-credential de Google o Apple nunca es «correo en uso»', async () => {
     respuestas.credencial = errorDeAuth('auth/invalid-credential')
     for (const cual of ['apple', 'google']) {
-      const r = await entrarConProveedor(cual, NATIVA)
+      const r = await aTiempo(entrarConProveedor(cual, NATIVA))
       expect(r.motivo).toBe(MOTIVOS.generico)
       expect(r.motivo).not.toBe(MOTIVOS.correoEnUso)
     }
@@ -242,24 +245,26 @@ describe('los tropiezos de un proveedor tienen su propio mapeo', () => {
 
   it('un rechazo del plugin sin código es genérico, nunca falloRed', async () => {
     plugin.apple = new Error('The operation couldn’t be completed. (… error 1000.)')
-    const r = await entrarConProveedor('apple', NATIVA)
+    const r = await aTiempo(entrarConProveedor('apple', NATIVA))
     expect(r.motivo).toBe(MOTIVOS.generico)
     expect(r.motivo).not.toBe(MOTIVOS.falloRed)
   })
 
   it('sin red es sinConexion', async () => {
     respuestas.credencial = errorDeAuth('auth/network-request-failed')
-    expect((await entrarConProveedor('google', NATIVA)).motivo).toBe(MOTIVOS.sinConexion)
+    expect((await aTiempo(entrarConProveedor('google', NATIVA))).motivo).toBe(MOTIVOS.sinConexion)
   })
 
   it('ninguna respuesta lleva un código a la vista', async () => {
     respuestas.credencial = errorDeAuth('auth/too-many-requests')
-    expect(JSON.stringify(await entrarConProveedor('google', NATIVA))).not.toMatch(/auth\//)
+    expect(JSON.stringify(await aTiempo(entrarConProveedor('google', NATIVA)))).not.toMatch(
+      /auth\//,
+    )
   })
 
   it('sin configuración no se abre ninguna hoja', async () => {
     firebase.auth = undefined
-    expect(await entrarConProveedor('apple', NATIVA)).toEqual({
+    expect(await aTiempo(entrarConProveedor('apple', NATIVA))).toEqual({
       ok: false,
       motivo: MOTIVOS.sinConfigurar,
     })
@@ -270,14 +275,14 @@ describe('los tropiezos de un proveedor tienen su propio mapeo', () => {
 describe('cerrar sesión cierra también la del plugin (DP-21.2.8)', () => {
   it.each(['google.com', 'apple.com'])('en nativo, tras entrar con %s', async (metodo) => {
     conSesion(metodo)
-    await cerrarSesion(NATIVA)
+    await aTiempo(cerrarSesion(NATIVA))
     expect(llamadas.salir).toBe(1)
     expect(plugin.llamadas.salir).toBe(1)
   })
 
   it('con correo, el plugin no se toca: sin el plist cerraría la app', async () => {
     conSesion('password')
-    await cerrarSesion(NATIVA)
+    await aTiempo(cerrarSesion(NATIVA))
     expect(llamadas.salir).toBe(1)
     expect(plugin.llamadas.salir).toBe(0)
   })
@@ -288,14 +293,14 @@ describe('cerrar sesión cierra también la del plugin (DP-21.2.8)', () => {
         throw errorDeAuth('auth/network-request-failed')
       },
     }
-    await cerrarSesion(NATIVA)
+    await aTiempo(cerrarSesion(NATIVA))
     expect(plugin.llamadas.salir).toBe(0)
   })
 
   it('si el cierre del plugin falla, la salida sigue', async () => {
     conSesion('google.com')
     plugin.salir = new Error('el plugin no pudo')
-    await expect(cerrarSesion(NATIVA)).resolves.toBeUndefined()
+    await expect(aTiempo(cerrarSesion(NATIVA))).resolves.toBeUndefined()
     expect(llamadas.salir).toBe(1)
   })
 
@@ -308,7 +313,7 @@ describe('cerrar sesión cierra también la del plugin (DP-21.2.8)', () => {
   it('primero se cierra la de JavaScript: si esa falla, el plugin no se toca', async () => {
     conSesion('google.com')
     respuestas.salir = errorDeAuth('auth/internal-error')
-    await expect(cerrarSesion(NATIVA)).rejects.toThrow()
+    await expect(aTiempo(cerrarSesion(NATIVA))).rejects.toThrow()
     expect(plugin.llamadas.salir).toBe(0)
   })
 })
