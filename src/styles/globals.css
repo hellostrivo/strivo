@@ -907,3 +907,45 @@
   from { opacity: 1; }
   to   { opacity: 0; }
 }
+
+/* ─── Los botones de Google y de Apple (SPEC_21.2, DP-21.2.4) ─────────────────
+   Del mismo tamaño que el resto de botones y con las pautas de cada marca:
+   fondo blanco, su logo y su texto. El componente (`BotonProveedor`) declara la
+   clase y el proveedor; los colores viven aquí.
+
+   **Excepción de marca a RN-VIS-03, solo para el botón de Apple.** Las pautas
+   de «Iniciar sesión con Apple» admiten el botón negro o el blanco, con el
+   texto y el logo del color contrario, y nada más. Blanco en los dos momentos,
+   así que lo negro es el texto, el logo y —de día— el borde. Ningún otro sitio
+   de la app usa `#000000`; `lint:contraste` lo mide como excepción con nombre.
+
+   **De día lleva borde** porque el blanco sobre la crema de la mañana da
+   1,10:1 y el botón no se vería; **de noche, no**: blanco sobre índigo ya se
+   separa. Google sigue la misma regla con un gris de su paleta: el de sus
+   pautas actuales, `#747775`, da 2,87:1 sobre la parada más oscura de la
+   mañana (`am-100`), que es donde cae el botón cuando la vista se alarga, y
+   `#5F6368` da 3,84:1. El texto va en Inter y no en Roboto (decidido al
+   aprobar SPEC_21.2). */
+:root {
+  --proveedor-fondo:        #FFFFFF;
+  --proveedor-tinta-apple:  #000000;
+  --proveedor-borde-apple:  #000000;
+  --proveedor-tinta-google: #1F1F1F;
+  --proveedor-borde-google: #5F6368;
+}
+
+.boton-proveedor {
+  background-color: var(--proveedor-fondo);
+  border: 1px solid transparent;
+}
+.boton-proveedor--apple  { color: var(--proveedor-tinta-apple); }
+.boton-proveedor--google { color: var(--proveedor-tinta-google); }
+
+[data-surface='light'] .boton-proveedor--apple  { border-color: var(--proveedor-borde-apple); }
+[data-surface='light'] .boton-proveedor--google { border-color: var(--proveedor-borde-google); }
+
+/* El foco se ve sobre la superficie, no sobre el botón: es blanco en las dos. */
+.boton-proveedor:focus-visible {
+  outline: 2px solid var(--color-text);
+  outline-offset: 2px;
+}

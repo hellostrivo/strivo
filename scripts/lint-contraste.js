@@ -106,6 +106,19 @@ const MARCA = {
   veloClaro: '#FBF8F4',
 }
 
+// Los botones de Google y de Apple (`--proveedor-*` en `globals.css`). Son
+// colores de otras marcas, no de la paleta: van aparte para que nadie los
+// confunda con un token de Strivo.
+const PROVEEDOR = {
+  fondo: '#FFFFFF',
+  tintaApple: '#000000',
+  bordeApple: '#000000',
+  tintaGoogle: '#1F1F1F',
+  // El gris de las pautas actuales de Google es #747775 y sobre `am-100` se
+  // queda en 2,87:1. Este es otro gris de su paleta.
+  bordeGoogle: '#5F6368',
+}
+
 const CUERPO = 7
 const GRANDE = 4.5
 const NO_TEXTO = 3
@@ -309,6 +322,35 @@ const PARES = [
   // pantallas.
   ['Secciones · sección activa sobre el cromo', TEXTO.onDark, sobre(TEXTO.onDark, 0.12, MARCA.conmutadorAm), CUERPO],
   ['Secciones · borde de la sección activa sobre el cromo', MARCA.strivoAm100, sobre(TEXTO.onDark, 0.12, MARCA.conmutadorAm), NO_TEXTO],
+
+  // ── Google y Apple (SPEC_21.2) ──────────────────────────────────────────────
+  // Los dos botones son blancos en los dos momentos (`--proveedor-fondo`), así
+  // que su texto se mide sobre blanco. El borde va solo sobre superficie clara
+  // y se mide contra la más clara de las que pinta el botón: la base de la
+  // mañana y la tarjeta de Tu perfil. De noche el borde no existe y lo que
+  // separa el botón es el propio blanco contra el índigo, en su parada más
+  // clara. El negro del de Apple está abajo, en EXCEPCIONES_DE_MARCA.
+  ['Google · texto sobre su botón', PROVEEDOR.tintaGoogle, PROVEEDOR.fondo, CUERPO],
+  // La mañana del onboarding es un degradado: se mide en sus dos extremos.
+  ['Google · borde sobre la mañana', PROVEEDOR.bordeGoogle, MARCA.strivoAm50, NO_TEXTO],
+  ['Google · borde sobre la parada oscura de la mañana', PROVEEDOR.bordeGoogle, MARCA.strivoAm100, NO_TEXTO],
+  ['Google · borde sobre la tarjeta de Tu perfil', PROVEEDOR.bordeGoogle, sobre(TEXTO.blanco, 0.72, MARCA.strivo50), NO_TEXTO],
+  ['Proveedores · botón blanco sobre la noche', PROVEEDOR.fondo, '#2C2350', NO_TEXTO],
+  ['Proveedores · botón blanco sobre el índigo', PROVEEDOR.fondo, MARCA.night, NO_TEXTO],
+]
+
+/**
+ * **Excepciones de marca a RN-VIS-03 («el negro puro no se usa»)**, una por
+ * una y con nombre. No son una regla general: cada fila es una marca ajena cuyo
+ * color no decide Strivo. Hoy hay una sola, el botón de «Iniciar sesión con
+ * Apple» (SPEC_21.2): sus pautas solo admiten el botón blanco o el negro, con
+ * el texto y el logo del color contrario. Se exigen igual que cualquier par.
+ */
+const EXCEPCIONES_DE_MARCA = [
+  ['Apple · texto y logo sobre su botón', PROVEEDOR.tintaApple, PROVEEDOR.fondo, CUERPO],
+  ['Apple · borde sobre la mañana', PROVEEDOR.bordeApple, MARCA.strivoAm50, NO_TEXTO],
+  ['Apple · borde sobre la parada oscura de la mañana', PROVEEDOR.bordeApple, MARCA.strivoAm100, NO_TEXTO],
+  ['Apple · borde sobre la tarjeta de Tu perfil', PROVEEDOR.bordeApple, sobre(TEXTO.blanco, 0.72, MARCA.strivo50), NO_TEXTO],
 ]
 
 /**
@@ -378,6 +420,15 @@ console.log('🎨 contraste: midiendo los pares que la app pinta de verdad\n')
 
 let fallos = 0
 PARES.forEach(([nombre, frente, fondo, umbral]) => {
+  const medido = ratio(frente, fondo)
+  const pasa = medido >= umbral
+  if (!pasa) fallos += 1
+  const marca = pasa ? '✅' : '❌'
+  console.log(`${marca} ${nombre.padEnd(42)} ${medido.toFixed(2)}:1  (mín ${umbral}:1)`)
+})
+
+console.log('\n— Excepciones de marca a RN-VIS-03: colores de otra marca, con nombre —')
+EXCEPCIONES_DE_MARCA.forEach(([nombre, frente, fondo, umbral]) => {
   const medido = ratio(frente, fondo)
   const pasa = medido >= umbral
   if (!pasa) fallos += 1

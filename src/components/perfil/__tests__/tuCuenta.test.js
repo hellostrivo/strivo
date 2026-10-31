@@ -39,6 +39,7 @@ describe('el copy de Tu cuenta es el de la SPEC §4, literal', () => {
       estado: {
         sinCuenta: 'Sin cuenta. Puedes crear una cuando quieras.',
         conCuenta: '{correo}',
+        conApple: 'Entraste con Apple. Tu correo se queda oculto.',
         vencida:
           'La sesión se cerró en este teléfono. Lo que escribiste sigue aquí; entra de nuevo para que se respalde.',
         sinConfigurar: 'Las cuentas no están disponibles en esta versión.',
@@ -76,6 +77,8 @@ describe('el copy de Tu cuenta es el de la SPEC §4, literal', () => {
         credenciales: 'Ese correo y esa contraseña no coinciden.',
         sinConexion: 'Sin conexión. Inténtalo cuando vuelva.',
         generico: 'Algo no salió bien. Inténtalo de nuevo en un momento.',
+        otroMetodo:
+          'Ese correo ya tiene una cuenta con otra forma de entrar. Entra como lo hiciste la primera vez.',
       },
     })
   })

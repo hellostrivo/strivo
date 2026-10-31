@@ -219,6 +219,25 @@ describe('SPEC_30 §4.1 — entrar desde la bienvenida', () => {
     expect(hook).toMatch(/if \(retomar\.entrada\) setEntrada\(retomar\.entrada\)/)
   })
 
+  // SPEC_21.2 §4.5: con Apple y el correo oculto, la cuenta nueva deja de ser
+  // rara. El camino es el mismo: lo decide `nueva`, no el proveedor.
+  it('C4 también con Apple y el correo oculto', async () => {
+    const r = await traspaso.conectarConTraspaso(
+      UID,
+      { uid: CUENTA, email: 'abc@privaterelay.appleid.com', nueva: true },
+      async () => ({ ok: true }),
+      () => true,
+      { desde: PASOS.bienvenida },
+    )
+    expect(r).toEqual({ ok: true, paso: null })
+    expect(copy.diario.onboarding.entrar.nueva).toMatch(/Si antes entrabas de otra forma/)
+  })
+
+  it('SPEC_21.2: otro método se dice con su frase, en la vista y en Tu perfil', () => {
+    expect(claveDeError(MOTIVOS.otroMetodo)).toBe('otroMetodo')
+    expect(copy.cuenta.error.otroMetodo).toBeTruthy()
+  })
+
   it('C5 y C6: los errores se dicen con copy.cuenta, sin código, y cerrar Google no dice nada', () => {
     expect(claveDeError(MOTIVOS.credenciales)).toBe('credenciales')
     expect(claveDeError(MOTIVOS.correoEnUso)).toBe('credenciales')
@@ -429,8 +448,10 @@ describe('SPEC_30 §6 — el copy', () => {
       apoyo: 'Traemos lo que ya tenías guardado. No hace falta contestar nada otra vez.',
       apoyoDesdeCuenta: 'Si tu cuenta ya tenía respuestas, seguimos con las que guardaste en ella.',
       sinCuenta: 'Si es tu primera vez aquí, puedes empezar sin cuenta y crearla al final.',
+      // Reescrita en SPEC_21.2 §6: con Apple y el correo oculto, la cuenta nueva
+      // deja de ser rara y la frase tiene que decir qué hacer.
       nueva:
-        'Esta cuenta es nueva y todavía no tiene nada guardado. Puedes seguir con ella o entrar con otra.',
+        'Esta cuenta es nueva y todavía no tiene nada guardado. Si antes entrabas de otra forma, vuelve y entra así para traer lo tuyo.',
       empezarMientras: 'Empezar mientras tanto',
     })
   })
