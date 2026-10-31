@@ -45,7 +45,10 @@ async function cargarPlugin() {
 export function esCancelacion(error) {
   if (error?.code) return false
   const mensaje = String(error?.message ?? error ?? '')
-  const apple = /AuthorizationError/.test(mensaje) && /(?<![\w.])1001(?![\w]|\.\d)/.test(mensaje)
+  // Sin mirar hacia atrás: WebKit lo admite desde iOS 16.4 y la app pide 16.2.
+  // Lo que precede al 1001 se consume en el grupo, y basta con que no sea letra,
+  // cifra ni punto.
+  const apple = /AuthorizationError/.test(mensaje) && /(^|[^\w.])1001(?!\w|\.\d)/.test(mensaje)
   return apple || mensaje.includes('The user canceled the sign-in flow.')
 }
 

@@ -704,7 +704,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**96 archivos de prueba · 2.497 casos · los seis comandos y `validar:frases` en verde.**
+**96 archivos de prueba · 2.498 casos · los seis comandos y `validar:frases` en verde.**
 
 ### Google y Apple en la app de iPhone (SPEC_21.2, 31 oct 2026)
 
@@ -855,7 +855,9 @@ si alguno cambia.
 Capacitor 8 es 15.0 y no basta: el arranque usa `crypto.randomUUID` sin guarda y Tu perfil usa
 `.at()` (los dos desde 15.4), y `globals.css` pide `color-mix()` (desde 16.2). **No se añaden
 guardas para 15.x**: lo decidió la fundadora, y ningún iPhone que pueda tener iOS 16 se queda
-fuera. `cap sync` no lo revierte, y la prueba lo vigila. `CapApp-SPM/Package.swift` dice `.v16` y
+fuera. **Por lo mismo, ninguna expresión regular de `src/` mira hacia atrás** (`(?<=`, `(?<!`):
+WebKit las admite desde iOS 16.4, y en 16.2–16.3 una de ellas rompe la función que la usa o, como
+literal, el módulo entero. Lo vigila `appIos.test.js`; `esCancelacion` llegó a usar una. `cap sync` no lo revierte, y la prueba lo vigila. `CapApp-SPM/Package.swift` dice `.v16` y
 es correcto: es el mínimo del paquete, no el de la app, y lo reescribe la CLI.
 
 **Swift Package Manager, no CocoaPods.** Es lo que usa Capacitor 8 por defecto. `Package.swift` lo

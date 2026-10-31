@@ -4,7 +4,8 @@
 // una vez publicado: el identificador, el origen del WebView, el iOS mínimo.
 
 import { describe, expect, it } from 'vitest'
-import { readFileSync } from 'fs'
+import { readdirSync, readFileSync, statSync } from 'fs'
+import { join } from 'path'
 import { execFileSync } from 'child_process'
 
 const leer = (ruta) => readFileSync(ruta, 'utf8')
@@ -193,6 +194,23 @@ describe('ios/App/App.xcodeproj/project.pbxproj', () => {
     expect(proyecto).toMatch(/GoogleService-Info\.plist in Resources \*\/ = \{isa = PBXBuildFile/)
     const recursos = proyecto.match(/\/\* Resources \*\/ = \{[\s\S]*?files = \(([\s\S]*?)\);/)[1]
     expect(recursos).toMatch(/GoogleService-Info\.plist in Resources/)
+  })
+
+  // WebKit admite las expresiones regulares que miran hacia atrás desde iOS
+  // 16.4, y la app pide 16.2. En 16.2–16.3 una de ellas rompe la función que
+  // la usa o, escrita como literal, el módulo entero al cargarse. Se vigila el
+  // código que llega a la app, no las pruebas, que corren en Node.
+  it('nada en src/ mira hacia atrás en una expresión regular: iOS 16.2–16.3 no lo admite', () => {
+    const archivos = (dir) =>
+      readdirSync(dir).flatMap((nombre) => {
+        const ruta = join(dir, nombre)
+        if (statSync(ruta).isDirectory()) return nombre === '__tests__' ? [] : archivos(ruta)
+        return /\.(jsx?|mjs)$/.test(nombre) ? [ruta] : []
+      })
+    const conLookbehind = archivos('src').filter((ruta) =>
+      /\(\?<[=!]/.test(readFileSync(ruta, 'utf8')),
+    )
+    expect(conLookbehind).toEqual([])
   })
 
   it('versión 1.0.0, compilación 1', () => {
