@@ -18,12 +18,18 @@
 //
 // Ningún control lleva `disabled` ni `required`: los campos vacíos no frenan
 // nada, y lo que salga se cuenta en palabras.
+//
+// **Un toque a la vez en los botones de Google y Apple** (`unaVezCon`, el
+// mismo freno que `FormularioEntrar`): en la app de iPhone, dos toques
+// seguidos abrirían dos hojas que se pisan el nonce y la llamada guardada del
+// plugin. El botón no se apaga; el segundo toque se ignora.
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Button from '@components/ui/Button'
 import BotonProveedor from '@components/shared/BotonProveedor'
 import { CampoLinea } from '@components/shared/Campo'
 import { ENLACE } from '@components/shared/FormularioEntrar'
+import { unaVezCon } from '@components/shared/unaVez'
 import { copy } from '@copy'
 import { MOTIVOS, proveedoresDisponibles } from '@lib/cuenta'
 
@@ -38,6 +44,8 @@ export default function Cuenta({
   onSaltar,
 }) {
   const [conCorreo, setConCorreo] = useState(false)
+  const ocupado = useRef(false)
+  const unaVez = unaVezCon(ocupado)
   const [correo, setCorreo] = useState('')
   const [contrasena, setContrasena] = useState('')
 
@@ -68,7 +76,7 @@ export default function Cuenta({
               key={proveedor}
               proveedor={proveedor}
               texto={textos[proveedor]}
-              onClick={() => onProveedor(proveedor)}
+              onClick={() => unaVez(() => onProveedor(proveedor))}
             />
           ))}
 

@@ -704,7 +704,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**95 archivos de prueba · 2.482 casos · los seis comandos y `validar:frases` en verde.**
+**96 archivos de prueba · 2.497 casos · los seis comandos y `validar:frases` en verde.**
 
 ### Google y Apple en la app de iPhone (SPEC_21.2, 31 oct 2026)
 
@@ -764,9 +764,17 @@ tiene que salir vacío, y `appIos.test.js` lo exige sobre el índice.
 `auth/invalid-credential` de Google o Apple es un token que Firebase no aceptó y nunca se dice como
 «ese correo ya existe».
 - **Cancelar no es un error** (`rechazado`, sin texto). Ni Apple ni Google traen código al cancelar,
-  así que `esCancelacion` mira dos patrones del mensaje: «error 1001» (Apple, en cualquier idioma)
-  y «The user canceled the sign-in flow.» (Google). **Cualquier otro rechazo sin código es
-  `generico`, nunca `falloRed`.**
+  así que `esCancelacion` mira el mensaje. **Apple, por el dominio y el código en cualquier orden**:
+  la app declara español y el mensaje llega localizado, con otro orden según el idioma —«…
+  AuthorizationError error 1001.» en inglés, «Error de com.apple.AuthenticationServices.
+  AuthorizationError 1001» en español—, así que se pide «AuthorizationError» y 1001 como número
+  suelto. **No se busca una frase**: la primera versión buscaba «error 1001» y en español no
+  aparece. Google, por su texto fijo, «The user canceled the sign-in flow.». **Cualquier otro
+  rechazo sin código es `generico`, nunca `falloRed`.**
+- **Un toque a la vez en los botones de proveedor**, también en P7: en nativo, dos
+  `signInWithApple` seguidos se pisan el nonce y la llamada guardada del plugin. El freno es
+  `unaVezCon` (`components/shared/unaVez.js`), sin `disabled`, y lo comparten P7,
+  `FormularioEntrar` y Tu cuenta; antes había dos copias a mano y P7 no tenía ninguna.
 - **Mismo correo, otra forma de entrar** (`auth/account-exists-with-different-credential`) es
   `otroMetodo` y tiene su frase en P7, en la vista de entrar y en Tu perfil (DP-21.2.7). **No se
   vinculan cuentas.**

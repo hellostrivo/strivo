@@ -135,11 +135,30 @@ describe('credencialNativa: la hoja nativa y la credencial de Firebase', () => {
 })
 
 describe('esCancelacion: cerrar la hoja no es un error', () => {
+  // La app declara español, así que el mensaje llega localizado y el orden
+  // cambia con el idioma. Se reconoce por el dominio y el código, no por la
+  // frase.
   it.each([
     'The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1001.)',
-    'No se ha podido completar la operación. (com.apple.AuthenticationServices.AuthorizationError error 1001.)',
-  ])('Apple, en cualquier idioma: «error 1001» — %s', (mensaje) => {
+    'No se ha podido completar la operación. (Error de com.apple.AuthenticationServices.AuthorizationError 1001).',
+    'Error de com.apple.AuthenticationServices.AuthorizationError 1001',
+    'La operación no se pudo completar. (com.apple.AuthenticationServices.AuthorizationError error 1001.)',
+  ])('Apple, en inglés y en español: dominio y 1001 en cualquier orden — %s', (mensaje) => {
     expect(esCancelacion(new Error(mensaje))).toBe(true)
+  })
+
+  it('Apple sin el dominio no cuenta, aunque traiga 1001', () => {
+    expect(esCancelacion(new Error('Error 1001'))).toBe(false)
+    expect(esCancelacion(new Error('(error 1001.)'))).toBe(false)
+  })
+
+  it.each([
+    'Error de com.apple.AuthenticationServices.AuthorizationError 1000',
+    'Error de com.apple.AuthenticationServices.AuthorizationError 10010',
+    'Error de com.apple.AuthenticationServices.AuthorizationError 1001.5',
+    'com.apple.AuthenticationServices.AuthorizationError error 21001.',
+  ])('Apple con otro código no es cancelar: %s', (mensaje) => {
+    expect(esCancelacion(new Error(mensaje))).toBe(false)
   })
 
   it('Google: su texto fijo', () => {

@@ -33,15 +33,20 @@ async function cargarPlugin() {
  * **Ninguna de las dos cancelaciones trae código**: el plugin solo traduce los
  * códigos de Firebase, y estas vienen de Apple y de Google. Lo único estable es
  * el mensaje, y por eso se miran dos patrones y nada más:
- *   - Apple: `ASAuthorizationError.canceled`, cuyo mensaje va traducido al
- *     idioma del teléfono pero conserva «AuthorizationError error 1001»;
+ *   - Apple: `ASAuthorizationError.canceled`. Su mensaje va traducido al idioma
+ *     de la app —que declara español— y el orden cambia con el idioma: en
+ *     inglés «…AuthorizationError error 1001.», en español «Error de
+ *     com.apple.AuthenticationServices.AuthorizationError 1001». Lo que no
+ *     cambia es el dominio y el código, así que se pide que estén los dos, en
+ *     cualquier orden: «AuthorizationError» y 1001 como número suelto.
  *   - Google: `GIDSignInError.canceled`, con un texto fijo en inglés.
  * Un rechazo con código nunca es una cancelación: ese lo explica su código.
  */
 export function esCancelacion(error) {
   if (error?.code) return false
   const mensaje = String(error?.message ?? error ?? '')
-  return /error 1001\b/.test(mensaje) || mensaje.includes('The user canceled the sign-in flow.')
+  const apple = /AuthorizationError/.test(mensaje) && /(?<![\w.])1001(?![\w]|\.\d)/.test(mensaje)
+  return apple || mensaje.includes('The user canceled the sign-in flow.')
 }
 
 /**

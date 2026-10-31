@@ -28,6 +28,7 @@ import { useRef, useState } from 'react'
 import Button from '@components/ui/Button'
 import Confirmacion from '@components/shared/Confirmacion'
 import FormularioEntrar from '@components/shared/FormularioEntrar'
+import { unaVezCon } from '@components/shared/unaVez'
 import { copy, interpolate } from '@copy'
 import {
   claveDeError,
@@ -59,15 +60,7 @@ export default function TuCuenta() {
   const ocupado = useRef(false)
 
   /** Un toque a la vez: el segundo, mientras el primero está en camino, no hace nada. */
-  const unaVez = async (trabajo) => {
-    if (ocupado.current) return
-    ocupado.current = true
-    try {
-      await trabajo()
-    } finally {
-      ocupado.current = false
-    }
-  }
+  const unaVez = unaVezCon(ocupado)
 
   const pedirSalida = () =>
     unaVez(async () => {

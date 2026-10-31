@@ -196,6 +196,15 @@ describe('cancelar no es un error (SPEC_21.2 §4.2)', () => {
     expect(claveDeError(r.motivo)).toBeNull()
   })
 
+  it('Apple con el mensaje en español, en el orden del español: también rechazado', async () => {
+    plugin.apple = new Error(
+      'No se ha podido completar la operación. (Error de com.apple.AuthenticationServices.AuthorizationError 1001).',
+    )
+    const r = await entrarConProveedor('apple', NATIVA)
+    expect(r).toEqual({ ok: false, motivo: MOTIVOS.rechazado })
+    expect(claveDeError(r.motivo)).toBeNull()
+  })
+
   it('Google: rechazado, y ningún texto', async () => {
     plugin.google = CANCELAR_GOOGLE
     const r = await entrarConProveedor('google', NATIVA)
