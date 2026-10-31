@@ -14,6 +14,30 @@
     "StatusBar": {
       "overlaysWebView": true,
       "style": "LIGHT"
+    },
+    "FirebaseAuthentication": {
+      "skipNativeAuth": true,
+      "providers": [
+        "apple.com",
+        "google.com"
+      ]
+    }
+  },
+  "experimental": {
+    "ios": {
+      "spm": {
+        "swiftToolsVersion": "6.1",
+        "packageOptions": {
+          "@capacitor-firebase/authentication": {
+            "symlink": true
+          }
+        },
+        "packageTraits": {
+          "@capacitor-firebase/authentication": [
+            "Google"
+          ]
+        }
+      }
     }
   }
 }
