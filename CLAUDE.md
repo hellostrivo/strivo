@@ -813,14 +813,27 @@ excepción con nombre (`EXCEPCIONES_DE_MARCA`), no entre los pares generales, y 
 sobre superficie clara— en **Inter y no en Roboto**, y con el gris de borde `#5F6368`: el de sus
 pautas actuales (`#747775`) se queda en 2,87:1 sobre la parada más oscura de la mañana.
 
-**Lo que no se ha visto en un teléfono:** que las dos hojas abran, que cancelar no diga nada (los
-patrones del mensaje se comprobaron en el código del plugin, no en un aparato), que la sesión
-sobreviva a cerrar la app, que Google vuelva a preguntar tras salir, qué pasa con el mismo correo
-por dos caminos (N8: la protección contra la enumeración de correos está **activada** en
-`strivo-fe04f`, así que lo esperable es que el mensaje de otro método no aparezca; `otroMetodo`
-queda para cuando Firebase sí devuelva el error),
-la recuperación del PIN con las dos hojas, y si la capacidad de «Sign in with Apple» aparece en
-Xcode al elegir el Team. Son N1–N15 de la instrucción.
+**Lo que ya se vio en un teléfono** (31 oct y 1 nov 2026, la fundadora en su iPhone contra
+`strivo-fe04f`, sobre `cda6215`): **N1–N15 y la regresión web pasan.** Las dos hojas abren;
+cancelarlas no dice nada en P7, la vista de entrar, Tu perfil ni el PIN; la sesión sobrevive a
+cerrar la app; tras salir, Google vuelve a mostrar la hoja para elegir cuenta; el PIN se recupera
+con las dos hojas; con el correo oculto, Tu perfil no enseña la dirección de relevo; y los botones
+miden lo mismo, con Apple primero, de día y de noche. El resumen está en el §9 de la instrucción y
+el detalle en `docs/specs/BITACORA_PRUEBAS_SPEC_21_2.md`.
+
+**N8, mismo correo por dos caminos**, con «una cuenta por correo» y la protección contra la
+enumeración activada: entrar con Google sobre una cuenta de correo **no verificado** llega a sus
+días con el mismo UID, pero **Firebase le quita la contraseña** —la fila queda solo con Google—.
+Restablecer la contraseña la devuelve y **quita Google**. **`otroMetodo` no aparece**, como se
+esperaba; queda para cuando Firebase sí devuelva el error. Nada de lo escrito se pierde. La
+fundadora decidió (D-N8, opción c): una pista en `CUENTA.error.credenciales` para la 1.0, y
+verificar el correo al crear la cuenta después del lanzamiento.
+
+**Siguen abiertos, fuera de 21.2 y sin causarlos ella**, y los tres bloquean la publicación:
+**O-1**, la primera bajada de una cuenta en un iPhone recién instalado suele acabar en el aviso de
+restauración y pide «Intentar de nuevo»; **O-2**, en la web la subida se queda en «Guardando» sin
+error porque `flush` espera un `setDoc` colgado; **O-3**, en el iPhone la subida tarda ~1 minuto y
+solo termina con «Intentar de nuevo». Pasan, con la pista de D-N8, a una instrucción nueva.
 
 ### App iOS (SPEC_21.1, 12 oct 2026)
 

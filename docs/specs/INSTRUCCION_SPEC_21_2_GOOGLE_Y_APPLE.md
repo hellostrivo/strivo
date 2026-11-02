@@ -230,6 +230,42 @@ Segunda persona, sin género, sin exclamaciones. **La redacción final es de la 
 
 ---
 
+## 9. Resultado de las pruebas manuales (31 oct y 1 nov 2026)
+
+Hechas por la fundadora en su iPhone contra `strivo-fe04f`, sobre `revision-21-2` en `cda6215`. **Todos los criterios manuales pasan.** Esto es el resumen; el detalle de cada prueba, con horas, tiempos del velo y capturas, está en `docs/specs/BITACORA_PRUEBAS_SPEC_21_2.md`.
+
+| Prueba | Resultado |
+|---|---|
+| N1 | ✅ Apple compartiendo el correo, desde P7 con el teléfono vacío. |
+| N2 | ✅ Apple ocultando el correo: Tu perfil no muestra la dirección de relevo. |
+| N3 | ✅ con O-1. P1 → «Ya tengo una cuenta» → Google con B → sus días, tras «Intentar de nuevo». |
+| N4 | ✅ Cancelar Apple y Google en la vista de entrar, P7 y Tu perfil: ningún mensaje. |
+| N5 | ✅ La sesión sobrevive a cerrar la app, con Apple y con Google. |
+| N6 | ✅ Tras cerrar sesión, Google vuelve a mostrar la hoja para elegir cuenta. |
+| N7 | ✅ con O-1. Aviso de cuenta nueva con Apple; «Volver» → correo de A → sus días, tras «Intentar de nuevo». |
+| N8 | ✅ documentada, con O-1. Llega a los días de A; `otroMetodo` no aparece. Ver abajo y D-N8. |
+| N9 | ✅ Recuperar el PIN con Apple y con Google; cancelar la hoja no dice nada; las entradas siguen. |
+| N10 | ✅ De día y de noche: mismo tamaño, Apple primero, borde solo sobre superficie clara, nada se sale con el teclado. |
+| N11 | ✅ M1, M3, M4, M5 y M6 de SPEC_30 en el iPhone. Ver O-3. |
+| N12 | ✅ Cerrar sesión y volver a entrar con correo: Hoy con sus días. |
+| N13 | ✅ App al fondo durante el velo: al volver, Hoy. |
+| N14 | ✅ con O-1. Onboarding a medias: tras el aviso, la vista pasa sola a P7, lista y con «Continuar». |
+| N15 | ✅ con O-1. Journal sin PIN tras entrar en el teléfono vacío; Hoy muestra la frase del día. |
+| Regresión web | ✅ Google sin Apple en la vista de entrar y P7; M2 de SPEC_30 pasa. |
+
+**N8, lo que hace Firebase** con «una cuenta por correo» y la protección contra la enumeración activada: entrar con Google sobre una cuenta de correo y contraseña **no verificada** conserva el UID y los días, pero **retira la contraseña** (la fila queda solo con Google). Restablecer la contraseña la devuelve y **retira Google**. `otroMetodo` no aparece en esta configuración. Nada de lo escrito se pierde en ningún momento.
+
+### Hallazgos que pasan a una instrucción nueva, fuera de 21.2
+
+Ninguno lo causa 21.2. Los cuatro se resuelven en una instrucción aparte, después de fusionar esta.
+
+- **O-1 · La primera bajada de la cuenta en el iPhone suele fallar.** En 5 de 6 instalaciones nuevas el velo dura 10–15 s y sale el aviso de restauración; «Intentar de nuevo» lo resuelve siempre y nada se pierde. Hipótesis sin confirmar: Firestore marca el cliente como sin conexión en el WebView de iOS (`getFirestore(app)` sin ajustes en `src/lib/firebase.js`). **Bloquea la publicación.**
+- **O-2 · En la web, la subida se queda en «Guardando» para siempre, sin error.** Confirmada; recargar la pestaña lo sube todo. Causa probable: `flush` en `src/lib/db/sync.js` espera `setDoc` sin tiempo límite y `flushing` queda en `true`. **Bloquea la publicación.**
+- **O-3 · En el iPhone, la subida tarda ~1 minuto y solo termina con «Intentar de nuevo».** Probablemente un fallo seguido del `RETRY_BACKOFF_MS`; sin confirmar. Con red, lo escrito tiene que llegar a la nube en segundos y sola. **Bloquea la publicación.**
+- **D-N8 · Decidida por la fundadora: opción (c).** Para la 1.0, `CUENTA.error.credenciales` añade una pista para quien alguna vez entró con Google o Apple (solo copy, redacción de la fundadora). Después del lanzamiento, verificar el correo al crear la cuenta para que Firebase junte los métodos; queda como deuda.
+
+---
+
 ## Anexo A — Lo que hace la fundadora antes de probar (una sola vez)
 
 **En la consola de Firebase** (console.firebase.google.com, proyecto `strivo-fe04f`):
