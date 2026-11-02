@@ -23,7 +23,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { flush, flushEnCurso, getPendingCount, restaurar, ultimoResultado } from '@/lib/db'
-import { ESTADOS_SESION } from '@lib/sesion'
+import { ESTADOS_SESION, TECHO_DE_ESPERA_MS, conTecho } from '@lib/sesion'
 import { useSesion } from '@lib/useSesion'
 
 export const ESTADOS = Object.freeze(['sinCuenta', 'sinConexion', 'pendiente', 'alDia'])
@@ -78,16 +78,30 @@ export const ACUSES = Object.freeze({ sinExito: 'sinExito' })
  * restauración fallida—, devuelve `sinExito`; si no, `null`, porque el estado
  * nuevo ya lo dice solo.
  *
+ * **Y espera con techo** (SPEC_31): como mucho `TECHO_DE_ESPERA_MS`, tanto a la
+ * restauración como al vaciado. Con la conexión colgada el botón se quedaba
+ * sin respuesta (O-2); ahora pasado el techo se mira igual, y si sigue
+ * habiendo algo por subir el acuse es `sinExito`. Lo que no terminó sigue por
+ * detrás: el techo no cancela nada.
+ *
  * Sin React, para poder probarla sin navegador.
  *
+ * @param {string} uid
+ * @param {() => Promise<?object>} mirar
+ * @param {object} [opciones]
+ * @param {number} [opciones.techoMs=TECHO_DE_ESPERA_MS] - Existe para las pruebas.
  * @returns {Promise<?string>}
  */
-export async function reintentarYMirar(uid, mirar) {
+export async function reintentarYMirar(uid, mirar, { techoMs = TECHO_DE_ESPERA_MS } = {}) {
+  await conTecho(reintentar(uid), techoMs)
+  const despues = await mirar()
+  return despues?.puedeReintentar ? ACUSES.sinExito : null
+}
+
+async function reintentar(uid) {
   if (ultimoResultado(uid)?.ok === false) await restaurar(uid)
   const vaciado = await flush(uid)
   if (vaciado.skipped === 'en_curso') await flushEnCurso()
-  const despues = await mirar()
-  return despues?.puedeReintentar ? ACUSES.sinExito : null
 }
 
 export function useSincronizacion(uid) {

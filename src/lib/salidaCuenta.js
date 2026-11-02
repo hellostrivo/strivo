@@ -22,6 +22,7 @@
 import { borrarUid, flush, flushEnCurso, getPendingCount, olvidarUid } from './db/index.js'
 import { cancelRetries } from './db/sync.js'
 import { cerrarSesion } from './cuenta.js'
+import { TECHO_DE_ESPERA_MS, conTecho } from './sesion.js'
 
 /** Qué confirmación toca. */
 export const SALIDA = Object.freeze({ libre: 'libre', pendiente: 'pendiente' })
@@ -32,12 +33,24 @@ export const SALIDA = Object.freeze({ libre: 'libre', pendiente: 'pendiente' })
  * Si ya había un vaciado en marcha, espera a que termine antes de contar:
  * contar a mitad diría "pendiente" de algo que estaba subiendo.
  *
+ * **Y espera con techo** (SPEC_31): como mucho `TECHO_DE_ESPERA_MS`. Con la
+ * conexión colgada, «Cerrar sesión» se quedaba sin respuesta; ahora pasado el
+ * techo cuenta lo que queda, y si queda algo dice `pendiente`, que es la
+ * confirmación que explica por qué no se sale (DP-19.1).
+ *
+ * @param {string} uid
+ * @param {object} [opciones]
+ * @param {number} [opciones.techoMs=TECHO_DE_ESPERA_MS] - Existe para las pruebas.
  * @returns {Promise<'libre'|'pendiente'>}
  */
-export async function comprobarSalida(uid) {
+export async function comprobarSalida(uid, { techoMs = TECHO_DE_ESPERA_MS } = {}) {
+  await conTecho(subir(uid), techoMs)
+  return (await getPendingCount(uid)) > 0 ? SALIDA.pendiente : SALIDA.libre
+}
+
+async function subir(uid) {
   const resultado = await flush(uid)
   if (resultado.skipped === 'en_curso') await flushEnCurso()
-  return (await getPendingCount(uid)) > 0 ? SALIDA.pendiente : SALIDA.libre
 }
 
 /**

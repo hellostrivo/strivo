@@ -31,10 +31,16 @@
 // Es idempotente: escribe por ruta, así que reintentar desde cero no duplica
 // nada. Y la marca de "ya se restauró" se pone **solo al terminar entera**:
 // una descarga interrumpida no deja marca y el siguiente arranque la repite.
+//
+// **Cada lectura tiene límite** (SPEC_31, DP-31.2; `LIMITE_DE_RED_MS`). Una que
+// no contesta a tiempo termina la bajada como `interrumpida`, igual que una que
+// falla: sin marca, y lo que ya bajó se queda. Lo que esa lectura traiga si
+// contesta tarde **no se escribe**: nadie la está esperando ya.
 
 import { readPath, writePath } from './local.js'
 import { assertUid } from './schema.js'
 import { esExpediente, ganaRemoto, hechosQueFaltan } from './conflictos.js'
+import { LIMITE_DE_RED_MS, conLimite } from './limite.js'
 
 // ─── Qué se baja ──────────────────────────────────────────────────────────────
 //
@@ -213,22 +219,24 @@ function avisar(uid, resultado) {
  * Baja `users/{uid}/**` de Firestore al almacén local.
  *
  * @param {string} uid
+ * @param {object} [opciones]
+ * @param {number} [opciones.limiteMs=LIMITE_DE_RED_MS] - por lectura. Existe para las pruebas.
  * @returns {Promise<{ok: boolean, escritos: number, fusionados: number, motivo?: string}>}
  *   `escritos` son las rutas que no existían aquí y se escribieron (regla 1);
  *   `fusionados`, las que existían y en las que ganó lo remoto (regla 2 o 3).
  *   Lo que se conservó tal cual no se cuenta: no pasó nada.
  */
-export async function restaurar(uid) {
+export async function restaurar(uid, { limiteMs = LIMITE_DE_RED_MS } = {}) {
   assertUid(uid)
   const cuenta = { escritos: 0, fusionados: 0 }
 
-  const resultado = await bajar(uid, cuenta)
+  const resultado = await bajar(uid, cuenta, limiteMs)
   ultimos.set(uid, resultado)
   avisar(uid, resultado)
   return resultado
 }
 
-async function bajar(uid, cuenta) {
+async function bajar(uid, cuenta, limiteMs) {
   if (!isOnline()) return { ok: false, motivo: MOTIVOS.sinRed, ...cuenta }
 
   const f = await getFirestoreHandles()
@@ -237,7 +245,7 @@ async function bajar(uid, cuenta) {
   try {
     for (const { doc, coleccion, id } of DOCUMENTOS) {
       const path = `users/${uid}/${doc}`
-      const snap = await f.getDoc(f.doc(f.db, path))
+      const snap = await conLimite(f.getDoc(f.doc(f.db, path)), limiteMs)
       if (snap.exists()) await aplicar({ uid, path, coleccion, id, data: snap.data() }, cuenta)
     }
 
@@ -247,7 +255,7 @@ async function bajar(uid, cuenta) {
       for (;;) {
         const partes = [f.collection(f.db, ruta), f.orderBy(f.documentId()), f.limit(TAMANO_PAGINA)]
         if (ultimo) partes.push(f.startAfter(ultimo))
-        const pagina = await f.getDocs(f.query(...partes))
+        const pagina = await conLimite(f.getDocs(f.query(...partes)), limiteMs)
 
         for (const snap of pagina.docs) {
           await aplicar(
@@ -262,7 +270,8 @@ async function bajar(uid, cuenta) {
     }
   } catch {
     // Sin marca: el siguiente arranque la repite entera. Lo que ya bajó se
-    // queda —está escrito por ruta y volver a bajarlo no duplica nada—.
+    // queda —está escrito por ruta y volver a bajarlo no duplica nada—. Vale
+    // igual para un fallo que para un límite vencido.
     return { ok: false, motivo: MOTIVOS.interrumpida, ...cuenta }
   }
 

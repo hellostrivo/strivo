@@ -30,6 +30,7 @@ import { UID, resetLocalDB } from './helpers.js'
 const nube = new Map() // ruta → datos
 const lecturas = [] // rutas pedidas con getDoc o getDocs
 const fallarEn = { ruta: null } // getDocs de esta colección lanza
+const colgarEn = { ruta: null, soltar: null } // getDoc de esta ruta no contesta hasta soltarla (SPEC_31)
 const configurado = { db: { __fake: true } }
 
 vi.mock('../../firebase.js', () => ({
@@ -54,6 +55,7 @@ vi.mock('firebase/firestore', () => {
     query: (col, ...partes) => ({ col, partes }),
     getDoc: async (ref) => {
       lecturas.push(ref.path)
+      if (ref.path === colgarEn.ruta) await new Promise((resolve) => (colgarEn.soltar = resolve))
       return snapshotDe(ref.path, nube.get(ref.path))
     },
     getDocs: async ({ col, partes }) => {
@@ -90,6 +92,8 @@ beforeEach(async () => {
   nube.clear()
   lecturas.length = 0
   fallarEn.ruta = null
+  colgarEn.ruta = null
+  colgarEn.soltar = null
   configurado.db = { __fake: true }
   olvidarResultados()
   vi.stubGlobal('localStorage', localStorageDeMentira())
@@ -575,5 +579,34 @@ describe('olvidarUid', () => {
     expect(ultimoResultado(UID)).toBeNull()
     expect(hayMarcaDeRestauracion(OTRO)).toBe(true)
     expect(ultimoResultado(OTRO)).not.toBeNull()
+  })
+})
+
+// ─── Criterio 4 de SPEC_31: una lectura que no contesta ───────────────────────
+
+describe('SPEC_31, criterio 4: una lectura colgada termina como interrumpida', () => {
+  const esperar = (ms) => new Promise((r) => setTimeout(r, ms))
+
+  it('pasado el límite: interrumpida, sin marca, y lo que ya bajó se queda', async () => {
+    enNube('shared/profile', { name: 'Ale', updatedAt: T0 })
+    enNube('shared/auth', { uid: UID, email: 'a@b.c' })
+    colgarEn.ruta = `users/${UID}/shared/auth`
+
+    const r = await restaurar(UID, { limiteMs: 30 })
+
+    expect(r).toMatchObject({ ok: false, motivo: MOTIVOS.interrumpida })
+    expect(hayMarcaDeRestauracion(UID)).toBe(false)
+    expect((await readPath(`users/${UID}/shared/profile`)).name).toBe('Ale')
+  })
+
+  it('lo que la lectura abandonada traiga tarde no se escribe', async () => {
+    enNube('shared/auth', { uid: UID, email: 'a@b.c' })
+    colgarEn.ruta = `users/${UID}/shared/auth`
+
+    await restaurar(UID, { limiteMs: 30 })
+    colgarEn.soltar()
+    await esperar(20)
+
+    expect(await readPath(`users/${UID}/shared/auth`)).toBeNull()
   })
 })
