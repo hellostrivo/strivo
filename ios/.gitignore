@@ -11,3 +11,6 @@ capacitor-cordova-ios-plugins
 # Generated Config files
 App/App/capacitor.config.json
 App/App/config.xml
+
+# SPEC_21.2: enlaces que `cap sync` crea hacia node_modules (packageOptions.symlink).
+App/CapApp-SPM/symlinks/

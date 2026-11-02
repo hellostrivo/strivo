@@ -5,10 +5,11 @@
 // frase que lo dice va al lado del enlace y no en una nota al pie: lo que
 // asegura que este paso no bloquee es que se vea que no bloquea.
 //
-// El único tropiezo con nombre propio es el correo ya registrado, porque tiene
-// una salida concreta que ofrecer: probar con la contraseña de siempre. Lo
-// demás se cuenta con la frase amable de siempre, **sin un código a la vista**
-// (RN-EST-04). Nada de esta pantalla vibra.
+// Dos tropiezos tienen nombre propio, porque cada uno tiene una salida concreta
+// que ofrecer: el correo ya registrado —probar con la contraseña de siempre— y,
+// con Google o Apple, el correo que ya tiene cuenta con otra forma de entrar
+// (SPEC_21.2, DP-21.2.7). Lo demás se cuenta con la frase amable de siempre,
+// **sin un código a la vista** (RN-EST-04). Nada de esta pantalla vibra.
 //
 // **Quien ya tiene cuenta tiene por dónde decirlo** (SPEC_30, D30-4): «Ya
 // tengo una cuenta» abre la vista de entrar, que avisa antes de entrar de que
@@ -17,11 +18,18 @@
 //
 // Ningún control lleva `disabled` ni `required`: los campos vacíos no frenan
 // nada, y lo que salga se cuenta en palabras.
+//
+// **Un toque a la vez en los botones de Google y Apple** (`unaVezCon`, el
+// mismo freno que `FormularioEntrar`): en la app de iPhone, dos toques
+// seguidos abrirían dos hojas que se pisan el nonce y la llamada guardada del
+// plugin. El botón no se apaga; el segundo toque se ignora.
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Button from '@components/ui/Button'
+import BotonProveedor from '@components/shared/BotonProveedor'
 import { CampoLinea } from '@components/shared/Campo'
 import { ENLACE } from '@components/shared/FormularioEntrar'
+import { unaVezCon } from '@components/shared/unaVez'
 import { copy } from '@copy'
 import { MOTIVOS, proveedoresDisponibles } from '@lib/cuenta'
 
@@ -36,11 +44,19 @@ export default function Cuenta({
   onSaltar,
 }) {
   const [conCorreo, setConCorreo] = useState(false)
+  const ocupado = useRef(false)
+  const unaVez = unaVezCon(ocupado)
   const [correo, setCorreo] = useState('')
   const [contrasena, setContrasena] = useState('')
 
-  const aviso = motivo === MOTIVOS.correoEnUso ? textos.emailExists : null
-  const generico = motivo && motivo !== MOTIVOS.correoEnUso ? copy.errors.generic.body : null
+  // Cerrar la hoja de Google o de Apple no es un error: no se dice nada.
+  const AVISOS = {
+    [MOTIVOS.correoEnUso]: textos.emailExists,
+    [MOTIVOS.otroMetodo]: copy.cuenta.error.otroMetodo,
+    [MOTIVOS.rechazado]: null,
+  }
+  const aviso = motivo ? (AVISOS[motivo] ?? null) : null
+  const generico = motivo && !(motivo in AVISOS) ? copy.errors.generic.body : null
 
   return (
     <section className="flex flex-col gap-5">
@@ -53,18 +69,15 @@ export default function Cuenta({
         <p className="text-base text-on-surface">{textos.ready}</p>
       ) : (
         <div className="flex flex-col gap-3">
-          {/* Los proveedores que hay aquí (DP-19.4): en web, solo Google; en la
-              app de iPhone, ninguno (SPEC_21.1). Google nativo y Apple vuelven
-              con SPEC_21.2, y su copy se queda donde está. */}
+          {/* Los proveedores que hay aquí: en web, solo Google (DP-21.2.2); en
+              la app de iPhone, Apple y luego Google (SPEC_21.2, DP-21.2.4). */}
           {proveedoresDisponibles().map((proveedor) => (
-            <Button
+            <BotonProveedor
               key={proveedor}
-              variant="surface"
-              fullWidth
-              onClick={() => onProveedor(proveedor)}
-            >
-              {textos[proveedor]}
-            </Button>
+              proveedor={proveedor}
+              texto={textos[proveedor]}
+              onClick={() => unaVez(() => onProveedor(proveedor))}
+            />
           ))}
 
           {conCorreo ? (

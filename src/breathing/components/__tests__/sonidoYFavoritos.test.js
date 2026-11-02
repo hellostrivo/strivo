@@ -65,10 +65,12 @@ describe('el repo no engorda por audio (criterios 35 y 36, RN-RE-SND-00)', () =>
   })
 
   // Las ocho de siempre más las cinco de Capacitor que aprobó SPEC_21.1 (la app
-  // de iPhone). Ninguna de las cinco trae audio: el sonido sigue sintetizado.
-  it('las dependencias son las ocho de siempre y las cinco de la app de iPhone', () => {
+  // de iPhone) y el plugin de Google y Apple de SPEC_21.2. Ninguna trae audio:
+  // el sonido sigue sintetizado.
+  it('las dependencias son las ocho de siempre y las seis de la app de iPhone', () => {
     const paquete = JSON.parse(readFileSync('package.json', 'utf8'))
     expect(Object.keys(paquete.dependencies).sort()).toEqual([
+      '@capacitor-firebase/authentication',
       '@capacitor/app',
       '@capacitor/core',
       '@capacitor/ios',

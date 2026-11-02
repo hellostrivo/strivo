@@ -85,6 +85,8 @@ const CUENTA = {
   estado: {
     sinCuenta: 'Sin cuenta. Puedes crear una cuando quieras.',
     conCuenta: '{correo}',
+    // Solo con el correo oculto de Apple (`…@privaterelay.appleid.com`, DP-21.2.6).
+    conApple: 'Entraste con Apple. Tu correo se queda oculto.',
     vencida:
       'La sesión se cerró en este teléfono. Lo que escribiste sigue aquí; entra de nuevo para que se respalde.',
     sinConfigurar: 'Las cuentas no están disponibles en esta versión.',
@@ -122,6 +124,10 @@ const CUENTA = {
     credenciales: 'Ese correo y esa contraseña no coinciden.',
     sinConexion: 'Sin conexión. Inténtalo cuando vuelva.',
     generico: 'Algo no salió bien. Inténtalo de nuevo en un momento.',
+    // Google o Apple con un correo que ya tiene cuenta por otro camino
+    // (DP-21.2.7). No se vinculan cuentas: se dice cómo entrar.
+    otroMetodo:
+      'Ese correo ya tiene una cuenta con otra forma de entrar. Entra como lo hiciste la primera vez.',
   },
 }
 
@@ -291,8 +297,11 @@ export const copy = {
         apoyoDesdeCuenta:
           'Si tu cuenta ya tenía respuestas, seguimos con las que guardaste en ella.',
         sinCuenta: 'Si es tu primera vez aquí, puedes empezar sin cuenta y crearla al final.',
+        // Con Apple y el correo oculto, quien creó su cuenta con correo abre
+        // otra vacía al tocar Apple en el teléfono nuevo (SPEC_21.2): la frase
+        // dice qué hacer.
         nueva:
-          'Esta cuenta es nueva y todavía no tiene nada guardado. Puedes seguir con ella o entrar con otra.',
+          'Esta cuenta es nueva y todavía no tiene nada guardado. Si antes entrabas de otra forma, vuelve y entra así para traer lo tuyo.',
         empezarMientras: 'Empezar mientras tanto',
       },
 

@@ -39,6 +39,7 @@ describe('el copy de Tu cuenta es el de la SPEC §4, literal', () => {
       estado: {
         sinCuenta: 'Sin cuenta. Puedes crear una cuando quieras.',
         conCuenta: '{correo}',
+        conApple: 'Entraste con Apple. Tu correo se queda oculto.',
         vencida:
           'La sesión se cerró en este teléfono. Lo que escribiste sigue aquí; entra de nuevo para que se respalde.',
         sinConfigurar: 'Las cuentas no están disponibles en esta versión.',
@@ -76,6 +77,8 @@ describe('el copy de Tu cuenta es el de la SPEC §4, literal', () => {
         credenciales: 'Ese correo y esa contraseña no coinciden.',
         sinConexion: 'Sin conexión. Inténtalo cuando vuelva.',
         generico: 'Algo no salió bien. Inténtalo de nuevo en un momento.',
+        otroMetodo:
+          'Ese correo ya tiene una cuenta con otra forma de entrar. Entra como lo hiciste la primera vez.',
       },
     })
   })
@@ -135,10 +138,22 @@ describe('el bloque Tu cuenta', () => {
     expect(formulario).toMatch(/noValidate/)
   })
 
-  it('criterio 12: los proveedores salen de proveedoresDisponibles y Apple no aparece', () => {
+  // Desde SPEC_21.2 Apple sí aparece, pero solo en la app de iPhone y solo
+  // porque lo dice `proveedoresDisponibles`: ninguno de los dos lo nombra.
+  it('criterio 12: los proveedores salen de proveedoresDisponibles, sin nombrar ninguno', () => {
     expect(bloque).toMatch(/proveedores=\{proveedoresDisponibles\(\)\}/)
     expect(formulario).toMatch(/proveedores\.map/)
-    ;[bloque, formulario].forEach((codigo) => expect(codigo).not.toMatch(/apple/i))
+    ;[bloque, formulario].forEach((codigo) => expect(codigo).not.toMatch(/'apple'|'google'/))
+  })
+
+  // SPEC_21.2 §2: el botón de Apple entraba con Google.
+  it('Tu perfil entra con el proveedor tocado, no siempre con Google', () => {
+    expect(bloque).toMatch(/onProveedor=\{sesion\.entrarConProveedor\}/)
+    expect(bloque).not.toMatch(/entrarConGoogle/)
+  })
+
+  it('el correo oculto de Apple no se enseña: dice que se entra con Apple (DP-21.2.6)', () => {
+    expect(bloque).toMatch(/esCorreoOculto\(sesion\.correo\)\s*\?\s*textos\.estado\.conApple/)
   })
 
   it('cerrar la ventana de Google no es un error que haya que decir', () => {

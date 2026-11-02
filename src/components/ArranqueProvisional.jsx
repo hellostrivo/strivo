@@ -95,7 +95,7 @@ import {
   adoptarArbol,
   crearConCorreo,
   entrarConCorreo,
-  entrarConProveedor,
+  entrarConProveedor as abrirConProveedor,
 } from '@lib/cuenta'
 import { ContextoSesion } from '@lib/useSesion'
 import { momentoDe } from '@lib/timeSlot'
@@ -325,7 +325,7 @@ export default function ArranqueProvisional({ children }) {
   /**
    * Con la cuenta ya abierta en Firebase, lleva la sesión a ella. Es el único
    * camino a una cuenta: Tu perfil lo usa por `entrar`, `crear` y
-   * `entrarConGoogle`, y P7 por `conectarCuenta` (SPEC_19.2).
+   * `entrarConProveedor`, y P7 por `conectarCuenta` (SPEC_19.2).
    *
    * La misma cuenta que estaba vencida solo recupera la sesión. Una cuenta
    * recién creada adopta el árbol (`adoptarArbol`). Una que ya existía pasa por
@@ -380,10 +380,17 @@ export default function ArranqueProvisional({ children }) {
     [pasarACuenta],
   )
 
-  const entrarConGoogle = useCallback(async () => {
-    const r = await entrarConProveedor('google')
-    return r.ok ? pasarACuenta(r) : r
-  }, [pasarACuenta])
+  /**
+   * Entra con el proveedor que se tocó: Google o Apple (SPEC_21.2). Antes Tu
+   * perfil entraba con Google tocara quien tocara el botón.
+   */
+  const entrarConProveedor = useCallback(
+    async (cual) => {
+      const r = await abrirConProveedor(cual)
+      return r.ok ? pasarACuenta(r) : r
+    },
+    [pasarACuenta],
+  )
 
   /**
    * Vuelve a intentar bajar lo de la cuenta cuando una entrada la dejó con la
@@ -442,7 +449,7 @@ export default function ArranqueProvisional({ children }) {
       conectarCuenta: pasarACuenta,
       entrar,
       crear,
-      entrarConGoogle,
+      entrarConProveedor,
       reintentarRestauracion,
       comprobarSalida,
       salir,
@@ -455,7 +462,7 @@ export default function ArranqueProvisional({ children }) {
       pasarACuenta,
       entrar,
       crear,
-      entrarConGoogle,
+      entrarConProveedor,
       reintentarRestauracion,
       comprobarSalida,
       salir,

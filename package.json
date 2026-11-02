@@ -15,12 +15,13 @@
     "lint:contraste": "node scripts/lint-contraste.js",
     "validar:frases": "node scripts/validar-frases.js",
     "format:check": "prettier --check \"src/**/*.{js,jsx}\"",
-    "ios:build": "vite build --mode ios && cap sync ios",
+    "ios:build": "node scripts/comprobar-ios.mjs && vite build --mode ios && cap sync ios",
     "ios:abrir": "cap open ios",
     "ios:arranque": "node scripts/componer-arranque.js",
     "ios:recursos": "npx --yes @capacitor/assets@3.0.5 generate --ios"
   },
   "dependencies": {
+    "@capacitor-firebase/authentication": "8.5.2",
     "@capacitor/app": "^8.1.2",
     "@capacitor/core": "^8.5.3",
     "@capacitor/ios": "^8.5.3",
@@ -50,5 +51,10 @@
     "vite": "^5.4.0",
     "vite-plugin-pwa": "^0.20.0",
     "vitest": "^2.0.5"
+  },
+  "overrides": {
+    "@capacitor-firebase/authentication": {
+      "firebase": "$firebase"
+    }
   }
 }

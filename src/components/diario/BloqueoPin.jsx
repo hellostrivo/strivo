@@ -102,6 +102,9 @@ export default function BloqueoPin({ modo, estado, acciones, onCerrar }) {
   const verificar = async () => {
     const resultado = await acciones.reautenticar(pideContrasena ? { contrasena } : undefined)
     if (resultado.ok) return limpiar('nuevo')
+    // Cerrar la hoja de Google o de Apple no es un error: se vuelve a esta
+    // pantalla tal como estaba, sin nota (SPEC_21.2 §4.6).
+    if (resultado.motivo === 'cancelado') return setNota(null)
     if (resultado.motivo === 'pide-contrasena') {
       setPideContrasena(true)
       return setNota(textos.recuperar.pideContrasena)

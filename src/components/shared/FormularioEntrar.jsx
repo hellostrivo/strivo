@@ -19,7 +19,9 @@
 
 import { useEffect, useId, useRef, useState } from 'react'
 import Button from '@components/ui/Button'
+import BotonProveedor from '@components/shared/BotonProveedor'
 import { CampoLinea } from '@components/shared/Campo'
+import { unaVezCon } from '@components/shared/unaVez'
 
 const SUBVISTAS = Object.freeze({ formulario: 'formulario', recuperar: 'recuperar' })
 
@@ -80,15 +82,7 @@ export default function FormularioEntrar({
   }
 
   /** Un toque a la vez: el segundo, mientras el primero está en camino, no hace nada. */
-  const unaVez = async (trabajo) => {
-    if (ocupado.current) return
-    ocupado.current = true
-    try {
-      await trabajo()
-    } finally {
-      ocupado.current = false
-    }
-  }
+  const unaVez = unaVezCon(ocupado)
 
   const tras = (resultado) => {
     if (resultado.ok) {
@@ -203,16 +197,15 @@ export default function FormularioEntrar({
         {creando ? botones.crear : textos.formulario.entrar}
       </Button>
 
+      {/* En web, Google; en la app de iPhone, Apple y Google, en ese orden
+          (SPEC_21.2). El orden y la lista los decide quien lo monta. */}
       {proveedores.map((proveedor) => (
-        <Button
+        <BotonProveedor
           key={proveedor}
-          type="button"
-          variant="surface"
-          fullWidth
+          proveedor={proveedor}
+          texto={botones.proveedores[proveedor]}
           onClick={() => conProveedor(proveedor)}
-        >
-          {botones.proveedores[proveedor]}
-        </Button>
+        />
       ))}
 
       {!creando && onRecuperar && (

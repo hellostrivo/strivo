@@ -136,3 +136,21 @@ Noveno. Requiere SPEC_19 y 17B. Si SPEC_25 se implementa después, el paso `Purc
 - **DP-24.2** Confirmación final: escribir BORRAR (recomendado) o solo un segundo botón. Escribir la palabra evita borrados por gesto accidental en una app que se usa antes de dormir.
 - **DP-24.3** Confirmar si existe un token de acción destructiva en `design-tokens.json`. Si no, definir uno acorde a la paleta nueva (SPEC_18).
 - **DP-24.4** Borrado de Firestore por lotes desde cliente o Cloud Function. Recomendado: Cloud Function (requiere plan Blaze de Firebase, que la hoja de presupuesto ya contempla).
+
+---
+
+## Nota de SPEC_21.2 (31 oct 2026) — Google y Apple en la app de iPhone
+
+Sin cambiar el alcance de esta SPEC, tres cosas que 21.2 deja dichas:
+
+1. **La reautenticación del borrado no puede ser solo con contraseña.** Quien entró con Google o con Apple no tiene una. Se usa `reautenticarConProveedor` (`src/lib/reautenticacion.js`), la misma que usa hoy «Olvidé mi PIN»: en web, ventana emergente; en la app de iPhone, la hoja nativa y `reauthenticateWithCredential`. El método sale de la sesión (`metodoDeSesion`, el `signInProvider` del token), no de `providerData[0]`.
+2. **Al borrar una cuenta que entró con Apple hay que revocar su token de Apple** (lo exige Apple desde 2022). Con la arquitectura de 21.2 no sale solo:
+   - El SDK de JavaScript tiene `revokeAccessToken(auth, token)`, pero pide un *access token* de Apple, y lo nativo no lo da: el plugin devuelve el **código de autorización** (`credential.authorizationCode`).
+   - El plugin tiene su propio `revokeAccessToken({ token })`, que en iOS llama a `Auth.auth().revokeToken(withAuthorizationCode:)` y sí acepta ese código, pero **exige una sesión abierta en el SDK nativo**, y con `skipNativeAuth: true` no la hay.
+
+   Hay dos caminos y **esta nota no elige ninguno**:
+   - **(a) Nativo:** al borrar, entrar una sola vez con `signInWithApple({ skipNativeAuth: false })` para que el SDK nativo tenga sesión, llamar a `revokeAccessToken` con el código que acaba de devolver y cerrar esa sesión nativa.
+   - **(b) Servidor:** una Cloud Function que cambie el código por un token con Apple y lo revoque.
+
+   En los dos, **el código de autorización caduca a los cinco minutos y sirve una sola vez**: tiene que salir de la reautenticación hecha justo antes de borrar, no de una guardada.
+3. **Antes de empezar esta SPEC hace falta el paso 7 del anexo A de SPEC_21.2**: la clave de «Sign in with Apple» dada de alta en developer.apple.com y cargada en Firebase (Apple → «Configuración del flujo de código OAuth»). Sin ella Firebase no puede revocar nada.

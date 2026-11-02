@@ -5,3 +5,7 @@ dist/
 *.log
 .DS_Store
 .vite/
+
+# SPEC_21.2 (DP-21.2.3): la configuración de Firebase para iPhone no se versiona,
+# como .env.local. Se copia a mano; npm run ios:build dice si falta.
+ios/App/App/GoogleService-Info.plist

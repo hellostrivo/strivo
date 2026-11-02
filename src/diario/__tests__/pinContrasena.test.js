@@ -53,8 +53,14 @@ vi.mock('firebase/auth', () => {
 
 const { reautenticar } = await import('../pin.js')
 
+// El método lo dice el token de la sesión (SPEC_21.2): `providerData` se deja
+// con el mismo valor para que nada dependa de cuál de los dos se lea.
 function conProveedor(providerId) {
-  sesion.usuario = { email: 'ale@ejemplo.com', providerData: [{ providerId }] }
+  sesion.usuario = {
+    email: 'ale@ejemplo.com',
+    providerData: [{ providerId }],
+    getIdTokenResult: async () => ({ signInProvider: providerId }),
+  }
 }
 
 beforeEach(async () => {
@@ -150,6 +156,66 @@ describe('criterio 7: con Google, igual que hoy', () => {
     conProveedor('apple.com')
     await reautenticar(UID)
     expect(llamadas.popup).toEqual([{ id: 'apple' }])
+  })
+})
+
+// SPEC_21.2 §2 y §4.6: el método es el de esta sesión, no el primero de la
+// lista, y cerrar la ventana o la hoja no es un error de verificación.
+describe('SPEC_21.2: el método sale de la sesión, y cancelar no es un error', () => {
+  it('con dos métodos en la cuenta, manda el de la sesión y no providerData[0]', async () => {
+    sesion.usuario = {
+      email: 'ale@ejemplo.com',
+      providerData: [{ providerId: 'password' }, { providerId: 'google.com' }],
+      getIdTokenResult: async () => ({ signInProvider: 'google.com' }),
+    }
+    expect(await reautenticar(UID)).toEqual({ ok: true })
+    expect(llamadas.popup).toEqual([{ id: 'google' }])
+    expect(llamadas.credencial).toHaveLength(0)
+  })
+
+  it('y al revés: entró con contraseña, aunque Google vaya primero en la lista', async () => {
+    sesion.usuario = {
+      email: 'ale@ejemplo.com',
+      providerData: [{ providerId: 'google.com' }, { providerId: 'password' }],
+      getIdTokenResult: async () => ({ signInProvider: 'password' }),
+    }
+    expect(await reautenticar(UID)).toEqual({ ok: false, motivo: 'pide-contrasena' })
+    expect(llamadas.popup).toHaveLength(0)
+  })
+
+  it('si el token no se puede leer sin red, sin-conexion', async () => {
+    sesion.usuario = {
+      email: 'ale@ejemplo.com',
+      providerData: [{ providerId: 'google.com' }],
+      getIdTokenResult: async () => {
+        throw Object.assign(new Error('red'), { code: 'auth/network-request-failed' })
+      },
+    }
+    expect(await reautenticar(UID)).toEqual({ ok: false, motivo: 'sin-conexion' })
+  })
+
+  it.each(['auth/popup-closed-by-user', 'auth/cancelled-popup-request', 'auth/user-cancelled'])(
+    'cerrar la ventana (%s) es cancelado, no no-verificado',
+    async (codigo) => {
+      conProveedor('google.com')
+      fallo.codigo = codigo
+      expect(await reautenticar(UID)).toEqual({ ok: false, motivo: 'cancelado' })
+    },
+  )
+
+  it('la recuperación con proveedor va por la función de lib/, que es la de SPEC_24', () => {
+    const codigo = readFileSync('src/diario/pin.js', 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\/\/.*$/gm, '')
+    expect(codigo).toMatch(/import\('@\/lib\/reautenticacion'\)/)
+    expect(codigo).toMatch(/await reautenticarConProveedor\(usuario, proveedor/)
+    expect(codigo).not.toMatch(/reauthenticateWithPopup/)
+    expect(codigo).not.toMatch(/providerData/)
+  })
+
+  it('BloqueoPin no dice nada al cancelar: se queda en la pantalla, sin nota', () => {
+    const fuente = readFileSync('src/components/diario/BloqueoPin.jsx', 'utf8')
+    expect(fuente).toMatch(/if \(resultado\.motivo === 'cancelado'\) return setNota\(null\)/)
   })
 })
 

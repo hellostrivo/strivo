@@ -20,7 +20,8 @@
 //   conectarCuenta     — lleva la sesión a una cuenta ya abierta en Firebase:
 //                        P7 la usa con el resultado de crear o entrar
 //                        (SPEC_19.2). Es el mismo camino que usa Tu perfil.
-//   entrar, crear, entrarConGoogle, comprobarSalida, salir — las acciones.
+//   entrarConProveedor — entra con Google o con Apple, el que se tocó.
+//   entrar, crear, comprobarSalida, salir — las acciones.
 
 import { createContext, useContext } from 'react'
 

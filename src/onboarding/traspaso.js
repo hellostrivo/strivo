@@ -32,7 +32,7 @@ import { PASOS, retomarEn, siguiente } from './pasos.js'
  *   - `restauracion`: la sesión ya es la cuenta, pero lo suyo no terminó de
  *     llegar (C7). Se ofrece reintentar o empezar mientras tanto.
  *   - `generico`: la mudanza misma falló y la sesión siguió en el origen (C8).
- *   - `nueva`: Google abrió una cuenta que no existía (C4). No cruza el velo
+ *   - `nueva`: Google o Apple abrió una cuenta que no existía (C4). No cruza el velo
  *     —una cuenta nueva no pasa por él—, pero es un aviso de la misma vista.
  */
 export const AVISOS_DE_ENTRADA = Object.freeze({

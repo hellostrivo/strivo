@@ -10,8 +10,9 @@
 // el título es la pregunta de la pantalla. Lo que añade esta vista son los
 // avisos de una entrada que no salió redonda, y cada uno con su salida:
 //
-//   - `nueva`: Google abrió una cuenta que no existía. Se dice, y se puede
-//     seguir con ella o entrar con otra (C4).
+//   - `nueva`: Google o Apple abrió una cuenta que no existía. Se dice, y se
+//     puede seguir con ella o entrar con otra (C4). Con Apple y el correo
+//     oculto es lo que le pasa a quien creó su cuenta con correo (SPEC_21.2).
 //   - `restauracion`: la sesión ya es la cuenta y lo suyo no terminó de
 //     llegar. Reintentar, o empezar mientras tanto (C7). El formulario no se
 //     ofrece: ya se entró.
