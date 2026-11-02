@@ -1,6 +1,6 @@
 # CLAUDE.md — Strivo
 
-**Última actualización:** 31 oct 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
+**Última actualización:** 1 nov 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
 **Blueprint (documento rector):** `/docs/blueprint/Strivo_Blueprint_de_Producto_v5_0_24-08-2026.md`
 **Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO.md`
 **Plan operativo del repliegue:** `/docs/Strivo_Plan_de_Separacion_Tecnica_v1_24-08-2026.md`
@@ -655,6 +655,10 @@ el componente.**
   en `src/content/frases-v2/validacion.js` y las comparten el script y las pruebas.
 - `src/lib/db/local.js` → `esRutaLocal`: las rutas que nunca salen del dispositivo (PIN, preferencia
   de frases y asignaciones). `enqueue` las rechaza siempre.
+- `src/lib/db/limite.js` → `LIMITE_DE_RED_MS` y `conLimite`: cuánto se espera, como máximo, a una
+  escritura o una lectura de Firestore (SPEC_31). Lo leen `sync.js` y `restaurar.js`.
+- `src/lib/db/sync.js` → qué pone la cola en marcha y con qué ritmo: `DEMORA_DE_SUBIDA_MS` y
+  `RETRY_BACKOFF_MS` (SPEC_31).
 - `src/perfil/bloques.js` → qué bloques tiene Tu perfil y en qué orden. Añadir uno es un
   identificador aquí, un texto en el copy y un componente; hay una prueba que falla si falta alguno
   de los tres.
@@ -704,7 +708,79 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**96 archivos de prueba · 2.498 casos · los seis comandos y `validar:frases` en verde.**
+**98 archivos de prueba · 2.534 casos · los seis comandos y `validar:frases` en verde.**
+
+### Que lo escrito suba solo (SPEC_31, 1 nov 2026)
+
+La instrucción completa está en `docs/specs/INSTRUCCION_SPEC_31_SINCRONIZACION_FIABLE.md`. Nace de
+O-1, O-2 y O-3 de la bitácora de 21.2, que **no causó 21.2** y que pasaban también en la web.
+
+**Hasta aquí, nada ponía la cola en marcha después de escribir** (O-3). `enqueue` guardaba y
+terminaba; `flush` solo corría al montar con cuenta, al volver la red, al volver la pestaña, tras un
+fallo o con un botón. Con la app abierta, lo escrito esperaba hasta que pasara una de esas cosas: en
+el iPhone, «Guardando» hasta tocar «Intentar de nuevo». **El criterio 18 de 17A («llega sin
+intervención») pasó en septiembre por un cambio de pestaña**: para mirar Firestore se cambia a su
+consola y se vuelve, y esa vuelta es un `visibilitychange`. Lo que se midió fue «sin tocar la app»,
+no «sola».
+
+**Qué la pone en marcha ahora**, mientras `startSync` está activo (`sync.js`):
+
+- **Escribir.** `local.js` avisa al encolar (`alEncolar`) y `sync.js` arma un vaciado a los
+  `DEMORA_DE_SUBIDA_MS` (2 s). Las escrituras que llegan mientras tanto **no lo reinician**: diez
+  seguidas son un vaciado, y escribir sin parar nunca deja nada esperando más de eso. Lo escrito
+  durante un vaciado sale en otra vuelta. `local.js` sigue sin importar `sync.js`, y sin
+  `startSync` escribir no vacía nada —por eso las pruebas de la capa siguen viendo la cola llena—.
+  **`sync.js` escucha a `local.js` y sigue sin emitir nada a nadie** (D11): el bloque de Tu perfil
+  sigue siendo sondeo.
+- **Irse al fondo** (`visibilitychange` a oculto y `pagehide`) vacía en el acto: en el iPhone la app
+  se congela poco después.
+- **La red.** Volver vacía, como antes; irse cancela el reintento pendiente, y **sin red no se
+  programa ninguno**. Con red la escala es `RETRY_BACKOFF_MS` = 2, 5, 10, 20 y 30 s, con tope: nada
+  espera más de medio minuto. Con un reintento programado, escribir no arma otro vaciado: manda la
+  escala.
+
+**Ninguna espera de red es infinita** (O-2). En el SDK, una escritura sin conexión no falla: espera
+sin plazo. Con la conexión colgada, `flushing` se quedaba en `true`, cada `flush` contestaba
+`en_curso` y «Intentar de nuevo» esperaba a `flushEnCurso()`, que no terminaba: trece minutos en la
+web, hasta recargar. Ahora:
+
+- **Cada escritura de `flush` y cada lectura de `restaurar` tienen `LIMITE_DE_RED_MS` (10 s)**, en
+  `limite.js`. Es el plazo con el que el propio SDK da al cliente por desconectado, y queda por
+  debajo del techo de 15 s del velo. **Un límite no cancela nada**: deja de esperar.
+- **Una escritura que vence cuenta como fallo y sigue en la cola**; solo sale con la confirmación de
+  Firestore. Y como una conexión muerta no se recupera sola, **el siguiente intento reabre la
+  conexión** (`disableNetwork` y `enableNetwork`). `enableNetwork` se pide aunque `disableNetwork`
+  no conteste: el SDK atiende las dos en orden, así que la red no se queda apagada. Lo que el SDK
+  tenía a medio enviar sigue en su propia cola y sale al reabrir; enviarlo dos veces no hace daño,
+  porque `setDoc` reescribe el documento entero.
+- **Una lectura que vence deja la restauración en `interrumpida`**, sin marca. Lo que ya bajó se
+  queda, como con cualquier fallo, y **lo que la lectura abandonada traiga tarde no se escribe**.
+- **«Intentar de nuevo» y la comprobación de «Cerrar sesión» contestan como mucho a los 15 s**
+  (`conTecho` con `TECHO_DE_ESPERA_MS`, el mismo del velo). Dicen lo que ya decían —`sinExito` y
+  `pendiente`— y cerrar sesión sigue sin dejar salir con algo pendiente (DP-19.1).
+
+**Tres defectos de la cola que el disparo nuevo habría vuelto frecuentes**, y salen con él:
+
+- **H-1: la cola podía sacar una versión que no se había enviado.** Una ruta reescrita conserva su
+  `seq`, y `flush` hacía `dequeue(seq)` tras confirmar lo que había leído: si mientras viajaba se
+  escribía de nuevo, la versión nueva salía de la cola sin enviarse y la nube se quedaba con la
+  vieja hasta la siguiente edición. Ahora cada entrada lleva su revisión (`rev`) y
+  `dequeueSiIgual` solo la saca si no cambió. **Las entradas de antes no traen `rev`** y siguen
+  funcionando: sin tocar salen, y reescritas ya traen una y se quedan.
+- **H-2: dos vaciados podían correr a la vez**, porque la guarda se ponía después de un `await`.
+  Ahora va antes del primero.
+- **H-3: un fallo programaba reintento aunque no hubiera red.**
+
+**La pista de D-N8.** «Ese correo y esa contraseña no coinciden.» sigue con una pista para quien
+alguna vez entró con un proveedor, y nombra solo los botones que hay en pantalla:
+`cuenta.error.credenciales` dice Google (web) y `credencialesNativa`, Google o Apple (iPhone). Lo
+elige `claveDeError`. P7 no tiene formulario de entrar propio: su enlace abre la misma vista, así
+que la pista sale en los tres sitios. La frase del PIN no cambia.
+
+**Lo que está pendiente de medir en el iPhone** (§0.1 de la instrucción): si O-1 —la primera
+bajada que acaba en el aviso de restauración— se debe a que el canal de Firestore no se abre en el
+WebView. De eso dependen DP-31.1 (long polling forzado solo en nativo) y DP-31.5 (reintentar la
+primera bajada). La medición se hace con la rama `diagnostico-31`, que **no se fusiona nunca**.
 
 ### Google y Apple en la app de iPhone (SPEC_21.2, 31 oct 2026)
 
