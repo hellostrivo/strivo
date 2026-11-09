@@ -409,6 +409,13 @@ export const copy = {
       },
     },
 
+    // La intención de la mañana, cuando una frase la nombra (9 nov 2026): en
+    // el cierre de la mañana y en la pregunta de la noche que la recuerda.
+    // Cada intención va aparte, entre las mismas «» de la palabra propia, y
+    // la pantalla la pinta en cursiva. Lo dijo la persona: se cita, no se
+    // funde con la frase de la app.
+    citaDeIntencion: '«{intencion}»',
+
     // Filas dinámicas de agradecimientos (§5.3, Bloque 2).
     filas: {
       anadir: 'Añadir otra',
@@ -2079,6 +2086,28 @@ export const copy = {
 // Uso: interpolate(copy.diario.hoy.saludo.conNombreTemplate, { saludo, nombre })
 export function interpolate(template, vars) {
   return template.replace(/\{(\w+)\}/g, (_, key) => vars[key] ?? `{${key}}`)
+}
+
+/**
+ * Como `interpolate`, pero devuelve la frase en partes `{ texto, cita? }` para
+ * que la pantalla pueda pintar distinto lo que alguien dijo. Una variable puede
+ * ser texto o una lista de partes ya hecha. `textoDePartes` la vuelve a juntar.
+ */
+export function interpolarPartes(template, vars) {
+  const partes = []
+  let desde = 0
+  for (const encontrada of template.matchAll(/\{(\w+)\}/g)) {
+    partes.push({ texto: template.slice(desde, encontrada.index) })
+    const valor = vars[encontrada[1]] ?? encontrada[0]
+    partes.push(...(Array.isArray(valor) ? valor : [{ texto: valor }]))
+    desde = encontrada.index + encontrada[0].length
+  }
+  partes.push({ texto: template.slice(desde) })
+  return partes.filter((parte) => parte.texto !== '')
+}
+
+export function textoDePartes(partes) {
+  return partes.map((parte) => parte.texto).join('')
 }
 
 export default copy

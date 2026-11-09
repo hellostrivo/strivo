@@ -26,8 +26,8 @@
 // Las preguntas principales **no cambian nunca de redacción** (§6). Lo único
 // que se personaliza son las ideas de apoyo de la acción.
 
-import { copy, interpolate } from '@copy'
-import { ANIMO, INTENCION } from './mananaEmociones.js'
+import { copy, interpolate, interpolarPartes, textoDePartes } from '@copy'
+import { ANIMO, ID_OTRA, INTENCION, recortarPropia } from './mananaEmociones.js'
 import { preguntaPorId } from './mananaPausa.js'
 
 /**
@@ -149,14 +149,17 @@ export function camposOmitidos(entrada, { conPausa = false } = {}) {
 // ─── Cierre (§8) ──────────────────────────────────────────────────────────────
 
 /**
- * Las dos líneas del cierre, o ninguna.
+ * Las dos líneas del cierre, o ninguna, cada una en partes `{ texto, cita? }`.
  *
- * Con la mañana entera en blanco devuelve `{ lineas: [] }` y quien lo pinta
- * dice "Tu día puede comenzar desde donde estás." No hay puntuación, no hay
- * porcentaje y no hay felicitación: cerrar sin haber escrito nada es un cierre
- * como cualquier otro.
+ * Con la mañana entera en blanco devuelve `[]` y quien lo pinta dice "Tu día
+ * puede comenzar desde donde estás." No hay puntuación, no hay porcentaje y no
+ * hay felicitación: cerrar sin haber escrito nada es un cierre como cualquier
+ * otro.
+ *
+ * **Cada intención es una parte citada** (9 nov 2026): entre comillas, y la
+ * pantalla la pinta en cursiva. Lo demás de la línea es la voz de la app.
  */
-export function lineasDeCierre(entrada, genero) {
+export function cierreEnPartes(entrada, genero) {
   const textos = copy.diario.manana.cierre
   const lineas = []
 
@@ -164,18 +167,40 @@ export function lineasDeCierre(entrada, genero) {
   // y sin numerarlas: son una sola respuesta dicha con tres palabras, no una
   // lista de tres cosas por hacer. Los dos separadores son copy (RN-VOZ-01).
   const intencion = enumerar(
-    fichasDeIntencion(entrada, genero).map((ficha) => ficha.texto),
+    intencionesDeManana(entrada).map((id) => citaDeIntencion(entrada, id, genero)),
     textos,
   )
-  if (intencion !== '') {
-    lineas.push(interpolate(textos.intencionTemplate, { intencion }))
+  if (intencion.length > 0) {
+    lineas.push(interpolarPartes(textos.intencionTemplate, { intencion }))
   }
 
   if (hayAccion(entrada)) {
-    lineas.push(interpolate(textos.accionTemplate, { accion: String(entrada.action).trim() }))
+    lineas.push(interpolarPartes(textos.accionTemplate, { accion: String(entrada.action).trim() }))
   }
 
   return lineas
+}
+
+/** Las mismas líneas, en texto seguido. */
+export function lineasDeCierre(entrada, genero) {
+  return cierreEnPartes(entrada, genero).map(textoDePartes)
+}
+
+/**
+ * Una intención como la cita una frase: `{ texto: '«En calma»', cita: true }`,
+ * o `null` si no resuelve a nada. La palabra propia entra tal cual se escribió,
+ * con las mismas comillas que las del catálogo y sin unas segundas.
+ */
+export function citarIntencion(texto) {
+  const limpio = String(texto ?? '').trim()
+  if (limpio === '') return null
+  return { texto: interpolate(copy.diario.citaDeIntencion, { intencion: limpio }), cita: true }
+}
+
+function citaDeIntencion(entrada, id, genero) {
+  return citarIntencion(
+    id === ID_OTRA ? recortarPropia(entrada?.intentionOther) : INTENCION.etiquetaDe(id, genero),
+  )
 }
 
 /**
@@ -201,15 +226,14 @@ export function fichasDeIntencion(entrada, genero) {
  * seguidas; los dos separadores salen del copy, que es donde vive todo lo que
  * se lee.
  */
-function enumerar(textosDeRespuesta, textosDeCierre) {
-  const partes = textosDeRespuesta.filter((texto) => texto !== '')
-  if (partes.length === 0) return ''
-  if (partes.length === 1) return partes[0]
-  return (
-    partes.slice(0, -1).join(textosDeCierre.listaSeparador) +
-    textosDeCierre.listaUnion +
-    partes[partes.length - 1]
-  )
+function enumerar(citas, textosDeCierre) {
+  const partes = citas.filter(Boolean)
+  return partes.flatMap((parte, indice) => {
+    if (indice === 0) return [parte]
+    const union =
+      indice === partes.length - 1 ? textosDeCierre.listaUnion : textosDeCierre.listaSeparador
+    return [{ texto: union }, parte]
+  })
 }
 
 // ─── La pantalla de consulta ──────────────────────────────────────────────────

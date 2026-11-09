@@ -230,6 +230,7 @@ export function resumenDeNoche(entrada, morning, genero, fecha) {
     bloques.push({
       id: PREGUNTAS.reflexion,
       titulo: pregunta.titulo,
+      tituloPartes: pregunta.tituloPartes,
       forma: 'texto',
       numerado: false,
       fichas: [],

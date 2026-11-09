@@ -33,6 +33,7 @@ import {
   fichasDeIntencion,
   hayAlgoEscrito,
   intencionesDeManana,
+  cierreEnPartes,
   lineasDeCierre,
   marcaLocal,
   resumenDeManana,
@@ -870,7 +871,7 @@ describe('§8 — el cierre devuelve lo propio, sin celebrar nada', () => {
 
   it('nombra la intención elegida y el paso escrito', () => {
     expect(lineasDeCierre(entrada, 'f')).toEqual([
-      'Tu intención para hoy: En calma',
+      'Tu intención para hoy: «En calma»',
       'Un paso que puedes dar: Salir a caminar antes de comer',
     ])
   })
@@ -892,11 +893,27 @@ describe('§8 — el cierre devuelve lo propio, sin celebrar nada', () => {
     // Son una respuesta dicha con tres palabras, no una lista de cosas por
     // hacer: sin viñetas, sin numerarlas y sin contarlas.
     expect(lineasDeCierre({ intentions: ['calma', 'presente'] }, 'n')).toEqual([
-      'Tu intención para hoy: En calma y Presente',
+      'Tu intención para hoy: «En calma» y «Presente»',
     ])
     expect(lineasDeCierre({ intentions: ['calma', 'presente', 'ligero'] }, 'n')).toEqual([
-      'Tu intención para hoy: En calma, Presente y Con ligereza',
+      'Tu intención para hoy: «En calma», «Presente» y «Con ligereza»',
     ])
+  })
+
+  it('cada intención es una parte citada aparte; lo demás es la voz de la app', () => {
+    // 9 nov 2026: la pantalla pinta en cursiva lo citado. Las uniones no van
+    // dentro de la cita, y la palabra propia no recibe unas segundas comillas.
+    expect(
+      cierreEnPartes({ intentions: ['calma', ID_OTRA], intentionOther: 'sin prisa' }, 'n'),
+    ).toEqual([
+      [
+        { texto: 'Tu intención para hoy: ' },
+        { texto: '«En calma»', cita: true },
+        { texto: ' y ' },
+        { texto: '«sin prisa»', cita: true },
+      ],
+    ])
+    expect(cierreEnPartes({ action: 'Beber agua' }, 'n')[0].some((p) => p.cita)).toBe(false)
   })
 
   it('no hay puntuación, ni porcentaje, ni felicitación', () => {

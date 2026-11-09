@@ -37,6 +37,7 @@
 
 import { clsx } from 'clsx'
 import ListaNumerada from '@components/diario/ListaNumerada'
+import TextoConCitas from '@components/diario/TextoConCitas'
 import { PILDORA, PILDORA_ELEGIDA } from '@components/shared/pildora'
 import { copy } from '@copy'
 
@@ -74,7 +75,9 @@ export default function ResumenNoche({ bloques, onEditar = null }) {
 
       {bloques.map((bloque) => (
         <section key={bloque.id} className="flex flex-col gap-3">
-          <h2 className="font-display text-md text-on-surface">{bloque.titulo}</h2>
+          <h2 className="font-display text-md text-on-surface">
+            <TextoConCitas partes={bloque.tituloPartes} texto={bloque.titulo} />
+          </h2>
           {/* Lo escrito va a todo el ancho, una respuesta debajo de otra: una
               larga se lee entera. Las píldoras, del ancho de su contenido. */}
           <div

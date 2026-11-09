@@ -18,6 +18,7 @@
 import { clsx } from 'clsx'
 import { copy } from '@copy'
 import CampoRespuesta from '../CampoRespuesta'
+import TextoConCitas from '../TextoConCitas'
 
 const textos = copy.diario.noche.reflexion
 
@@ -26,7 +27,9 @@ export default function MomentoReflexion({ pregunta, valor, onCambiar, onVolcar,
     <section className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <p className="text-sm text-on-surface-soft">{textos.opcional}</p>
-        <h2 className="font-display text-md text-on-surface">{pregunta.titulo}</h2>
+        <h2 className="font-display text-md text-on-surface">
+          <TextoConCitas partes={pregunta.tituloPartes} texto={pregunta.titulo} />
+        </h2>
         <p className="text-sm text-on-surface-soft">{pregunta.lead}</p>
       </div>
 

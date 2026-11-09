@@ -28,14 +28,14 @@
 // pregunta (§5). Aparecer cuenta aunque no se conteste: si solo contáramos las
 // respondidas, quien nunca responde vería siempre la misma.
 
-import { copy, interpolate } from '@copy'
+import { copy, interpolarPartes, textoDePartes } from '@copy'
 import { sumarDias } from './fechas.js'
 // De la mañana entra **una** cosa: cómo se lee la intención que se eligió. §6
 // lo pide expresamente y no abre la puerta a nada más.
 import { ID_OTRA, INTENCION, recortarPropia } from './mananaEmociones.js'
 // Y cómo se leen las intenciones de una mañana guardada, que desde el 30 de
 // agosto de 2026 son hasta tres y pueden venir en cualquiera de las dos formas.
-import { intencionesDeManana } from './manana.js'
+import { citarIntencion, intencionesDeManana } from './manana.js'
 
 const textos = copy.diario.noche.reflexion
 
@@ -69,9 +69,10 @@ export function preguntaPorId(id) {
 /**
  * La intención de la mañana, tal como entra en la pregunta de §6.
  *
- * Si se escribió a mano se inserta **exactamente el texto**, sin comillas y sin
- * reinterpretarlo: la frase ya lo enmarca, y adornarlo sería la app opinando
- * sobre una palabra que no es suya.
+ * Si se escribió a mano se inserta **exactamente el texto**, sin
+ * reinterpretarlo. Las comillas no las pone esto sino la pregunta, y las pone
+ * igual a cualquier intención (9 nov 2026): lo que la cita es que lo dijo la
+ * persona, no qué dijo.
  */
 export function intencionDeLaManana(morning, genero) {
   // **La primera de las tres**, si esa mañana eligió varias. La frase nombra
@@ -139,14 +140,20 @@ export function siguienteDelBanco(recientes, hoy) {
   return BANCO.find((pregunta) => !usadas.includes(pregunta.id)) ?? BANCO[0]
 }
 
-/** La pregunta de §6, ya redactada con la intención de esa mañana. */
+/**
+ * La pregunta de §6, ya redactada con la intención de esa mañana. Además del
+ * `titulo` seguido trae `tituloPartes`, con la intención como parte citada para
+ * que la pantalla la pinte en cursiva. Las rotativas no lo traen.
+ */
 function preguntaDeManana(morning, genero) {
+  const tituloPartes = interpolarPartes(textos.manana.tituloTemplate, {
+    emocion: [citarIntencion(intencionDeLaManana(morning, genero))].filter(Boolean),
+  })
   return {
     id: ID_MANANA,
     fuente: FUENTES.manana,
-    titulo: interpolate(textos.manana.tituloTemplate, {
-      emocion: intencionDeLaManana(morning, genero),
-    }),
+    titulo: textoDePartes(tituloPartes),
+    tituloPartes,
     lead: textos.manana.lead,
   }
 }

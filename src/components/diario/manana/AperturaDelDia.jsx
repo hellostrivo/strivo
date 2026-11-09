@@ -41,7 +41,8 @@ import { useEffect, useRef, useState } from 'react'
 import { clsx } from 'clsx'
 import Button from '@components/ui/Button'
 import { prefiereMenosMovimiento } from '@components/shared/TransicionLuz'
-import { copy } from '@copy'
+import TextoConCitas from '@components/diario/TextoConCitas'
+import { copy, textoDePartes } from '@copy'
 import { useBarraDeEstado } from '@lib/barraEstado'
 
 const textos = copy.diario.manana.cierre
@@ -168,7 +169,7 @@ export default function AperturaDelDia({
             <div className="flex flex-col gap-3" role="status">
               {lineas.map((linea, indice) => (
                 <p
-                  key={linea}
+                  key={textoDePartes(linea)}
                   className={clsx(
                     indice === 0
                       ? 'font-display text-lg text-on-surface leading-snug'
@@ -176,7 +177,7 @@ export default function AperturaDelDia({
                     'animate-fade-up motion-reduce:animate-none',
                   )}
                 >
-                  {linea}
+                  <TextoConCitas partes={linea} />
                 </p>
               ))}
             </div>

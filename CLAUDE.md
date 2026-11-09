@@ -704,7 +704,25 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**96 archivos de prueba · 2.498 casos · los seis comandos y `validar:frases` en verde.**
+**96 archivos de prueba · 2.499 casos · los seis comandos y `validar:frases` en verde.**
+
+### La intención de la mañana se cita (9 nov 2026)
+
+Lo pidió el propietario del producto. Donde una frase de la app nombra la intención de la mañana
+—«Tu intención para hoy: …» en el cierre y «Esta mañana elegí … como intención» en la noche—,
+**cada intención va aparte, entre «» y en cursiva**; las uniones («, » y « y ») y el resto de la
+frase siguen en redonda. Mismo cuerpo, peso y color: sin recuadro, sin otro tono y sin salto.
+
+- **Las comillas son copy** (`copy.diario.citaDeIntencion`) y son las «» de la palabra propia; la
+  palabra propia no recibe unas segundas. **La cursiva la pone `components/diario/TextoConCitas`**,
+  y qué es cita lo dicen los datos: `interpolarPartes` (en `@copy`) devuelve la frase en partes
+  `{ texto, cita? }` y `textoDePartes` la junta. El cierre las saca de `cierreEnPartes`
+  (`lineasDeCierre` es su versión en texto) y la pregunta de la noche trae `tituloPartes` junto a
+  `titulo`, que sigue siendo texto para `aria-label` y las pruebas.
+- **Se ve igual al releer**: la consulta de la noche y la vista de día del Historial pintan
+  `tituloPartes`, y las dos lo reconstruyen de lo guardado. Las rotativas no traen partes.
+- **La noche sigue nombrando una sola**, la primera (`intencionDeLaManana`): no se tocó esa regla.
+- Sin cambios en el modelo de datos, la selección ni el guardado.
 
 ### Google y Apple en la app de iPhone (SPEC_21.2, 31 oct 2026)
 

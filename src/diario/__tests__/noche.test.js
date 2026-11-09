@@ -509,7 +509,7 @@ describe('criterio 3 — la reflexión rota, y rota de forma predecible', () => 
         mananaCon('presente'),
         'f',
       ).titulo,
-    ).toBe('Esta mañana elegí Presente como intención. ¿Qué noté en mí?')
+    ).toBe('Esta mañana elegí «Presente» como intención. ¿Qué noté en mí?')
     expect(preguntaGuardada(null, null, 'n')).toBe(null)
     // Sin intención en esa mañana no se inventa una frase a medias.
     expect(
@@ -543,7 +543,13 @@ describe('criterio 4 — la conexión con la mañana, como mucho dos veces por s
     const elegida = reflexionDeLaNoche([], HOY, mananaCon('calma'), 'n')
     expect(elegida.fuente).toBe(FUENTES.manana)
     expect(elegida.id).toBe(ID_MANANA)
-    expect(elegida.titulo).toBe('Esta mañana elegí En calma como intención. ¿Qué noté en mí?')
+    expect(elegida.titulo).toBe('Esta mañana elegí «En calma» como intención. ¿Qué noté en mí?')
+    // La intención es la única parte citada: la pantalla la pinta en cursiva.
+    expect(elegida.tituloPartes).toEqual([
+      { texto: 'Esta mañana elegí ' },
+      { texto: '«En calma»', cita: true },
+      { texto: ' como intención. ¿Qué noté en mí?' },
+    ])
   })
 
   it('no aparece si la mañana quedó a medias o sin intención', () => {
@@ -583,14 +589,15 @@ describe('criterio 4 — la conexión con la mañana, como mucho dos veces por s
   })
 
   it('una intención escrita a mano entra literal, sin reinterpretarla', () => {
-    // §6 — "insertar exactamente el texto escrito por la persona". Ni comillas
-    // que la adornen, ni el helper de género, ni una lectura de lo que quiso
-    // decir (RN-GEN-06).
+    // §6 — "insertar exactamente el texto escrito por la persona". Ni el
+    // helper de género ni una lectura de lo que quiso decir (RN-GEN-06). Las
+    // comillas son las de toda intención citada (9 nov 2026), no un adorno de
+    // la palabra propia, y no se duplican.
     expect(intencionDeLaManana(mananaCon(ID_OTRA, ' con menos prisa '), 'f')).toBe(
       'con menos prisa',
     )
     expect(reflexionDeLaNoche([], HOY, mananaCon(ID_OTRA, 'con menos prisa'), 'f').titulo).toBe(
-      'Esta mañana elegí con menos prisa como intención. ¿Qué noté en mí?',
+      'Esta mañana elegí «con menos prisa» como intención. ¿Qué noté en mí?',
     )
   })
 

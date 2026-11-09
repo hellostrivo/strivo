@@ -185,7 +185,7 @@ describe('la pantalla del cierre', () => {
   const pintar = (props) =>
     renderToStaticMarkup(
       createElement(AperturaDelDia, {
-        lineas: ['Tu intención para hoy: En calma'],
+        lineas: [[{ texto: 'Tu intención para hoy: ' }, { texto: '«En calma»', cita: true }]],
         deseo: DESEOS[16],
         onTerminar: () => {},
         ...props,
@@ -194,7 +194,7 @@ describe('la pantalla del cierre', () => {
 
   it('primero, la intención y "Comenzar mi día"; el buen deseo todavía no', () => {
     const html = pintar()
-    expect(html).toContain('Tu intención para hoy: En calma')
+    expect(html).toContain('Tu intención para hoy: <em class="italic">«En calma»</em>')
     expect(html).toContain('Comenzar mi día')
     expect(html).not.toContain('Que tengas un día sereno.')
     expect(html).not.toContain(textos.reabrir)

@@ -42,6 +42,7 @@
 // que antes de que la ventana existiera.
 
 import ListaNumerada from '@components/diario/ListaNumerada'
+import TextoConCitas from '@components/diario/TextoConCitas'
 import { copy, interpolate } from '@copy'
 import { diaVacio } from '@/diario/historial'
 import { etiquetasDe as etiquetasDeEmocion } from '@/diario/emocionesJournal'
@@ -167,7 +168,14 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
           )}
 
           {hayReflexion(night) && (
-            <Bloque titulo={preguntaDeEsaNoche?.titulo ?? textos.reflexion}>
+            <Bloque
+              titulo={
+                <TextoConCitas
+                  partes={preguntaDeEsaNoche?.tituloPartes}
+                  texto={preguntaDeEsaNoche?.titulo ?? textos.reflexion}
+                />
+              }
+            >
               <p className="text-base text-on-surface whitespace-pre-wrap">{night.reflection}</p>
             </Bloque>
           )}

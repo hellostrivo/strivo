@@ -60,7 +60,7 @@ import {
   camposOmitidos,
   estaCerrada,
   intencionesDeManana,
-  lineasDeCierre,
+  cierreEnPartes,
   marcaLocal,
   resumenDeManana,
 } from '@/diario/manana'
@@ -292,7 +292,7 @@ export default function DiarioManana({ estado, acciones, soloLectura = false }) 
 
   const cierre = conCierre && (
     <AperturaDelDia
-      lineas={lineasDeCierre(entradaActual(), estado.genero)}
+      lineas={cierreEnPartes(entradaActual(), estado.genero)}
       deseo={deseo}
       guardado={guardado}
       onReintentar={persistir}
