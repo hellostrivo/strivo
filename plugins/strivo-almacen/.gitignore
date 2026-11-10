@@ -1,0 +1,6 @@
+# Lo que generan Xcode y `xcodebuild test` al abrir el paquete suelto: estado
+# de cada usuario y una resolución propia. La versión de capacitor-swift-pm que
+# manda es la del Package.resolved de la app (ios/App/App.xcodeproj).
+.swiftpm/
+.build/
+Package.resolved

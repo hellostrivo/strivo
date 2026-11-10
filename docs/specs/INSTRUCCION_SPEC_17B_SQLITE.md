@@ -1,7 +1,7 @@
 # INSTRUCCIÓN SPEC_17B — Lo escrito en el iPhone, en SQLite
 
 **Para:** Claude Code
-**Fecha:** 10 nov 2026 · **Versión:** 1.1 (reporte previo aprobado el 10 nov 2026, con condiciones: §9. **Donde §9 y el resto difieran, manda §9**)
+**Fecha:** 10 nov 2026 · **Versión:** 1.2 (reporte previo aprobado el 10 nov 2026, con condiciones: §9; pruebas manuales pasadas el 10 nov 2026: §10. **Donde §9 y el resto difieran, manda §9**)
 **Rama de partida:** `strivo` en `9faf6a2`, la fusión de SPEC_31. Compruébalo en §0.
 **Gobierna:** esta instrucción + `docs/specs/SPEC_17_RESTAURACION_Y_PERSISTENCIA.md` (Fase B: §2, §6, criterio 7, §9 y §10) + `docs/specs/SPEC_17A_INSTRUCCION_EJECUCION.md` + `docs/specs/INSTRUCCION_SPEC_21_1_CAPACITOR_IOS.md` + `docs/specs/INSTRUCCION_SPEC_21_2_GOOGLE_Y_APPLE.md` + `docs/specs/INSTRUCCION_SPEC_31_SINCRONIZACION_FIABLE.md` + `SPEC_00B` + `CLAUDE.md`. **Donde esta instrucción y otra difieran, manda esta.** En particular, **corrige la forma de la tabla de SPEC_17 §6** (ver §2.4).
 **Por qué existe:** en la app de iPhone, todo lo escrito vive en el IndexedDB del WebView, y iOS puede reclamar ese almacenamiento sin avisar. Con cuenta, lo escrito vuelve de la nube; **sin cuenta —y la app funciona entera sin cuenta— se pierde**. SQLite guarda en un archivo propio de la app, que iOS no borra por su cuenta.
@@ -211,3 +211,29 @@ Reporte previo de Claude Code (10 nov 2026) aprobado por la fundadora, con las c
 | **Motor de pruebas** | `node:sqlite`, sin dependencias nuevas. Correr las pruebas pide Node 22.13 o más: se anota en CLAUDE.md §12. |
 | **Por qué la migración pesa poco** | La 1.0 sale ya con SQLite: quien la instale desde la tienda nunca migra. La migración solo corre en teléfonos que tenían una compilación anterior (los de la fundadora y testers, si los hay antes). Por eso se puede ser estricta (bloquear antes que corregir) sin dejar a nadie atrás. |
 | **Trabajo** | Worktree `~/Developer/strivo-17b`, rama `revision-17b`, según §8. |
+
+
+---
+
+## 10. Implementación y pruebas manuales (10 nov 2026)
+
+**Implementación.** Rama `revision-17b` (worktree `~/Developer/strivo-17b`), 9 commits sobre `9faf6a2`: plugin propio `strivo-almacen` (`7290b81`), claves del teléfono (`20b60c9`), migración (`3db734a`), `local.js` sobre `almacen.js` (`8e1fe37`), velo primero (`514fc7a`), diagnóstico con bandera (`5ab715d`), la suite contra los dos almacenes (`f6098ac`), docs (`e155fd9`) y la prueba de `journal.test.js` más el volcado del PIN en SQLite (`0cd03c1`).
+
+- Siete validaciones en verde; `npm run test` en verde tres veces seguidas (206 archivos, 5.176 casos, 5 saltados). 17 pruebas XCTest del plugin en el simulador.
+- La app pasa de 9,0 a 9,3 MB (+108 KB), sin SQLCipher; `ITSAppUsesNonExemptEncryption` sigue en `false`. El chunk principal de la web pasa de 725,97 a 730,19 kB; SQLite y la migración van en un chunk que la web no descarga.
+- **Desvíos aceptados:** el criterio 11 vigila la ruta, la copia de iCloud, la protección, WAL y FULL en lugar de `iosIsEncryption` (era del plugin de terceros); sin cuenta, «por subir» no es 0 (lo escrito espera en la cola a que haya cuenta); una escritura nueva en SQLite pierde las claves con `undefined` (deuda anotada en CLAUDE.md; ningún escritor de hoy lo hace).
+- **La intermitente de `journal.test.js`** se arregló en la prueba (dos fechas fijas), sin tocar `listJournalEntries`.
+
+**Pruebas manuales: las siete pasan** (la fundadora en su iPhone, contra `strivo-fe04f`):
+
+| Prueba | Resultado |
+|---|---|
+| **M1** · Sin cuenta, lo de hoy pasa entero | ✅ Sin bienvenida; mañana, Journal, frase del día, elección de frases, combinación favorita e Historial iguales. «Migración: correcta, 10 nov 2026, 13:38»; 10 registros y 6 por subir en los dos lados. **El PIN no se pudo probar aquí**: sin cuenta, el Journal no deja ponerlo. Pasó a M4. |
+| **M2** · Lo nuevo se queda y no se migra dos veces | ✅ La entrada nueva sigue tras cerrar y abrir; la misma hora de migración; IndexedDB se queda en 10/6 y SQLite sube a 11/7. |
+| **M3** · Si iOS limpiara el WebView | ✅ Con modo avión y el botón de simulación: sin bienvenida, mismo nombre, todo lo escrito; IndexedDB 0/0 y SQLite 11/7. |
+| **M4** · Con cuenta, PIN y algo sin subir | ✅ El Journal pide el PIN tras actualizar y tiene las dos entradas; la escrita sin red llega a la nube y se ve en la web publicada. **Desvío:** la app nueva no abrió en modo avión (iOS tiene que verificar por internet el certificado de desarrolladora tras borrar la app), así que se abrió con red: la línea de IndexedDB conservó el pendiente y SQLite bajó a 0, lo que prueba que la cola se mudó, porque esa entrada solo podía subir desde ella. |
+| **M5** · Instalación nueva con Google | ✅ «Nada que migrar», IndexedDB 0/0, SQLite 11/0 y «Lo de este teléfono está guardado en tu cuenta.» Con modo avión y la simulación: la cuenta sigue, 11 registros, «Sin conexión…» y sin el aviso de restauración. |
+| **M6** · Cerrar sesión y volver | ✅ Diálogo correcto, bienvenida al salir y los días vuelven al entrar con Google. |
+| **M7** · Versión limpia y web | ✅ Sin la bandera no hay líneas ni botón y todo sigue; en `localhost`, lo escrito sobrevive a recargar y no hay diagnóstico. |
+
+**Aprendido para pruebas futuras:** después de borrar la app, la primera vez que se abre una compilación de Xcode el iPhone necesita internet para verificar el certificado. Para probar algo «sin red» desde la instalación, hay que abrirla una vez con red antes, o aceptar el plan B de M4.

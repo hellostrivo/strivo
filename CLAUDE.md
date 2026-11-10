@@ -805,9 +805,26 @@ publicar la 1.0 con SQLite no hay vuelta a IndexedDB sin una migración inversa.
 **Lo que no se tocó:** `sync.js`, `conflictos.js`, el modelo de datos ni las reglas de fusión.
 `restaurar.js` y `entradaCuenta.js` cambiaron solo en cómo escriben sus claves.
 
-**Lo que falta:** las pruebas manuales M1–M7 en el iPhone de la fundadora, contra `strivo-fe04f`.
-En el simulador ya se vio el camino de una instalación nueva: la base en `Library/Strivo/`, en WAL,
-con «nada que migrar», el árbol sembrado y la copia del uid.
+**Las pruebas manuales M1–M7 pasan** (10 nov 2026, la fundadora en su iPhone contra
+`strivo-fe04f`; el detalle está en el §10 de la instrucción). **M1:** sin cuenta, todo pasa entero
+—mañana, Journal, frase del día y su elección, combinación favorita e Historial— con «Migración:
+correcta» y los mismos números en los dos lados (10 registros, 6 por subir: sin cuenta lo escrito
+espera en la cola). **M2:** lo nuevo se queda y la migración no se repite. **M3:** con la simulación
+de limpieza, sin bienvenida, mismo nombre y todo lo escrito; IndexedDB a 0 y SQLite intacto.
+**M4:** el Journal pide el PIN tras actualizar —en M1 no se pudo probar: sin cuenta no deja
+ponerlo— y lo escrito sin red llega a la nube desde la cola mudada a SQLite. **M5:** instalación
+nueva con Google, «nada que migrar» y, tras la simulación sin red, la cuenta sigue y no sale el
+aviso de restauración. **M6:** cerrar sesión y volver devuelve los días. **M7:** sin la bandera no
+hay diagnóstico, y la web sigue igual. En el simulador se vio además el camino de una instalación
+nueva: la base en `Library/Strivo/`, en WAL, con «nada que migrar», el árbol sembrado y la copia
+del uid.
+
+**Aprendido para las pruebas en el teléfono: tras borrar la app, la primera apertura de una
+compilación de Xcode necesita internet.** iOS verifica en ese momento el certificado de
+desarrolladora, y sin red la app no abre. Para probar algo «sin red desde la instalación» hay que
+abrirla una vez con red antes, o aceptar un plan B como el de M4: se abrió con red, y la prueba de
+que la cola se mudó fue que la entrada escrita sin red subió desde SQLite mientras IndexedDB la
+seguía contando.
 
 ### Que lo escrito suba solo (SPEC_31, 1 nov 2026)
 
