@@ -1,0 +1,16 @@
+{
+  "name": "strivo-almacen",
+  "version": "0.1.0",
+  "private": true,
+  "description": "La base SQLite de Strivo en la app nativa (SPEC_17B). Solo iOS; Android es de SPEC_26.",
+  "main": "src/index.js",
+  "module": "src/index.js",
+  "type": "module",
+  "files": ["src/", "ios/Sources", "ios/Tests", "Package.swift"],
+  "capacitor": {
+    "ios": { "src": "ios" }
+  },
+  "peerDependencies": {
+    "@capacitor/core": ">=8.0.0"
+  }
+}

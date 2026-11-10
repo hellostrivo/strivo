@@ -2,7 +2,7 @@
   "name": "strivo",
   "version": "0.1.0",
   "private": true,
-  "description": "Refugio digital para terminar cada d\u00eda en paz contigo mismo.",
+  "description": "Refugio digital para terminar cada día en paz contigo mismo.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -34,7 +34,8 @@
     "idb": "^8.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.0"
+    "react-router-dom": "^6.26.0",
+    "strivo-almacen": "file:plugins/strivo-almacen"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.5.3",
