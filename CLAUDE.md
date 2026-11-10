@@ -708,7 +708,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**98 archivos de prueba · 2.534 casos · los seis comandos y `validar:frases` en verde.**
+**100 archivos de prueba · 2.546 casos · los seis comandos y `validar:frases` en verde.**
 
 ### Que lo escrito suba solo (SPEC_31, 1 nov 2026)
 
@@ -777,8 +777,10 @@ alguna vez entró con un proveedor, y nombra solo los botones que hay en pantall
 elige `claveDeError`. P7 no tiene formulario de entrar propio: su enlace abre la misma vista, así
 que la pista sale en los tres sitios. La frase del PIN no cambia.
 
-**DP-31.1 y DP-31.5 entraron sin medir** (10 nov 2026): la fundadora decidió no medir con el
-Inspector web y probarlas directamente en el iPhone.
+**DP-31.1 y DP-31.5 entraron sin medir** (10 nov 2026). **O-1 no se midió con el Inspector
+web**: el protocolo del §0.1 resultó demasiado complejo de seguir y el primer intento entró en
+2 s, así que con pocos intentos O-1 podía no reproducirse. La fundadora decidió aplicar las dos
+sin medir y validarlas con las pruebas manuales (instrucción §10).
 - **Long polling forzado solo en nativo** (`opcionesDeFirestore`, en `firebase.js`): en la app de
   iPhone, `initializeFirestore` con `experimentalForceLongPolling`; en web, `getFirestore` como
   siempre. `firebaseFirestore.test.js` lo vigila.
@@ -786,6 +788,16 @@ Inspector web y probarlas directamente en el iPhone.
   usan `prepararArbol` y `entrarACuenta`: solo si falló como `interrumpida` y quedan al menos
   `MARGEN_PARA_REINTENTAR_MS` (3 s) del **mismo** techo de 15 s. El velo no dura más que antes.
 - La rama `diagnostico-31` se borró sin fusionar.
+
+**Las pruebas manuales M1–M7 pasan** (10 nov 2026, la fundadora en su iPhone y en `localhost`,
+sobre `revision-31` contra `strivo-fe04f`, con Wi-Fi). **M3 (O-1): 5 de 5 instalaciones nuevas
+entran directo a Hoy en 2–3 s**, sin aviso de restauración —3 por correo y 2 por Google; antes de
+SPEC_31, 5 de 6 acababan en el aviso—. M1 (O-3): lo escrito llega sin tocar nada. M4: sin red
+queda por guardar sin alarma y sube solo al volver. M5 (O-2): sin red, «Intentar de nuevo» y
+«Cerrar sesión» contestan antes de 15 s. M6: la pista de D-N8 sale en los tres sitios y la
+redacción se aprueba tal cual. M7: Google y Apple vuelven a entrar tras cerrar sesión. M2: en la
+web lo escrito se guarda en pocos segundos sin recargar. El detalle está en el §10 de la
+instrucción.
 
 ### Google y Apple en la app de iPhone (SPEC_21.2, 31 oct 2026)
 
@@ -915,6 +927,7 @@ verificar el correo al crear la cuenta después del lanzamiento.
 restauración y pide «Intentar de nuevo»; **O-2**, en la web la subida se queda en «Guardando» sin
 error porque `flush` espera un `setDoc` colgado; **O-3**, en el iPhone la subida tarda ~1 minuto y
 solo termina con «Intentar de nuevo». Pasan, con la pista de D-N8, a una instrucción nueva.
+**Cerrados por SPEC_31** (10 nov 2026, arriba): M1–M7 pasan en el iPhone y en la web.
 
 ### App iOS (SPEC_21.1, 12 oct 2026)
 
