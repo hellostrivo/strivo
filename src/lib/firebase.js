@@ -19,7 +19,7 @@ import {
   initializeAuth,
   OAuthProvider,
 } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
+import { getFirestore, initializeFirestore } from 'firebase/firestore'
 import { esNativa } from './plataforma.js'
 
 const firebaseConfig = {
@@ -52,14 +52,36 @@ export function opcionesDeAuth(nativa) {
   return nativa ? { persistence: indexedDBLocalPersistence } : null
 }
 
+/**
+ * Con qué opciones se crea Firestore, según dónde corre la app (SPEC_31,
+ * DP-31.1).
+ *
+ * **En web, ninguna**: `getFirestore`, como siempre. Devuelve `null` para
+ * decir eso.
+ *
+ * **En la app de iPhone, long polling forzado.** El canal de fábrica
+ * (WebChannel con streaming) puede no llegar a abrirse dentro del WebView: la
+ * primera bajada de un iPhone recién instalado acababa en el aviso de
+ * restauración (O-1) y la subida tardaba un minuto (O-3). Con long polling
+ * cada respuesta es una petición HTTP normal, que el WebView sí completa.
+ *
+ * @param {boolean} nativa
+ * @returns {?{experimentalForceLongPolling: true}}
+ */
+export function opcionesDeFirestore(nativa) {
+  return nativa ? { experimentalForceLongPolling: true } : null
+}
+
 // Inicializar solo si hay configuración (evita errores en dev sin .env.local)
 let app, auth, db
 
 if (firebaseConfig.apiKey) {
   app = initializeApp(firebaseConfig)
-  const opciones = opcionesDeAuth(esNativa())
+  const nativa = esNativa()
+  const opciones = opcionesDeAuth(nativa)
   auth = opciones ? initializeAuth(app, opciones) : getAuth(app)
-  db = getFirestore(app)
+  const opcionesDb = opcionesDeFirestore(nativa)
+  db = opcionesDb ? initializeFirestore(app, opcionesDb) : getFirestore(app)
 } else {
   console.warn('[Strivo] Firebase no configurado. Agrega las variables en .env.local')
 }
