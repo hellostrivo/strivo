@@ -100,18 +100,22 @@ import {
 import { ContextoSesion } from '@lib/useSesion'
 import { momentoDe } from '@lib/timeSlot'
 import { copy } from '@copy'
-
-const CLAVE_UID = 'strivo.uid.local'
+import { CLAVE_UID, guardarClave, leerClave } from '@/lib/db/clavesDelTelefono'
 
 function acunarUidLocal() {
   return `local-${crypto.randomUUID()}`
 }
 
+// Por `clavesDelTelefono` y no con `localStorage` a mano (SPEC_17B, DP-17B.4):
+// en la app nativa cada escritura deja una copia en SQLite, y al arrancar
+// `prepararAlmacen` la devuelve a `localStorage` antes de que esto se lea. Sin
+// eso, un almacén del WebView limpiado por iOS acuñaría un uid nuevo y el
+// diario quedaría en SQLite bajo un uid que nadie lee.
 function uidLocal() {
-  let uid = localStorage.getItem(CLAVE_UID)
+  let uid = leerClave(CLAVE_UID)
   if (!uid) {
     uid = acunarUidLocal()
-    localStorage.setItem(CLAVE_UID, uid)
+    guardarClave(CLAVE_UID, uid)
   }
   return uid
 }
@@ -192,7 +196,7 @@ export default function ArranqueProvisional({ children }) {
 
   /** El único sitio que escribe `strivo.uid.local`, además de `uidLocal`. */
   const fijarUid = useCallback((nuevo) => {
-    localStorage.setItem(CLAVE_UID, nuevo)
+    guardarClave(CLAVE_UID, nuevo)
     uidVigente.current = nuevo
     setUid(nuevo)
   }, [])
