@@ -46,16 +46,10 @@
 // vieja deja de verse. Si era la anónima, sigue en IndexedDB bajo su uid. Es
 // la misma regla que ya rige entre dos teléfonos con la misma cuenta.
 
-import {
-  MOTIVOS_RESTAURACION,
-  alTerminarRestauracion,
-  mudarUid,
-  restaurar,
-  shared,
-} from './db/index.js'
+import { MOTIVOS_RESTAURACION, alTerminarRestauracion, mudarUid, shared } from './db/index.js'
 import { almacenLocal, claveDeMudanzaPendiente } from './db/local.js'
 import { ganaOrigenAlMudar } from './db/conflictos.js'
-import { TECHO_DE_ESPERA_MS, conTecho, reintentarAlVolverLaRed } from './sesion.js'
+import { TECHO_DE_ESPERA_MS, reintentarAlVolverLaRed, restaurarConUnReintento } from './sesion.js'
 
 // ─── La mudanza pendiente ─────────────────────────────────────────────────────
 
@@ -251,7 +245,7 @@ export async function entrarACuenta(
   let restauracion = null
   enRestauracion?.(true)
   try {
-    restauracion = await conTecho(restaurar(cuenta.uid), techoMs)
+    restauracion = await restaurarConUnReintento(cuenta.uid, techoMs)
   } finally {
     enRestauracion?.(false)
   }

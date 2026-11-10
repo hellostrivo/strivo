@@ -777,10 +777,15 @@ alguna vez entró con un proveedor, y nombra solo los botones que hay en pantall
 elige `claveDeError`. P7 no tiene formulario de entrar propio: su enlace abre la misma vista, así
 que la pista sale en los tres sitios. La frase del PIN no cambia.
 
-**Lo que está pendiente de medir en el iPhone** (§0.1 de la instrucción): si O-1 —la primera
-bajada que acaba en el aviso de restauración— se debe a que el canal de Firestore no se abre en el
-WebView. De eso dependen DP-31.1 (long polling forzado solo en nativo) y DP-31.5 (reintentar la
-primera bajada). La medición se hace con la rama `diagnostico-31`, que **no se fusiona nunca**.
+**DP-31.1 y DP-31.5 entraron sin medir** (10 nov 2026): la fundadora decidió no medir con el
+Inspector web y probarlas directamente en el iPhone.
+- **Long polling forzado solo en nativo** (`opcionesDeFirestore`, en `firebase.js`): en la app de
+  iPhone, `initializeFirestore` con `experimentalForceLongPolling`; en web, `getFirestore` como
+  siempre. `firebaseFirestore.test.js` lo vigila.
+- **La primera bajada se reintenta sola una vez** (`restaurarConUnReintento`, en `sesion.js`), la
+  usan `prepararArbol` y `entrarACuenta`: solo si falló como `interrumpida` y quedan al menos
+  `MARGEN_PARA_REINTENTAR_MS` (3 s) del **mismo** techo de 15 s. El velo no dura más que antes.
+- La rama `diagnostico-31` se borró sin fusionar.
 
 ### Google y Apple en la app de iPhone (SPEC_21.2, 31 oct 2026)
 

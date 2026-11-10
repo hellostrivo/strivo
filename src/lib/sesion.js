@@ -51,6 +51,14 @@ export const ESTADOS_SESION = Object.freeze({
 export const TECHO_DE_ESPERA_MS = 15000
 
 /**
+ * Cuánto tiene que quedar del techo para que la primera bajada se reintente
+ * sola (SPEC_31, DP-31.5). Con menos, al segundo intento no le daría tiempo a
+ * contestar antes de que el velo baje y solo dejaría otra lectura corriendo
+ * detrás.
+ */
+export const MARGEN_PARA_REINTENTAR_MS = 3000
+
+/**
  * ¿Este uid lo inventó el teléfono?
  *
  * **No responde a "¿hay cuenta?"**: eso lo dice Firebase, en `resolverSesion`.
@@ -262,7 +270,7 @@ async function evaluarArbol(
     if (sinArbol || !hayMarcaDeRestauracion(uid)) {
       enRestauracion?.(true)
       try {
-        restauracion = await conTecho(restaurar(uid), techoMs)
+        restauracion = await restaurarConUnReintento(uid, techoMs)
       } finally {
         enRestauracion?.(false)
       }
@@ -298,6 +306,47 @@ export async function conTecho(promesa, ms) {
   } finally {
     clearTimeout(temporizador)
   }
+}
+
+/**
+ * La primera bajada, con el techo y **un solo reintento automático** (SPEC_31,
+ * DP-31.5).
+ *
+ * En un iPhone recién instalado la primera lectura de Firestore puede no
+ * volver mientras el canal termina de abrirse; su límite de red la cierra como
+ * `interrumpida` y, sin esto, se enseñaba el aviso de restauración (C7) y había
+ * que tocar «Intentar de nuevo» a mano. Se reintenta una vez, y solo si:
+ *
+ *   - falló como `interrumpida`: sin red o sin configuración, repetir no
+ *     arregla nada;
+ *   - quedan al menos `MARGEN_PARA_REINTENTAR_MS` del techo.
+ *
+ * **El techo es el mismo y cubre los dos intentos**: el velo no dura más que
+ * antes. Lo que ya bajó en el primero se queda —la bajada escribe por ruta— y
+ * repetirlo no duplica nada.
+ *
+ * La usan `prepararArbol` y `entrarACuenta`: dos copias de la regla se
+ * separarían en cuanto alguien tocara una.
+ *
+ * @param {string} uid
+ * @param {number} techoMs
+ * @param {object} [opciones] - para las pruebas.
+ * @returns {Promise<?object>} el resultado del último intento, o `null` si no
+ *   contestó a tiempo.
+ */
+export function restaurarConUnReintento(
+  uid,
+  techoMs = TECHO_DE_ESPERA_MS,
+  { correr = restaurar, ahora = Date.now } = {},
+) {
+  const inicio = ahora()
+  const intentos = async () => {
+    const primero = await correr(uid)
+    if (primero?.ok || primero?.motivo !== MOTIVOS.interrumpida) return primero
+    if (techoMs - (ahora() - inicio) < MARGEN_PARA_REINTENTAR_MS) return primero
+    return correr(uid)
+  }
+  return conTecho(intentos(), techoMs)
 }
 
 /**
