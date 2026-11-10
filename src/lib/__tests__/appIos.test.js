@@ -355,3 +355,71 @@ describe('ios/App/App/Info.plist', () => {
     expect(valor('CFBundleVersion')).toBe('<string>$(CURRENT_PROJECT_VERSION)</string>')
   })
 })
+
+// ─── SPEC_17B: lo escrito en el iPhone, en SQLite ─────────────────────────────
+// El plugin es nuestro (`plugins/strivo-almacen/`), sobre el SQLite del
+// sistema. La ruta de la base es irreversible tras publicar: cambiarla abriría
+// una base vacía.
+
+describe('plugins/strivo-almacen (SPEC_17B)', () => {
+  const swift = leer('plugins/strivo-almacen/ios/Sources/StrivoAlmacenPlugin/Almacen.swift')
+  const puente = leer(
+    'plugins/strivo-almacen/ios/Sources/StrivoAlmacenPlugin/StrivoAlmacenPlugin.swift',
+  )
+  const codigo = (texto) => texto.replace(/\/\/.*$/gm, '')
+
+  it('la base vive en Library/Strivo/strivo.sqlite (DP-17B.2, irreversible)', () => {
+    expect(swift).toMatch(/public static let carpeta = "Strivo"/)
+    expect(swift).toMatch(/public static let nombreDeArchivo = "strivo\.sqlite"/)
+    expect(swift).toMatch(/for: \.libraryDirectory, in: \.userDomainMask/)
+  })
+
+  it('entra en la copia de iCloud: nada marca isExcludedFromBackup', () => {
+    expect(codigo(swift + puente)).not.toMatch(/isExcludedFromBackup|ExcludedFromBackup/)
+  })
+
+  it('la protección de fábrica, hasta el primer desbloqueo, y nunca Complete (condición 5)', () => {
+    expect(codigo(swift)).toMatch(/completeUntilFirstUserAuthentication/)
+    expect(codigo(swift)).toMatch(/SQLITE_OPEN_FILEPROTECTION_COMPLETEUNTILFIRSTUSERAUTHENTICATION/)
+    expect(codigo(swift)).not.toMatch(/FileProtectionType\.complete\b(?!Until)/)
+    expect(codigo(swift)).not.toMatch(/SQLITE_OPEN_FILEPROTECTION_COMPLETE\b/)
+  })
+
+  it('WAL con synchronous FULL, y una sola conexión con una cola serial (condiciones 3 y 4)', () => {
+    expect(swift).toMatch(/PRAGMA journal_mode = WAL/)
+    expect(swift).toMatch(/PRAGMA synchronous = FULL/)
+    expect(swift).toMatch(/private var db: OpaquePointer\?/)
+    expect(swift).toMatch(/DispatchQueue\(label: "com\.hellostrivo\.strivo\.almacen"\)/)
+  })
+
+  it('cuatro métodos y ninguno más (condición 7)', () => {
+    const metodos = [...puente.matchAll(/CAPPluginMethod\(name: "(\w+)"/g)].map((m) => m[1])
+    expect(metodos.sort()).toEqual(['abrir', 'consultar', 'ejecutar', 'existe'])
+  })
+
+  it('sin cifrado ni bibliotecas de terceros: el SQLite del sistema (DP-17B.1)', () => {
+    const paquete = leer('plugins/strivo-almacen/Package.swift')
+    expect(swift).toMatch(/^import SQLite3$/m)
+    const dependencias = [...paquete.matchAll(/\.package\(url: "([^"]+)"/g)].map((m) => m[1])
+    expect(dependencias).toEqual(['https://github.com/ionic-team/capacitor-swift-pm.git'])
+    const resuelto = leer(
+      'ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved',
+    )
+    expect(resuelto).not.toMatch(/sqlcipher|zipfoundation/i)
+    expect(leer('package-lock.json')).not.toMatch(/capacitor-community\/sqlite|jeep-sqlite/)
+  })
+
+  it('entra por la ruta real, no por node_modules ni por un enlace', () => {
+    const paquete = JSON.parse(leer('package.json'))
+    expect(paquete.dependencies['strivo-almacen']).toBe('file:plugins/strivo-almacen')
+    expect(leer('ios/App/CapApp-SPM/Package.swift')).toMatch(
+      /\.package\(name: "StrivoAlmacen", path: "\.\.\/\.\.\/\.\.\/plugins\/strivo-almacen"\)/,
+    )
+  })
+
+  it('el JS del plugin no va en dist/, que git ignora', () => {
+    const paquete = JSON.parse(leer('plugins/strivo-almacen/package.json'))
+    expect(paquete.main).toBe('src/index.js')
+    expect(leer('plugins/strivo-almacen/src/index.js')).toMatch(/registerPlugin\('StrivoAlmacen'\)/)
+  })
+})

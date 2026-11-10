@@ -31,7 +31,7 @@ import {
   startSync,
 } from '../sync.js'
 import { LIMITE_DE_RED_MS, LimiteVencido, conLimite, esLimiteVencido } from '../limite.js'
-import { UID, resetLocalDB } from './helpers.js'
+import { EN_SQLITE, UID, resetLocalDB } from './helpers.js'
 
 // ─── Firestore de mentira ─────────────────────────────────────────────────────
 
@@ -514,7 +514,8 @@ describe('H-1: lo reescrito durante el envío se queda para el siguiente', () =>
     expect(await listQueue(UID)).toHaveLength(0)
   })
 
-  it('una entrada de antes de SPEC_31, sin rev, sale igual', async () => {
+  // Escribe en IndexedDB por dentro; su equivalente en SQLite está en adaptadorSQLite.test.js.
+  it.skipIf(EN_SQLITE)('una entrada de antes de SPEC_31, sin rev, sale igual', async () => {
     const db = await getLocalDB()
     await db.add(STORE_SYNC_QUEUE, {
       uid: UID,
@@ -527,7 +528,8 @@ describe('H-1: lo reescrito durante el envío se queda para el siguiente', () =>
     expect(await flush(UID)).toMatchObject({ sent: 1, pending: 0 })
   })
 
-  it('y si se reescribe mientras viaja, la nueva se queda', async () => {
+  // Escribe en IndexedDB por dentro; su equivalente en SQLite está en adaptadorSQLite.test.js.
+  it.skipIf(EN_SQLITE)('y si se reescribe mientras viaja, la nueva se queda', async () => {
     const db = await getLocalDB()
     await db.add(STORE_SYNC_QUEUE, {
       uid: UID,

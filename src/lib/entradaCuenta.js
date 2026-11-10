@@ -47,7 +47,8 @@
 // la misma regla que ya rige entre dos teléfonos con la misma cuenta.
 
 import { MOTIVOS_RESTAURACION, alTerminarRestauracion, mudarUid, shared } from './db/index.js'
-import { almacenLocal, claveDeMudanzaPendiente } from './db/local.js'
+import { claveDeMudanzaPendiente } from './db/local.js'
+import { guardarClave, leerClave, quitarClave } from './db/clavesDelTelefono.js'
 import { ganaOrigenAlMudar } from './db/conflictos.js'
 import { TECHO_DE_ESPERA_MS, reintentarAlVolverLaRed, restaurarConUnReintento } from './sesion.js'
 
@@ -55,15 +56,15 @@ import { TECHO_DE_ESPERA_MS, reintentarAlVolverLaRed, restaurarConUnReintento } 
 
 /** El uid de origen de la mudanza pendiente hacia esta cuenta, o `null`. */
 export function mudanzaPendiente(uidCuenta) {
-  return almacenLocal()?.getItem(claveDeMudanzaPendiente(uidCuenta)) ?? null
+  return leerClave(claveDeMudanzaPendiente(uidCuenta))
 }
 
 function apuntarMudanza(uidCuenta, uidOrigen) {
-  almacenLocal()?.setItem(claveDeMudanzaPendiente(uidCuenta), uidOrigen)
+  guardarClave(claveDeMudanzaPendiente(uidCuenta), uidOrigen)
 }
 
 function retirarMudanza(uidCuenta) {
-  almacenLocal()?.removeItem(claveDeMudanzaPendiente(uidCuenta))
+  quitarClave(claveDeMudanzaPendiente(uidCuenta))
 }
 
 /**

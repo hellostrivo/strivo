@@ -2,6 +2,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
+import ArranqueAlmacen from './components/ArranqueAlmacen'
 import { momentoDe } from './lib/timeSlot'
 import { fijarBase, textoDeBarra } from './lib/barraEstado'
 import { retirarPantallaDeArranque } from './lib/pantallaArranque'
@@ -18,8 +19,13 @@ retirarPantallaDeArranque()
 // En web no hace nada.
 fijarBase(textoDeBarra({ capa: 'pantalla', momento: momentoDe() }))
 
+// En la app nativa, el almacén se prepara antes de montar la app —abrir
+// SQLite, migrar si toca y recuperar el uid— con el velo de siempre delante
+// (SPEC_17B). En la web, la app se monta en el primer render, como siempre.
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    <ArranqueAlmacen>
+      <App />
+    </ArranqueAlmacen>
   </React.StrictMode>,
 )

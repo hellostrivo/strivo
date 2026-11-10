@@ -1,5 +1,5 @@
 // src/lib/db/local.js
-// Almacén local de Strivo sobre IndexedDB. Es la fuente inmediata de verdad.
+// Almacén local de Strivo. Es la fuente inmediata de verdad.
 //
 // RN-02 / RN-DB4-04 — Local-first sin excepciones: toda escritura se confirma
 // aquí antes de cualquier intento de red. Firestore recibe después, desde la
@@ -9,87 +9,29 @@
 // en vez de un almacén por entidad: la forma local es idéntica a la de
 // Firestore, así que la sincronización no traduce nada y no puede desalinearse.
 
-import { openDB } from 'idb'
+// **Desde SPEC_17B, el almacén depende de dónde corre la app** (10 nov 2026):
+// IndexedDB en la web y SQLite en la app nativa. Este módulo sigue siendo la
+// única puerta y su contrato no cambió: por dentro le pide el adaptador a
+// `almacen.js`, que es quien lo decide, y aplica aquí las reglas que no son de
+// ningún almacén —qué se encola, qué decide una mudanza—. Los dos adaptadores
+// (`adaptadorIndexedDB.js` y `adaptadorSQLite.js`) solo guardan y leen.
+
 import { assertUid, StrivoDataError, ERROR_CODES } from './schema.js'
 import { esExpediente, esSemilla, hechosQueFaltan } from './conflictos.js'
+import { adaptador } from './almacen.js'
+import { almacenLocal, quitarClave } from './clavesDelTelefono.js'
 
-const DB_NAME = 'strivo'
-const DB_VERSION = 1
-
-export const STORE_RECORDS = 'records'
-export const STORE_SYNC_QUEUE = 'syncQueue'
-
-let dbPromise = null
+// Lo de IndexedDB por dentro sigue a mano de las pruebas que lo miran.
+export { STORE_RECORDS, STORE_SYNC_QUEUE, getLocalDB } from './adaptadorIndexedDB.js'
+export { almacenLocal }
 
 /**
- * Abre (o crea) la base local. Idempotente.
- *
- * **La conexión se suelta sola cuando alguien pide borrar o migrar la base**
- * (DP-17.12). Sin `blocking`, la conexión nunca se enteraba de que otra
- * petición quería borrar la base: `deleteDatabase('strivo')` se quedaba en
- * `blocked` indefinidamente y sin lanzar error, y las peticiones que quedaban
- * colgadas detrás congelaban después cualquier transacción de esa página. Se
- * vio en la validación manual de SPEC_17A: «borrar solo la base `strivo`» era
- * una operación que a veces no ocurría y no avisaba, y solo funcionaba si
- * nada había reabierto la conexión, que es una condición que nadie puede
- * comprobar a ojo.
- *
- * `close()` no corta nada a medias: IndexedDB espera a que terminen las
- * transacciones en curso antes de cerrar de verdad, así que esto no roza
- * «nada se pierde». Lo que sí hace es dejar `dbPromise` en blanco para que la
- * siguiente lectura reabra —tras el borrado, una base vacía— en vez de usar
- * una conexión cerrada. `terminated` es la otra mitad de lo mismo: una
- * conexión que el navegador cerró por su cuenta no deja `dbPromise` apuntando
- * a algo muerto.
- *
- * Los dos anulan `dbPromise` solo si sigue siendo la promesa de **esta**
- * conexión: si entre medias alguien la cerró y reabrió, el callback de la
- * vieja no tira la nueva.
- *
- * `blocking` dispara también cuando otra pestaña abre una versión **mayor**.
- * Hoy `DB_VERSION` es 1 y no hay migraciones; el día que haya una, la pestaña
- * vieja se cerrará y su siguiente `getLocalDB()` fallará con `VersionError`
- * por abrir con la versión antigua. Es un problema de ese día, no de este.
+ * Cierra el almacén vigente. Con IndexedDB, cierra la base y olvida la
+ * conexión (pruebas y cierre de sesión); con SQLite no hace nada: hay una sola
+ * conexión para toda la vida de la app.
  */
-export function getLocalDB() {
-  if (!dbPromise) {
-    const promesa = openDB(DB_NAME, DB_VERSION, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains(STORE_RECORDS)) {
-          const records = db.createObjectStore(STORE_RECORDS, { keyPath: 'path' })
-          records.createIndex('byUser', 'uid')
-          records.createIndex('byCollection', ['uid', 'collection'])
-          records.createIndex('byCollectionDate', ['uid', 'collection', 'data.date'])
-        }
-
-        if (!db.objectStoreNames.contains(STORE_SYNC_QUEUE)) {
-          const queue = db.createObjectStore(STORE_SYNC_QUEUE, {
-            keyPath: 'seq',
-            autoIncrement: true,
-          })
-          queue.createIndex('byPath', 'path', { unique: true })
-          queue.createIndex('byUser', 'uid')
-        }
-      },
-      blocking(_actual, _pedida, event) {
-        event.target.close()
-        if (dbPromise === promesa) dbPromise = null
-      },
-      terminated() {
-        if (dbPromise === promesa) dbPromise = null
-      },
-    })
-    dbPromise = promesa
-  }
-  return dbPromise
-}
-
-/** Cierra la base y olvida la conexión. Solo para pruebas y cierre de sesión. */
 export async function closeLocalDB() {
-  if (!dbPromise) return
-  const db = await dbPromise
-  db.close()
-  dbPromise = null
+  await adaptador().cerrar()
 }
 
 // ─── Identificadores ──────────────────────────────────────────────────────────
@@ -110,24 +52,21 @@ export function newId() {
  * falten ni corrige valores inválidos (RN-DB4-08).
  */
 export async function readPath(path) {
-  const db = await getLocalDB()
-  const row = await db.get(STORE_RECORDS, path)
+  const row = await adaptador().leer(path)
   return row ? row.data : null
 }
 
 /** Devuelve `{ id, ...data }` de todos los registros de una colección. */
 export async function readCollection(uid, collection) {
   assertUid(uid)
-  const db = await getLocalDB()
-  const rows = await db.getAllFromIndex(STORE_RECORDS, 'byCollection', [uid, collection])
+  const rows = await adaptador().leerIndice('byCollection', [uid, collection])
   return rows.map(toItem)
 }
 
 /** Igual que `readCollection`, filtrando por el campo `date` del registro. */
 export async function readCollectionByDate(uid, collection, date) {
   assertUid(uid)
-  const db = await getLocalDB()
-  const rows = await db.getAllFromIndex(STORE_RECORDS, 'byCollectionDate', [uid, collection, date])
+  const rows = await adaptador().leerIndice('byCollectionDate', [uid, collection, date])
   return rows.map(toItem)
 }
 
@@ -142,8 +81,7 @@ export async function readCollectionBy(uid, collection, field, value) {
       { field },
     )
   }
-  const db = await getLocalDB()
-  const rows = await db.getAllFromIndex(STORE_RECORDS, index, [uid, collection, value])
+  const rows = await adaptador().leerIndice(index, [uid, collection, value])
   return rows.map(toItem)
 }
 
@@ -175,7 +113,6 @@ function toItem(row) {
  */
 export async function writePath({ uid, path, collection, id = null, data, sync = true }) {
   assertUid(uid)
-  const db = await getLocalDB()
   const row = {
     path,
     uid,
@@ -185,7 +122,7 @@ export async function writePath({ uid, path, collection, id = null, data, sync =
     updatedAt: new Date().toISOString(),
   }
 
-  await db.put(STORE_RECORDS, row)
+  await adaptador().poner(row)
   if (sync) await enqueue({ uid, path, op: 'put', data })
   return data
 }
@@ -205,21 +142,10 @@ export async function writePath({ uid, path, collection, id = null, data, sync =
  */
 export async function mergePath({ uid, path, collection, id = null, patch, sync = true }) {
   assertUid(uid)
-  const db = await getLocalDB()
-  const tx = db.transaction(STORE_RECORDS, 'readwrite')
-  const store = tx.objectStore(STORE_RECORDS)
-
-  const row = await store.get(path)
-  const data = { ...(row?.data ?? {}), ...patch }
-  await store.put({
-    path,
-    uid,
-    collection,
-    id,
-    data,
-    updatedAt: new Date().toISOString(),
-  })
-  await tx.done
+  const data = await adaptador().fusionar(
+    { path, uid, collection, id, updatedAt: new Date().toISOString() },
+    patch,
+  )
 
   if (sync) await enqueue({ uid, path, op: 'put', data })
   return data
@@ -240,23 +166,20 @@ export async function mergePath({ uid, path, collection, id = null, patch, sync 
  */
 export async function writePathIfAbsent({ uid, path, collection, id = null, data }) {
   assertUid(uid)
-  const db = await getLocalDB()
-  const tx = db.transaction(STORE_RECORDS, 'readwrite')
-  const store = tx.objectStore(STORE_RECORDS)
-
-  const existente = await store.get(path)
-  if (!existente) {
-    await store.put({ path, uid, collection, id, data, updatedAt: new Date().toISOString() })
-  }
-  await tx.done
-  return !existente
+  return adaptador().ponerSiAusente({
+    path,
+    uid,
+    collection,
+    id,
+    data,
+    updatedAt: new Date().toISOString(),
+  })
 }
 
 /** Borra una ruta en local y encola el borrado. */
 export async function deletePath({ uid, path, sync = true }) {
   assertUid(uid)
-  const db = await getLocalDB()
-  await db.delete(STORE_RECORDS, path)
+  await adaptador().quitar(path)
   if (sync) await enqueue({ uid, path, op: 'delete', data: null })
 }
 
@@ -382,42 +305,27 @@ export async function mudarUid(desde, hacia, { politica = null } = {}) {
   assertUid(hacia)
   if (desde === hacia) return { mudados: 0, conservados: 0 }
 
-  const db = await getLocalDB()
-  const origen = await db.getAllFromIndex(STORE_RECORDS, 'byUser', desde)
-  const prefijo = `users/${desde}/`
-
-  const tx = db.transaction(STORE_RECORDS, 'readwrite')
-  const store = tx.objectStore(STORE_RECORDS)
-  const mudadas = []
-  const completadas = []
-  let conservados = 0
-
-  for (const fila of origen) {
-    if (!fila.path.startsWith(prefijo)) continue
-    const destino = `users/${hacia}/${fila.path.slice(prefijo.length)}`
-    const existente = await store.get(destino)
-    const muda = politica
-      ? politica(fila.collection, fila.data, existente ? existente.data : null)
-      : !existente
-    const conHechos = Boolean(politica && existente && esExpediente(fila.collection, fila.id))
-    if (!muda) {
-      conservados += 1
-      const faltan = conHechos ? hechosQueFaltan(existente.data, fila.data) : {}
-      if (Object.keys(faltan).length > 0) {
-        const data = { ...existente.data, ...faltan }
-        await store.put({ ...existente, data })
-        completadas.push({ path: destino, collection: existente.collection, data })
+  // Las reglas se deciden aquí, fila a fila; el adaptador las aplica dentro de
+  // una sola transacción, con IndexedDB y con SQLite.
+  const { mudadas, completadas, conservados } = await adaptador().mudarFilas(
+    desde,
+    hacia,
+    (fila, existente) => {
+      const muda = politica
+        ? politica(fila.collection, fila.data, existente ? existente.data : null)
+        : !existente
+      const conHechos = Boolean(politica && existente && esExpediente(fila.collection, fila.id))
+      if (!muda) {
+        const faltan = conHechos ? hechosQueFaltan(existente.data, fila.data) : {}
+        const completar = Object.keys(faltan).length > 0 ? { ...existente.data, ...faltan } : null
+        return { muda: false, completar }
       }
-      continue
-    }
-    const data = conHechos
-      ? { ...fila.data, ...hechosQueFaltan(fila.data, existente.data) }
-      : fila.data
-    await store.put({ ...fila, path: destino, uid: hacia, data })
-    await store.delete(fila.path)
-    mudadas.push({ desde: fila.path, path: destino, collection: fila.collection, data })
-  }
-  await tx.done
+      const data = conHechos
+        ? { ...fila.data, ...hechosQueFaltan(fila.data, existente.data) }
+        : fila.data
+      return { muda: true, data }
+    },
+  )
 
   const rutasMudadas = new Set(mudadas.map((fila) => fila.desde))
   for (const entrada of await listQueue(desde)) {
@@ -451,15 +359,6 @@ export function claveDeMudanzaPendiente(uidCuenta) {
   return `strivo.mudanzaPendiente.${uidCuenta}`
 }
 
-/** `localStorage`, o `null` donde no lo hay (pruebas, servidor, almacenamiento bloqueado). */
-export function almacenLocal() {
-  try {
-    return typeof localStorage === 'undefined' ? null : localStorage
-  } catch {
-    return null
-  }
-}
-
 /**
  * Borra del dispositivo todo lo de un uid: sus registros y su cola, en una
  * sola transacción (SPEC_19 §3.5, DP-19.1).
@@ -481,20 +380,9 @@ export function almacenLocal() {
  */
 export async function borrarUid(uid) {
   assertUid(uid)
-  const db = await getLocalDB()
-  const tx = db.transaction([STORE_RECORDS, STORE_SYNC_QUEUE], 'readwrite')
-  const registros = tx.objectStore(STORE_RECORDS)
-  const cola = tx.objectStore(STORE_SYNC_QUEUE)
-
-  const rutas = await registros.index('byUser').getAllKeys(uid)
-  const entradas = await cola.index('byUser').getAllKeys(uid)
-  for (const ruta of rutas) await registros.delete(ruta)
-  for (const seq of entradas) await cola.delete(seq)
-  await tx.done
-
-  almacenLocal()?.removeItem(claveDeMudanzaPendiente(uid))
-
-  return { registros: rutas.length, cola: entradas.length }
+  const borrados = await adaptador().borrarUid(uid)
+  quitarClave(claveDeMudanzaPendiente(uid))
+  return borrados
 }
 
 // ─── Cola de sincronización ───────────────────────────────────────────────────
@@ -531,24 +419,7 @@ export async function enqueue({ uid, path, op, data }) {
   // Lo que vive solo en el dispositivo no entra en la cola, la pida quien la
   // pida (SPEC_29 §7; ver `esRutaLocal`).
   if (esRutaLocal(path)) return
-  const db = await getLocalDB()
-  const tx = db.transaction(STORE_SYNC_QUEUE, 'readwrite')
-  const store = tx.objectStore(STORE_SYNC_QUEUE)
-  const existing = await store.index('byPath').get(path)
-
-  const entry = {
-    uid,
-    path,
-    op,
-    data,
-    attempts: existing ? existing.attempts : 0,
-    rev: (existing?.rev ?? 0) + 1,
-    enqueuedAt: new Date().toISOString(),
-  }
-  if (existing) entry.seq = existing.seq
-
-  await store.put(entry)
-  await tx.done
+  await adaptador().encolar({ uid, path, op, data, enqueuedAt: new Date().toISOString() })
 
   for (const fn of [...oyentesDeCola]) {
     try {
@@ -560,16 +431,11 @@ export async function enqueue({ uid, path, op, data }) {
 }
 
 export async function listQueue(uid = null) {
-  const db = await getLocalDB()
-  const all = uid
-    ? await db.getAllFromIndex(STORE_SYNC_QUEUE, 'byUser', uid)
-    : await db.getAll(STORE_SYNC_QUEUE)
-  return all.sort((a, b) => a.seq - b.seq)
+  return adaptador().listarCola(uid)
 }
 
 export async function dequeue(seq) {
-  const db = await getLocalDB()
-  await db.delete(STORE_SYNC_QUEUE, seq)
+  await adaptador().sacar(seq)
 }
 
 /**
@@ -586,27 +452,12 @@ export async function dequeue(seq) {
  * @returns {Promise<boolean>} si salió de la cola.
  */
 export async function dequeueSiIgual(enviada) {
-  const db = await getLocalDB()
-  const tx = db.transaction(STORE_SYNC_QUEUE, 'readwrite')
-  const store = tx.objectStore(STORE_SYNC_QUEUE)
-  const actual = await store.get(enviada.seq)
-  const igual = actual !== undefined && actual.rev === enviada.rev
-  if (igual) await store.delete(enviada.seq)
-  await tx.done
-  return igual
+  return adaptador().sacarSiIgual(enviada)
 }
 
 /** Marca un intento fallido sin perder la entrada: se reintenta más tarde. */
 export async function markQueueAttempt(seq) {
-  const db = await getLocalDB()
-  const tx = db.transaction(STORE_SYNC_QUEUE, 'readwrite')
-  const store = tx.objectStore(STORE_SYNC_QUEUE)
-  const entry = await store.get(seq)
-  if (entry) {
-    entry.attempts += 1
-    await store.put(entry)
-  }
-  await tx.done
+  await adaptador().marcarIntento(seq)
 }
 
 export async function pendingCount(uid = null) {

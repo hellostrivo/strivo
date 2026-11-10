@@ -38,6 +38,7 @@
 // invitación para quien terminó el onboarding antes de que existieran esas
 // preguntas: nada se le muestra al abrir la app.
 
+import { Suspense, lazy } from 'react'
 import Bloque from './Bloque'
 import TuCuenta from './TuCuenta'
 import TusFrases from './TusFrases'
@@ -51,6 +52,13 @@ import { useSincronizacion } from '@/perfil/useSincronizacion'
 import { OPCIONES as GENEROS, alternar as alternarGenero } from '@/onboarding/genero'
 
 const textos = copy.diario.perfil
+
+// El diagnóstico del almacén (SPEC_17B, DP-17B.7): solo en el build de las
+// pruebas manuales, con `VITE_DIAG_ALMACEN=1`. Sin la bandera, la condición es
+// `false` al construir, la importación desaparece y ni el componente ni sus
+// textos llegan a `dist/` (lo comprueba `diagnosticoAlmacen.test.js`).
+const DiagnosticoAlmacen =
+  import.meta.env.VITE_DIAG_ALMACEN === '1' ? lazy(() => import('./DiagnosticoAlmacen')) : null
 
 // El catálogo se lee de donde se pregunta por primera vez. Ver la nota del
 // namespace en `copy/index.js`: un solo sitio hasta que haya un tercero.
@@ -149,6 +157,11 @@ export default function Perfil({ uid }) {
               {textos.sincronizacion.reintentar}
             </Button>
           </div>
+        )}
+        {DiagnosticoAlmacen && (
+          <Suspense fallback={null}>
+            <DiagnosticoAlmacen />
+          </Suspense>
         )}
       </div>
     ),

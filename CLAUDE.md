@@ -1,6 +1,6 @@
 # CLAUDE.md — Strivo
 
-**Última actualización:** 1 nov 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
+**Última actualización:** 10 nov 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
 **Blueprint (documento rector):** `/docs/blueprint/Strivo_Blueprint_de_Producto_v5_0_24-08-2026.md`
 **Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO.md`
 **Plan operativo del repliegue:** `/docs/Strivo_Plan_de_Separacion_Tecnica_v1_24-08-2026.md`
@@ -566,6 +566,8 @@ src/
 ├── styles/          globals.css + tokens-strivo.css
 ├── lib/
 │   ├── db/          schema · shared · diario · local · sync
+│   │                almacen · adaptadorIndexedDB · adaptadorSQLite · migracionSQLite
+│   │                arranqueNativo · clavesDelTelefono (SPEC_17B)
 │   ├── cuenta · sesion · entradaCuenta · salidaCuenta · useSesion
 │   │                la sesión de Firebase, entrar y salir (SPEC_19.1)
 │   ├── respiracion/ motor de ritmo (lógica pura)
@@ -663,6 +665,16 @@ el componente.**
   identificador aquí, un texto en el copy y un componente; hay una prueba que falla si falta alguno
   de los tres.
 
+- `src/lib/db/almacen.js` → **qué almacén se usa** —IndexedDB en web, SQLite en la app nativa— y
+  `prepararAlmacen`: abrir, migrar, el techo de 10 s y qué pasa si SQLite no abre (SPEC_17B).
+  `local.js` le pide el adaptador en cada operación y no sabe cuál es.
+- `src/lib/db/adaptadorSQLite.js` → el **único** archivo de `src/` que importa el plugin
+  `strivo-almacen`, y bajo demanda. Las tablas, el cerrojo y las siete operaciones que dependen de
+  una transacción. Hay una prueba que recorre `src/`.
+- `src/lib/db/migracionSQLite.js` → la migración única de IndexedDB a SQLite, su verificación en
+  JSON canónico y la marca `migradoEn`. **IndexedDB se lee y nada más.**
+- `src/lib/db/clavesDelTelefono.js` → las claves `strivo.uid.local`, `strivo.restaurado.*` y
+  `strivo.mudanzaPendiente.*`, y su copia en SQLite. Quien las escribe lo hace por aquí.
 - `src/lib/plataforma.js` → `esNativa()`: el **único** sitio que pregunta si la app corre dentro
   del iPhone. Nadie más importa `@capacitor/core` para eso; hay una prueba que recorre `src/`.
 - `src/lib/credencialNativa.js` → el **único** sitio que importa `@capacitor-firebase/authentication`,
@@ -673,7 +685,7 @@ el componente.**
 - `src/lib/barraEstado.js` → `textoDeBarra`: de qué color va la hora y la batería en la app de
   iPhone, con la tabla entera. Lo deciden el cromo y lo que se pinta encima, no la paleta.
 
-**Pila:** React + Vite (PWA) · IndexedDB local + Firestore para sync · Firebase Auth · Netlify con
+**Pila:** React + Vite (PWA) · IndexedDB en web · SQLite en la app nativa (SPEC_17B) · Firestore para sync · Firebase Auth · Netlify con
 publicación automática · Vitest · Capacitor 8 para la app de iPhone (SPEC_21.1).
 
 ---
@@ -690,6 +702,12 @@ npm run format:check    # formato
 npm run test            # suite completa
 npm run build           # construcción de producción
 ```
+
+**`npm run test` corre la suite dos veces** desde SPEC_17B (`vitest.workspace.js`): el proyecto
+`indexeddb` —el almacén de la web— y el proyecto `sqlite`, con el adaptador de la app nativa sobre
+`node:sqlite`. **Por eso las pruebas piden Node 22.13 o más.** El plugin nativo tiene además sus
+propias pruebas en el simulador:
+`cd plugins/strivo-almacen && xcodebuild test -scheme StrivoAlmacen -destination 'platform=iOS Simulator,name=iPhone 18 Pro'`.
 
 Y desde SPEC_29, **`npm run validar:frases`**: metadatos, voz, marcas de referencia, duplicados,
 expedientes de las citas y cobertura de 500 por perfil. Falla si un perfil baja de 500.
@@ -708,7 +726,105 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**100 archivos de prueba · 2.547 casos · los seis comandos y `validar:frases` en verde.**
+**106 archivos de prueba · 2.622 casos** en el proyecto `indexeddb`, **2.559 más** en el proyecto
+`sqlite` (la misma suite contra SQLite) **y 17 XCTest del plugin** · los seis comandos y
+`validar:frases` en verde. **La intermitente de `journal.test.js` se cerró** (10 nov 2026): sus dos
+entradas empataban en el milisegundo y el orden lo decidía un UUID; ahora se crean con `Date`
+congelado en dos instantes distintos. `listJournalEntries` no cambió. Cada caso que vuelca
+IndexedDB por dentro tiene su equivalente que vuelca todas las tablas de SQLite.
+
+### Lo escrito en el iPhone, en SQLite (SPEC_17B, 10 nov 2026)
+
+La instrucción completa y las decisiones de la fundadora están en
+`docs/specs/INSTRUCCION_SPEC_17B_SQLITE.md` (v1.1; **su §9 manda**). **En la app de iPhone, lo
+escrito vive en un archivo SQLite propio de la app y no en el IndexedDB del WebView**, que iOS puede
+reclamar sin avisar. En la web, nada cambia: sigue siendo IndexedDB.
+
+**El plugin es nuestro**: `plugins/strivo-almacen/`, paquete npm local
+(`"strivo-almacen": "file:plugins/strivo-almacen"`) con su `Package.swift`, sobre el SQLite del
+sistema. **Sin SQLCipher, sin servidor local y sin terceros**, así que
+`ITSAppUsesNonExemptEncryption` sigue en `false` (con `@capacitor-community/sqlite` habría dejado de
+poder serlo: trae SQLCipher aunque no se cifre nada). `cap sync` lo enlaza por su ruta real
+(`../../../plugins/strivo-almacen`), sin `packageOptions` ni enlace en `symlinks/`. **Cuatro
+métodos y ninguno más:** `abrir`, `existe`, `ejecutar` (un lote en una transacción) y `consultar`.
+Todas las sentencias van con parámetros enlazados: **ningún texto de la persona entra en el SQL**.
+Una sola conexión, atendida por una cola serial; **WAL con `synchronous = FULL`**; la protección de
+archivo de fábrica (hasta el primer desbloqueo), **nunca `Complete`**, que dejaría la base cerrada
+con el teléfono bloqueado. La mitad de Android es de SPEC_26.
+
+**Lo escrito y el uid viajan en la copia de iCloud del teléfono**, que Apple cifra: la base no
+lleva `isExcludedFromBackup`. Hoy `localStorage` no entra en esa copia, así que hasta aquí el uid
+se perdía al restaurar un iPhone; con su copia en SQLite deja de pasar.
+
+**El contrato de `local.js` no cambió.** Por dentro, `almacen.js` decide el adaptador una vez y
+`local.js` aplica las reglas de siempre —qué se encola, qué decide una mudanza— sobre
+`adaptadorIndexedDB.js` (el código de antes, movido sin cambiar su comportamiento) o
+`adaptadorSQLite.js`. Las tablas imitan la fila real (`registros`, `cola`, `meta`, `claves`), no
+la de SPEC_17 §6; los cambios de esquema futuros se hacen con `meta.esquema`. **Un cerrojo hace
+pasar todas las llamadas de una en una, también las lecturas**: entre dos `await` nadie se cuela,
+que es lo que IndexedDB daba gratis con sus transacciones. El adaptador SQLite y la migración van
+en un chunk aparte (`arranqueNativo`) que **la web no descarga**: el chunk principal creció 4 kB.
+
+**La migración, una vez y verificada.** En el primer arranque nativo de la versión nueva, antes de
+montar la app: se copian **todos** los registros —PIN, preferencia de frases y asignaciones
+incluidos, que viven en el teléfono y SQLite es el teléfono— y toda la cola con su `seq`, su `rev`
+y sus `attempts`, en un solo lote. Se verifica en JSON canónico y **solo entonces** se escribe
+`migradoEn` en `meta`. Si algo falla o no coincide, SQLite se vacía, no se marca, esta sesión sigue
+con IndexedDB y el siguiente arranque lo intenta otra vez. **Un valor que no es JSON** —un `Date`,
+un `undefined`— **no se arregla: la migración no termina y lo dice.** Con la marca puesta,
+IndexedDB no se vuelve a mirar. **IndexedDB no se escribe, no se borra y no se crea**: si la base
+`strivo` no aparece en `indexedDB.databases()`, ni se abre. La 1.0 sale ya con SQLite, así que
+quien la instale desde la tienda nunca migra.
+
+**Al arrancar, el velo de siempre primero** (`components/ArranqueAlmacen.jsx`) y `<App/>` cuando
+el almacén está listo: así la pantalla de arranque se retira con su techo de 2 s y debajo ya hay
+algo pintado. **Techo de 10 s**, y la app nunca se queda en el velo: si se cruza migrando, la
+migración se abandona sin marcar y la sesión sigue con IndexedDB; si todavía no se sabe si hubo
+migración, IndexedDB solo cuando no hay pista (`strivo.almacen`) y sí hay datos en IndexedDB, y si
+no, la pantalla de error con «Reintentar»; si la marca ya salió, solo vale SQLite. **Si SQLite no
+abre** (tres intentos), se pregunta al plugin si el archivo existe: existe → la pantalla de error
+que ya existía; no existe y no se puede crear → esta sesión con IndexedDB. **Después de migrar,
+nunca se vuelve a IndexedDB**: escribir en la copia vieja partiría el diario en dos.
+
+**Las claves del teléfono se copian en SQLite** (`clavesDelTelefono.js`): el uid, la marca de
+restauración y la mudanza pendiente. Al arrancar, si `localStorage` no tiene el uid —señal de que
+iOS limpió el WebView—, se recuperan de SQLite **antes** de que nadie lo lea; si lo tiene, manda
+`localStorage` y SQLite se iguala, así que una marca retirada no resucita. `ArranqueProvisional`
+sigue siendo el único que escribe el uid, ahora con `guardarClave`; `reconciliarClaves` solo
+devuelve a `localStorage` lo que él escribió.
+
+**El build de diagnóstico**, solo para las pruebas manuales: `VITE_DIAG_ALMACEN=1 npm run ios:build`.
+Al final del bloque «Dónde vive lo que escribes» de Tu perfil dice qué almacén se usa, cómo fue
+la migración y cuánto hay en cada almacén, y ofrece «Simular que iOS limpió el almacén». **Sus
+textos viven en `src/copy/diagnostico.js`, no en `copy/index.js`**: así sin la bandera no llegan a
+`dist/`, y una prueba lo comprueba construyendo.
+
+**Volver atrás.** Antes del lanzamiento, revertir es revertir el commit y reinstalar. **Después de
+publicar la 1.0 con SQLite no hay vuelta a IndexedDB sin una migración inversa.**
+
+**Lo que no se tocó:** `sync.js`, `conflictos.js`, el modelo de datos ni las reglas de fusión.
+`restaurar.js` y `entradaCuenta.js` cambiaron solo en cómo escriben sus claves.
+
+**Las pruebas manuales M1–M7 pasan** (10 nov 2026, la fundadora en su iPhone contra
+`strivo-fe04f`; el detalle está en el §10 de la instrucción). **M1:** sin cuenta, todo pasa entero
+—mañana, Journal, frase del día y su elección, combinación favorita e Historial— con «Migración:
+correcta» y los mismos números en los dos lados (10 registros, 6 por subir: sin cuenta lo escrito
+espera en la cola). **M2:** lo nuevo se queda y la migración no se repite. **M3:** con la simulación
+de limpieza, sin bienvenida, mismo nombre y todo lo escrito; IndexedDB a 0 y SQLite intacto.
+**M4:** el Journal pide el PIN tras actualizar —en M1 no se pudo probar: sin cuenta no deja
+ponerlo— y lo escrito sin red llega a la nube desde la cola mudada a SQLite. **M5:** instalación
+nueva con Google, «nada que migrar» y, tras la simulación sin red, la cuenta sigue y no sale el
+aviso de restauración. **M6:** cerrar sesión y volver devuelve los días. **M7:** sin la bandera no
+hay diagnóstico, y la web sigue igual. En el simulador se vio además el camino de una instalación
+nueva: la base en `Library/Strivo/`, en WAL, con «nada que migrar», el árbol sembrado y la copia
+del uid.
+
+**Aprendido para las pruebas en el teléfono: tras borrar la app, la primera apertura de una
+compilación de Xcode necesita internet.** iOS verifica en ese momento el certificado de
+desarrolladora, y sin red la app no abre. Para probar algo «sin red desde la instalación» hay que
+abrirla una vez con red antes, o aceptar un plan B como el de M4: se abrió con red, y la prueba de
+que la cola se mudó fue que la entrada escrita sin red subió desde SQLite mientras IndexedDB la
+seguía contando.
 
 ### Que lo escrito suba solo (SPEC_31, 1 nov 2026)
 
@@ -978,6 +1094,9 @@ genera iOS**: los íconos de Android son de SPEC_26.
   `ios.scheme: 'strivo'`, y no se aplicó por esto.
 - **Sin `server.url` y sin `allowNavigation`**: los archivos van dentro del binario. Es la defensa
   frente a la Guideline 4.2, que rechaza un envoltorio que carga una web.
+- **La base SQLite: `Library/Strivo/strivo.sqlite`** (SPEC_17B, DP-17B.2). Cambiar la carpeta o el
+  nombre después de publicar abriría una base vacía. La vigilan `appIos.test.js` y una prueba
+  XCTest del plugin.
 
 Una prueba (`appIos.test.js`) lee `capacitor.config.json`, `project.pbxproj` e `Info.plist` y falla
 si alguno cambia.
@@ -2046,6 +2165,17 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
   solo consumidor: eran para el estado «hecho» que RN-HOY-04 retiró.
 
 ### Deuda consciente (se salda en su fase)
+
+- **El IndexedDB viejo de la app nativa no se borra** (SPEC_17B, DP-17B.10). Después de migrar se
+  queda ahí, intacto y sin usarse. Borrarlo es una decisión de la fundadora para una versión
+  posterior a la 1.0, nunca de esta.
+- **La sesión de Firebase Auth sigue en el IndexedDB del WebView** (SPEC_17B). Si iOS lo limpia, la
+  sesión queda `vencida`: nada se pierde —lo escrito y la cola están en SQLite— y sube al volver a
+  entrar. Moverla de ahí queda fuera de 17B.
+- **En SQLite, una clave con `undefined` desaparece al escribir** (SPEC_17B): el contenido se
+  guarda con `JSON.stringify`, igual que Firestore lo rechazaría al subir. La migración no lo
+  corrige —se para—, pero las escrituras nuevas sí lo pierden en silencio. Ningún escritor de hoy
+  guarda `undefined`; si apareciera uno, es un defecto de ese escritor.
 
 - **Los 16 iconos emocionales no se hicieron, y es una decisión, no un olvido** (backlog B-1). Son
   **material de marca, no de código: se piden, no se improvisan.** La especificación está en el

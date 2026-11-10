@@ -645,7 +645,10 @@ describe('ArranqueProvisional usa la regla y no la copia', () => {
     otros.forEach((ruta) =>
       expect(readFileSync(ruta, 'utf8')).not.toMatch(/setItem\(\s*['"`]strivo\.uid\.local/),
     )
-    expect(fuente.match(/localStorage\.setItem\(CLAVE_UID/g)).toHaveLength(2)
+    // Desde SPEC_17B la escritura pasa por `clavesDelTelefono` (que deja la
+    // copia en SQLite en la app nativa), y sigue habiendo dos y solo aquí.
+    expect(fuente.match(/guardarClave\(CLAVE_UID/g)).toHaveLength(2)
+    expect(fuente).not.toMatch(/localStorage\.setItem/)
   })
 
   it('el velo lleva la frase de restauración y no una rueda', () => {

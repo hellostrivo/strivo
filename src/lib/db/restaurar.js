@@ -38,6 +38,7 @@
 // contesta tarde **no se escribe**: nadie la está esperando ya.
 
 import { readPath, writePath } from './local.js'
+import { guardarClave, leerClave, quitarClave } from './clavesDelTelefono.js'
 import { assertUid } from './schema.js'
 import { esExpediente, ganaRemoto, hechosQueFaltan } from './conflictos.js'
 import { LIMITE_DE_RED_MS, conLimite } from './limite.js'
@@ -119,26 +120,22 @@ function claveDeMarca(uid) {
   return `strivo.restaurado.${uid}`
 }
 
-function almacen() {
-  try {
-    return typeof localStorage === 'undefined' ? null : localStorage
-  } catch {
-    return null
-  }
-}
+// Desde SPEC_17B se lee y se escribe por `clavesDelTelefono.js`, que en la app
+// nativa guarda una copia en SQLite: si iOS limpia el almacén del WebView, la
+// marca vuelve con el uid y no hace falta bajar otra vez todo lo de la cuenta.
 
 /** ¿Este dispositivo ya restauró este uid alguna vez? */
 export function hayMarcaDeRestauracion(uid) {
-  return almacen()?.getItem(claveDeMarca(uid)) != null
+  return leerClave(claveDeMarca(uid)) != null
 }
 
 /** Retira la marca. Para una marca huérfana, y para pruebas. */
 export function retirarMarcaDeRestauracion(uid) {
-  almacen()?.removeItem(claveDeMarca(uid))
+  quitarClave(claveDeMarca(uid))
 }
 
 function marcar(uid) {
-  almacen()?.setItem(claveDeMarca(uid), new Date().toISOString())
+  guardarClave(claveDeMarca(uid), new Date().toISOString())
 }
 
 // ─── El último resultado, por sesión ──────────────────────────────────────────

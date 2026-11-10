@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import * as diario from '@lib/db/diario'
 import * as local from '@lib/db/local'
-import { UID, resetLocalDB } from '@lib/db/__tests__/helpers.js'
+import { EN_SQLITE, UID, resetLocalDB } from '@lib/db/__tests__/helpers.js'
 
 import { patronDe, patronDeLado } from '../catalogoPatrones.js'
 import { MAX_RECIENTES, rutas } from '../esquema.js'
@@ -330,11 +330,15 @@ describe('criterio 16 — nada de lo que ya había se toca', () => {
     expect((await diario.listJournalEntries(UID)).map((e) => e.id)).toEqual([entrada.id])
   })
 
-  it('no hace falta subir la versión del esquema: no hay stores nuevos', async () => {
-    const db = await local.getLocalDB()
-    expect(db.version).toBe(1)
-    expect([...db.objectStoreNames].sort()).toEqual(['records', 'syncQueue'])
-  })
+  // Mira IndexedDB por dentro: en SQLite no hay versión de IndexedDB que subir.
+  it.skipIf(EN_SQLITE)(
+    'no hace falta subir la versión del esquema: no hay stores nuevos',
+    async () => {
+      const db = await local.getLocalDB()
+      expect(db.version).toBe(1)
+      expect([...db.objectStoreNames].sort()).toEqual(['records', 'syncQueue'])
+    },
+  )
 
   it('las rutas de breathing tienen un número par de segmentos, como el resto', () => {
     expect(rutas.doc(UID, 'unica').split('/')).toHaveLength(4)
