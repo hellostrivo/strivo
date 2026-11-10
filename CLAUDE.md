@@ -726,9 +726,12 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**106 archivos de prueba · 2.621 casos** en el proyecto `indexeddb`, **2.554 más** en el proyecto
+**106 archivos de prueba · 2.622 casos** en el proyecto `indexeddb`, **2.559 más** en el proyecto
 `sqlite` (la misma suite contra SQLite) **y 17 XCTest del plugin** · los seis comandos y
-`validar:frases` en verde, salvo la intermitente conocida de `journal.test.js`.
+`validar:frases` en verde. **La intermitente de `journal.test.js` se cerró** (10 nov 2026): sus dos
+entradas empataban en el milisegundo y el orden lo decidía un UUID; ahora se crean con `Date`
+congelado en dos instantes distintos. `listJournalEntries` no cambió. Cada caso que vuelca
+IndexedDB por dentro tiene su equivalente que vuelca todas las tablas de SQLite.
 
 ### Lo escrito en el iPhone, en SQLite (SPEC_17B, 10 nov 2026)
 

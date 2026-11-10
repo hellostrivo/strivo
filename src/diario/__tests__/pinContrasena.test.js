@@ -9,7 +9,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { readFileSync } from 'fs'
 
-import { EN_SQLITE, UID, resetLocalDB } from '@/lib/db/__tests__/helpers.js'
+import { EN_SQLITE, UID, resetLocalDB, sqliteDePruebas } from '@/lib/db/__tests__/helpers.js'
 import { shared } from '@/lib/db'
 import { STORE_RECORDS, STORE_SYNC_QUEUE, getLocalDB } from '@/lib/db/local.js'
 import { copy } from '@copy'
@@ -239,6 +239,37 @@ describe('criterio 8: la contraseña no se escribe en ningún sitio', () => {
       const todo = JSON.stringify([
         await db.getAll(STORE_RECORDS),
         await db.getAll(STORE_SYNC_QUEUE),
+        [...guardado.entries()],
+      ])
+      expect(todo).not.toContain(SECRETO)
+    },
+  )
+
+  // El mismo volcado sobre SQLite (SPEC_17B): todas las tablas del doble
+  // —registros, cola, meta y la copia de las claves del teléfono— y
+  // `localStorage`. Solo corre en el proyecto `sqlite`.
+  it.runIf(EN_SQLITE)(
+    'ni en ninguna tabla de SQLite, ni en localStorage, acierte o no',
+    async () => {
+      const guardado = new Map()
+      vi.stubGlobal('localStorage', {
+        getItem: (k) => guardado.get(k) ?? null,
+        setItem: (k, v) => guardado.set(k, String(v)),
+        removeItem: (k) => guardado.delete(k),
+      })
+      conProveedor('password')
+      await reautenticar(UID, { contrasena: SECRETO })
+      fallo.codigo = 'auth/wrong-password'
+      await reautenticar(UID, { contrasena: SECRETO })
+
+      const db = sqliteDePruebas().estado.db
+      const tablas = db
+        .prepare(`SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name`)
+        .all()
+        .map((t) => t.name)
+      expect(tablas).toEqual(expect.arrayContaining(['claves', 'cola', 'meta', 'registros']))
+      const todo = JSON.stringify([
+        ...tablas.map((t) => db.prepare(`SELECT * FROM "${t}"`).all()),
         [...guardado.entries()],
       ])
       expect(todo).not.toContain(SECRETO)

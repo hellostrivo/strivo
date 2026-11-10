@@ -11,6 +11,16 @@ export const UID = 'usuario-de-prueba'
  */
 export const EN_SQLITE = process.env.STRIVO_ALMACEN === 'sqlite'
 
+let sqliteVigente = null
+
+/**
+ * El doble de SQLite de la última `resetLocalDB` en el proyecto `sqlite`, para
+ * las pruebas que miran todas sus tablas. `null` en el proyecto `indexeddb`.
+ */
+export function sqliteDePruebas() {
+  return sqliteVigente
+}
+
 /** Deja la base local vacía entre pruebas: la de IndexedDB y, en el proyecto `sqlite`, una SQLite nueva. */
 export async function resetLocalDB() {
   await closeLocalDB()
@@ -21,5 +31,8 @@ export async function resetLocalDB() {
     request.onerror = resolve
     request.onblocked = resolve
   })
-  if (EN_SQLITE) usarAdaptador((await almacenSQLiteDePruebas()).adaptador)
+  if (EN_SQLITE) {
+    sqliteVigente = await almacenSQLiteDePruebas()
+    usarAdaptador(sqliteVigente.adaptador)
+  }
 }

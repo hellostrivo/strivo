@@ -1,7 +1,7 @@
 // src/diario/__tests__/journal.test.js
 // El Journal (§5.8): guardado, agrupación y búsqueda.
 
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { UID, resetLocalDB } from '@/lib/db/__tests__/helpers.js'
 import { diario } from '@/lib/db'
@@ -77,9 +77,20 @@ describe('editar no duplica', () => {
 })
 
 describe('la lista', () => {
+  // Las dos entradas se crean en milisegundos distintos. Antes podían caer en el
+  // mismo, empataban en `createdAt` y el orden lo decidía el id —un UUID al
+  // azar—: era la intermitente conocida, y con la suite corriendo también sobre
+  // SQLite salía casi siempre. Solo se congela `Date`; nada más del reloj.
   it('viene de la más reciente a la más antigua', async () => {
-    await guardar(UID, { ...entradaNueva('2026-08-01'), text: 'Vieja' })
-    await guardar(UID, { ...entradaNueva('2026-08-10'), text: 'Nueva' })
+    vi.useFakeTimers({ toFake: ['Date'] })
+    try {
+      vi.setSystemTime(new Date('2026-08-01T09:00:00.000Z'))
+      await guardar(UID, { ...entradaNueva('2026-08-01'), text: 'Vieja' })
+      vi.setSystemTime(new Date('2026-08-10T09:00:00.000Z'))
+      await guardar(UID, { ...entradaNueva('2026-08-10'), text: 'Nueva' })
+    } finally {
+      vi.useRealTimers()
+    }
     const entradas = await listar(UID)
     expect(entradas[0].text).toBe('Nueva')
   })
