@@ -568,7 +568,9 @@ describe('DP-17.11: dos llamadas a la vez con el mismo uid son una', () => {
     doble.remoto = PERFIL_REMOTO
     const segunda = await prepararArbol(CUENTA, CON_CUENTA)
     expect(segunda.restauracion.ok).toBe(true)
-    expect(doble.llamadas).toBe(2)
+    // Tres y no dos: la primera, interrumpida, se reintenta sola una vez
+    // dentro del techo (SPEC_31, DP-31.5).
+    expect(doble.llamadas).toBe(3)
   })
 
   it('dos uid distintos a la vez no se interfieren', async () => {

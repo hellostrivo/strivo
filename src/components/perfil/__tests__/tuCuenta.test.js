@@ -74,7 +74,10 @@ describe('el copy de Tu cuenta es el de la SPEC §4, literal', () => {
         cancelar: 'Quedarme',
       },
       error: {
-        credenciales: 'Ese correo y esa contraseña no coinciden.',
+        credenciales:
+          'Ese correo y esa contraseña no coinciden. Si alguna vez entraste con Google, prueba con ese botón.',
+        credencialesNativa:
+          'Ese correo y esa contraseña no coinciden. Si alguna vez entraste con Google o con Apple, prueba con ese botón.',
         sinConexion: 'Sin conexión. Inténtalo cuando vuelva.',
         generico: 'Algo no salió bien. Inténtalo de nuevo en un momento.',
         otroMetodo:

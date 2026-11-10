@@ -501,6 +501,31 @@ export async function borrarUid(uid) {
 // Una entrada por ruta: si la misma ruta se escribe cinco veces sin red, la
 // cola guarda el último estado, no cinco copias. Al volver la red se envía una
 // vez y el resultado es el mismo que si nunca se hubiera caído.
+//
+// **Cada entrada lleva su revisión (`rev`)**, que sube cada vez que se vuelve a
+// escribir su ruta (SPEC_31, H-1). La entrada conserva su `seq`, así que sin
+// esto un vaciado que enviaba la versión 1 sacaba de la cola la versión 2
+// escrita mientras tanto, sin haberla enviado: en el teléfono no se perdía
+// nada, pero la nube se quedaba con la vieja hasta la siguiente edición. Ver
+// `dequeueSiIgual`. Las entradas de antes no traen `rev` y siguen funcionando.
+
+/**
+ * Quien quiere enterarse de que algo entró en la cola (SPEC_31, DP-31.3). Lo
+ * pone `startSync` (`sync.js`), que es quien sabe qué hacer con ello: aquí solo
+ * se avisa, y por eso `local.js` sigue sin importar `sync.js`.
+ */
+const oyentesDeCola = new Set()
+
+/**
+ * Llama a `fn({ uid, path })` cada vez que una entrada entra en la cola. Un
+ * oyente que lance no rompe la escritura: lo escrito ya está escrito.
+ *
+ * @returns {() => void} la función que lo retira.
+ */
+export function alEncolar(fn) {
+  oyentesDeCola.add(fn)
+  return () => oyentesDeCola.delete(fn)
+}
 
 export async function enqueue({ uid, path, op, data }) {
   // Lo que vive solo en el dispositivo no entra en la cola, la pida quien la
@@ -517,12 +542,21 @@ export async function enqueue({ uid, path, op, data }) {
     op,
     data,
     attempts: existing ? existing.attempts : 0,
+    rev: (existing?.rev ?? 0) + 1,
     enqueuedAt: new Date().toISOString(),
   }
   if (existing) entry.seq = existing.seq
 
   await store.put(entry)
   await tx.done
+
+  for (const fn of [...oyentesDeCola]) {
+    try {
+      fn({ uid, path })
+    } catch {
+      // Ver `alEncolar`: el aviso no es asunto de la escritura.
+    }
+  }
 }
 
 export async function listQueue(uid = null) {
@@ -536,6 +570,30 @@ export async function listQueue(uid = null) {
 export async function dequeue(seq) {
   const db = await getLocalDB()
   await db.delete(STORE_SYNC_QUEUE, seq)
+}
+
+/**
+ * Saca de la cola la entrada que se acaba de enviar, **solo si sigue siendo
+ * la misma** (H-1). Si mientras viajaba se volvió a escribir su ruta, la
+ * revisión ya no coincide y la entrada se queda, con la versión nueva, para el
+ * siguiente envío.
+ *
+ * Una entrada de antes de SPEC_31 no trae `rev`: si nadie la ha tocado, las dos
+ * dicen `undefined` y sale; si se reescribió, la nueva ya trae `rev: 1` y se
+ * queda. Las dos cosas que tienen que pasar.
+ *
+ * @param {{seq: number, rev?: number}} enviada - la entrada tal como se leyó al enviar.
+ * @returns {Promise<boolean>} si salió de la cola.
+ */
+export async function dequeueSiIgual(enviada) {
+  const db = await getLocalDB()
+  const tx = db.transaction(STORE_SYNC_QUEUE, 'readwrite')
+  const store = tx.objectStore(STORE_SYNC_QUEUE)
+  const actual = await store.get(enviada.seq)
+  const igual = actual !== undefined && actual.rev === enviada.rev
+  if (igual) await store.delete(enviada.seq)
+  await tx.done
+  return igual
 }
 
 /** Marca un intento fallido sin perder la entrada: se reintenta más tarde. */

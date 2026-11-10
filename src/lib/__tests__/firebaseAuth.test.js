@@ -12,7 +12,10 @@ const sdk = vi.hoisted(() => ({
 }))
 
 vi.mock('firebase/app', () => ({ initializeApp: vi.fn(() => ({ app: true })) }))
-vi.mock('firebase/firestore', () => ({ getFirestore: vi.fn(() => ({ db: true })) }))
+vi.mock('firebase/firestore', () => ({
+  getFirestore: vi.fn(() => ({ db: true })),
+  initializeFirestore: vi.fn(() => ({ db: true })),
+}))
 vi.mock('firebase/auth', () => ({
   getAuth: sdk.getAuth,
   initializeAuth: sdk.initializeAuth,

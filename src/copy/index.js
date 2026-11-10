@@ -121,7 +121,13 @@ const CUENTA = {
     cancelar: 'Quedarme',
   },
   error: {
-    credenciales: 'Ese correo y esa contraseña no coinciden.',
+    // La pista es para quien entró alguna vez con un proveedor y ahora prueba
+    // con contraseña (D-N8, SPEC_31). Nombra solo los botones que hay en
+    // pantalla: en web, Google; en la app de iPhone, Google y Apple.
+    credenciales:
+      'Ese correo y esa contraseña no coinciden. Si alguna vez entraste con Google, prueba con ese botón.',
+    credencialesNativa:
+      'Ese correo y esa contraseña no coinciden. Si alguna vez entraste con Google o con Apple, prueba con ese botón.',
     sinConexion: 'Sin conexión. Inténtalo cuando vuelva.',
     generico: 'Algo no salió bien. Inténtalo de nuevo en un momento.',
     // Google o Apple con un correo que ya tiene cuenta por otro camino

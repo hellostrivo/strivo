@@ -62,10 +62,19 @@ export const MOTIVOS = Object.freeze({
  * recuperar. `null` es no decir nada: cerrar la ventana de Google no es un
  * error. Vive aquí y no en una pantalla porque la leen Tu perfil y el
  * onboarding (SPEC_30), y `FormularioEntrar` la recibe por props.
+ *
+ * Las credenciales tienen dos frases (D-N8, SPEC_31): la pista nombra los
+ * botones que hay en pantalla, y en web no hay botón de Apple
+ * (`proveedoresDisponibles`).
+ *
+ * @param {string} motivo
+ * @param {boolean} [nativa] - Existe para las pruebas.
  */
-export function claveDeError(motivo) {
+export function claveDeError(motivo, nativa = esNativa()) {
   if (motivo === MOTIVOS.rechazado) return null
-  if (motivo === MOTIVOS.credenciales || motivo === MOTIVOS.correoEnUso) return 'credenciales'
+  if (motivo === MOTIVOS.credenciales || motivo === MOTIVOS.correoEnUso) {
+    return nativa ? 'credencialesNativa' : 'credenciales'
+  }
   if (motivo === MOTIVOS.sinConexion) return 'sinConexion'
   if (motivo === MOTIVOS.otroMetodo) return 'otroMetodo'
   return 'generico'
