@@ -423,3 +423,42 @@ describe('plugins/strivo-almacen (SPEC_17B)', () => {
     expect(leer('plugins/strivo-almacen/src/index.js')).toMatch(/registerPlugin\('StrivoAlmacen'\)/)
   })
 })
+
+// ─── SPEC_22 — los avisos locales, sin push y sin insignia (criterio 11) ────
+//
+// Notificaciones locales: nada de APNs ni de push remoto. Declarar push sin
+// usarlo es motivo de rechazo, así que se vigila que no aparezca por ningún
+// lado; y con la app abierta el aviso no se enseña, y nunca con número.
+describe('SPEC_22: los avisos locales', () => {
+  const config = JSON.parse(leer('capacitor.config.json'))
+  const paquete = JSON.parse(leer('package.json'))
+  const plist = leer('ios/App/App/Info.plist')
+
+  it('el plugin oficial, en versión exacta (DP-22.13)', () => {
+    expect(paquete.dependencies['@capacitor/local-notifications']).toBe('8.3.1')
+  })
+
+  it('con la app abierta no se enseña nada, y nunca con insignia (DP-22.7)', () => {
+    expect(config.plugins.LocalNotifications).toEqual({ presentationOptions: [] })
+  })
+
+  it('sin push: ni aps-environment, ni remote-notification, ni la clave de notificaciones', () => {
+    expect(leer('ios/App/App/App.entitlements')).not.toMatch(/aps-environment/)
+    const modos = plist.match(/<key>UIBackgroundModes<\/key>\s*<array>([\s\S]*?)<\/array>/)[1]
+    expect([...modos.matchAll(/<string>([^<]+)<\/string>/g)].map((m) => m[1])).toEqual(['audio'])
+    expect(plist).not.toMatch(/NSUserNotificationsUsageDescription/)
+    expect(leer('ios/App/App.xcodeproj/project.pbxproj')).not.toMatch(
+      /aps-environment|com\.apple\.Push/,
+    )
+  })
+
+  it('cap sync lo enlaza por SPM, como paquete local y sin opciones', () => {
+    const swift = leer('ios/App/CapApp-SPM/Package.swift')
+    expect(swift).toMatch(
+      /\.package\(name: "CapacitorLocalNotifications", path: "\.\.\/\.\.\/\.\.\/node_modules\/@capacitor\/local-notifications"\)/,
+    )
+    expect(
+      config.experimental.ios.spm.packageOptions['@capacitor/local-notifications'],
+    ).toBeUndefined()
+  })
+})

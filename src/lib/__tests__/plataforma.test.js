@@ -66,3 +66,47 @@ describe('un solo sitio pregunta la plataforma', () => {
     expect(intrusos).toEqual([])
   })
 })
+
+// ─── SPEC_22, DP-22.13 ──────────────────────────────────────────────────────
+
+import { esIPhone } from '../plataforma.js'
+
+describe('esIPhone', () => {
+  const capacitor = (plataforma, nativa = true) => ({
+    isNativePlatform: () => nativa,
+    getPlatform: () => plataforma,
+  })
+
+  it('en la app de iPhone, sí', () => {
+    expect(esIPhone(capacitor('ios'))).toBe(true)
+  })
+
+  it('en Android, no: los avisos de Android son de SPEC_27', () => {
+    expect(esIPhone(capacitor('android'))).toBe(false)
+  })
+
+  it('en la web, no, aunque alguien diga ios', () => {
+    expect(esIPhone(capacitor('ios', false))).toBe(false)
+    expect(esIPhone()).toBe(false)
+  })
+
+  it('si la pregunta falla, no', () => {
+    expect(
+      esIPhone({
+        isNativePlatform: () => true,
+        getPlatform: () => {
+          throw new Error('sin puente')
+        },
+      }),
+    ).toBe(false)
+  })
+
+  it('nadie fuera de plataforma.js pregunta getPlatform', () => {
+    const intrusos = fuentes().filter(
+      (ruta) =>
+        !ruta.endsWith(join('lib', 'plataforma.js')) &&
+        /getPlatform/.test(readFileSync(ruta, 'utf8')),
+    )
+    expect(intrusos).toEqual([])
+  })
+})

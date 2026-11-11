@@ -66,15 +66,17 @@ describe('el repo no engorda por audio (criterios 35 y 36, RN-RE-SND-00)', () =>
 
   // Las ocho de siempre más las cinco de Capacitor que aprobó SPEC_21.1 (la app
   // de iPhone), el plugin de Google y Apple de SPEC_21.2 y el almacén propio de
-  // SPEC_17B (`plugins/strivo-almacen`, SQLite del sistema). Ninguna trae audio:
-  // el sonido sigue sintetizado.
-  it('las dependencias son las ocho de siempre y las siete de la app de iPhone', () => {
+  // SPEC_17B (`plugins/strivo-almacen`, SQLite del sistema), y los avisos
+  // locales de SPEC_22 (`@capacitor/local-notifications`, sin sonidos propios:
+  // el del sistema). Ninguna trae audio: el sonido sigue sintetizado.
+  it('las dependencias son las ocho de siempre y las ocho de la app de iPhone', () => {
     const paquete = JSON.parse(readFileSync('package.json', 'utf8'))
     expect(Object.keys(paquete.dependencies).sort()).toEqual([
       '@capacitor-firebase/authentication',
       '@capacitor/app',
       '@capacitor/core',
       '@capacitor/ios',
+      '@capacitor/local-notifications',
       '@capacitor/splash-screen',
       '@capacitor/status-bar',
       '@fontsource-variable/inter',

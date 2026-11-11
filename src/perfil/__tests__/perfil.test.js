@@ -18,10 +18,19 @@ import { perfilDesde } from '@/onboarding/estado'
 const textos = copy.diario.perfil
 
 describe('los bloques del perfil', () => {
-  it('son los seis de esta fase, en su orden', () => {
+  it('son los siete de esta fase, en su orden', () => {
     // Los tres que son la persona primero; la gestión detrás: Tu cuenta
-    // (SPEC_19.1) antes de dónde vive lo que escribe (SPEC_17A).
-    expect(BLOQUES).toEqual(['nombre', 'genero', 'horarios', 'frases', 'cuenta', 'sincronizacion'])
+    // (SPEC_19.1) antes de dónde vive lo que escribe (SPEC_17A). Los
+    // recordatorios (SPEC_22) van detrás de los horarios: llegan a esas horas.
+    expect(BLOQUES).toEqual([
+      'nombre',
+      'genero',
+      'horarios',
+      'recordatorios',
+      'frases',
+      'cuenta',
+      'sincronizacion',
+    ])
   })
 
   it('la identidad central salió del perfil con el paso que la preguntaba', () => {

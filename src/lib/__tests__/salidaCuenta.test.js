@@ -2,6 +2,7 @@
 // Cerrar sesión sin perder lo que no subió (SPEC_19.1 §4.7; criterio 6).
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { readFileSync } from 'fs'
 
 import * as shared from '@lib/db/shared'
 import * as diario from '@lib/db/diario'
@@ -104,5 +105,30 @@ describe('con la cola vacía, se sale y se borra todo lo del uid', () => {
     await enMarcha
     // Contar a mitad habría dicho "pendiente" de lo que estaba subiendo.
     expect(await comprobacion).toBe(SALIDA.libre)
+  })
+})
+
+// ─── SPEC_22, DP-22.11 (criterio 8) ─────────────────────────────────────────
+// Que la cancelación borra los avisos de Strivo y que nada se programa después
+// lo prueba `avisos/__tests__/reconciliar.test.js` contra el teléfono de
+// mentira. Aquí, dónde va la llamada y que en la web no carga nada.
+
+describe('cerrar sesión cancela los avisos de Strivo', () => {
+  const fuente = readFileSync('src/lib/salidaCuenta.js', 'utf8')
+
+  it('después de comprobar la cola y antes de cerrar la sesión', () => {
+    const cuerpo = fuente.slice(fuente.indexOf('export async function salirDeCuenta'))
+    const comprobar = cuerpo.indexOf('comprobarSalida(uid)')
+    const apagar = cuerpo.indexOf('await apagarAvisos()')
+    const cerrar = cuerpo.indexOf('await cerrarSesion()')
+    expect(comprobar).toBeGreaterThan(-1)
+    expect(apagar).toBeGreaterThan(comprobar)
+    expect(cerrar).toBeGreaterThan(apagar)
+  })
+
+  it('solo en la app de iPhone, con la reconciliación bajo demanda, y sin lanzar', () => {
+    expect(fuente).toMatch(/if \(!esIPhone\(\)\) return/)
+    expect(fuente).toMatch(/await import\('\.\/avisos\/reconciliar\.js'\)/)
+    expect(fuente).toMatch(/try \{[\s\S]*apagar\(\)[\s\S]*\} catch/)
   })
 })
