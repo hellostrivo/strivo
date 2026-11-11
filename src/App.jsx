@@ -28,7 +28,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { clsx } from 'clsx'
-import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { HashRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { momentoDe } from '@lib/timeSlot'
 import { useBarraDeEstado } from '@lib/barraEstado'
 
@@ -41,6 +41,7 @@ import BarraInferior from '@components/shared/BarraInferior'
 import { cruzarUmbral, umbralPendiente } from '@lib/umbralSesion'
 import { aplicarLecturaDePuerta, leerPuerta } from '@/presentacion/entrada'
 import { useSesion } from '@lib/useSesion'
+import { useAvisos } from '@lib/avisos/useAvisos'
 
 import Respiracion from '@/breathing/Respiracion'
 import Hoy from '@/pages/diario/Hoy'
@@ -264,6 +265,13 @@ function Secciones({ uid }) {
   // del tema —lo sigue eligiendo el conmutador (RN-HOY-05)—: es el eco que
   // necesita el cromo, porque los tokens viajan por el DOM.
   const [momentoHoy, setMomentoHoy] = useState(null)
+
+  // SPEC_22 — Los avisos del iPhone se ponen al día mientras las secciones
+  // están montadas, y tocar uno abre Hoy con su momento ya elegido. La ruta la
+  // pone quien enruta: el hook no sabe qué rutas hay. Hoy lee el parámetro y lo
+  // retira (DP-22.10). En la web no hace nada.
+  const navegar = useNavigate()
+  useAvisos(uid, { alTocar: (momento) => navegar(`${INICIO}?momento=${momento}`) })
 
   /**
    * §C7.5 — El umbral se cruza al abrir la app, una vez por sesión

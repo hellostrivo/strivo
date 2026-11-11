@@ -29,7 +29,8 @@
 // antes. Un día que ya pasó su ventana no se oculta ni desaparece: se muestra
 // entero y sin nada que tocar.
 
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { clsx } from 'clsx'
 import DiarioManana from '@components/diario/DiarioManana'
 import DiarioNoche from '@components/diario/DiarioNoche'
@@ -55,6 +56,18 @@ function momentoInicial() {
   return franja === 'amanecer' || franja === 'dia' ? 'manana' : 'noche'
 }
 
+/**
+ * El momento que pide la ruta, o `null` (SPEC_22, DP-22.10).
+ *
+ * Tocar un aviso abre `#/hoy?momento=manana` o `noche`. Cualquier otro valor
+ * se ignora sin mensaje (RN-NAV-06), y sin parámetro Hoy se abre como
+ * siempre, por la franja del día.
+ */
+export function momentoPedido(parametros) {
+  const valor = parametros?.get?.('momento')
+  return valor === 'manana' || valor === 'noche' ? valor : null
+}
+
 function Fondo({ momento }) {
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-0">
@@ -76,6 +89,7 @@ export default function Hoy({ uid, onHideNav, onMomento }) {
   // No se persiste: al volver a abrir la app se entra por hoy, como siempre.
   const [fechaPedida, setFechaPedida] = useState(null)
   const { estado, carga, error, acciones, reintentar } = useDiario(uid, fechaPedida)
+  const [parametros, setParametros] = useSearchParams()
   const [momento, setMomento] = useState(momentoInicial)
   const [vista, setVista] = useState('hoy')
   const [umbral, setUmbral] = useState(false)
@@ -140,6 +154,35 @@ export default function Hoy({ uid, onHideNav, onMomento }) {
     cruzarUmbral('diario')
     setUmbral(true)
   }, [carga, momento])
+
+  /**
+   * SPEC_22, DP-22.10 — Tocar un aviso con Hoy ya montada cambia la ruta pero
+   * no la vuelve a montar, así que el parámetro se aplica aquí: el momento del
+   * aviso, en el día de hoy, y fuera de «Respira un momento» si estaba dentro.
+   * Después se retira con `replace`: así un segundo toque con el mismo momento
+   * vuelve a llegar, y la ruta no se queda pidiendo nada al volver a Hoy.
+   *
+   * **Antes de pintar** (`useLayoutEffect`): al llegar desde un aviso, el
+   * momento del aviso es el del primer fotograma, no el de la franja del día.
+   * El estado del momento sigue naciendo de `momentoInicial` y viviendo aquí.
+   */
+  const pedido = momentoPedido(parametros)
+  const hayParametro = parametros.has('momento')
+  // Un efecto nunca abre un destino —eso es siempre un toque—; este solo
+  // devuelve a Hoy desde el que estuviera abierto.
+  const fueraDeHoy = vista !== 'hoy'
+  useLayoutEffect(() => {
+    if (!hayParametro) return
+    if (pedido) {
+      setMomento(pedido)
+      setFechaPedida(null)
+      if (fueraDeHoy) {
+        setVista('hoy')
+        onHideNav?.(false)
+      }
+    }
+    setParametros({}, { replace: true })
+  }, [pedido, hayParametro, setParametros, onHideNav, fueraDeHoy])
 
   /** Las dos superficies que sí son un destino: ocupan la pantalla entera. */
   const abrir = (siguiente) => {
