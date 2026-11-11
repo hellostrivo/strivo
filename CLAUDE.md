@@ -838,10 +838,29 @@ iPhone en Release** (arm64, sin firmar, sin adelgazar por la tienda): el `.app` 
 9.504 KB (+188 KB: +163 KB el binario, que es el Swift del plugin, y +28 KB la web), y comprimido,
 que es lo más parecido a la descarga, de 3,11 a 3,18 MB (+64 KB).
 
-**Lo que falta: las pruebas manuales M1–M10** de la instrucción, en el iPhone de la fundadora
-contra `strivo-fe04f`. Dos cosas solo se ven ahí: que el toque llegue con la app cerrada del todo
-(M2) y si iOS deja en pendientes un aviso de fecha completa ya entregado (la reconciliación lo
-cancela de todas formas).
+**Las pruebas manuales M1–M10 pasan** (11 nov 2026, la fundadora en su iPhone y en `localhost`
+contra `strivo-fe04f`; el detalle está en el §10 de la instrucción). **El orden de M2 y M3 se
+ajustó al probar:** M2 usó la Noche con la app cerrada del todo y M3 la Mañana con la app en
+segundo plano, porque por la tarde Hoy ya abre en Mañana por sí sola y así cada prueba demuestra
+que es el aviso el que elige el momento. **M1:** el diálogo de iOS, «Listo. Te avisaremos a esas
+horas.» y los próximos a 07:00 y 23:00. **M2:** llega «¿Cómo cerrar el día?», sin nombre, sin
+título duplicado y sin número, y **el toque en frío abre Hoy con Noche**. **M3:** con Hoy en Noche,
+el aviso de la mañana la cambia a Mañana. **M4:** al cerrar la mañana, el próximo pasa al día
+siguiente y ese día no llega nada. **M5:** apagado, 0 programados; al encender, iOS no vuelve a
+preguntar. **M6:** la frase con «Abrir Ajustes del teléfono», que lleva a la página de Strivo; al
+volver con permiso, cuenta otra vez sola. **M7:** en Bogotá llega a la hora local nueva. **M8:**
+las horas vuelven de la nube, iOS no pregunta sin un toque y al negar se ve lo de la tabla.
+**M9:** con «No molestar» no suena y queda en el Centro de notificaciones; tras cerrar sesión no
+llega nada. **M10:** sin la bandera no hay diagnóstico, y en la web P6 sigue igual y sin bloque.
+
+**Límite conocido, sin arreglar en la 1.0 — O-22.1: el WebView no se entera al momento de un
+cambio de zona horaria.** Con la app en segundo plano, al volver tras cambiar la zona, el WebView
+sigue con la vieja hasta que la app vuelve a arrancar (en M7 el diagnóstico dijo
+`America/Monterrey` hasta cerrar la app del todo). **Los avisos llegan igual a la hora local**,
+porque los disparadores de calendario siguen la hora de pared. El único efecto posible es menor:
+mientras el WebView conserve la zona vieja, la reconciliación calcula «ahora» con ella, así que un
+aviso que cae en la hora del desfase puede no programarse —o quedar uno ya pasado, que iOS no
+entrega— hasta el siguiente arranque.
 
 ### Lo escrito en el iPhone, en SQLite (SPEC_17B, 10 nov 2026)
 

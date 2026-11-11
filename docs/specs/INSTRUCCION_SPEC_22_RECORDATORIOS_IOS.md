@@ -1,7 +1,7 @@
 # INSTRUCCIÓN SPEC_22 — Los recordatorios llegan en el iPhone
 
 **Para:** Claude Code
-**Fecha:** 10 nov 2026 · **Versión:** 1.1 (reporte previo aprobado el 11 nov 2026: §9. **Donde §9 y el resto difieran, manda §9**)
+**Fecha:** 10 nov 2026 · **Versión:** 1.2 (reporte previo aprobado el 11 nov 2026: §9; pruebas manuales pasadas el 11 nov 2026: §10. **Donde §9 y el resto difieran, manda §9**)
 **Rama de partida:** `strivo` en `23a7990`, la fusión de SPEC_17B. Compruébalo en §0.
 **Gobierna:** esta instrucción + `docs/specs/SPEC_22_RECORDATORIOS_LOCALES_IOS.md` + `docs/specs/INSTRUCCION_SPEC_21_1_CAPACITOR_IOS.md` + `docs/specs/INSTRUCCION_SPEC_21_2_GOOGLE_Y_APPLE.md` + `docs/specs/INSTRUCCION_SPEC_17B_SQLITE.md` + `SPEC_00B` + `CLAUDE.md`. **Donde esta instrucción y otra difieran, manda esta.** En particular, **corrige varias partes de SPEC_22**, que se escribió en septiembre, antes de que existieran P6, los horarios de Tu perfil y la app de iPhone (ver §2.6).
 **Por qué existe:** en la app de iPhone, P6 dice «Este dispositivo no tiene avisos. Strivo funciona igual.». WKWebView no tiene `Notification`, así que `recordatorios.js` cae en `sin_soporte`. Es verdad, pero no es lo que alguien espera leer en un iPhone, y P6 promete «Dos avisos al día, a las horas que elegiste» que hoy no llegan en ninguna plataforma.
@@ -289,20 +289,29 @@ Reporte previo de Claude Code (11 nov 2026) **aprobado por la fundadora con las 
 
 ---
 
-## 10. Implementación y pruebas manuales
+## 10. Implementación y pruebas manuales (11 nov 2026)
 
-### 10.1 Implementación (Claude Code, 11 nov 2026, rama `revision-22`)
+**Implementación.** Rama `revision-22` (worktree `~/Developer/strivo-22`), 11 commits sobre `23a7990`. Siete validaciones en verde; `npm run test`: 220 archivos, 5.410 casos y 7 omitidos (ya existían). En el proyecto `indexeddb`, de 106 archivos y 2.622 casos a 113 y 2.740: **118 casos nuevos**.
 
-Hecho según §4 y §9, sin desvíos de lo aprobado. Lo que conviene saber:
+- **Tamaño:** la app en Release (arm64, sin firmar) pasa de 9.316 a 9.504 KB (+188 KB, casi todo el Swift del plugin); comprimida, de 3,11 a 3,18 MB (+64 KB). El chunk principal de la web pasa de 730,19 a 737,40 kB (gzip, de 206,92 a 209,40); el plugin, el plan y la reconciliación van en chunks que la web no descarga.
+- **«!» y «¡»: la comprobación es global** sobre todo el copy visible, porque ningún texto de hoy fallaba. Fuera del copy, cuatro citas del repertorio v1 (`frases-del-dia.js`: C-005, C-008, C-047, C-072) llevan «¡…!». Son citas textuales de autores: no se tocaron y quedan anotadas en CLAUDE.md para que la fundadora decida.
+- **Id de ejemplo corregido:** con la fórmula aprobada, la mañana del 11 de noviembre es `202611111`.
+- **Tres pruebas cambiadas fuera del criterio 15:** los bloques del perfil pasan de seis a siete, la pantalla recorre `visibles()` y hay una dependencia más.
+- Hoy sigue arrancando con `useState(momentoInicial)`; el momento del aviso se aplica antes de pintar.
 
-- **Hoy no cambió cómo nace el momento.** Sigue siendo `useState(momentoInicial)`; el parámetro se aplica con `useLayoutEffect`, antes de pintar, así que al llegar desde un aviso no se ve un fotograma con el momento de la franja. Las pruebas de RN-HOY-05 no cambiaron.
-- **El ejemplo de id del reporte previo estaba mal escrito** («2026111101»). La fórmula aprobada da `202611111` para la mañana del 11 nov 2026 (`20261111 × 10 + 1`).
-- **La comprobación global de «!» y «¡» se queda global**: ningún texto de `src/copy/` fallaba. Fuera del copy, cuatro citas del repertorio v1 (`frases-del-dia.js`: C-005, C-008, C-047, C-072) llevan «¡…!»; son textos ajenos citados tal cual, no se tocaron y están anotadas en CLAUDE.md para que la fundadora decida.
-- **`DIAGNOSTICO_AVISOS` vive en `diagnostico.js`**: Rollup separa las dos exportaciones, y la prueba que construye con cada bandera lo confirma.
-- **Pruebas que cambiaron lo que comprueban**, ninguna del criterio 15: `perfil.test.js` (seis → siete bloques), `components/perfil/__tests__/perfil.test.js` (`BLOQUES.map` → `visibles(...).map`) y `sonidoYFavoritos.test.js` (una dependencia más, sin audio).
-- **Tamaños.** Web: chunk principal de 730,19 a 737,40 kB (gzip 206,92 → 209,40); reconciliación (4,2 kB) y plugin en chunks aparte. App en Release (arm64, sin firmar): `.app` 9.316 → 9.504 KB (+188 KB; binario +163 KB), comprimido 3,11 → 3,18 MB.
-- **Suite:** `indexeddb` 113 archivos / 2.740 casos (antes 106 / 2.622, +118); `sqlite` 2.677. Los seis comandos y `validar:frases` en verde.
+**Pruebas manuales: las diez pasan** (la fundadora en su iPhone y en `localhost`, contra `strivo-fe04f`). Orden ajustado al probar: **M2 usó la Noche con la app cerrada y M3 la Mañana con la app en segundo plano**. Por la tarde, Hoy ya abre en Mañana por sí sola, así que así cada prueba demuestra que el aviso elige el momento.
 
-### 10.2 Pruebas manuales
+| Prueba | Resultado |
+|---|---|
+| **M1** · P6 pide de verdad | ✅ Diálogo de iOS, «Listo. Te avisaremos a esas horas.», bloque encendido, permiso concedido, próximos a 07:00 y 23:00. |
+| **M2** · App cerrada del todo → Noche | ✅ Llega «¿Cómo cerrar el día?», sin nombre ni título duplicado ni número en el ícono; el toque abre Hoy con Noche. **El toque en frío funciona.** |
+| **M3** · App en segundo plano → Mañana | ✅ Con Hoy en Noche, el aviso de la mañana la cambia a Mañana. |
+| **M4** · Si ya lo hiciste, no llega | ✅ Al cerrar la mañana, el próximo pasa al día siguiente y ese día no llega nada. |
+| **M5** · Apagar y encender | ✅ 0 programados y nada llega; al encender, iOS no vuelve a preguntar. |
+| **M6** · Permiso retirado | ✅ Frase y «Abrir Ajustes del teléfono»; el botón lleva a la página de Strivo; al volver con permiso, cuenta otra vez sola. |
+| **M7** · Otra zona horaria | ✅ El aviso llega a la hora local nueva. **Observación O-22.1** (abajo). |
+| **M8** · Reinstalar con cuenta y negar | ✅ Las horas vuelven de la nube, iOS no pregunta sin un toque, y al negar se ve lo que dice la tabla de DP-22.8. |
+| **M9** · «No molestar» y cerrar sesión | ✅ Con «No molestar», el aviso no suena y queda en el Centro de notificaciones; tras cerrar sesión no llega nada. |
+| **M10** · Versión limpia y web | ✅ Sin la bandera no hay diagnóstico; en la web, P6 igual y sin bloque «Recordatorios». |
 
-*(Las hace la fundadora en su iPhone, M1–M10 del §5.)*
+**O-22.1 · El WebView no se entera al momento de un cambio de zona horaria.** Con la app en segundo plano, al volver tras cambiar la zona horaria, el diagnóstico siguió diciendo `America/Monterrey` hasta cerrar la app del todo; al abrirla de nuevo dijo `America/Bogota`, y al volver a automático, Monterrey. **Los avisos no se ven afectados**: los disparadores de calendario siguen la hora de pared y M7 llegó a la hora local nueva. **Efecto posible, menor:** mientras el WebView conserve la zona vieja, la reconciliación calcula «ahora» con ella, así que un aviso que cae en la hora del desfase puede no programarse (o quedar uno ya pasado, que iOS no entrega) hasta que la app vuelva a arrancar. **Decisión: no se arregla en la 1.0; se anota en CLAUDE.md como límite conocido.**
