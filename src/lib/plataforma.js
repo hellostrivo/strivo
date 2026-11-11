@@ -23,3 +23,25 @@ export function esNativa(capacitor = Capacitor) {
     return false
   }
 }
+
+/**
+ * ¿Corre dentro de la app de **iPhone**? (SPEC_22, DP-22.13)
+ *
+ * Los avisos locales preguntan esto y no `esNativa()`: cuando llegue Android
+ * (SPEC_26), `esNativa()` dirá que sí también allí, y la entrega de avisos en
+ * Android —el permiso de Android 13, las alarmas exactas— es de SPEC_27.
+ * Hasta entonces, en Android los avisos se portan como en la web. SPEC_27
+ * cambia esta función y nada más.
+ *
+ * Un iPad que abra la app de iPhone también es `ios`, y es correcto.
+ *
+ * @param {object} [capacitor] - El objeto de Capacitor. Existe para las pruebas.
+ */
+export function esIPhone(capacitor = Capacitor) {
+  if (!esNativa(capacitor)) return false
+  try {
+    return capacitor.getPlatform?.() === 'ios'
+  } catch {
+    return false
+  }
+}

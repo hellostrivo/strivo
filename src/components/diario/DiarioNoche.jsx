@@ -50,6 +50,7 @@ import MomentoReflexion from './noche/MomentoReflexion'
 import ResumenNoche from './noche/ResumenNoche'
 import { IndicadorPasos, NavegacionPasos } from './Pasos'
 import { volverAlInicio } from '@lib/volverAlInicio'
+import { alCerrarMomento } from '@lib/avisos/pedido'
 import { copy, interpolate } from '@copy'
 import { LIMITES, desdeTextos, filasIniciales, textosDe } from '@/diario/filas'
 import { diaDeLaSemana } from '@/diario/fechas'
@@ -272,6 +273,10 @@ export default function DiarioNoche({ estado, acciones, soloLectura = false }) {
       skipped: camposOmitidos(entrada, { conDescarga }),
       completedAt: marcaLocal(),
     })
+    // SPEC_22 — Con el momento ya guardado, ese día su aviso no toca: se
+    // pide poner los avisos al día y retirar el entregado, si sigue ahí. Se
+    // pide y nada más; en la web no escucha nadie.
+    if (resultado) alCerrarMomento(estado.fecha, 'noche')
     if (!vivo.current) return
     setGuardado(resultado ? 'listo' : 'fallo')
   }
