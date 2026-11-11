@@ -196,6 +196,56 @@ if (copy.respiracion === undefined) {
   checkRespiracion(copy.respiracion, 'respiracion')
 }
 
+// ─── Signos de exclamación y «pendiente» (SPEC_22 §9) ─────────────────────────
+// **«!» y «¡» no aparecen en ningún texto del copy**: todo `copy` y los textos
+// de los dos diagnósticos, recorridos hoja por hoja. Cuando se añadió, ningún
+// texto de hoy fallaba, así que la comprobación es global desde el principio.
+// Las citas de los repertorios de frases no son copy: son textos ajenos que se
+// citan tal cual, y no entran aquí.
+//
+// **«pendiente», solo sobre los textos nuevos de SPEC_22**: los avisos, el
+// bloque «Recordatorios», la frase de P6 sin horas y el diagnóstico de avisos.
+// En el resto hay usos legítimos de maquinaria interna.
+const EXCLAMACION = /[!¡]/
+const PENDIENTE = /\bpendientes?\b/i
+
+function recorrer(nodo, ruta, fn) {
+  if (typeof nodo === 'string') return fn(nodo, ruta)
+  if (nodo === null || typeof nodo !== 'object') return
+  Object.entries(nodo).forEach(([clave, valor]) => recorrer(valor, `${ruta}.${clave}`, fn))
+}
+
+function avisar(ruta, cadena, razon) {
+  console.error(`❌ [strivo-voice] ${ruta}`)
+  console.error(`   Cadena: ${cadena}`)
+  console.error(`   Razón: ${razon}`)
+  console.error()
+  issues++
+}
+
+const diagnosticos = await import('../src/copy/diagnostico.js')
+const visibles = {
+  copy,
+  DIAGNOSTICO: diagnosticos.DIAGNOSTICO,
+  DIAGNOSTICO_AVISOS: diagnosticos.DIAGNOSTICO_AVISOS,
+}
+recorrer(visibles, 'copy-visible', (cadena, ruta) => {
+  if (EXCLAMACION.test(cadena)) avisar(ruta, cadena, 'Signo de exclamación (§3.2, SPEC_22 §9)')
+})
+
+const nuevosDe22 = {
+  'copy.notifications': copy.notifications,
+  'copy.diario.perfil.recordatorios': copy.diario?.perfil?.recordatorios,
+  'copy.diario.onboarding.p6.grantedSinHoras': copy.diario?.onboarding?.p6?.grantedSinHoras,
+  DIAGNOSTICO_AVISOS: diagnosticos.DIAGNOSTICO_AVISOS,
+}
+Object.entries(nuevosDe22).forEach(([ruta, nodo]) => {
+  if (nodo === undefined) return avisar(ruta, '(no existe)', 'Falta un texto de SPEC_22')
+  return recorrer(nodo, ruta, (cadena, donde) => {
+    if (PENDIENTE.test(cadena)) avisar(donde, cadena, '«pendiente» (§3.2): di «por pedir» o «sin pedir»')
+  })
+})
+
 const { FRASES, revisablesDe } = await import('../src/content/frases-del-dia.js')
 checkFrases(FRASES, revisablesDe)
 
