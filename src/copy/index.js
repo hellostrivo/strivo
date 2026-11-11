@@ -265,6 +265,9 @@ export const copy = {
         activate: 'Activar recordatorios',
         skip: 'Ahora no',
         granted: 'Listo. Te avisaremos a esas horas.',
+        // SPEC_22 §9 — Solo en la app de iPhone y sin ninguna hora en P5:
+        // «a esas horas» no se referiría a nada.
+        grantedSinHoras: 'Listo. Te avisaremos cuando elijas tus horas en Tu perfil.',
         denied: 'Tu dispositivo no dio permiso. Puedes activarlo después desde Ajustes.',
         unsupported: 'Este dispositivo no tiene avisos. Strivo funciona igual.',
       },

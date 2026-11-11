@@ -16,6 +16,7 @@
 
 import Button from '@components/ui/Button'
 import { copy, interpolate } from '@copy'
+import { esIPhone } from '@lib/plataforma'
 import { ESTADOS, haySoporte } from '@/onboarding/recordatorios'
 
 const MENSAJES = Object.freeze({
@@ -24,9 +25,21 @@ const MENSAJES = Object.freeze({
   [ESTADOS.sinSoporte]: 'unsupported',
 })
 
+/**
+ * Qué frase dice el paso, por su clave de `onboarding.p6`.
+ *
+ * **En la app de iPhone y sin ninguna hora** (SPEC_22 §9, opción A), el permiso
+ * concedido no puede decir «Te avisaremos a esas horas»: no hay horas. Dice
+ * `grantedSinHoras`. En la web nada cambia, tampoco sin horas.
+ */
+export function mensajeDe(estado, { iphone = false, conHoras = true } = {}) {
+  const mensaje = MENSAJES[estado]
+  if (mensaje === 'granted' && iphone && !conHoras) return 'grantedSinHoras'
+  return mensaje
+}
+
 export default function Recordatorios({ textos, despertar, dormir, estado, onActivar, onSaltar }) {
   const soportado = haySoporte()
-  const mensaje = MENSAJES[estado]
 
   // Se identifican por cuál de los dos son y no por su hora: con la misma hora
   // de despertar y de dormir, las dos filas compartirían clave.
@@ -34,6 +47,8 @@ export default function Recordatorios({ textos, despertar, dormir, estado, onAct
     { id: 'manana', hora: despertar, texto: copy.notifications.manana },
     { id: 'noche', hora: dormir, texto: copy.notifications.noche },
   ].filter((aviso) => Boolean(aviso.hora))
+
+  const mensaje = mensajeDe(estado, { iphone: esIPhone(), conHoras: avisos.length > 0 })
 
   return (
     <section className="flex flex-col gap-5">
