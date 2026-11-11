@@ -23,6 +23,25 @@ import { borrarUid, flush, flushEnCurso, getPendingCount, olvidarUid } from './d
 import { cancelRetries } from './db/sync.js'
 import { cerrarSesion } from './cuenta.js'
 import { TECHO_DE_ESPERA_MS, conTecho } from './sesion.js'
+import { esIPhone } from './plataforma.js'
+
+/**
+ * SPEC_22, DP-22.11 — Cerrar sesión cancela todos los avisos de Strivo en este
+ * teléfono, antes de volver a la bienvenida: lo que llegue después lo decide
+ * la preferencia de quien entre. Solo en la app de iPhone, y la reconciliación
+ * se carga bajo demanda: la web no la descarga. Nunca lanza: salir no se
+ * detiene por los avisos. (SPEC_24 tendrá que hacer lo mismo al borrar la
+ * cuenta.)
+ */
+async function apagarAvisos() {
+  if (!esIPhone()) return
+  try {
+    const { apagarAvisos: apagar } = await import('./avisos/reconciliar.js')
+    await apagar()
+  } catch {
+    // Nada que hacer: los avisos no frenan la salida.
+  }
+}
 
 /** Qué confirmación toca. */
 export const SALIDA = Object.freeze({ libre: 'libre', pendiente: 'pendiente' })
@@ -67,6 +86,7 @@ export async function salirDeCuenta(uid) {
     return { ok: false, motivo: SALIDA.pendiente }
   }
   cancelRetries()
+  await apagarAvisos()
   await cerrarSesion()
   await borrarUid(uid)
   olvidarUid(uid)

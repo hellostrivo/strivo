@@ -154,3 +154,7 @@ Sin cambiar el alcance de esta SPEC, tres cosas que 21.2 deja dichas:
 
    En los dos, **el código de autorización caduca a los cinco minutos y sirve una sola vez**: tiene que salir de la reautenticación hecha justo antes de borrar, no de una guardada.
 3. **Antes de empezar esta SPEC hace falta el paso 7 del anexo A de SPEC_21.2**: la clave de «Sign in with Apple» dada de alta en developer.apple.com y cargada en Firebase (Apple → «Configuración del flujo de código OAuth»). Sin ella Firebase no puede revocar nada.
+
+## Nota de SPEC_22 (11 nov 2026) — los avisos del iPhone
+
+Sin cambiar el alcance de esta SPEC: **borrar la cuenta tiene que cancelar todos los avisos de Strivo en el teléfono**, igual que cerrar sesión (DP-22.11). La pieza ya existe: `apagarAvisos()` en `src/lib/avisos/reconciliar.js`, que deja de reconciliar, espera a la vuelta en curso (como mucho 3 s) y cancela los avisos marcados con `extra.strivo`. `salirDeCuenta` (`src/lib/salidaCuenta.js`) la carga bajo demanda y solo en la app de iPhone (`esIPhone()`); el borrado debería llamarla igual, antes de cerrar la sesión. La preferencia (`preferences.remindersEnabled`) se va con el resto de `shared/`.

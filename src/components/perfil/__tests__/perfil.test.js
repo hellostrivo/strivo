@@ -37,7 +37,9 @@ describe('la pantalla es una pila de bloques', () => {
 
   it('no decide cuáles hay: los pide y los recorre', () => {
     expect(pantalla).toMatch(/from '@\/perfil\/bloques'/)
-    expect(pantalla).toMatch(/BLOQUES\.map/)
+    // Desde SPEC_22 recorre los que se ven aquí: `recordatorios` solo en la
+    // app de iPhone. La lista sigue viviendo en `bloques.js`.
+    expect(pantalla).toMatch(/visibles\(\{ iphone: esIPhone\(\) \}\)\.map/)
   })
 
   it('cada bloque declarado tiene con qué pintarse', () => {

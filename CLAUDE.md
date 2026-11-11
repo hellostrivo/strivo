@@ -1,6 +1,6 @@
 # CLAUDE.md — Strivo
 
-**Última actualización:** 10 nov 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
+**Última actualización:** 11 nov 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
 **Blueprint (documento rector):** `/docs/blueprint/Strivo_Blueprint_de_Producto_v5_0_24-08-2026.md`
 **Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO.md`
 **Plan operativo del repliegue:** `/docs/Strivo_Plan_de_Separacion_Tecnica_v1_24-08-2026.md`
@@ -677,6 +677,18 @@ el componente.**
   `strivo.mudanzaPendiente.*`, y su copia en SQLite. Quien las escribe lo hace por aquí.
 - `src/lib/plataforma.js` → `esNativa()`: el **único** sitio que pregunta si la app corre dentro
   del iPhone. Nadie más importa `@capacitor/core` para eso; hay una prueba que recorre `src/`.
+  También `esIPhone()` (SPEC_22): `esNativa()` y `getPlatform() === 'ios'`. Es lo que preguntan los
+  avisos, para que Android no programe nada antes de SPEC_27; SPEC_27 cambia esa función.
+- `src/lib/avisos/plan.js` → `planDeAvisos`: **qué** avisos tienen que estar programados. Pura —el
+  reloj, las horas y lo cerrado entran por argumentos—, y la reutilizará SPEC_27. También
+  `idDeAviso` (`YYYYMMDD × 10 + 1|2`) y `DIAS_DE_VENTANA` (14).
+- `src/lib/avisos/reconciliar.js` → **cuándo** se corrige: la única rutina que compara lo que toca
+  con lo que iOS tiene y lo pone al día, de una en una. Solo la cargan `useAvisos` y
+  `salidaCuenta`, bajo demanda; hay una prueba que lo vigila.
+- `src/lib/avisos/pedido.js` → por dónde se **pide** reconciliar sin contenerla: el diario, Tu
+  perfil y el bloque de recordatorios importan esto, que no importa nada.
+- `src/lib/avisosNativos.js` → **cómo** se habla con iOS: el **único** archivo que importa
+  `@capacitor/local-notifications`, y bajo demanda. Hay una prueba que recorre `src/`.
 - `src/lib/credencialNativa.js` → el **único** sitio que importa `@capacitor-firebase/authentication`,
   y bajo demanda: la credencial de Google o Apple en la app de iPhone, qué es cancelar
   (`esCancelacion`) y el cierre de la sesión del plugin. Hay una prueba que recorre `src/`.
@@ -726,12 +738,129 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**106 archivos de prueba · 2.622 casos** en el proyecto `indexeddb`, **2.559 más** en el proyecto
+**113 archivos de prueba · 2.740 casos** en el proyecto `indexeddb`, **2.677 más** en el proyecto
 `sqlite` (la misma suite contra SQLite) **y 17 XCTest del plugin** · los seis comandos y
 `validar:frases` en verde. **La intermitente de `journal.test.js` se cerró** (10 nov 2026): sus dos
 entradas empataban en el milisegundo y el orden lo decidía un UUID; ahora se crean con `Date`
 congelado en dos instantes distintos. `listJournalEntries` no cambió. Cada caso que vuelca
 IndexedDB por dentro tiene su equivalente que vuelca todas las tablas de SQLite.
+
+### Los recordatorios llegan en el iPhone (SPEC_22, 11 nov 2026)
+
+La instrucción completa y las decisiones del reporte previo están en
+`docs/specs/INSTRUCCION_SPEC_22_RECORDATORIOS_IOS.md` (v1.1; **su §9 manda**). **En la app de
+iPhone, quien pide los avisos los recibe a sus horas, aunque la app esté cerrada; quien no los
+pide no recibe nada.** En la web no cambia nada: mismo P6, mismos textos, ningún bloque nuevo y ni
+una línea del plugin en lo que se descarga.
+
+**Avisos locales, programados en el teléfono.** Sin servidor, sin APNs, sin push remoto: nada sale
+del dispositivo. `@capacitor/local-notifications` **8.3.1**, versión exacta, por SPM y sin
+`packageOptions`. **Sin `aps-environment`, sin `remote-notification` y `UIBackgroundModes` sigue
+siendo `[audio]`**: declarar push sin usarlo es motivo de rechazo, y `appIos.test.js` lo vigila.
+
+**A qué hora y qué dice.** A las horas de «Cómo son tus días» (`wakeTime`, `sleepTime`), a la hora
+exacta; sin hora, ese aviso no se programa. **Sin título** —el plugin exige el campo, y vacío deja
+que iOS ponga el ícono y «Strivo»— y con el texto de la vista previa de P6
+(`copy.notifications`), siempre el mismo, sin nombre ni nada de lo escrito. **Nunca `badge`.** Con
+la app abierta no se enseña (`presentationOptions: []`). El permiso que pide el plugin incluye
+globos, así que en Ajustes aparece «Globos»; ningún número llega al ícono.
+
+**Una ventana de 14 días de avisos fechados** (como mucho 28 de los 64 de iOS), cada uno con
+`schedule.on` de fecha completa: sigue la hora de pared aunque cambie la zona horaria. **Nunca
+`schedule.at`** —es un intervalo desde ahora, no sigue la zona y una fecha pasada se entrega en el
+acto— **y nunca un aviso diario repetido**, que no sabría saltarse un día. Ids
+`YYYYMMDD × 10 + (1 mañana | 2 noche)` y `extra: { strivo: true, momento, fecha }`.
+
+**Si ya pasaste por ese momento, ese día no llega.** Lo dice `completedAt` (RN-DB-09), y a qué día
+pertenece cada aviso lo dice `strivoDateKey` con el `diaTerminaA` del perfil. Al cerrar la mañana o
+la noche, además, se retira del Centro de notificaciones el aviso ya entregado de ese día.
+
+**Una sola reconciliación** (`lib/avisos/reconciliar.js`), idempotente y de una en una. **Nunca
+programa sin permiso concedido y nunca lo pide**: `schedule()` del plugin lo pediría solo. No se fía
+de lo que contesta `schedule()` —responde antes de que iOS confirme—: empieza y termina con
+`getPending`. Solo toca los avisos marcados de Strivo. **Los disparos:** al montar las secciones,
+al volver al frente y al terminar una restauración (`useAvisos`, en `Secciones`); al cerrar la
+mañana o la noche (`DiarioManana`, `DiarioNoche`); al cambiar las horas (`usePerfil`) y al tocar el
+interruptor o dar el permiso (el bloque). **Quien cierra un momento o cambia una hora pide**
+(`pedido.js`) **y no la contiene**: así el diario y Tu perfil no arrastran ni el plugin ni la base.
+Con una mudanza pendiente, los avisos siguen al uid de la sesión, como Tu perfil.
+
+**El permiso y la preferencia son dos cosas.** El permiso no se guarda: se consulta. **Solo se pide
+con un toque**: «Activar recordatorios» en P6, o el interruptor o «Permitir avisos» en Tu perfil.
+Nunca al abrir la app. El interruptor es `preferences.remindersEnabled` (uno para los dos avisos,
+sin cambios en el modelo) y dice lo que la persona quiere; la frase de debajo, lo que el teléfono
+deja.
+
+**P6 en la app de iPhone** pide el permiso con el plugin (`onboarding/recordatorios.js`; en la web,
+el código de antes). Sin ninguna hora, la frase de concedido es `p6.grantedSinHoras`: «Listo. Te
+avisaremos cuando elijas tus horas en Tu perfil.».
+
+**Tu perfil: el bloque «Recordatorios»**, detrás de «Cómo son tus días» y **solo en la app de
+iPhone** (`visibles` y `SOLO_EN_IPHONE`, en `perfil/bloques.js`). Interruptor con `role="switch"` y
+`aria-checked`, y lo de debajo anunciado con `aria-live`:
+
+| Preferencia | Permiso | Horas | Lo que se ve |
+|---|---|---|---|
+| apagada | cualquiera | cualquiera | El interruptor |
+| encendida | concedido | al menos una | El interruptor, y los avisos llegan |
+| encendida | concedido | ninguna | `sinHoras` |
+| encendida | sin pedir | cualquiera | `sinPermiso` con «Permitir avisos» |
+| encendida | denegado | cualquiera | `sinPermiso` con «Abrir Ajustes del teléfono» |
+
+**El permiso va por delante**: `sinHoras` solo aparece con el permiso concedido. Si se niega al
+encender, el interruptor se queda apagado y la frase con «Abrir Ajustes del teléfono» se ve
+mientras se siga en la pantalla; no se guarda. **«Abrir Ajustes del teléfono» navega a
+`app-settings:`**, sin código nativo: Capacitor cancela la navegación y la abre con el sistema. Cae
+en la página de Strivo en Ajustes, y ahí se toca «Notificaciones».
+
+**Tocar un aviso abre Hoy con su momento** (`#/hoy?momento=manana|noche`), también con la app
+cerrada del todo: el plugin guarda el toque hasta que alguien escucha (`retainUntilConsumed`), y
+`useAvisos` escucha al montar las secciones. Hoy aplica el parámetro antes de pintar
+(`useLayoutEffect`), en el día de hoy y saliendo de «Respira un momento» si estaba dentro, y lo
+retira con `replace`. Un valor desconocido se ignora. Sin parámetro, Hoy es la de siempre.
+
+**Cerrar sesión cancela todos los avisos de Strivo** (`salirDeCuenta`, tras comprobar la cola y
+antes de `cerrarSesion`). Espera a la vuelta en curso, como mucho 3 s, para que nada se programe
+después de salir. Está anotado en SPEC_24: borrar la cuenta tendrá que hacer lo mismo.
+
+**`lint:copy` mira ahora «!» y «¡» en todo el copy** (`copy` y los textos de los dos diagnósticos;
+ningún texto de hoy fallaba) y «pendiente» en los textos nuevos de SPEC_22.
+
+**El build de diagnóstico:** `VITE_DIAG_AVISOS=1 npm run ios:build`. Al final del bloque, el
+permiso, cuántos avisos hay programados, el próximo de cada momento y la zona horaria, repintado
+tras cada reconciliación. Sus textos son `DIAGNOSTICO_AVISOS` en `src/copy/diagnostico.js`; una
+prueba construye sin bandera y con cada una, y comprueba que ninguna arrastra los textos de la
+otra.
+
+**Tamaño.** El chunk principal de la web pasa de 730,19 a 737,40 kB (gzip, de 206,92 a 209,40); la
+reconciliación (4,2 kB) y el plugin van en chunks aparte que la web no descarga. **La app de
+iPhone en Release** (arm64, sin firmar, sin adelgazar por la tienda): el `.app` pasa de 9.316 a
+9.504 KB (+188 KB: +163 KB el binario, que es el Swift del plugin, y +28 KB la web), y comprimido,
+que es lo más parecido a la descarga, de 3,11 a 3,18 MB (+64 KB).
+
+**Las pruebas manuales M1–M10 pasan** (11 nov 2026, la fundadora en su iPhone y en `localhost`
+contra `strivo-fe04f`; el detalle está en el §10 de la instrucción). **El orden de M2 y M3 se
+ajustó al probar:** M2 usó la Noche con la app cerrada del todo y M3 la Mañana con la app en
+segundo plano, porque por la tarde Hoy ya abre en Mañana por sí sola y así cada prueba demuestra
+que es el aviso el que elige el momento. **M1:** el diálogo de iOS, «Listo. Te avisaremos a esas
+horas.» y los próximos a 07:00 y 23:00. **M2:** llega «¿Cómo cerrar el día?», sin nombre, sin
+título duplicado y sin número, y **el toque en frío abre Hoy con Noche**. **M3:** con Hoy en Noche,
+el aviso de la mañana la cambia a Mañana. **M4:** al cerrar la mañana, el próximo pasa al día
+siguiente y ese día no llega nada. **M5:** apagado, 0 programados; al encender, iOS no vuelve a
+preguntar. **M6:** la frase con «Abrir Ajustes del teléfono», que lleva a la página de Strivo; al
+volver con permiso, cuenta otra vez sola. **M7:** en Bogotá llega a la hora local nueva. **M8:**
+las horas vuelven de la nube, iOS no pregunta sin un toque y al negar se ve lo de la tabla.
+**M9:** con «No molestar» no suena y queda en el Centro de notificaciones; tras cerrar sesión no
+llega nada. **M10:** sin la bandera no hay diagnóstico, y en la web P6 sigue igual y sin bloque.
+
+**Límite conocido, sin arreglar en la 1.0 — O-22.1: el WebView no se entera al momento de un
+cambio de zona horaria.** Con la app en segundo plano, al volver tras cambiar la zona, el WebView
+sigue con la vieja hasta que la app vuelve a arrancar (en M7 el diagnóstico dijo
+`America/Monterrey` hasta cerrar la app del todo). **Los avisos llegan igual a la hora local**,
+porque los disparadores de calendario siguen la hora de pared. El único efecto posible es menor:
+mientras el WebView conserve la zona vieja, la reconciliación calcula «ahora» con ella, así que un
+aviso que cae en la hora del desfase puede no programarse —o quedar uno ya pasado, que iOS no
+entrega— hasta el siguiente arranque.
 
 ### Lo escrito en el iPhone, en SQLite (SPEC_17B, 10 nov 2026)
 
@@ -2196,12 +2325,12 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
 - **Los catálogos emocionales nuevos y las ideas de acción están sin revisar editorialmente.** Las
   formas neutras se redactaron en implementación: «Pensando», «Con demasiado encima», «Con
   cansancio», «Con ligereza», «Con inquietud».
-- **Los avisos de P6 se piden, pero todavía no llegan.** El paso solicita el permiso del navegador y
-  guarda la preferencia en `preferences.remindersEnabled`; **la entrega a las horas elegidas no está
-  construida**. Una PWA estática no despierta sola: hace falta push —servidor que envíe y service
-  worker que reciba— y, en iOS, la app instalada en la pantalla de inicio. Decidido así al aprobar
-  F-1B. Mientras tanto, «Listo. Te avisaremos a esas horas» promete algo que aún no ocurre, y esa es
-  la razón de que esto esté anotado aquí y no dado por hecho.
+- **En la web, los avisos de P6 se piden, pero todavía no llegan.** En la app de iPhone ya llegan
+  (SPEC_22, arriba). En la web el paso solicita el permiso del navegador y guarda la preferencia en
+  `preferences.remindersEnabled`; **la entrega a las horas elegidas no está construida**. Una PWA
+  estática no despierta sola: hace falta push —servidor que envíe y service worker que reciba—.
+  Mientras tanto, en la web «Listo. Te avisaremos a esas horas» promete algo que aún no ocurre.
+  **Queda ligada a DP-21.5**: si la PWA deja de ser pública, esta deuda desaparece con ella.
 - **La autenticación de P7 no se ha probado contra un proyecto real.** El código está entero —Google,
   Apple, correo, y la mudanza del árbol—, pero `src/lib/firebase.js` solo se inicializa si hay
   credenciales y en el repo no hay `.env.local`. Sin ellas el paso se ofrece con lo que puede
@@ -2219,10 +2348,18 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
 - **Dynamic Type no llega a la app de iPhone** (SPEC_21.1). WKWebView no escala `rem` con el tamaño
   de texto del sistema: la raíz se queda en 16 px. Seguirlo pide `font: -apple-system-body` en
   `html`, y eso mueve todas las medidas a la vez. Queda fuera de 21.1.
-- **En la app de iPhone, P6 dice «Este dispositivo no tiene avisos. Strivo funciona igual.»**
-  WKWebView no tiene `Notification`, así que `recordatorios.js` cae en `sin_soporte`, que es
-  verdad pero no es lo que alguien espera leer en un iPhone. **Lo cierra SPEC_22, antes de
-  cualquier build para testers externos.**
+- ~~**En la app de iPhone, P6 no podía activar los avisos.**~~ **Saldada por SPEC_22** (11 nov
+  2026). Aquí decía que P6 enseñaba «Este dispositivo no tiene avisos», y no era exacto: esa frase
+  solo salía tras tocar «Activar recordatorios», y el botón no aparecía sin `Notification`. P6
+  enseñaba la vista previa y «Ahora no», sin forma de activar nada. Ahora pide el permiso al
+  teléfono.
+- **Si alguien no abre la app en catorce días, los avisos dejan de llegar** (SPEC_22, DP-22.5).
+  La ventana es de catorce días de avisos fechados y se rehace cada vez que la app se abre. Es una
+  consecuencia aceptada: Strivo no insiste con quien se fue.
+- **Cuatro citas del repertorio v1 llevan «¡…!»** (`frases-del-dia.js`: C-005, C-008, C-047 y
+  C-072). Son textos ajenos citados tal cual y no son copy: la comprobación global de signos de
+  exclamación de `lint:copy` recorre `src/copy/` y no los mira. **Qué hacer con ellas es de la
+  fundadora.**
 - **El interruptor de silencio del iPhone calla los sonidos de Respiración** en la app nativa: usa la
   sesión de audio por defecto. Lo resuelve SPEC_23.
 - **El `_redirects` de Netlify no existe.** Mientras el router sea `HashRouter` no hace falta.

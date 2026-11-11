@@ -265,6 +265,9 @@ export const copy = {
         activate: 'Activar recordatorios',
         skip: 'Ahora no',
         granted: 'Listo. Te avisaremos a esas horas.',
+        // SPEC_22 §9 — Solo en la app de iPhone y sin ninguna hora en P5:
+        // «a esas horas» no se referiría a nada.
+        grantedSinHoras: 'Listo. Te avisaremos cuando elijas tus horas en Tu perfil.',
         denied: 'Tu dispositivo no dio permiso. Puedes activarlo después desde Ajustes.',
         unsupported: 'Este dispositivo no tiene avisos. Strivo funciona igual.',
       },
@@ -1585,6 +1588,20 @@ export const copy = {
         hint: 'Para acompañarte a tu ritmo.',
         wakeLabel: 'Me despierto a las:',
         sleepLabel: 'Me duermo a las:',
+      },
+
+      // SPEC_22 — Los recordatorios, **solo en la app de iPhone**: en la web
+      // el bloque no existe (DP-22.2). El interruptor dice lo que la persona
+      // quiere; la frase de debajo, lo que el teléfono deja (DP-22.8). Sin
+      // «pendiente» y sin signos de exclamación: lo vigila `lint:copy`.
+      recordatorios: {
+        titulo: 'Recordatorios',
+        hint: 'Un aviso por la mañana y otro por la noche, a las horas de «Cómo son tus días». Si ya pasaste por ese momento, ese día no llega.',
+        interruptor: 'Recibir recordatorios',
+        sinPermiso: 'Para avisarte, Strivo necesita permiso del teléfono.',
+        permitir: 'Permitir avisos',
+        abrirAjustes: 'Abrir Ajustes del teléfono',
+        sinHoras: 'Elige tus horas en «Cómo son tus días» para recibirlos.',
       },
 
       // SPEC_29 — Las referencias de las frases del día. Las dos preguntas son

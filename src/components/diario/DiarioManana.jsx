@@ -52,6 +52,7 @@ import ResumenManana from './manana/ResumenManana'
 import { IndicadorPasos, NavegacionPasos } from './Pasos'
 import { volverAlInicio } from '@lib/volverAlInicio'
 import { copy } from '@copy'
+import { alCerrarMomento } from '@lib/avisos/pedido'
 import { LIMITES, desdeTextos, filasIniciales, textosDe } from '@/diario/filas'
 import {
   MOMENTOS,
@@ -248,6 +249,10 @@ export default function DiarioManana({ estado, acciones, soloLectura = false }) 
       wishId: deseo.id,
       completedAt: marcaLocal(),
     })
+    // SPEC_22 — Con el momento ya guardado, ese día su aviso no toca: se
+    // pide poner los avisos al día y retirar el entregado, si sigue ahí. Se
+    // pide y nada más; en la web no escucha nadie.
+    if (resultado) alCerrarMomento(estado.fecha, 'manana')
     if (!vivo.current) return
     setGuardado(resultado ? 'listo' : 'fallo')
   }

@@ -35,3 +35,23 @@ export const DIAGNOSTICO = Object.freeze({
   conteo: '{almacen} · registros: {registros} · por subir: {porSubir}',
   simular: 'Simular que iOS limpió el almacén',
 })
+
+// SPEC_22 (DP-22.12) — Los avisos, con `VITE_DIAG_AVISOS=1`. Exportación
+// aparte y bandera propia: cada diagnóstico se enciende solo, y una prueba
+// comprueba que cada bandera no arrastra los textos de la otra. Lo importa
+// solo `components/perfil/DiagnosticoAvisos.jsx`. Aprobados en el §9.
+export const DIAGNOSTICO_AVISOS = Object.freeze({
+  permiso: 'Permiso del teléfono: {estado}',
+  permisos: Object.freeze({
+    concedido: 'concedido',
+    denegado: 'denegado',
+    sin_pedir: 'sin pedir',
+  }),
+  programados: 'Avisos programados: {n}',
+  proximaManana: 'Próximo de la mañana: {cuando}',
+  proximaNoche: 'Próximo de la noche: {cuando}',
+  ninguno: 'ninguno',
+  // «mié 11 nov, 07:00»: las piezas las da el teléfono en es-MX; el orden, esto.
+  cuando: '{semana} {dia} {mes}, {hora}:{minuto}',
+  zona: 'Zona horaria: {zona}',
+})
