@@ -28,10 +28,23 @@ export const BLOQUES = Object.freeze([
   'nombre',
   'genero',
   'horarios',
+  'recordatorios',
   'frases',
   'cuenta',
   'sincronizacion',
 ])
+
+/**
+ * Los bloques que solo existen en la app de iPhone (SPEC_22). En la web no se
+ * pintan, ni con un texto que diga que existen en otro sitio (DP-22.2).
+ * `recordatorios` va detrás de `horarios`: sus avisos llegan a esas horas.
+ */
+export const SOLO_EN_IPHONE = Object.freeze(['recordatorios'])
+
+/** Los bloques que se ven aquí, en su orden. */
+export function visibles({ iphone = false } = {}) {
+  return BLOQUES.filter((id) => iphone || !SOLO_EN_IPHONE.includes(id))
+}
 
 /** ¿Es un bloque del perfil? */
 export function es(id) {

@@ -22,6 +22,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { shared } from '@/lib/db'
 import { generoDe, opcionDe } from '@/onboarding/genero'
 import { perfilDesde } from '@/onboarding/estado'
+import { pedirReconciliacion } from '@/lib/avisos/pedido'
 
 /** §5.6 — El mismo retraso que el resto del producto: 800 ms sin teclear. */
 export const RETRASO_AUTOGUARDADO = 800
@@ -123,7 +124,10 @@ export function usePerfil(uid) {
       }
       pendiente.current = null
       temporizador.current = null
-      guardar(proximos)
+      const guardado = guardar(proximos)
+      // SPEC_22 — Las horas son las de los avisos: con la hora nueva ya
+      // guardada, se pide ponerlos al día. En la web no escucha nadie.
+      if (clave === 'despertar' || clave === 'dormir') guardado.then(() => pedirReconciliacion())
     },
     [guardar, valores, volcar],
   )

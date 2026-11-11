@@ -42,11 +42,13 @@ import { Suspense, lazy } from 'react'
 import Bloque from './Bloque'
 import TuCuenta from './TuCuenta'
 import TusFrases from './TusFrases'
+import TusRecordatorios from './TusRecordatorios'
 import Button from '@components/ui/Button'
 import { CampoLinea } from '@components/shared/Campo'
 import { ListaDeChips } from '@components/shared/Chips'
 import { copy } from '@copy'
-import { BLOQUES } from '@/perfil/bloques'
+import { visibles } from '@/perfil/bloques'
+import { esIPhone } from '@lib/plataforma'
 import { usePerfil } from '@/perfil/usePerfil'
 import { useSincronizacion } from '@/perfil/useSincronizacion'
 import { OPCIONES as GENEROS, alternar as alternarGenero } from '@/onboarding/genero'
@@ -127,6 +129,16 @@ export default function Perfil({ uid }) {
       </div>
     ),
 
+    // SPEC_22 — Solo en la app de iPhone (`visibles`). Las horas de los avisos
+    // son las de arriba, así que el bloque sabe si hay alguna.
+    recordatorios: () => (
+      <TusRecordatorios
+        uid={uid}
+        textos={textos.recordatorios}
+        conHoras={Boolean(valores.despertar || valores.dormir)}
+      />
+    ),
+
     frases: () => <TusFrases uid={uid} />,
 
     cuenta: () => <TuCuenta />,
@@ -195,7 +207,7 @@ export default function Perfil({ uid }) {
         <p className="text-base text-on-surface-soft leading-relaxed">{textos.lead}</p>
       </header>
 
-      {BLOQUES.map((id) => (
+      {visibles({ iphone: esIPhone() }).map((id) => (
         <Bloque key={id} titulo={textos[id].titulo} hint={textos[id].hint}>
           {bloques[id]()}
         </Bloque>
