@@ -55,8 +55,23 @@ export function useWakeLock(activo, permitido = true) {
     if (activo) pedir()
     else soltar()
 
+    // SPEC_23 Parte 2 (DP-23.27) — El sistema suelta el bloqueo cuando la app
+    // se va. Tras una ausencia corta la sesión sigue en `activo` y este efecto
+    // no se volvía a correr, así que la pantalla podía apagarse sola después.
+    // Al volver, si se soltó, se pide otra vez.
+    function alVolver() {
+      if (document.visibilityState !== 'visible' || !activo) return
+      if (bloqueo.current && bloqueo.current.released !== true) return
+      bloqueo.current = null
+      pedir()
+    }
+    if (typeof document !== 'undefined') document.addEventListener('visibilitychange', alVolver)
+
     return () => {
       cancelado = true
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', alVolver)
+      }
       soltar()
     }
   }, [activo, permitido])
