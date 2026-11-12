@@ -885,11 +885,13 @@ la instrucción). **Se confirma la hipótesis 4: el tipo de sesión de audio de 
   volver dice «en marcha», con el motor vivo, pero **no suena, ni con toques**. En modo silencio
   tampoco suena. **La PWA en Safari se porta igual**: no es Capacitor, es WebKit.
 - **En «reproducción»** sigue sonando fuera y con la pantalla bloqueada (49,4 s de 49,4 s) y suena
-  en modo silencio. También **pausa la música de otra app** y **pone el cuadro de reproducción en
-  la pantalla de bloqueo, titulado «localhost»**. El JavaScript fuera corre a medias (25 tics de 49)
-  y con 0 fotogramas, así que el reloj de la sesión no avanza bloqueado.
-- **Por anotar:** D8 («Probar con un audio nuevo»), si la música vuelve sola al terminar (D7) y si
-  se oían las fases con la pantalla bloqueada.
+  en modo silencio. También **baja el volumen de la música de otra app, sin pausarla** (D7; a la
+  fundadora le parece bien) y **pone el cuadro de reproducción en la pantalla de bloqueo, titulado
+  «localhost»**. El JavaScript fuera corre a medias (25 tics de 49) y con 0 fotogramas, así que el
+  reloj de la sesión no avanza bloqueado: **con la pantalla bloqueada no se oía la guía, solo el
+  ambiente** (D5).
+- **D8, en «automático»: «Probar con un audio nuevo» sí devuelve el sonido.** Cerrar el contexto y
+  reconstruir el motor dentro de un toque funciona.
 
 ### Al abrir la app, papel desde el primer instante (D-21.11, 12 nov 2026)
 

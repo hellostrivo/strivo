@@ -417,21 +417,24 @@ Parte 2.
 - **Con «reproducción»** (D4, D5, D6):
   - **Sigue sonando fuera y con la pantalla bloqueada**: 49,4 s de reloj del audio en 49,4 s fuera.
   - Suena en modo silencio.
-  - **Pausa la música de otra app.**
+  - **Baja el volumen de la música de otra app, no la pausa** (D7). A la fundadora le parece bien
+    así. (Esta línea decía «pausa la música»; lo corrigió el propio D7.)
   - **Aparece el cuadro de reproducción en la pantalla de bloqueo, titulado «localhost».**
   - El JavaScript fuera corre a medias (25 tics de 49) y con **0 fotogramas**.
+  - **Con la pantalla bloqueada no se oía la guía, solo el ambiente** (D5): sin fotogramas no hay
+    cambios de fase.
+- **D8, con «automático»: «Probar con un audio nuevo» sí devuelve el sonido.** Cerrar el contexto y
+  reconstruir el motor dentro de un toque funciona.
 - **Se confirma la hipótesis 4**: el tipo de sesión de audio de WebKit. Con el de fábrica, el audio
   se porta como `ambient` y WebKit lo interrumpe al irse la página sin recuperarlo.
-- **Por anotar** (la fundadora no los mandó con el resto): D8 («Probar con un audio nuevo»), si la
-  música de la otra app vuelve sola al terminar la sesión (D7) y si con la pantalla bloqueada se
-  oían los cambios de fase (D2 y D5).
 
 **Para la Parte 2, de lo que se vio:**
 - El título «localhost» del cuadro de la pantalla de bloqueo hay que decidirlo.
 - Con 0 fotogramas fuera, el reloj de la sesión (`requestAnimationFrame`) no avanza con la pantalla
   bloqueada, como se había previsto en §2.3. Que el audio sobreviva no basta para «sigue hasta el
   fin de la sesión».
-- Pausar la música de otra app es efecto de «reproducción», y es una decisión de producto (D7).
+- Bajar el volumen de la música de otra app es efecto de «reproducción»; la fundadora lo aprueba
+  (D7, y DP-23.2 de la Parte 2).
 
 ---
 
