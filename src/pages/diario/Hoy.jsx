@@ -39,6 +39,7 @@ import SelectorDia from '@components/diario/SelectorDia'
 import SelectorMomento from '@components/diario/SelectorMomento'
 import TarjetaRespiracion from '@components/diario/TarjetaRespiracion'
 import Respiracion from '@components/shared/Respiracion'
+import { imagenDeLaApp } from '@lib/audio/sesionAudio'
 import TransicionLuz, { prefiereMenosMovimiento } from '@components/shared/TransicionLuz'
 import { cruzarUmbral, umbralPendiente } from '@lib/umbralSesion'
 import Button from '@components/ui/Button'
@@ -47,6 +48,17 @@ import { shared } from '@/lib/db'
 import { getTimeSlot } from '@lib/timeSlot'
 import { franjaDelSaludo } from '@/diario/fechas'
 import { useDiario } from '@/diario/useDiario'
+
+/**
+ * SPEC_23 Parte 2 (DP-23.26) — El cuadro de la pantalla de bloqueo de «Respira
+ * un momento», solo con el sonido activado. El componente no conoce el copy:
+ * le llega por props.
+ */
+const CUADRO_DE_LA_PANTALLA_DE_BLOQUEO = Object.freeze({
+  titulo: copy.respiracion.bloqueo.titulo,
+  subtitulo: copy.respiracion.bloqueo.subtituloMomento,
+  imagen: imagenDeLaApp(),
+})
 
 const textos = copy.diario.hoy
 
@@ -232,6 +244,7 @@ export default function Hoy({ uid, onHideNav, onMomento }) {
         sonido={sonido}
         onSonido={guardarSonido}
         onSalir={cerrar}
+        cuadro={CUADRO_DE_LA_PANTALLA_DE_BLOQUEO}
       />,
     )
   }

@@ -27,10 +27,22 @@ import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { clsx } from 'clsx'
 import Button from '@components/ui/Button'
 import { despertarAlVolver } from '@lib/audio/contextoAudio'
+// SPEC_23 Parte 2 (DP-23.21) — El respaldo, del mismo módulo y aparte: la
+// línea de arriba es la del camino de vuelta de D-21.13, que una prueba vigila.
+import { actual, alSiguienteToque, audioMudo, medirReloj } from '@lib/audio/contextoAudio'
 import { avisar } from '@lib/audio/observadorAudio'
+import { ponerCuadro, quitarCuadro, reclamar, soltar, vigilar } from '@lib/audio/sesionAudio'
 import { crearAudioRespiracion } from '@lib/audioRespiracion'
 import { toqueSuave } from '@lib/haptica'
-import { CICLOS, OPACIDAD_ESTATICA, claveDeFase, escalaEn, faseEn } from '@lib/ritmoRespiracion'
+import { crearAcompanamientoDeFondo } from '@lib/respiracion/acompanamientoDeFondo'
+import {
+  CICLOS,
+  DURACION_CICLO,
+  OPACIDAD_ESTATICA,
+  claveDeFase,
+  escalaEn,
+  faseEn,
+} from '@lib/ritmoRespiracion'
 import { unaVezCon } from './unaVez'
 
 // SPEC_23C (DP-23.16) — El panel del diagnóstico del audio, solo con su bandera.
@@ -67,6 +79,7 @@ export default function Respiracion({
   sonido = false,
   onSonido,
   onSalir,
+  cuadro: textosCuadro = null,
 }) {
   const [corriendo, setCorriendo] = useState(false)
   const [empezado, setEmpezado] = useState(false)
@@ -93,18 +106,67 @@ export default function Respiracion({
   // Cancela la espera para despertar el audio al volver a la app (D-21.13).
   const cancelarDespertar = useRef(null)
 
+  // ─── SPEC_23 Parte 2 (DP-23.26): lo mismo que la sección, a su escala ───────
+  // Con el sonido activado reclama «reproducción»: suena fuera de la app, la
+  // guía sigue con la pantalla bloqueada y, si termina fuera, al volver ya está
+  // cerrada. En silencio, nada de esto.
+  const reclamado = useRef(false)
+  const vigilancia = useRef(null)
+  const pausadaDesdeBloqueo = useRef(false)
+  const fondo = useRef(null)
+  const enFondo = useRef(false)
+  const retirarReconstruccion = useRef(null)
+  // Espejos del estado para lo que corre fuera de React (temporizador, WebKit).
+  const corriendoAhora = useRef(false)
+  const silenciadoAhora = useRef(!sonido)
+  silenciadoAhora.current = silenciado
+
   const parar = useCallback(() => {
     if (cuadro.current) cancelAnimationFrame(cuadro.current)
     cuadro.current = null
   }, [])
 
+  /** Lo que se lleva respirado ahora mismo, en ms. */
+  const msAhora = () =>
+    transcurrido.current + (corriendoAhora.current ? performance.now() - desde.current : 0)
+
+  /** Reclama «reproducción» y pone el cuadro. Dentro del toque, antes del contexto. */
+  const reclamarSonido = () => {
+    reclamar()
+    reclamado.current = true
+    if (textosCuadro) ponerCuadro(textosCuadro)
+  }
+
+  /**
+   * Suelta «reproducción»: primero `'auto'` y después se cierra el contexto
+   * deteniendo la guía, que es su único préstamo. Así la música de la persona
+   * recupera su volumen (DP-23.19).
+   */
+  const soltarSonido = () => {
+    fondo.current?.salir()
+    enFondo.current = false
+    vigilancia.current?.cancelar()
+    vigilancia.current = null
+    retirarReconstruccion.current?.()
+    retirarReconstruccion.current = null
+    if (!reclamado.current) return
+    reclamado.current = false
+    quitarCuadro()
+    soltar()
+    audio.current?.detener()
+    audio.current = null
+  }
+
   /** RN-AUD-04 — Al salir no queda ni un nodo vivo ni un temporizador suelto. */
   const limpiar = useCallback(() => {
     cancelarDespertar.current?.()
     cancelarDespertar.current = null
+    corriendoAhora.current = false
+    soltarSonido()
     parar()
     audio.current?.detener()
     audio.current = null
+    // `soltarSonido` cambia en cada pintado y no decide nada aquí.
   }, [parar])
 
   useEffect(() => limpiar, [limpiar])
@@ -124,7 +186,22 @@ export default function Respiracion({
     if (typeof document === 'undefined') return undefined
 
     function alCambiarVisibilidad() {
-      if (document.visibilityState !== 'visible' || !audio.current) return
+      // DP-23.26 — Con sonido, la guía sigue programada por adelantado.
+      if (document.visibilityState === 'hidden') {
+        if (reclamado.current && audio.current) {
+          enFondo.current = true
+          obtenerFondo().entrar()
+        }
+        return
+      }
+      if (enFondo.current) {
+        enFondo.current = false
+        fondo.current?.salir()
+        // El siguiente fotograma sigue desde el valor que suena.
+        faseActual.current = null
+      }
+      if (!audio.current) return
+      vigilarRespaldo()
       const guia = audio.current
       cancelarDespertar.current?.()
       cancelarDespertar.current = despertarAlVolver(
@@ -147,6 +224,111 @@ export default function Respiracion({
     limpiar()
     onSalir()
   }, [limpiar, onSalir])
+
+  /** Retoma sin gesto: lo usa el «reproducir» de la pantalla de bloqueo. */
+  const seguir = () => {
+    if (corriendoAhora.current || !audio.current) return
+    desde.current = performance.now()
+    corriendoAhora.current = true
+    setCorriendo(true)
+    cuadro.current = requestAnimationFrame(avanzar)
+  }
+
+  /**
+   * DP-23.24 y 23.25 — Lo que WebKit hace con el contexto: la pausa y el
+   * reproducir de la pantalla de bloqueo, o una llamada, que pausa y no se
+   * reanuda sola.
+   */
+  function vigilarContexto() {
+    vigilancia.current?.cancelar()
+    vigilancia.current = vigilar(actual(), {
+      alSuspender() {
+        if (!corriendoAhora.current) return
+        pausadaDesdeBloqueo.current = true
+        pausar()
+      },
+      alReanudar() {
+        if (!pausadaDesdeBloqueo.current) return
+        pausadaDesdeBloqueo.current = false
+        if (document.visibilityState === 'visible') return
+        seguir()
+      },
+      alInterrumpir() {
+        pausadaDesdeBloqueo.current = false
+        if (corriendoAhora.current) pausar()
+      },
+    })
+  }
+
+  /** DP-23.26 — Con la app fuera: el reloj avanza por tics y la guía va por delante. */
+  function obtenerFondo() {
+    if (fondo.current) return fondo.current
+    const total = DURACION_CICLO * ciclos
+    fondo.current = crearAcompanamientoDeFondo({
+      instante() {
+        if (!corriendoAhora.current)
+          return { corriendo: false, ms: msAhora(), finFaseMs: 0, finMs: total }
+        const ms = msAhora()
+        const punto = faseEn(ms, ciclos)
+        if (punto.terminado) {
+          // Terminó con la app fuera: al volver ya está cerrada, como hoy.
+          terminar()
+          return null
+        }
+        return { corriendo: true, ms, finFaseMs: ms + punto.restante, finMs: total }
+      },
+      resolver(ms) {
+        const punto = faseEn(ms, ciclos)
+        return punto.terminado ? null : { fase: punto.fase, restanteMs: punto.restante }
+      },
+      guia: () => audio.current,
+      relojAudio: () => audio.current?.ahora?.() ?? null,
+      sincronizar() {
+        const punto = faseEn(msAhora(), ciclos)
+        if (!punto.terminado) audio.current?.fase(punto.fase, punto.restante / 1000)
+      },
+    })
+    return fondo.current
+  }
+
+  /** La guía nueva, dentro del toque: la del respaldo y la de activar el sonido. */
+  const montarGuia = () => {
+    audio.current?.detener()
+    audio.current = crearAudioRespiracion()
+    const guia = audio.current
+    guia.iniciar().then(() => {
+      if (audio.current !== guia) return
+      guia.silenciar(silenciadoAhora.current)
+      if (reclamado.current) vigilarContexto()
+    })
+    faseActual.current = null
+  }
+
+  /**
+   * DP-23.21 — Al volver con sonido: si el audio está mudo (iOS 16, o el
+   * fallo de WebKit tras una llamada), el siguiente toque monta una guía nueva.
+   */
+  function vigilarRespaldo() {
+    if (!reclamado.current) return
+    const medido = actual()
+    medirReloj(medido).then((medida) => {
+      if (actual() !== medido || !reclamado.current) return
+      const mudo = audioMudo({
+        ...medida,
+        pasoPorInterrumpido: vigilancia.current?.pasoPorInterrumpido() ?? false,
+      })
+      vigilancia.current?.olvidarInterrupcion()
+      if (mudo !== true) return
+      cancelarDespertar.current?.()
+      cancelarDespertar.current = null
+      retirarReconstruccion.current?.()
+      retirarReconstruccion.current = alSiguienteToque(document, () => {
+        retirarReconstruccion.current = null
+        if (reclamado.current) reclamar()
+        montarGuia()
+      })
+    })
+  }
 
   const avanzar = useCallback(() => {
     const ms = transcurrido.current + (performance.now() - desde.current)
@@ -187,35 +369,33 @@ export default function Respiracion({
       // El contexto de audio nace **aquí dentro**, en el manejador del gesto
       // (RN-AUD-01). Si arrancara al montarse, el gesto habría ocurrido en la
       // pantalla anterior y el navegador entregaría un contexto suspendido.
+      // DP-23.26 — Con el sonido activado, «reproducción» antes del contexto.
+      if (!silenciado && !reclamado.current) reclamarSonido()
       if (!audio.current) {
         audio.current = crearAudioRespiracion()
         await audio.current.iniciar()
         audio.current.silenciar(silenciado)
-        // SPEC_23C — Solo con la bandera del diagnóstico: lo que el panel lee
-        // y «Probar con un audio nuevo». Aquí solo hay guía: se detiene (y con
-        // ella el contexto), se crea otra y el siguiente fotograma reprograma
-        // la envolvente desde donde va el círculo.
+        if (reclamado.current) vigilarContexto()
+        // SPEC_23C (DP-23.28) — Solo con la bandera del diagnóstico: lo que el
+        // panel lee. La reconstrucción ya es comportamiento normal.
         if (import.meta.env.VITE_DIAG_AUDIO === '1') {
           avisar('momento', {
             motor: () => audio.current,
-            reconstruir: async () => {
-              audio.current?.detener()
-              audio.current = crearAudioRespiracion()
-              await audio.current.iniciar()
-              audio.current.silenciar(silenciado)
-              faseActual.current = null
-            },
+            programadas: () => audio.current?.programado?.() ?? null,
           })
         }
       }
       desde.current = performance.now()
+      corriendoAhora.current = true
       setEmpezado(true)
       setCorriendo(true)
       cuadro.current = requestAnimationFrame(avanzar)
     })
 
   const pausar = () => {
+    if (!corriendoAhora.current) return
     transcurrido.current += performance.now() - desde.current
+    corriendoAhora.current = false
     parar()
     setCorriendo(false)
     // Silencio real mientras está en pausa: un tono sostenido de fondo sería
@@ -227,6 +407,17 @@ export default function Respiracion({
   const alternarSonido = () => {
     const siguiente = !silenciado
     setSilenciado(siguiente)
+    silenciadoAhora.current = siguiente
+    // DP-23.19 — Activar el sonido reclama «reproducción» en este toque;
+    // silenciarlo la suelta y cierra el contexto, y la música de la persona
+    // recupera su volumen. Sin empezar todavía, lo decide «Empezar».
+    if (empezado && !siguiente && !reclamado.current) {
+      reclamarSonido()
+      if (audio.current) vigilarContexto()
+      else montarGuia()
+    } else if (siguiente && reclamado.current) {
+      soltarSonido()
+    }
     audio.current?.silenciar(siguiente)
     onSonido?.(!siguiente)
   }
