@@ -148,7 +148,13 @@ export function crearMaquina({
       evaluarLimite(estadoRitmo, ms)
       alActualizar?.(instantanea())
     },
-    alCambiarFase: (estadoRitmo) => {
+    alCambiarFase: (estadoRitmo, ms) => {
+      // SPEC_23 §9 — La inhalación fantasma. El cierre cae justo en el borde
+      // de un ciclo, así que en el último fotograma el reloj ya resuelve el
+      // «inhalar» del ciclo siguiente y lo emite **antes** de que
+      // `evaluarLimite` complete la sesión. Esa fase no existe: la sesión
+      // termina en ese mismo fotograma. Ni la guía ni la háptica la reciben.
+      if (estado === ESTADOS.CERRANDO && msCierre !== null && ms >= msCierre) return
       alCambiarFase?.(estadoRitmo)
     },
   })

@@ -22,9 +22,20 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { ESTADOS, crearMaquina } from '@lib/respiracion/maquinaSesion'
 import { resolverEstado } from '@lib/respiracion/motorRitmo'
 import { adquirir, despertarAlVolver, liberar, reanudar } from '@lib/audio/contextoAudio'
+import { avisar } from '@lib/audio/observadorAudio'
 import { crearAudioRespiracion } from '@lib/audioRespiracion'
+import { toqueSuave } from '@lib/haptica'
 import { crearMotorAmbiente } from '../audio/motorAmbiente.js'
 import { ID_SILENCIO } from '../data/catalogoSonidos.js'
+
+/**
+ * SPEC_23B — ¿Toca vibrar en un cambio de fase con la sesión en este estado?
+ * Solo con el ritmo de verdad en marcha: `activo` o `cerrando` (el último
+ * ciclo). Nunca en el acomodo, en pausa ni sin sesión.
+ */
+export function vibraEnFase(estado) {
+  return estado === ESTADOS.ACTIVO || estado === ESTADOS.CERRANDO
+}
 
 /** Las fases en las que suena la guía. En las retenciones, el silencio marca. */
 const FASES_CON_PULSO = new Set(['inhalar', 'exhalar'])
@@ -265,6 +276,11 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
        */
       alCambiarFase(ritmo) {
         setEstadoRitmo(ritmo)
+        // SPEC_23B — Un toque suave en cada cambio de fase, solo con la sesión
+        // corriendo. El reloj no emite durante el acomodo ni en pausa, y al
+        // reanudar no repite la fase en la que se pausó; la guarda lo dice
+        // igual en voz alta, por si eso cambiara algún día.
+        if (vibraEnFase(maquina.current?.instantanea()?.estado)) toqueSuave()
         if (!FASES_CON_PULSO.has(ritmo.fase)) {
           guia.current?.fase('pausa', 0)
           return
@@ -276,6 +292,41 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
     maquina.current.iniciar()
     pararBucle()
     frame.current = requestAnimationFrame(pintarFrame)
+
+    // SPEC_23C (DP-23.16 y 23.17 b) — Solo con la bandera del diagnóstico: lo
+    // que el panel lee de esta sesión, y «Probar con un audio nuevo», que
+    // corre dentro del toque. El orden importa: primero la guía (guarda su
+    // propio préstamo), luego el ambiente y luego el préstamo de aquí; con
+    // los préstamos a cero el contexto se cierra y `asegurarAudio` crea otro.
+    if (import.meta.env.VITE_DIAG_AUDIO === '1') {
+      avisar('sesion', {
+        motor: () => ambiente.current,
+        reconstruir: () => {
+          guia.current?.detener()
+          guia.current = null
+          ambiente.current?.liberar()
+          ambiente.current = null
+          if (prestado.current) {
+            prestado.current = false
+            liberar()
+          }
+          const nuevo = asegurarAudio()
+          if (nuevo === null) return
+          nuevo.confirmarSonido(config.current.sonidoAmbienteId ?? ID_SILENCIO)
+          nuevo.entrar()
+          if (config.current.guiaSonoraActiva) {
+            guia.current = crearAudioRespiracion()
+            guia.current.iniciar()
+          }
+          const foto = maquina.current?.instantanea()
+          aplicarAudio(foto?.estado)
+          const ritmo = foto?.ritmo
+          if (ritmo && FASES_CON_PULSO.has(ritmo.fase)) {
+            guia.current?.fase(ritmo.fase, ritmo.msRestantesFase / 1000)
+          }
+        },
+      })
+    }
   }, [alCompletar, asegurarAudio, pintarFrame, pararBucle])
 
   const pausar = useCallback(() => maquina.current?.pausar(), [])

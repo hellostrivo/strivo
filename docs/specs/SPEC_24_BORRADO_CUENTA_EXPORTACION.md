@@ -158,3 +158,7 @@ Sin cambiar el alcance de esta SPEC, tres cosas que 21.2 deja dichas:
 ## Nota de SPEC_22 (11 nov 2026) — los avisos del iPhone
 
 Sin cambiar el alcance de esta SPEC: **borrar la cuenta tiene que cancelar todos los avisos de Strivo en el teléfono**, igual que cerrar sesión (DP-22.11). La pieza ya existe: `apagarAvisos()` en `src/lib/avisos/reconciliar.js`, que deja de reconciliar, espera a la vuelta en curso (como mucho 3 s) y cancela los avisos marcados con `extra.strivo`. `salirDeCuenta` (`src/lib/salidaCuenta.js`) la carga bajo demanda y solo en la app de iPhone (`esIPhone()`); el borrado debería llamarla igual, antes de cerrar la sesión. La preferencia (`preferences.remindersEnabled`) se va con el resto de `shared/`.
+
+## Nota de SPEC_23A (12 nov 2026) — la clave de Face ID
+
+Sin cambiar el alcance de esta SPEC: **borrar la cuenta tiene que borrar también la clave de Face ID de la Keychain**, igual que cerrar sesión (DP-23.12). `salirDeCuenta` (`src/lib/salidaCuenta.js`) lo hace con `olvidarFaceId()`, que carga `src/lib/biometria.js` bajo demanda y solo en la app de iPhone (`esIPhone()`) y llama a `biometria.borrar()`, que no pide la cara y nunca lanza. El borrado debería hacer lo mismo; `diario/pinConfig`, con su `biometria.verificador`, se va con el resto de `diario/`.

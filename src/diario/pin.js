@@ -18,6 +18,7 @@
 // dispositivo. Es la única rama del árbol que no llega a Firestore.
 
 import { diario, shared } from '@/lib/db'
+import { esIPhone } from '@/lib/plataforma'
 
 /** Lo que se persiste en `pinConfig.algorithm`. */
 export const ALGORITMO = 'PBKDF2-SHA-256'
@@ -144,6 +145,7 @@ export async function estadoPin(uid) {
     metodo,
     puedeActivar: metodo !== null,
     sinSalida: activo && metodo === null,
+    biometria: await estadoBiometria(config),
   }
 }
 
@@ -156,6 +158,8 @@ export async function estadoPin(uid) {
 export async function crearPin(uid, pin) {
   if (!esPinValido(pin)) return { ok: false, motivo: 'formato' }
   if ((await metodoDeRecuperacion(uid)) === null) return { ok: false, motivo: 'sin-metodo' }
+  // SPEC_23A (DP-23.12) — Un PIN nuevo nace sin Face ID: la clave se borra.
+  await olvidarClave()
   await diario.savePinConfig(uid, await configDe(pin))
   return { ok: true }
 }
@@ -176,7 +180,10 @@ export async function verificarPin(uid, pin) {
   if (!comparaIgual(candidato, config.hash)) return false
 
   if (config.iterations < ITERACIONES) {
-    await diario.savePinConfig(uid, { ...(await configDe(pin)), enabled: true })
+    // SPEC_23A (DP-23.12) — Rederivar no es cambiar el PIN: Face ID se queda.
+    const rederivado = { ...(await configDe(pin)), enabled: true }
+    if (config.biometria) rederivado.biometria = config.biometria
+    await diario.savePinConfig(uid, rederivado)
   }
   return true
 }
@@ -184,6 +191,7 @@ export async function verificarPin(uid, pin) {
 /** Retira la protección. Exige el PIN vigente (§5.8.2). */
 export async function desactivarPin(uid, pin) {
   if (!(await verificarPin(uid, pin))) return { ok: false, motivo: 'incorrecto' }
+  await olvidarClave()
   await diario.clearPinConfig(uid)
   return { ok: true }
 }
@@ -301,6 +309,7 @@ async function motivoDeReautenticacion(error) {
  */
 export async function reestablecerPin(uid, pin) {
   if (!esPinValido(pin)) return { ok: false, motivo: 'formato' }
+  await olvidarClave()
   await diario.savePinConfig(uid, await configDe(pin))
   return { ok: true }
 }
@@ -313,4 +322,207 @@ export async function vincularCuenta(uid, { email, phone }) {
   if (phone !== undefined) patch.phone = String(phone).trim() || null
   await shared.saveAuthRecord(uid, patch)
   return metodoDeRecuperacion(uid)
+}
+
+// ─── Face ID y Touch ID (SPEC_23A) ────────────────────────────────────────────
+//
+// **Otra forma de abrir la misma puerta, no un cifrado.** En la app de iPhone,
+// quien protegió su journal con un PIN puede abrirlo con su cara. El PIN sigue
+// siendo la puerta de siempre y el respaldo.
+//
+// **Qué hay en cada sitio** (DP-23.8): en la Keychain, una clave aleatoria de
+// 32 bytes que iOS solo entrega tras reconocer la cara; en `pinConfig`, que
+// nunca sale del teléfono, el SHA-256 de esa clave (`biometria.verificador`).
+// Abrir es leer la clave, calcular su huella y compararla en tiempo constante.
+// **El PIN no se copia ni llega a la Keychain.**
+//
+// **Cancelar e invalidar no se confunden, y sin adivinar** (SPEC_23 §9). Solo
+// se lee la clave si hay verificador, y la app solo borra la clave a la vez que
+// el verificador. Así, «la clave no está» con verificador solo puede ser que
+// iOS la quitó: es `cambiada`. Cancelar, fallar o cualquier otra respuesta es
+// volver al PIN sin mensaje y sin apagar nada.
+//
+// **En la web nada de esto existe**: `esIPhone()` es `false`, el plugin no se
+// carga y el estado es siempre `apagada` y sin disponibilidad.
+
+/** Cómo está Face ID para este journal. */
+export const BIOMETRIA = Object.freeze({
+  apagada: 'apagada',
+  activa: 'activa',
+  cambiada: 'cambiada',
+})
+
+/** Lo que dice la web, y el teléfono cuando no hay forma de saber más. */
+const SIN_BIOMETRIA_EN_ESTE_TELEFONO = Object.freeze({
+  estado: BIOMETRIA.apagada,
+  disponible: false,
+  tipo: null,
+})
+
+/** Sin biometría por estos motivos, una clave guardada ya no abre. */
+const DEJAN_LA_CLAVE_SIN_ABRIR = new Set(['negado', 'sinCaras', 'sinCodigo'])
+
+const BYTES_CLAVE = 32
+
+/** El puente, solo en la app de iPhone y cargado al hacer falta. */
+async function puente() {
+  if (!esIPhone()) return null
+  try {
+    const { biometria } = await import('@/lib/biometria')
+    return biometria
+  } catch {
+    return null
+  }
+}
+
+/** Borra la clave de la Keychain. No pide la cara y nunca lanza. */
+async function olvidarClave() {
+  const b = await puente()
+  if (b) await b.borrar()
+}
+
+function claveNueva() {
+  return aHex(crypto.getRandomValues(new Uint8Array(BYTES_CLAVE)))
+}
+
+/** SHA-256 en hex: lo único de la clave que se guarda en `pinConfig`. */
+export async function huellaDe(clave) {
+  const bits = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(clave)))
+  return aHex(new Uint8Array(bits))
+}
+
+function estadoDe(config) {
+  if (config?.enabled !== true) return BIOMETRIA.apagada
+  if (typeof config.biometria?.verificador === 'string') return BIOMETRIA.activa
+  if (config.biometria?.cambiada === true) return BIOMETRIA.cambiada
+  return BIOMETRIA.apagada
+}
+
+/** `pinConfig` sin `biometria`, para reescribirlo sin dejar restos. */
+function sinBiometria(config) {
+  const { biometria: _fuera, ...resto } = config
+  return resto
+}
+
+/**
+ * La clave huérfana (DP-23.15). Lo guardado en la Keychain sobrevive a borrar
+ * la app y `pinConfig` no: tras reinstalar queda una clave sin dueño. Se
+ * borra la primera vez que se encuentra, una vez por sesión. Ni mirar ni
+ * borrar piden la cara.
+ */
+let huerfanaRevisada = false
+
+async function limpiarHuerfana(b, config) {
+  if (huerfanaRevisada) return
+  if (typeof config?.biometria?.verificador === 'string') return
+  huerfanaRevisada = true
+  if ((await b.existe()) === true) await b.borrar()
+}
+
+/** Para las pruebas: que cada una empiece como una sesión nueva. */
+export function olvidarRevisionDeHuerfana() {
+  huerfanaRevisada = false
+}
+
+/**
+ * Lo que la pantalla necesita de Face ID. `disponible` dice si el teléfono
+ * tiene Face ID o Touch ID para Strivo; solo se pregunta con PIN activo, que
+ * es cuando el interruptor puede existir.
+ */
+async function estadoBiometria(config) {
+  const b = await puente()
+  if (!b) return SIN_BIOMETRIA_EN_ESTE_TELEFONO
+  await limpiarHuerfana(b, config)
+  const estado = estadoDe(config)
+  if (config?.enabled !== true) return { ...SIN_BIOMETRIA_EN_ESTE_TELEFONO, estado }
+  const { disponible, tipo } = await b.disponibilidad()
+  return { estado, disponible, tipo }
+}
+
+/** iOS invalidó la clave, o Strivo se quedó sin Face ID: se dice y se apaga. */
+async function marcarCambiada(uid, b) {
+  await b.borrar()
+  const config = await diario.getPinConfig(uid)
+  if (config?.enabled !== true) return
+  await diario.savePinConfig(uid, { ...sinBiometria(config), biometria: { cambiada: true } })
+}
+
+/**
+ * Activa Face ID (DP-23.10). Con el PIN correcto se genera la clave, se guarda
+ * y **se lee una vez**, para que iOS pida la cara ahora (y la primera vez,
+ * antes, su permiso). Solo si la cara responde se guarda el verificador.
+ * Cancelar, fallar o negar el permiso dejan todo como estaba y la clave
+ * borrada.
+ *
+ * @returns {Promise<{ok: boolean, motivo?: 'incorrecto'|'no-disponible'|'cancelado'}>}
+ */
+export async function activarBiometria(uid, pin, { motivo } = {}) {
+  const b = await puente()
+  if (!b) return { ok: false, motivo: 'no-disponible' }
+  if (!(await verificarPin(uid, pin))) return { ok: false, motivo: 'incorrecto' }
+  const config = await diario.getPinConfig(uid)
+  if (config?.enabled !== true) return { ok: false, motivo: 'no-disponible' }
+
+  const clave = claveNueva()
+  if (!(await b.guardar(clave))) {
+    await b.borrar()
+    return { ok: false, motivo: 'no-disponible' }
+  }
+  const leida = await b.leer(motivo)
+  if (!leida.ok || !comparaIgual(leida.clave, clave)) {
+    await b.borrar()
+    return { ok: false, motivo: 'cancelado' }
+  }
+
+  // Se relee: entre tanto, verificarPin pudo rederivar el PIN.
+  const vigente = (await diario.getPinConfig(uid)) ?? config
+  await diario.savePinConfig(uid, {
+    ...sinBiometria(vigente),
+    biometria: { verificador: await huellaDe(clave), activadaEn: new Date().toISOString() },
+  })
+  return { ok: true }
+}
+
+/** Apaga Face ID sin pedir el PIN: quitarlo reduce el acceso (SPEC_23 §9). */
+export async function apagarBiometria(uid) {
+  await olvidarClave()
+  const config = await diario.getPinConfig(uid)
+  if (config?.enabled === true && config.biometria) {
+    await diario.savePinConfig(uid, sinBiometria(config))
+  }
+  return { ok: true }
+}
+
+/**
+ * Abre con Face ID (DP-23.11 y DP-23.13). **Solo abre si el interruptor está
+ * activo y la huella de la clave coincide con el verificador.**
+ *
+ * @returns {Promise<{ok: boolean, motivo?: 'apagada'|'cancelado'|'cambiada'}>}
+ */
+export async function abrirConBiometria(uid, { motivo } = {}) {
+  const config = await diario.getPinConfig(uid)
+  const verificador = config?.enabled === true ? config.biometria?.verificador : null
+  if (typeof verificador !== 'string') return { ok: false, motivo: 'apagada' }
+  const b = await puente()
+  if (!b) return { ok: false, motivo: 'apagada' }
+
+  const { disponible, motivo: porQue } = await b.disponibilidad()
+  if (!disponible) {
+    if (!DEJAN_LA_CLAVE_SIN_ABRIR.has(porQue)) return { ok: false, motivo: 'cancelado' }
+    await marcarCambiada(uid, b)
+    return { ok: false, motivo: 'cambiada' }
+  }
+
+  const leida = await b.leer(motivo)
+  if (leida.ok) {
+    if (comparaIgual(await huellaDe(leida.clave), verificador)) return { ok: true }
+    // Una clave que no es la nuestra no abre nunca: se retira.
+    await marcarCambiada(uid, b)
+    return { ok: false, motivo: 'cambiada' }
+  }
+  if (leida.motivo === 'noEsta') {
+    await marcarCambiada(uid, b)
+    return { ok: false, motivo: 'cambiada' }
+  }
+  return { ok: false, motivo: 'cancelado' }
 }

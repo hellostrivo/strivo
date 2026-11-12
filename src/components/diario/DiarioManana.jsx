@@ -53,6 +53,7 @@ import { IndicadorPasos, NavegacionPasos } from './Pasos'
 import { volverAlInicio } from '@lib/volverAlInicio'
 import { copy } from '@copy'
 import { alCerrarMomento } from '@lib/avisos/pedido'
+import { toqueSuave } from '@lib/haptica'
 import { LIMITES, desdeTextos, filasIniciales, textosDe } from '@/diario/filas'
 import {
   MOMENTOS,
@@ -261,6 +262,11 @@ export default function DiarioManana({ estado, acciones, soloLectura = false }) 
   const terminar = () => {
     if (cerrando.current) return
     cerrando.current = true
+    // SPEC_23B — Un toque suave en el gesto de cerrar, uno por cierre (lo
+    // garantiza `cerrando`). Nunca en el autoguardado ni al reintentar, que
+    // llama a `persistir` y no pasa por aquí. Si la escritura falla después,
+    // el toque ya ocurrió y está bien: el gesto de cerrar fue de la persona.
+    toqueSuave()
     setConCierre(true)
     setVista('cierre')
     persistir()

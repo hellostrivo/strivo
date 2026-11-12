@@ -11,22 +11,22 @@ import { join, extname } from 'path'
 
 // ─── Léxico prohibido ─────────────────────────────────────────────────────────
 const FORBIDDEN = [
-  { pattern: /\bfallaste\b/gi,      reason: 'Lenguaje de castigo (§3.6.2)' },
-  { pattern: /\bincumpliste\b/gi,   reason: 'Lenguaje de castigo (§3.6.2)' },
-  { pattern: /\babandonaste\b/gi,   reason: 'Lenguaje de castigo (§3.6.2)' },
-  { pattern: /\bracha\b/gi,         reason: 'Usar "Constancia" en su lugar (§3.6.3)' },
-  { pattern: /\bstreak\b/gi,        reason: 'Usar "Constancia" en su lugar (§3.6.3)' },
-  { pattern: /\bdeber[íi]as?\b/gi,  reason: 'Lenguaje prescriptivo prohibido (§3.6.2)' },
-  { pattern: /\btendr[íi]as?\b/gi,  reason: 'Lenguaje prescriptivo prohibido (§3.6.2)' },
-  { pattern: /\bfallaste\b/gi,      reason: 'Lenguaje de castigo (§3.6.2)' },
-  { pattern: /¡Felicidades!/gi,     reason: 'Exclamación innecesaria (§3.6)' },
-  { pattern: /¡Muy bien!/gi,        reason: 'Exclamación innecesaria (§3.6)' },
-  { pattern: /días\s+seguidos/gi,   reason: 'Usar "días contigo" en su lugar (§5.9)' },
+  { pattern: /\bfallaste\b/gi, reason: 'Lenguaje de castigo (§3.6.2)' },
+  { pattern: /\bincumpliste\b/gi, reason: 'Lenguaje de castigo (§3.6.2)' },
+  { pattern: /\babandonaste\b/gi, reason: 'Lenguaje de castigo (§3.6.2)' },
+  { pattern: /\bracha\b/gi, reason: 'Usar "Constancia" en su lugar (§3.6.3)' },
+  { pattern: /\bstreak\b/gi, reason: 'Usar "Constancia" en su lugar (§3.6.3)' },
+  { pattern: /\bdeber[íi]as?\b/gi, reason: 'Lenguaje prescriptivo prohibido (§3.6.2)' },
+  { pattern: /\btendr[íi]as?\b/gi, reason: 'Lenguaje prescriptivo prohibido (§3.6.2)' },
+  { pattern: /\bfallaste\b/gi, reason: 'Lenguaje de castigo (§3.6.2)' },
+  { pattern: /¡Felicidades!/gi, reason: 'Exclamación innecesaria (§3.6)' },
+  { pattern: /¡Muy bien!/gi, reason: 'Exclamación innecesaria (§3.6)' },
+  { pattern: /días\s+seguidos/gi, reason: 'Usar "días contigo" en su lugar (§5.9)' },
   // SPEC_13 §7.1 — Vocabulario de rendimiento. Nunca es la voz de nadie: no hay
   // emoción que se llame así ni persona que lo escriba de sí misma.
   { pattern: /\bproductividad\b/gi, reason: 'Vocabulario de rendimiento (SPEC_13 §7.1)' },
   { pattern: /\bmaximiz[a-záéíóú]*\b/gi, reason: 'Vocabulario de rendimiento (SPEC_13 §7.1)' },
-  { pattern: /\btrastorno\b/gi,     reason: 'Registro clínico: Strivo no diagnostica (SPEC_13 §7.1)' },
+  { pattern: /\btrastorno\b/gi, reason: 'Registro clínico: Strivo no diagnostica (SPEC_13 §7.1)' },
 ]
 
 // ─── Voz de Respiración (SPEC_13 §7.1) ────────────────────────────────────────
@@ -42,21 +42,21 @@ const FORBIDDEN = [
 // comentarios de por medio y sin tocar los otros namespaces, la comprobación es
 // exacta en vez de aproximada.
 const CLINICO = [
-  { pattern: /\bansiedad\b/i,        reason: 'Registro clínico (SPEC_13 §7.1)' },
-  { pattern: /\bansios[ao]s?\b/i,    reason: 'Registro clínico (SPEC_13 §7.1)' },
-  { pattern: /\bestr[ée]s\b/i,       reason: 'Registro clínico (SPEC_13 §7.1)' },
-  { pattern: /\bp[áa]nico\b/i,       reason: 'Registro clínico (SPEC_13 §7.1)' },
+  { pattern: /\bansiedad\b/i, reason: 'Registro clínico (SPEC_13 §7.1)' },
+  { pattern: /\bansios[ao]s?\b/i, reason: 'Registro clínico (SPEC_13 §7.1)' },
+  { pattern: /\bestr[ée]s\b/i, reason: 'Registro clínico (SPEC_13 §7.1)' },
+  { pattern: /\bp[áa]nico\b/i, reason: 'Registro clínico (SPEC_13 §7.1)' },
   { pattern: /\bterap[a-záéíóú]*\b/i, reason: 'Registro clínico (SPEC_13 §7.1)' },
-  { pattern: /\btrastorno\b/i,       reason: 'Registro clínico (SPEC_13 §7.1)' },
+  { pattern: /\btrastorno\b/i, reason: 'Registro clínico (SPEC_13 §7.1)' },
   { pattern: /\bcura[a-záéíóú]*\b/i, reason: 'Registro clínico (SPEC_13 §7.1)' },
-  { pattern: /\btratamiento\b/i,     reason: 'Registro clínico (SPEC_13 §7.1)' },
+  { pattern: /\btratamiento\b/i, reason: 'Registro clínico (SPEC_13 §7.1)' },
   { pattern: /\bs[íi]ntoma[a-záéíóú]*\b/i, reason: 'Registro clínico (SPEC_13 §7.1)' },
-  { pattern: /\brendimiento\b/i,     reason: 'Vocabulario de rendimiento (SPEC_13 §7.1)' },
+  { pattern: /\brendimiento\b/i, reason: 'Vocabulario de rendimiento (SPEC_13 §7.1)' },
   { pattern: /\boptimiz[a-záéíóú]*\b/i, reason: 'Vocabulario de rendimiento (SPEC_13 §7.1)' },
-  { pattern: /\bproductividad\b/i,   reason: 'Vocabulario de rendimiento (SPEC_13 §7.1)' },
+  { pattern: /\bproductividad\b/i, reason: 'Vocabulario de rendimiento (SPEC_13 §7.1)' },
   { pattern: /\bmaximiz[a-záéíóú]*\b/i, reason: 'Vocabulario de rendimiento (SPEC_13 §7.1)' },
   // Regla heredada de P2A. El neutro se consigue por redacción.
-  { pattern: /\belle\b/i,            reason: 'Neutro por redacción, no con "elle" (SPEC_13 §7.1)' },
+  { pattern: /\belle\b/i, reason: 'Neutro por redacción, no con "elle" (SPEC_13 §7.1)' },
 ]
 
 // ─── Archivos que se revisan por entrada, no por línea ────────────────────────
@@ -112,7 +112,7 @@ function esComentario(linea) {
 function checkFile(filePath) {
   if (NOMBRAN_EL_LEXICO.has(filePath)) return
   const content = readFileSync(filePath, 'utf8')
-  const lines   = content.split('\n')
+  const lines = content.split('\n')
   const soloProsa = POR_ENTRADA.has(filePath)
 
   lines.forEach((line, i) => {
@@ -128,14 +128,14 @@ function checkFile(filePath) {
         console.error(`   Razón: ${reason}`)
         console.error()
         issues++
-        pattern.lastIndex = 0  // reset regex global
+        pattern.lastIndex = 0 // reset regex global
       }
     })
   })
 }
 
 function walkDir(dir) {
-  readdirSync(dir).forEach(file => {
+  readdirSync(dir).forEach((file) => {
     const full = join(dir, file)
     if (EXCLUDE_DIRS.includes(file)) return
     if (statSync(full).isDirectory()) {
@@ -178,7 +178,7 @@ function checkFrases(frases, revisablesDe) {
           console.error(`   Razón: ${reason}`)
           console.error()
           issues++
-          pattern.lastIndex = 0  // reset regex global
+          pattern.lastIndex = 0 // reset regex global
         }
       })
     })
@@ -228,6 +228,7 @@ const visibles = {
   copy,
   DIAGNOSTICO: diagnosticos.DIAGNOSTICO,
   DIAGNOSTICO_AVISOS: diagnosticos.DIAGNOSTICO_AVISOS,
+  DIAGNOSTICO_AUDIO: diagnosticos.DIAGNOSTICO_AUDIO,
 }
 recorrer(visibles, 'copy-visible', (cadena, ruta) => {
   if (EXCLAMACION.test(cadena)) avisar(ruta, cadena, 'Signo de exclamación (§3.2, SPEC_22 §9)')
@@ -242,7 +243,8 @@ const nuevosDe22 = {
 Object.entries(nuevosDe22).forEach(([ruta, nodo]) => {
   if (nodo === undefined) return avisar(ruta, '(no existe)', 'Falta un texto de SPEC_22')
   return recorrer(nodo, ruta, (cadena, donde) => {
-    if (PENDIENTE.test(cadena)) avisar(donde, cadena, '«pendiente» (§3.2): di «por pedir» o «sin pedir»')
+    if (PENDIENTE.test(cadena))
+      avisar(donde, cadena, '«pendiente» (§3.2): di «por pedir» o «sin pedir»')
   })
 })
 
@@ -256,6 +258,8 @@ if (issues === 0) {
   console.log('✅ strivo-voice: léxico limpio. Todo en orden.\n')
   process.exit(0)
 } else {
-  console.error(`\n⚠️  strivo-voice: ${issues} problema(s) encontrado(s). Revisa antes de comitear.\n`)
+  console.error(
+    `\n⚠️  strivo-voice: ${issues} problema(s) encontrado(s). Revisa antes de comitear.\n`,
+  )
   process.exit(1)
 }

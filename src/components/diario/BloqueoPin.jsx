@@ -21,16 +21,66 @@
 // mismo botón vuelve a intentar con lo escrito. **La contraseña vive solo en el
 // estado de este componente**: no va a ningún almacén, ni a la cola, ni a un
 // registro, y se olvida al salir del paso.
+//
+// **Face ID y Touch ID** (SPEC_23A), solo en la app de iPhone: otra forma de
+// abrir la misma puerta. En `desbloqueo`, si está activo, iOS pide la cara sola
+// al montar —una vez por montaje, y solo con la app a la vista—; cancelar deja
+// esta pantalla tal cual, sin mensaje, y «Abrir con Face ID» lo vuelve a
+// intentar. En `ajustes`, el interruptor solo existe con PIN activo y con la
+// biometría disponible para Strivo; en la web no existe nunca.
 
 import { useEffect, useRef, useState } from 'react'
 import { clsx } from 'clsx'
 import CuentaParaPin from './CuentaParaPin'
 import Button from '@components/ui/Button'
 import { CampoLinea } from '@components/shared/Campo'
-import { copy } from '@copy'
+import { copy, interpolate } from '@copy'
 import { MAX_DIGITOS, MIN_DIGITOS, esPinValido, soloDigitos } from '@/diario/pin'
 
 const textos = copy.diario.journal.pin
+
+/** «Face ID» o «Touch ID», según lo que diga el teléfono. */
+function conNombre(plantilla, tipo) {
+  const { nombres } = textos.biometria
+  return interpolate(plantilla, { biometria: nombres[tipo] ?? nombres.faceId })
+}
+
+/**
+ * El interruptor de Face ID: el estado se ve por la posición y el relleno, no
+ * solo por el color, y el lector de pantalla lo dice con `aria-checked`. Es la
+ * misma forma que el de los recordatorios de Tu perfil.
+ */
+function Interruptor({ encendido, etiqueta, onCambiar }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={encendido}
+      onClick={onCambiar}
+      className={clsx(
+        'flex min-h-touch-sm w-full items-center justify-between gap-4 text-left',
+        'rounded-md text-base text-on-surface',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30',
+      )}
+    >
+      <span>{etiqueta}</span>
+      <span
+        aria-hidden="true"
+        className={clsx(
+          'relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border-2 border-on-surface transicion-tema',
+          encendido ? 'bg-current' : 'bg-transparent',
+        )}
+      >
+        <span
+          className={clsx(
+            'absolute h-5 w-5 rounded-full transicion-tema',
+            encendido ? 'right-0.5 bg-raised' : 'left-0.5 bg-current',
+          )}
+        />
+      </span>
+    </button>
+  )
+}
 
 /** El teclado es numérico y no revela los dígitos introducidos (§5.8.2). */
 function CampoPin({ value, onChange, etiqueta, id }) {
@@ -92,6 +142,50 @@ export default function BloqueoPin({ modo, estado, acciones, onCerrar }) {
   useEffect(() => {
     if (pideContrasena) campoContrasena.current?.focus()
   }, [pideContrasena])
+
+  const biometria = estado.biometria ?? { estado: 'apagada', disponible: false, tipo: null }
+  const conCara = biometria.estado === 'activa'
+
+  /** SPEC_23A — Pide la cara. Cancelar no dice nada; `cambiada` sí. */
+  const abrirConCara = async () => {
+    const resultado = await acciones.abrirConBiometria?.(textos.biometria.motivo)
+    if (resultado?.motivo === 'cambiada') {
+      setNota(conNombre(textos.biometria.cambiada, biometria.tipo))
+    }
+  }
+
+  // SPEC_23A (DP-23.11) — Al montar la pantalla del PIN con Face ID activo,
+  // iOS pide la cara solo: una vez por montaje (la referencia sobrevive al
+  // doble montaje del modo estricto) y solo con la app a la vista; si está en
+  // el fondo, espera a que vuelva.
+  const caraPedida = useRef(false)
+  useEffect(() => {
+    if (modo !== 'desbloqueo' || !conCara || caraPedida.current) return undefined
+    if (typeof document === 'undefined') return undefined
+
+    const intentar = () => {
+      if (caraPedida.current || document.visibilityState !== 'visible') return
+      caraPedida.current = true
+      abrirConCara()
+    }
+    intentar()
+    if (caraPedida.current) return undefined
+    document.addEventListener('visibilitychange', intentar)
+    return () => document.removeEventListener('visibilitychange', intentar)
+    // `abrirConCara` cambia en cada pintado y no decide nada aquí.
+  }, [modo, conCara])
+
+  /** Activar Face ID desde los ajustes (DP-23.10). */
+  const activarCara = async () => {
+    const resultado = await acciones.activarBiometria(codigo, textos.biometria.motivo)
+    if (resultado.ok) return limpiar('inicio')
+    if (resultado.motivo === 'incorrecto') {
+      setCodigo('')
+      return setNota(textos.bloqueo.incorrecto)
+    }
+    // Cancelar, fallar o negar el permiso: iOS ya lo dijo. Sin texto propio.
+    return limpiar('inicio')
+  }
 
   const abrir = async () => {
     if (await acciones.desbloquear(codigo)) return
@@ -239,6 +333,16 @@ export default function BloqueoPin({ modo, estado, acciones, onCerrar }) {
           {textos.bloqueo.abrir}
         </Button>
 
+        {conCara && (
+          <button
+            type="button"
+            onClick={abrirConCara}
+            className="self-start rounded-full px-3 py-2 min-h-touch-sm text-sm text-on-surface-soft hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30"
+          >
+            {conNombre(textos.biometria.abrir, biometria.tipo)}
+          </button>
+        )}
+
         <button
           type="button"
           onClick={() => limpiar('recuperar')}
@@ -299,9 +403,49 @@ export default function BloqueoPin({ modo, estado, acciones, onCerrar }) {
         </>
       )}
 
+      {paso === 'activarBiometria' && (
+        <>
+          <CampoPin
+            id="pin-biometria"
+            value={codigo}
+            onChange={setCodigo}
+            etiqueta={conNombre(textos.biometria.confirmarPin, biometria.tipo)}
+          />
+          {nota && <Nota>{nota}</Nota>}
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="surface" onClick={activarCara}>
+              {textos.biometria.activar}
+            </Button>
+            <Button size="sm" variant="surface" onClick={() => limpiar('inicio')}>
+              {textos.cancelar}
+            </Button>
+          </div>
+        </>
+      )}
+
       {paso === 'inicio' && (
         <>
           {estado.activo && <Nota>{textos.activo}</Nota>}
+
+          {/* SPEC_23A (DP-23.9) — Solo con PIN y con Face ID o Touch ID
+              disponible para Strivo. En la web no existe. */}
+          {estado.activo && biometria.disponible && (
+            <div className="flex flex-col gap-1">
+              <Interruptor
+                encendido={conCara}
+                etiqueta={conNombre(textos.biometria.interruptor, biometria.tipo)}
+                onCambiar={() =>
+                  conCara ? acciones.apagarBiometria() : limpiar('activarBiometria')
+                }
+              />
+              <p aria-live="polite" className="text-sm text-on-surface-soft">
+                {biometria.estado === 'cambiada'
+                  ? conNombre(textos.biometria.cambiada, biometria.tipo)
+                  : textos.biometria.texto}
+              </p>
+            </div>
+          )}
+
           {nota && <Nota>{nota}</Nota>}
 
           {/* RN-JR-PIN-02 — Sin forma de recuperarlo no se ofrece el alta: se

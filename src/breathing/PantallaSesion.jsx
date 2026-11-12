@@ -14,7 +14,7 @@
 // **Salir no pide confirmación** (RN-RE-NAV-27). Pide confirmación quien quiere
 // retener, y Strivo no retiene. Se llama `terminar()` y se va.
 
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { copy } from '@copy'
@@ -27,6 +27,12 @@ import PanelAjustesVivo from './components/PanelAjustesVivo.jsx'
 import CierreSesion from './components/CierreSesion.jsx'
 import { usarMovimientoReducido } from './lib/preferenciaMovimiento.js'
 import { useWakeLock, pidePantallaEncendida } from './hooks/useWakeLock.js'
+
+// SPEC_23C (DP-23.16) — El panel del diagnóstico del audio, solo con su bandera.
+const DiagnosticoAudio =
+  import.meta.env.VITE_DIAG_AUDIO === '1'
+    ? lazy(() => import('@components/shared/DiagnosticoAudio'))
+    : null
 
 /** RN-RE-NAV-23 — Seis segundos sin tocar nada y los controles se retiran. */
 export const MS_ANTES_DE_ATENUAR = 6000
@@ -166,6 +172,16 @@ export default function PantallaSesion({
           ms={instantanea?.ms ?? 0}
         />
       </div>
+
+      {DiagnosticoAudio && (
+        <Suspense fallback={null}>
+          <DiagnosticoAudio
+            origen="sesion"
+            sesion={estadoSesion}
+            fase={estadoRitmo?.fase ?? null}
+          />
+        </Suspense>
+      )}
 
       {/* RN-RE-NAV-24 — Se ajusta sin detener el ritmo: la máquina ni se entera. */}
       {ajustesAbiertos ? (

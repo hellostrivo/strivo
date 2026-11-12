@@ -13,7 +13,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import * as pin from './pin.js'
 
-const ESTADO_VACIO = { activo: false, metodo: null, puedeActivar: false, sinSalida: false }
+const ESTADO_VACIO = {
+  activo: false,
+  metodo: null,
+  puedeActivar: false,
+  sinSalida: false,
+  biometria: { estado: pin.BIOMETRIA.apagada, disponible: false, tipo: null },
+}
 
 export function usePin(uid) {
   const [estado, setEstado] = useState(ESTADO_VACIO)
@@ -94,6 +100,30 @@ export function usePin(uid) {
       const resultado = await pin.reestablecerPin(uid, codigo)
       if (resultado.ok) await revisar()
       if (resultado.ok && vivo.current) setDesbloqueado(true)
+      return resultado
+    },
+
+    // ─── Face ID y Touch ID (SPEC_23A) ──────────────────────────────────────
+
+    /** Con el PIN correcto y la cara aceptada; si no, todo queda como estaba. */
+    activarBiometria: async (codigo, motivo) => {
+      const resultado = await pin.activarBiometria(uid, codigo, { motivo })
+      await revisar()
+      return resultado
+    },
+
+    /** Sin pedir el PIN: quitar Face ID reduce el acceso. */
+    apagarBiometria: async () => {
+      const resultado = await pin.apagarBiometria(uid)
+      await revisar()
+      return resultado
+    },
+
+    /** Abre con la cara. Cancelar no cambia nada; `cambiada` se relee. */
+    abrirConBiometria: async (motivo) => {
+      const resultado = await pin.abrirConBiometria(uid, { motivo })
+      if (resultado.ok && vivo.current) setDesbloqueado(true)
+      if (resultado.motivo === 'cambiada') await revisar()
       return resultado
     },
 

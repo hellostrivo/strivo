@@ -17,6 +17,8 @@
 import { clsx } from 'clsx'
 import { CampoLinea } from '@components/shared/Campo'
 import { resolveGender } from '@copy/gender'
+import { toqueSuave } from '@lib/haptica'
+import { entroEnLaSeleccion } from '@/diario/seleccionEmociones'
 
 /**
  * @param {object[]} catalogo - `{ id, emoji, label: {m,f,n} }`.
@@ -44,6 +46,8 @@ export default function ChipsEmociones({
 }) {
   const tocar = (id) => {
     const { seleccion: siguiente, desplazada } = alternar(seleccion, id)
+    // SPEC_23B — Vibra lo que entra, también la cuarta que desplaza a otra.
+    if (entroEnLaSeleccion(seleccion, siguiente, id)) toqueSuave()
     onCambiar(siguiente)
     if (desplazada) onDesplazada?.(desplazada)
   }

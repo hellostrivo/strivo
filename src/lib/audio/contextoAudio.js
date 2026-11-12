@@ -25,6 +25,14 @@
 // intacta RN-AUD-04 —al salir del ejercicio diario no queda nada vivo—, que es
 // exactamente lo que la prueba de SPEC_08 comprueba desde entonces.
 
+import { avisar } from './observadorAudio.js'
+
+// SPEC_23C (DP-23.16) — El diagnóstico del audio, solo con su bandera. Se carga
+// al arrancar, antes de cualquier toque: el contexto nace con «Empezar», antes
+// de que el panel exista. Sin la bandera este `import()` y cada `avisar()` de
+// este archivo desaparecen del build.
+if (import.meta.env.VITE_DIAG_AUDIO === '1') import('./diagnosticoAudio.js')
+
 let contexto = null
 let prestamos = 0
 
@@ -54,6 +62,7 @@ export function adquirir({ crear = crearPorDefecto } = {}) {
   if (contexto === null) {
     contexto = crear()
     prestamos = 0
+    if (import.meta.env.VITE_DIAG_AUDIO === '1' && contexto) avisar('creado', contexto)
   }
   if (contexto === null) return null
   prestamos += 1
@@ -76,6 +85,7 @@ export function liberar() {
     // Ya estaba cerrado. No hay nada que hacer y nada que contar.
   }
   contexto = null
+  if (import.meta.env.VITE_DIAG_AUDIO === '1') avisar('cerrado')
 }
 
 /**
@@ -118,6 +128,7 @@ export const ESPERA_DE_REANUDAR_MS = 1000
 export async function reanudarContexto(ctx, { espera = ESPERA_DE_REANUDAR_MS } = {}) {
   if (!ctx) return false
   if (!NO_SE_REANUDA.has(ctx.state)) {
+    if (import.meta.env.VITE_DIAG_AUDIO === '1') avisar('reanudarEmpieza', { espera })
     let techo = null
     try {
       await Promise.race([
@@ -127,10 +138,16 @@ export async function reanudarContexto(ctx, { espera = ESPERA_DE_REANUDAR_MS } =
         }),
       ])
     } catch {
+      if (import.meta.env.VITE_DIAG_AUDIO === '1') avisar('reanudar', { resultado: 'rechazo' })
       return false
     } finally {
       clearTimeout(techo)
     }
+    if (import.meta.env.VITE_DIAG_AUDIO === '1') {
+      avisar('reanudar', { resultado: 'termino', estado: ctx.state })
+    }
+  } else if (import.meta.env.VITE_DIAG_AUDIO === '1') {
+    avisar('reanudar', { resultado: 'noHizoFalta' })
   }
   return ctx.state === 'running'
 }

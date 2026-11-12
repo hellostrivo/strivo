@@ -71,7 +71,7 @@ describe('solo con su bandera', () => {
     const salida = mkdtempSync(join(tmpdir(), 'strivo-diag-avisos-'))
     try {
       const entorno = { ...process.env, ...banderas }
-      for (const nombre of ['VITE_DIAG_ALMACEN', 'VITE_DIAG_AVISOS']) {
+      for (const nombre of ['VITE_DIAG_ALMACEN', 'VITE_DIAG_AVISOS', 'VITE_DIAG_AUDIO']) {
         if (!(nombre in banderas)) delete entorno[nombre]
       }
       execFileSync('npx', ['vite', 'build', '--outDir', salida, '--logLevel', 'error'], {
