@@ -752,7 +752,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**121 archivos de prueba · 2.865 casos** en el proyecto `indexeddb`, **2.794 más** en el proyecto
+**121 archivos de prueba · 2.874 casos** en el proyecto `indexeddb`, **2.803 más** en el proyecto
 `sqlite` (la misma suite contra SQLite) **y 17 XCTest del plugin** · los seis comandos y
 `validar:frases` en verde. **La intermitente de `journal.test.js` se cerró** (10 nov 2026): sus dos
 entradas empataban en el milisegundo y el orden lo decidía un UUID; ahora se crean con `Date`
@@ -879,6 +879,22 @@ el punto de la sesión.
   arrastra los textos de las otras, y `lint:copy` los revisa.
 
 **Los resultados del bloque D, cuando lleguen, van aquí.**
+
+### Al abrir la app, papel desde el primer instante (D-21.11, 12 nov 2026)
+
+La instrucción completa está en `docs/specs/INSTRUCCION_D_21_11_PANTALLA_DE_ARRANQUE.md` (v1.2;
+**su §9 manda**). **La ventana que crece desde el ícono ya no pasa por negro**: la imagen de arranque
+de 2732 × 2732 pasaba del límite de memoria de iOS para una pantalla de arranque (25 MB), iOS
+descartaba el storyboard y pintaba negro. Ahora es papel con la «S» a su tamaño justo. El porqué,
+el arreglo y las reglas que deja están en «App iOS (SPEC_21.1)», en el apartado «Por qué la pantalla
+de arranque es ligera». **Ni Swift, ni `capacitor.config.json`, ni `Info.plist`, ni
+`project.pbxproj`, ni `package.json`, ni la web cambiaron.**
+
+**Pruebas manuales M1–M6 no realizadas, por decisión de la fundadora (12 nov 2026).** D-21.11 se
+cierra con la causa confirmada por `splashboardd` y las grabaciones del simulador (0 cuadros negros
+en frío y en segundo arranque, en oscuro y en claro). Queda por ver en el iPhone, sin bloquear: el
+relevo de noche de D-21.9 (criterio d) y O-21.11.1. La primera build en el iPhone va tras borrar la
+app y reiniciar el teléfono.
 
 ### Los recordatorios llegan en el iPhone (SPEC_22, 11 nov 2026)
 
@@ -1339,9 +1355,13 @@ SPEC_21.2 (arriba).
 ```bash
 npm run ios:build      # comprueba GoogleService-Info.plist, vite build --mode ios y cap sync ios
 npm run ios:abrir      # cap open ios: abre Xcode
-npm run ios:arranque   # compone assets/splash.png y splash-dark.png desde el símbolo
-npm run ios:recursos   # npx --yes @capacitor/assets@3.0.5 generate --ios
+npm run ios:arranque   # escribe SimboloArranque.imageset (la «S» del arranque) desde el símbolo
+npm run ios:recursos   # npx --yes @capacitor/assets@3.0.5 generate --ios: solo el ícono
 ```
+
+**`ios:recursos` es solo para el ícono** (D-21.11). Lee `assets/`, y ahí solo están los tres
+archivos del ícono: un `splash.png`, un `logo.png` o un `icon.png` le harían volver a escribir un
+arranque de 2732 × 2732. `appIos.test.js` falla si `assets/` tiene cualquier otro archivo.
 
 **`@capacitor/assets` no está en `package.json`, a propósito**: arrastra una copia de la CLI 5 y un
 `sharp` viejo con binario nativo que Netlify instalaría en cada build web. Se ejecuta fijado con
@@ -1397,7 +1417,10 @@ arranque; a igual capa, la última apuntada—, porque React monta los efectos d
 los del padre y una confirmación ya montada dentro de las secciones quedaría debajo. El buen deseo,
 «Buenas noches» y la confirmación tapan el cromo sin ocultarlo y piden su propio color.
 
-**La pantalla de arranque es la «S» sobre papel**, igual que el ícono (DP-21.1), y se retira tras el
+**La pantalla de arranque es la «S» sobre papel**, igual que el ícono (DP-21.1): un `UIView` de papel
+`#FBF8F4` fijo en sRGB con un solo `UIImageView` (`SimboloArranque`, `scaleAspectFit`) de **97 × 123
+pt**, centrado en la vista entera y no en el área segura. El plugin vuelve a montar este mismo
+storyboard encima del WebView, así que su capa es idéntica. Se retira tras el
 primer pintado **y 300 ms de papel quieto** con un fundido de 320 ms, o sin espera ni fundido con
 «reducir movimiento». De día el velo es papel y el paso no se ve. **De noche el velo es índigo**, y el
 fundido es lo que lo vuelve un paso y no un corte; arreglarlo del todo depende del tono del velo
@@ -1415,6 +1438,34 @@ corta es el mismo salto. Cuándo y cómo lo decide `planDeRetirada`, que es pura
 ocurre siempre**: con `launchAutoHide: false` un `hide()` que no llega deja la app en la «S» para
 siempre, así que la llamada es lo primero de `main.jsx`, tiene un techo de 2 s que la hace aunque no
 lleguen los fotogramas, se hace una sola vez y, si lanza o se rechaza, se repite sin fundido.
+
+**Por qué la pantalla de arranque es ligera (D-21.11, nov 2026).** Al abrir desde el ícono, la
+ventana que crecía pasaba por negro antes del papel: en el iPhone, ~500 ms en frío y ~80 ms en el
+segundo arranque, de día y de noche, en modo claro y en oscuro. **La causa la dijo el propio iOS**:
+`splashboardd` registraba «Estimated size (29900800) is over limit (25000000)» y marcaba la app con
+«a bad launch image until it is updated». La imagen `Splash` era de 2732 × 2732 **en las tres
+escalas** —29,9 MB al decodificarse— y **el límite de iOS para una pantalla de arranque es de 25 MB**.
+Al pasarse, iOS descarta el storyboard entero y la ventana sale negra; el papel solo llegaba con la
+capa del plugin. **Descartado antes:** el modo oscuro (`systemBackgroundColor`, adenda de 21.1 §1),
+el fondo del storyboard y la caché. **El arreglo:** la «S» a su tamaño justo, sobre el papel de la
+vista. El símbolo sale del SVG por `scripts/componer-arranque.js`, que exporta las medidas; el
+storyboard repite los mismos números y una prueba comprueba que coinciden. `Splash.imageset` y
+`assets/splash*.png` salieron del repo. En el simulador (iPhone 17, iOS 27.2) pasó de 2,4 s de negro
+puro en frío y 1,1 s en el segundo arranque a ningún cuadro negro, en los dos modos, y la «S» quedó a
+1 px o menos de donde estaba. El `Assets.car` del Release de simulador pasó de 81 480 a 51 032 B.
+
+- **Regla: ninguna imagen del arranque va a sangre ni es más grande de lo que se pinta.**
+  `appIos.test.js` falla si una imagen del catálogo pasa de 1024 px por lado o si vuelve
+  `Splash.imageset`.
+- **iOS guarda la pantalla de arranque por versión de la app.** Cualquier cambio en ella se prueba
+  **tras borrar la app y reiniciar el teléfono** (o el simulador): si no, se ve la versión vieja, o la
+  marca de «mala» de la anterior. En el simulador, las variantes salían sin «S» hasta reiniciarlo.
+- **En el simulador, una build sin firmar también sale en negro**, por otro motivo (error −67056 al
+  leer el storyboard). Toda medición del arranque va firmada (ad hoc basta: `CODE_SIGN_IDENTITY=-`).
+- **En teoría el primer cuadro de la app podría salir sin la capa del plugin**, que se añade con
+  `DispatchQueue.main.async`, y la ventana no tiene color. En la práctica no se ve. Si alguna vez se
+  viera, el arreglo es darle papel a la ventana en `SceneDelegate`, y eso es código nativo: se decide
+  aparte.
 
 **Áreas seguras.** `ios.contentInset: 'never'`: con `'automatic'` iOS pone su propio margen, los
 `env()` valen 0 y el fondo no llega bajo la isla. Tres pantallas sin cromo no tenían su margen y lo

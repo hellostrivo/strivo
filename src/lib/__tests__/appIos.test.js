@@ -7,6 +7,13 @@ import { describe, expect, it } from 'vitest'
 import { readdirSync, readFileSync, statSync } from 'fs'
 import { join } from 'path'
 import { execFileSync } from 'child_process'
+import {
+  ALTO_PT,
+  ANCHO_PT,
+  ESCALAS,
+  NOMBRE,
+  archivoDe,
+} from '../../../scripts/componer-arranque.js'
 
 const leer = (ruta) => readFileSync(ruta, 'utf8')
 
@@ -225,12 +232,6 @@ describe('ios/App/App.xcodeproj/project.pbxproj', () => {
   })
 })
 
-// **D-21.11 (14 oct 2026).** Lo que se ve mientras iOS agranda el ícono es este
-// storyboard, y la imagen `Splash` tarda un instante en pintarse: en ese hueco se
-// ve el fondo de la vista. Con `systemBackgroundColor` ese fondo es negro en modo
-// oscuro, y la grabación lo midió así —hasta 67 ms en negro puro antes del
-// papel—. El arranque es papel de día y de noche, y no cambia con el modo del
-// sistema (DP-21.1): el fondo va fijo, en sRGB.
 describe('ios/App/App/App.entitlements', () => {
   it('Iniciar sesión con Apple, y nada más', () => {
     const derechos = leer('ios/App/App/App.entitlements')
@@ -259,26 +260,162 @@ describe('.gitignore: lo que no se sube (DP-21.2.3)', () => {
   })
 })
 
+// **D-21.11 (nov 2026): la pantalla de arranque es ligera, o iOS no la pinta.**
+// Mientras iOS agranda el ícono, lo que se ve es este storyboard, dibujado de
+// antemano por el sistema. Hasta el 12 nov 2026 era una imagen `Splash` de
+// 2732 × 2732 a sangre en las tres escalas: 29,9 MB al decodificarse, y el
+// límite de iOS para una pantalla de arranque es de 25 MB. `splashboardd` lo
+// decía tal cual —«Estimated size (29900800) is over limit (25000000)»— y
+// marcaba la app con «a bad launch image»: la ventana crecía en negro, en los
+// dos modos, y el papel solo llegaba con la capa del plugin. **Descartado antes
+// de dar con ello:** el modo oscuro (`systemBackgroundColor`, adenda de 21.1 §1:
+// pasaba igual en modo claro), el fondo del storyboard (pasarlo a papel fijo no
+// cambió nada) y la caché (borrar la app y reiniciar, tampoco). Ahora es papel
+// con la «S» en su tamaño justo, del mismo tamaño que medía en un iPhone 17, y
+// las medidas salen del script que la compone (`scripts/componer-arranque.js`).
 describe('ios/App/App/Base.lproj/LaunchScreen.storyboard', () => {
   const storyboard = leer('ios/App/App/Base.lproj/LaunchScreen.storyboard')
-  const vista = storyboard.match(/<imageView key="view"[^>]*>[\s\S]*?<\/imageView>/)[0]
+  const raiz = storyboard.match(/<view key="view"[^>]*\bid="([^"]+)"[^>]*>[\s\S]*<\/view>/)
+  const idRaiz = raiz?.[1]
+  const imagenes = [...storyboard.matchAll(/<imageView\b[^>]*>/g)].map((m) => m[0])
+  const restricciones = [...storyboard.matchAll(/<constraint\b[^>]*\/>/g)].map((m) => m[0])
+  const atributo = (etiqueta, nombre) => etiqueta.match(new RegExp(`\\b${nombre}="([^"]*)"`))?.[1]
 
-  it('el fondo de la vista es papel #FBF8F4, en sRGB', () => {
-    const fondo = vista.match(/<color key="backgroundColor"([^>]*)\/>/)[1]
+  it('la vista raíz es un UIView con fondo papel #FBF8F4, en sRGB', () => {
+    expect(raiz).not.toBeNull()
+    const colores = [...storyboard.matchAll(/<color key="backgroundColor"([^>]*)\/>/g)]
+    expect(colores).toHaveLength(1)
+    const fondo = colores[0][1]
     const canal = (nombre) => Number(fondo.match(new RegExp(`${nombre}="([\\d.]+)"`))[1])
     const rgb = ['red', 'green', 'blue'].map((c) => Math.round(canal(c) * 255))
     expect(rgb).toEqual([0xfb, 0xf8, 0xf4])
     expect(canal('alpha')).toBe(1)
     expect(fondo).toMatch(/customColorSpace="sRGB"/)
+    // Es el fondo de la raíz, no el de la imagen: va después de sus subvistas.
+    expect(raiz[0].lastIndexOf('<color key="backgroundColor"')).toBeGreaterThan(
+      raiz[0].lastIndexOf('</subviews>'),
+    )
   })
 
   it('ningún color del sistema: el modo oscuro no lo cambia', () => {
-    expect(storyboard).not.toMatch(/systemBackgroundColor/)
+    expect(storyboard).not.toMatch(/systemColor|systemBackgroundColor/)
   })
 
-  it('la imagen sigue siendo Splash, a sangre', () => {
-    expect(vista).toMatch(/image="Splash"/)
-    expect(vista).toMatch(/contentMode="scaleAspectFill"/)
+  it('exactamente una imagen, SimboloArranque, encajada y no a sangre', () => {
+    expect(imagenes).toHaveLength(1)
+    expect(atributo(imagenes[0], 'image')).toBe(NOMBRE)
+    expect(atributo(imagenes[0], 'contentMode')).toBe('scaleAspectFit')
+    expect(atributo(imagenes[0], 'translatesAutoresizingMaskIntoConstraints')).toBe('NO')
+  })
+
+  it('centrada en la vista raíz, no en el área segura, y del tamaño del script', () => {
+    const idImagen = atributo(imagenes[0], 'id')
+    const centro = (eje) =>
+      restricciones.filter(
+        (r) =>
+          atributo(r, 'firstItem') === idImagen &&
+          atributo(r, 'firstAttribute') === eje &&
+          atributo(r, 'secondItem') === idRaiz &&
+          atributo(r, 'secondAttribute') === eje &&
+          atributo(r, 'constant') === undefined,
+      )
+    expect(centro('centerX')).toHaveLength(1)
+    expect(centro('centerY')).toHaveLength(1)
+
+    const medida = (eje) =>
+      restricciones
+        .filter(
+          (r) => atributo(r, 'firstItem') === undefined && atributo(r, 'firstAttribute') === eje,
+        )
+        .map((r) => Number(atributo(r, 'constant')))
+    expect(medida('width')).toEqual([ANCHO_PT])
+    expect(medida('height')).toEqual([ALTO_PT])
+    expect(restricciones).toHaveLength(4)
+    expect(storyboard).not.toMatch(/safeArea/)
+
+    expect(storyboard).toMatch(
+      new RegExp(`<image name="${NOMBRE}" width="${ANCHO_PT}" height="${ALTO_PT}"/>`),
+    )
+  })
+
+  it('ninguna referencia a Splash y ningún texto', () => {
+    expect(storyboard).not.toMatch(/Splash/)
+    expect(storyboard).not.toMatch(/<label\b|<textView\b|<textField\b|\btext="/)
+  })
+})
+
+/** Ancho, alto y si trae canal alfa, leídos de la cabecera del PNG. */
+function cabeceraPng(ruta) {
+  const datos = readFileSync(ruta)
+  expect(datos.subarray(1, 4).toString('latin1')).toBe('PNG')
+  expect(datos.subarray(12, 16).toString('latin1')).toBe('IHDR')
+  const tipoDeColor = datos[25]
+  return {
+    ancho: datos.readUInt32BE(16),
+    alto: datos.readUInt32BE(20),
+    // 4: gris con alfa; 6: color con alfa.
+    alfa: tipoDeColor === 4 || tipoDeColor === 6,
+  }
+}
+
+/** Todos los PNG de una carpeta, a cualquier profundidad. */
+function pngsDe(carpeta) {
+  return readdirSync(carpeta).flatMap((nombre) => {
+    const ruta = join(carpeta, nombre)
+    if (statSync(ruta).isDirectory()) return pngsDe(ruta)
+    return nombre.toLowerCase().endsWith('.png') ? [ruta] : []
+  })
+}
+
+describe('ios/App/App/Assets.xcassets: el arranque, del tamaño justo (D-21.11)', () => {
+  const CATALOGO = 'ios/App/App/Assets.xcassets'
+  const CONJUNTO = `${CATALOGO}/${NOMBRE}.imageset`
+
+  it('SimboloArranque declara 1x, 2x y 3x, sin variante oscura', () => {
+    const contenido = JSON.parse(leer(`${CONJUNTO}/Contents.json`))
+    expect(contenido.images).toEqual(
+      ESCALAS.map((escala) => ({
+        idiom: 'universal',
+        filename: archivoDe(escala),
+        scale: `${escala}x`,
+      })),
+    )
+    expect(JSON.stringify(contenido)).not.toMatch(/appearances|luminosity|dark/)
+  })
+
+  it.each(ESCALAS)(
+    'el PNG de %ix mide los puntos del script por su escala y tiene alfa',
+    (escala) => {
+      const { ancho, alto, alfa } = cabeceraPng(`${CONJUNTO}/${archivoDe(escala)}`)
+      expect(Math.abs(ancho - ANCHO_PT * escala)).toBeLessThanOrEqual(1)
+      expect(Math.abs(alto - ALTO_PT * escala)).toBeLessThanOrEqual(1)
+      expect(alfa).toBe(true)
+    },
+  )
+
+  it('Splash.imageset no existe', () => {
+    expect(readdirSync(CATALOGO)).not.toContain('Splash.imageset')
+  })
+
+  // La guarda que habría atrapado D-21.11: salta si alguien vuelve a pasar el
+  // arranque por `@capacitor/assets`, que lo escribe a 2732 × 2732.
+  it('ninguna imagen del catálogo pasa de 1024 px por lado', () => {
+    const pngs = pngsDe(CATALOGO)
+    expect(pngs.length).toBeGreaterThan(0)
+    for (const ruta of pngs) {
+      const { ancho, alto } = cabeceraPng(ruta)
+      expect(Math.max(ancho, alto), ruta).toBeLessThanOrEqual(1024)
+    }
+  })
+
+  // `npm run ios:recursos` lee `assets/`: con un `splash.png`, un `logo.png` o
+  // un `icon.png` volvería a escribir un arranque de 2732 (DP-21.11.3).
+  it('assets/ solo tiene los tres archivos del ícono', () => {
+    expect(readdirSync('assets').sort()).toEqual([
+      'icon-background.png',
+      'icon-foreground.png',
+      'icon-only.png',
+    ])
   })
 })
 
