@@ -878,7 +878,18 @@ el punto de la sesión.
 - Sus textos son `DIAGNOSTICO_AUDIO` en `src/copy/diagnostico.js`; cada bandera de diagnóstico no
   arrastra los textos de las otras, y `lint:copy` los revisa.
 
-**Los resultados del bloque D, cuando lleguen, van aquí.**
+**Resultados del bloque D** (12 nov 2026, la fundadora en su iPhone; el detalle está en el §10 de
+la instrucción). **Se confirma la hipótesis 4: el tipo de sesión de audio de WebKit.**
+
+- **En «automático»** (el de hoy), al irse el audio queda «interrumpido» y su reloj quieto. Al
+  volver dice «en marcha», con el motor vivo, pero **no suena, ni con toques**. En modo silencio
+  tampoco suena. **La PWA en Safari se porta igual**: no es Capacitor, es WebKit.
+- **En «reproducción»** sigue sonando fuera y con la pantalla bloqueada (49,4 s de 49,4 s) y suena
+  en modo silencio. También **pausa la música de otra app** y **pone el cuadro de reproducción en
+  la pantalla de bloqueo, titulado «localhost»**. El JavaScript fuera corre a medias (25 tics de 49)
+  y con 0 fotogramas, así que el reloj de la sesión no avanza bloqueado.
+- **Por anotar:** D8 («Probar con un audio nuevo»), si la música vuelve sola al terminar (D7) y si
+  se oían las fases con la pantalla bloqueada.
 
 ### Al abrir la app, papel desde el primer instante (D-21.11, 12 nov 2026)
 

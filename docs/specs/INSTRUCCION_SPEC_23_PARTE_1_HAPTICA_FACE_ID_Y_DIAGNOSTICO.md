@@ -403,7 +403,35 @@ contra `strivo-fe04f`).
   la frase de `cambiada`, y el interruptor quedó apagado. **Así queda contestado el riesgo residual
   del §9:** iOS devuelve «la clave no está» (`21`) para una clave invalidada, no «falló» (`10`).
 
-**Bloque D:** en curso. Sus resultados alimentan la Parte 2.
+**La build combinada** (`revision-23` con `strivo` y D-21.11 fusionados) **pasa en el iPhone**:
+arranca en papel sin negro, Face ID abre el Journal y la háptica funciona.
+
+**Bloque D** (12 nov 2026, la fundadora en su iPhone con «La 23 con diagnóstico»). Alimenta la
+Parte 2.
+
+- **Con el tipo de sesión de audio en «automático»** (el de hoy):
+  - Al irse, el audio queda **«interrumpido»** y su reloj **quieto** (0,0 s mientras estaba fuera).
+  - Al volver dice **«en marcha»**, con el motor vivo, **pero no suena, ni con toques** (D1, D2, D3).
+  - En modo silencio no suena (D6).
+  - **La PWA en Safari se porta igual** (D0): no es Capacitor, es WebKit.
+- **Con «reproducción»** (D4, D5, D6):
+  - **Sigue sonando fuera y con la pantalla bloqueada**: 49,4 s de reloj del audio en 49,4 s fuera.
+  - Suena en modo silencio.
+  - **Pausa la música de otra app.**
+  - **Aparece el cuadro de reproducción en la pantalla de bloqueo, titulado «localhost».**
+  - El JavaScript fuera corre a medias (25 tics de 49) y con **0 fotogramas**.
+- **Se confirma la hipótesis 4**: el tipo de sesión de audio de WebKit. Con el de fábrica, el audio
+  se porta como `ambient` y WebKit lo interrumpe al irse la página sin recuperarlo.
+- **Por anotar** (la fundadora no los mandó con el resto): D8 («Probar con un audio nuevo»), si la
+  música de la otra app vuelve sola al terminar la sesión (D7) y si con la pantalla bloqueada se
+  oían los cambios de fase (D2 y D5).
+
+**Para la Parte 2, de lo que se vio:**
+- El título «localhost» del cuadro de la pantalla de bloqueo hay que decidirlo.
+- Con 0 fotogramas fuera, el reloj de la sesión (`requestAnimationFrame`) no avanza con la pantalla
+  bloqueada, como se había previsto en §2.3. Que el audio sobreviva no basta para «sigue hasta el
+  fin de la sesión».
+- Pausar la música de otra app es efecto de «reproducción», y es una decisión de producto (D7).
 
 ---
 
