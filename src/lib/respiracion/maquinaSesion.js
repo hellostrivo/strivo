@@ -344,10 +344,20 @@ export function crearMaquina({
      *
      * Quien escucha `visibilitychange` es la capa visual (SPEC_14); la máquina
      * no toca el DOM.
+     *
+     * **Con sonido que sonó fuera, la sesión sí siguió** (SPEC_23 Parte 2,
+     * DP-23.23): la guía marcó las fases con la pantalla bloqueada y el reloj
+     * del audio avanzó. Entonces no se pausa, porque decir que no siguió sería
+     * lo que no es honesto. `sono` lo decide quien midió el reloj del audio; en
+     * silencio, o si el audio no sonó, se pausa como siempre.
+     *
+     * @param {number} msAusente
+     * @param {{sono?: boolean}} [opciones]
      */
-    notificarAusencia(msAusente) {
+    notificarAusencia(msAusente, { sono = false } = {}) {
       if (estado !== ESTADOS.ACTIVO && estado !== ESTADOS.CERRANDO) return false
       if (!(Number(msAusente) > msCiclo)) return false
+      if (sono === true) return false
       this.pausar()
       return true
     },
