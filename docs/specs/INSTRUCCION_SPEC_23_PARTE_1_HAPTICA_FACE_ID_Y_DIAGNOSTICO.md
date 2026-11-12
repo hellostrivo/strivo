@@ -393,8 +393,17 @@ En `~/Developer/strivo-23`, rama `revision-23`, sin push. Commits por tema, en e
 
 ### 10.2 Pruebas manuales
 
-*(Las hace la fundadora con «La 23 con diagnóstico». Los resultados del bloque D alimentan la
-Parte 2.)*
+**H1–H4 y F1–F9 pasan** (12 nov 2026, la fundadora en su iPhone 17 con «La 23 con diagnóstico»,
+contra `strivo-fe04f`).
+
+- **F4:** Face ID abre al instante, así que «Cancelar» se probó tapando la cámara. La pantalla del
+  PIN quedó sin ningún mensaje y con «Abrir con Face ID» debajo de «Abrir».
+- **F7, una apariencia alternativa: pasa.** Era obligatoria porque el simulador no pudo comprobar
+  la invalidación (§10.1). Con una cara nueva registrada, Face ID dejó de abrir y Strivo lo dijo con
+  la frase de `cambiada`, y el interruptor quedó apagado. **Así queda contestado el riesgo residual
+  del §9:** iOS devuelve «la clave no está» (`21`) para una clave invalidada, no «falló» (`10`).
+
+**Bloque D:** en curso. Sus resultados alimentan la Parte 2.
 
 ---
 

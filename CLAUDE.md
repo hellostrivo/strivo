@@ -826,15 +826,20 @@ solo cambian la cadena de versión del Swift y un párrafo del README.
 
 **Lo que no se pudo comprobar en el simulador:** si cambiar la inscripción de Face ID invalida la
 clave. Ni un ejecutable suelto, ni un XCTest sin app anfitriona ni una app firmada a mano tienen
-acceso a la Keychain del simulador, y su estado biométrico no cambia al reinscribir. **Por eso F7
-(una apariencia alternativa en el teléfono) es obligatoria.**
+acceso a la Keychain del simulador, y su estado biométrico no cambia al reinscribir. Por eso F7
+(una apariencia alternativa en el teléfono) se volvió obligatoria, **y pasó**: con una cara nueva,
+Strivo dijo `cambiada` y apagó el interruptor. iOS contesta `21` para una clave invalidada, así que
+el riesgo residual de arriba no se da.
 
 **Tamaño.** El chunk principal de la web pasa de 737,40 a 744,66 kB (gzip, de 209,40 a 211,15):
 es la lógica de Face ID en `pin.js` y la pantalla; los dos plugins y el puente de biometría van en
 chunks aparte que la web no descarga. **La app de iPhone en Release** (medida antes de instalar,
 con los dos plugins): el `.app` de 9.504 a 9.640 KB (+136 KB), comprimido +35 KB.
 
-**Las pruebas manuales H1–H4 y F1–F9** las hace la fundadora con «La 23 con diagnóstico».
+**Las pruebas manuales H1–H4 y F1–F9 pasan** (12 nov 2026, la fundadora en su iPhone 17 con «La
+23 con diagnóstico»). En F4 Face ID abre al instante, así que «Cancelar» se probó tapando la
+cámara: la pantalla del PIN quedó sin mensaje y con «Abrir con Face ID». El detalle está en el §10
+de la instrucción.
 
 ### El audio de Respiración al irse y al volver (SPEC_23C, diagnóstico, 12 nov 2026)
 
