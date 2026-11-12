@@ -13,6 +13,8 @@
 // cinco fuentes necesitan exactamente este bucle, y cinco copias serían cinco
 // sitios donde RN-RE-SND-06 se puede romper sin que nadie lo note.
 
+import { avisar } from '@lib/audio/observadorAudio'
+
 export const MS_LOOKAHEAD = 200
 export const MS_TIC = 50
 
@@ -38,6 +40,8 @@ export function crearPlanificador(
   /** Programa todo lo que caiga dentro de la ventana de anticipación. */
   function tic() {
     if (!corriendo) return
+    // SPEC_23C — Cuántos tics lleva, para el diagnóstico. Sin la bandera no existe.
+    if (import.meta.env.VITE_DIAG_AUDIO === '1') avisar('tic')
     // Antes de programar nada, se recoge lo que ya terminó. Va en cada tic y no
     // solo cuando toca un evento: con intervalos largos —una campana cada siete
     // segundos— la siega llegaría muy de tarde en tarde y el número de nodos

@@ -23,14 +23,19 @@
 // RN-AUD-01 — El contexto de audio se crea dentro del manejador del gesto que
 // arranca el ejercicio, que es lo que hace el botón de empezar.
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { clsx } from 'clsx'
 import Button from '@components/ui/Button'
 import { despertarAlVolver } from '@lib/audio/contextoAudio'
+import { avisar } from '@lib/audio/observadorAudio'
 import { crearAudioRespiracion } from '@lib/audioRespiracion'
 import { toqueSuave } from '@lib/haptica'
 import { CICLOS, OPACIDAD_ESTATICA, claveDeFase, escalaEn, faseEn } from '@lib/ritmoRespiracion'
 import { unaVezCon } from './unaVez'
+
+// SPEC_23C (DP-23.16) — El panel del diagnóstico del audio, solo con su bandera.
+const DiagnosticoAudio =
+  import.meta.env.VITE_DIAG_AUDIO === '1' ? lazy(() => import('./DiagnosticoAudio')) : null
 
 /** ¿Está activada la preferencia del sistema? Se consulta, no se asume. */
 function usaMovimientoReducido() {
@@ -186,6 +191,22 @@ export default function Respiracion({
         audio.current = crearAudioRespiracion()
         await audio.current.iniciar()
         audio.current.silenciar(silenciado)
+        // SPEC_23C — Solo con la bandera del diagnóstico: lo que el panel lee
+        // y «Probar con un audio nuevo». Aquí solo hay guía: se detiene (y con
+        // ella el contexto), se crea otra y el siguiente fotograma reprograma
+        // la envolvente desde donde va el círculo.
+        if (import.meta.env.VITE_DIAG_AUDIO === '1') {
+          avisar('momento', {
+            motor: () => audio.current,
+            reconstruir: async () => {
+              audio.current?.detener()
+              audio.current = crearAudioRespiracion()
+              await audio.current.iniciar()
+              audio.current.silenciar(silenciado)
+              faseActual.current = null
+            },
+          })
+        }
       }
       desde.current = performance.now()
       setEmpezado(true)
@@ -278,6 +299,15 @@ export default function Respiracion({
             {empezado ? textos.saltar : textos.salir}
           </button>
         </div>
+        {DiagnosticoAudio && (
+          <Suspense fallback={null}>
+            <DiagnosticoAudio
+              origen="momento"
+              sesion={corriendo ? 'activo' : empezado ? 'pausado' : 'inactivo'}
+              fase={fase}
+            />
+          </Suspense>
+        )}
       </div>
     </section>
   )

@@ -55,3 +55,58 @@ export const DIAGNOSTICO_AVISOS = Object.freeze({
   cuando: '{semana} {dia} {mes}, {hora}:{minuto}',
   zona: 'Zona horaria: {zona}',
 })
+
+// SPEC_23C (DP-23.16) — El audio de Respiración, con `VITE_DIAG_AUDIO=1`.
+// Exportación aparte y bandera propia, como las dos de arriba. Lo importa solo
+// `components/shared/DiagnosticoAudio.jsx`. Aprobados en el §9 de la
+// instrucción de SPEC_23 Parte 1. Las horas van en hh:mm:ss.
+export const DIAGNOSTICO_AUDIO = Object.freeze({
+  estado: 'Audio: {estado}',
+  estados: Object.freeze({
+    running: 'en marcha',
+    suspended: 'suspendido',
+    interrupted: 'interrumpido',
+    closed: 'cerrado',
+    ninguno: 'sin audio',
+  }),
+  cambios: 'Cambios: {lista}',
+  sinCambios: 'ninguno',
+  cambio: '{hora} {estado}',
+  alIrse: 'Al irse: {hora} · {estado}',
+  alVolver: 'Al volver: {hora} · fuera {s} s · {estado}',
+  todaviaNo: 'todavía no',
+  alIrseNada: 'Al irse: todavía no',
+  alVolverNada: 'Al volver: todavía no',
+  resume: 'Reanudar: {resultado}',
+  resultados: Object.freeze({
+    resolvio: 'resolvió',
+    rechazo: 'rechazó',
+    sinRespuesta: 'sin respuesta en 1 s',
+    noHizoFalta: 'no hizo falta',
+  }),
+  relojFuera: 'Reloj del audio mientras estaba fuera: {a} s de {b} s',
+  relojAhora: 'Reloj del audio ahora: {valor}',
+  reloj: Object.freeze({ avanza: 'avanza', quieto: 'quieto' }),
+  jsFuera: 'JavaScript mientras estaba fuera: {n} tics de {m} · {f} fotogramas',
+  motor: 'Motor: {vivo} · fuentes {n} · planificador {tics}',
+  motores: Object.freeze({ vivo: 'vivo', suelto: 'suelto' }),
+  sesion: 'Sesión: {estado} · fase {fase}',
+  estadosSesion: Object.freeze({
+    inactivo: 'sin empezar',
+    acomodando: 'acomodo',
+    activo: 'en marcha',
+    pausado: 'en pausa',
+    cerrando: 'último ciclo',
+    completado: 'terminada',
+  }),
+  sinFase: 'ninguna',
+  tipo: 'Tipo de sesión de audio: {tipo}',
+  tipos: Object.freeze({
+    auto: 'automático',
+    playback: 'reproducción',
+    noExiste: 'no existe',
+  }),
+  nuevo: 'Probar con un audio nuevo',
+  plegar: 'Ocultar diagnóstico',
+  desplegar: 'Diagnóstico',
+})

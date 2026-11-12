@@ -22,6 +22,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { ESTADOS, crearMaquina } from '@lib/respiracion/maquinaSesion'
 import { resolverEstado } from '@lib/respiracion/motorRitmo'
 import { adquirir, despertarAlVolver, liberar, reanudar } from '@lib/audio/contextoAudio'
+import { avisar } from '@lib/audio/observadorAudio'
 import { crearAudioRespiracion } from '@lib/audioRespiracion'
 import { toqueSuave } from '@lib/haptica'
 import { crearMotorAmbiente } from '../audio/motorAmbiente.js'
@@ -291,6 +292,41 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
     maquina.current.iniciar()
     pararBucle()
     frame.current = requestAnimationFrame(pintarFrame)
+
+    // SPEC_23C (DP-23.16 y 23.17 b) — Solo con la bandera del diagnóstico: lo
+    // que el panel lee de esta sesión, y «Probar con un audio nuevo», que
+    // corre dentro del toque. El orden importa: primero la guía (guarda su
+    // propio préstamo), luego el ambiente y luego el préstamo de aquí; con
+    // los préstamos a cero el contexto se cierra y `asegurarAudio` crea otro.
+    if (import.meta.env.VITE_DIAG_AUDIO === '1') {
+      avisar('sesion', {
+        motor: () => ambiente.current,
+        reconstruir: () => {
+          guia.current?.detener()
+          guia.current = null
+          ambiente.current?.liberar()
+          ambiente.current = null
+          if (prestado.current) {
+            prestado.current = false
+            liberar()
+          }
+          const nuevo = asegurarAudio()
+          if (nuevo === null) return
+          nuevo.confirmarSonido(config.current.sonidoAmbienteId ?? ID_SILENCIO)
+          nuevo.entrar()
+          if (config.current.guiaSonoraActiva) {
+            guia.current = crearAudioRespiracion()
+            guia.current.iniciar()
+          }
+          const foto = maquina.current?.instantanea()
+          aplicarAudio(foto?.estado)
+          const ritmo = foto?.ritmo
+          if (ritmo && FASES_CON_PULSO.has(ritmo.fase)) {
+            guia.current?.fase(ritmo.fase, ritmo.msRestantesFase / 1000)
+          }
+        },
+      })
+    }
   }, [alCompletar, asegurarAudio, pintarFrame, pararBucle])
 
   const pausar = useCallback(() => maquina.current?.pausar(), [])
