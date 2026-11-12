@@ -1874,6 +1874,14 @@ export const copy = {
     titulo: 'Respiración',
     subtitulo: 'Un momento para bajar el ritmo',
 
+    // SPEC_23 Parte 2 (DP-23.24) — El cuadro de la pantalla de bloqueo, solo
+    // con una sesión con sonido. El subtítulo de la sección es el nombre del
+    // patrón, tal como sale en la pantalla de patrones (`patrones.*.nombre`).
+    bloqueo: {
+      titulo: 'Respiración · Strivo',
+      subtituloMomento: 'Respira un momento',
+    },
+
     patrones: {
       calma553: {
         nombre: 'Calma 5-5-3',
