@@ -1,6 +1,6 @@
 # CLAUDE.md — Strivo
 
-**Última actualización:** 11 nov 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
+**Última actualización:** 12 nov 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
 **Blueprint (documento rector):** `/docs/blueprint/Strivo_Blueprint_de_Producto_v5_0_24-08-2026.md`
 **Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO.md`
 **Plan operativo del repliegue:** `/docs/Strivo_Plan_de_Separacion_Tecnica_v1_24-08-2026.md`
@@ -487,6 +487,9 @@ solo con emociones es válida. El **PIN** (4–6 dígitos) se almacena derivado 
 **nunca en claro**; bloquea el **acceso, no cifra** (limitación consciente, backlog B-5). Con el PIN
 puesto **el Historial no lee el journal siquiera**, y lo dice con una frase fija que no depende de si
 hay entradas: si apareciera solo cuando las hay, la frase estaría contando lo que el PIN tapa.
+**En la app de iPhone, el journal con PIN se abre también con Face ID o Touch ID** (SPEC_23A): otra
+forma de abrir la misma puerta, no un cifrado. El PIN sigue siendo la puerta de siempre y el
+respaldo, y en la web no existe nada de esto.
 
 **Historial** (§7). **Muestra, no analiza** (RN-HIS-01): sin tendencias, sin medias, sin gráficas,
 sin comparación entre semanas. Punto de ánimo de cinco estados —agotado, inquieto, normal, tranquilo,
@@ -696,6 +699,17 @@ el componente.**
   `reautenticarConProveedor`. Lo leen el PIN y, cuando llegue, el borrado de SPEC_24.
 - `src/lib/barraEstado.js` → `textoDeBarra`: de qué color va la hora y la batería en la app de
   iPhone, con la tabla entera. Lo deciden el cromo y lo que se pinta encima, no la paleta.
+- `src/lib/haptica.js` → `toqueSuave()`: **cómo** se pide un toque suave en el iPhone. El
+  **único** archivo que importa `@capacitor/haptics`, bajo demanda y solo con `esIPhone()`; nunca
+  lanza y no se espera. **Cuándo** vibra lo dice cada uno de los tres puntos (SPEC_23B).
+- `src/lib/biometria.js` → **cómo** se habla con Face ID y la Keychain: el **único** archivo que
+  importa `@capgo/capacitor-native-biometric`, bajo demanda. Lo cargan `pin.js` y `salidaCuenta`.
+  **Qué** abre el journal lo decide `src/diario/pin.js` (`abrirConBiometria`).
+- `src/diario/seleccionEmociones.js` → `entroEnLaSeleccion`: si una emoción entró con este toque,
+  que es lo único que vibra al elegir. Lo preguntan `ChipsCatalogo` y `ChipsEmociones`.
+- `src/lib/audio/observadorAudio.js` y `diagnosticoAudio.js` → el diagnóstico del audio
+  (SPEC_23C). Solo existen con `VITE_DIAG_AUDIO=1`; cada `avisar()` de la app va detrás de la
+  bandera.
 
 **Pila:** React + Vite (PWA) · IndexedDB en web · SQLite en la app nativa (SPEC_17B) · Firestore para sync · Firebase Auth · Netlify con
 publicación automática · Vitest · Capacitor 8 para la app de iPhone (SPEC_21.1).
@@ -738,12 +752,128 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**113 archivos de prueba · 2.740 casos** en el proyecto `indexeddb`, **2.677 más** en el proyecto
+**121 archivos de prueba · 2.865 casos** en el proyecto `indexeddb`, **2.794 más** en el proyecto
 `sqlite` (la misma suite contra SQLite) **y 17 XCTest del plugin** · los seis comandos y
 `validar:frases` en verde. **La intermitente de `journal.test.js` se cerró** (10 nov 2026): sus dos
 entradas empataban en el milisegundo y el orden lo decidía un UUID; ahora se crean con `Date`
 congelado en dos instantes distintos. `listJournalEntries` no cambió. Cada caso que vuelca
 IndexedDB por dentro tiene su equivalente que vuelca todas las tablas de SQLite.
+
+### Face ID y háptica en el iPhone (SPEC_23A y 23B, 12 nov 2026)
+
+La instrucción completa y las decisiones del reporte previo están en
+`docs/specs/INSTRUCCION_SPEC_23_PARTE_1_HAPTICA_FACE_ID_Y_DIAGNOSTICO.md` (v1.1; **su §9 manda**).
+**Las dos solo en la app de iPhone** (`esIPhone()`): en la web no cambia nada, no hay interruptor
+de Face ID, nada vibra y ni una línea de los plugins llega a lo que se descarga.
+
+**Un toque suave en tres momentos, y en ninguno más** (23B). `@capacitor/haptics` **8.0.2**,
+versión exacta, por SPM; `ImpactStyle.Light`; sin ajuste propio (iOS aplica el de vibración del
+sistema). **En la web no se carga nunca: su versión web vibra con `navigator.vibrate`.**
+
+- **Cerrar la mañana o la noche:** en `terminar()`, tras la guarda `cerrando`. Uno por cierre;
+  nunca al autoguardar ni al reintentar (que llama a `persistir`). Si la escritura falla después,
+  el toque ya ocurrió: el gesto de cerrar fue de la persona.
+- **Elegir una emoción:** solo lo que **entra** (`entroEnLaSeleccion`). Soltar no vibra, chocar con
+  el tope no vibra; en el Journal la cuarta entra desplazando a otra, y eso sí vibra.
+- **Cambio de fase en Respiración:** en `alCambiarFase`, con la sesión `activo` o `cerrando`. El
+  reloj no emite en el acomodo ni en pausa, y al reanudar no repite la fase.
+- **«Respira un momento»** también vibra, con su propia memoria del último toque (`claveDeFase`):
+  `faseActual` se olvida al pausar y al volver a la app, así que no sirve para esto. Y «Empezar»
+  pasa de uno en uno (`unaVezCon`): un doble toque dejaba un bucle huérfano que seguía vibrando en
+  la pausa.
+- **La inhalación fantasma, corregida en la máquina.** El cierre cae en el borde de un ciclo, y en
+  el último fotograma el reloj emitía el «inhalar» del ciclo siguiente antes de completar la sesión.
+  Ya no se reenvía: ni la guía ni la háptica lo reciben.
+- **«Respira un momento» no se monta en P1 del onboarding**, solo en Hoy. El comentario del
+  componente lo decía al revés y se corrigió.
+
+**Face ID para el Journal** (23A). `@capgo/capacitor-native-biometric` **8.9.3**, versión exacta,
+por SPM y sin configuración. **Se comparó con 8.9.2 antes de instalarlo** (se publicó la víspera):
+solo cambian la cadena de versión del Swift y un párrafo del README.
+
+- **Qué hay en cada sitio.** En la Keychain, **una clave aleatoria de 32 bytes y nada más**, con
+  `.biometryCurrentSet` y `WhenPasscodeSetThisDeviceOnly` (`accessControl: 1`): no viaja a la
+  Llavero de iCloud, no entra en copias, no pasa a otro teléfono e iOS la invalida si cambia una
+  cara o un dedo. En `diario/pinConfig` —que nunca sale del dispositivo— el campo nuevo
+  **`biometria`**: `{ verificador, activadaEn }` (el SHA-256 de la clave) o `{ cambiada: true }`.
+  **El PIN no se copia ni llega a la Keychain**, y una prueba espía lo que se le pasa al plugin.
+- **Activar** pide el PIN, guarda la clave y **la lee una vez**, para que iOS pida la cara ahora
+  (la primera vez, antes, su permiso). Solo con la cara aceptada se guarda el verificador; cancelar,
+  fallar o negar el permiso dejan todo como estaba, la clave borrada y ningún texto propio.
+- **Abrir:** al montar la pantalla del PIN, iOS pide la cara sola, una vez por montaje y solo con la
+  app a la vista. Abre solo si la huella coincide con el verificador. **Cancelar vuelve al PIN sin
+  mensaje** y «Abrir con Face ID» lo reintenta. Se lee con `fallbackTitle: ''`: el respaldo es el
+  PIN, no el código del teléfono. El journal se sigue cerrando al salir de su ruta, como siempre.
+- **Cancelar e invalidar, sin adivinar.** Solo se lee la clave con verificador, y la app solo borra
+  la clave a la vez que el verificador: «la clave no está» (`21`) con verificador solo puede ser que
+  iOS la quitó → `cambiada`. Antes de leer, `isAvailable`: permiso negado (`1`), sin caras (`3`) o
+  sin código (`14`) → `cambiada` sin diálogo; bloqueo (`2`) → como cancelado. `16`, `10` y `0` →
+  cancelado. **Riesgo residual aceptado:** si iOS diera `10` y no `21` para una clave invalidada,
+  Face ID fallaría en cada entrada y el PIN seguiría abriendo.
+- **Lo que apaga Face ID:** el interruptor (**sin pedir el PIN**: quitarlo reduce el acceso),
+  «Dejar de pedirlo», el PIN nuevo de «Olvidé mi PIN», cualquier `crearPin` y **cerrar sesión**
+  (`olvidarFaceId`, en `salidaCuenta`; anotado en SPEC_24 para el borrado). **La rederivación de
+  `verificarPin` conserva `biometria`**: no es un cambio de PIN.
+- **Al reinstalar**, la Keychain sobrevive y `pinConfig` no: la clave huérfana se borra la primera
+  vez que `estadoPin` la encuentra sin verificador, una vez por sesión y sin pedir la cara. El
+  journal llega sin PIN y sin Face ID, igual que antes.
+- **El interruptor** vive en «Ajustes de acceso» (`BloqueoPin`, modo `ajustes`), debajo de «Tu
+  journal pide un PIN para abrirse.», solo con PIN y con biometría disponible para Strivo:
+  `role="switch"`, `aria-checked` y el texto de debajo con `aria-live`. Es la misma forma que el de
+  los recordatorios. Los nombres «Face ID» y «Touch ID» viven en el copy
+  (`journal.pin.biometria.nombres`) y se eligen por el `biometryType` que da el plugin.
+- **El texto de permiso de Face ID** es ahora «Para abrir tu journal sin escribir tu PIN.».
+
+**Lo que no se pudo comprobar en el simulador:** si cambiar la inscripción de Face ID invalida la
+clave. Ni un ejecutable suelto, ni un XCTest sin app anfitriona ni una app firmada a mano tienen
+acceso a la Keychain del simulador, y su estado biométrico no cambia al reinscribir. **Por eso F7
+(una apariencia alternativa en el teléfono) es obligatoria.**
+
+**Tamaño.** El chunk principal de la web pasa de 737,40 a 744,66 kB (gzip, de 209,40 a 211,15):
+es la lógica de Face ID en `pin.js` y la pantalla; los dos plugins y el puente de biometría van en
+chunks aparte que la web no descarga. **La app de iPhone en Release** (medida antes de instalar,
+con los dos plugins): el `.app` de 9.504 a 9.640 KB (+136 KB), comprimido +35 KB.
+
+**Las pruebas manuales H1–H4 y F1–F9** las hace la fundadora con «La 23 con diagnóstico».
+
+### El audio de Respiración al irse y al volver (SPEC_23C, diagnóstico, 12 nov 2026)
+
+**Primer paso de 23C: medir, no arreglar.** D-21.13 (el sonido no vuelve al regresar a la app)
+bloquea la publicación; el arreglo y el audio con la pantalla bloqueada son de la **Parte 2**, que
+se escribe con los resultados del bloque D.
+
+**El build de diagnóstico:** `VITE_DIAG_AUDIO=1 npm run ios:build`. Un panel **abierto por defecto**
+en la sesión de Respiración y en «Respira un momento» (`components/shared/DiagnosticoAudio.jsx`),
+que se repinta solo. Mide el estado del contexto con la hora de cada cambio, qué pasó al irse y al
+volver, el resultado de `resume()`, cuánto avanzó el reloj del audio fuera frente al reloj de pared,
+**si el JavaScript siguió corriendo fuera** (tics de 1 s y fotogramas con la página oculta), el
+motor y el planificador, y la sesión. Y dos experimentos: el **tipo de sesión de audio** de WebKit
+(`navigator.audioSession.type`, automático o reproducción; se guarda y se aplica a cada contexto
+nuevo, así que tras cambiarlo se empieza una sesión nueva) y **«Probar con un audio nuevo»**, que
+dentro del toque suelta guía, ambiente y préstamo, deja cerrarse el contexto y monta uno nuevo en
+el punto de la sesión.
+
+- **Cómo se entera:** `lib/audio/observadorAudio.js`, un solo oyente. Cada `avisar()` de
+  `contextoAudio`, el planificador, el hook de la sesión y `shared/Respiracion` va dentro de
+  `if (import.meta.env.VITE_DIAG_AUDIO === '1')`, y una prueba lo comprueba línea por línea. El
+  módulo que mide se carga al arrancar desde `contextoAudio.js`: el contexto nace con «Empezar»,
+  antes de que exista el panel.
+- **Sin la bandera, la app se porta igual.** El CSS sale idéntico y el JS solo conserva la
+  constante `null` del `lazy()` y su hijo vacío, como los otros dos diagnósticos. **Ninguna clase
+  de Tailwind del panel puede ser nueva**: Tailwind escanea el archivo aunque no se monte, y una
+  clase nueva cambiaba la hoja y con ella todos los hashes.
+- **Un toque en cualquier sitio despierta el audio** (`despertarAlVolver` escucha todo el
+  documento), también en el panel: «Al volver» se apunta solo y la captura va antes de tocar nada.
+- **Para leer el bloque D:** tras 20–30 s fuera, lo correcto hoy es «ambiente bajo (al 30 %), sin
+  guía y la sesión en pausa» (caso 9.4). El defecto es no oír **nada**.
+- **Para la Parte 2:** el reloj de Respiración anda con `requestAnimationFrame` (con la pantalla
+  bloqueada no hay fases ni cierre) y no se congela fuera; con la pantalla bloqueada a media
+  inhalación la guía se queda en un tono continuo; el planificador es un `setInterval` de 50 ms que
+  iOS frena en segundo plano; el Wake Lock no se vuelve a pedir tras una ausencia corta.
+- Sus textos son `DIAGNOSTICO_AUDIO` en `src/copy/diagnostico.js`; cada bandera de diagnóstico no
+  arrastra los textos de las otras, y `lint:copy` los revisa.
+
+**Los resultados del bloque D, cuando lleguen, van aquí.**
 
 ### Los recordatorios llegan en el iPhone (SPEC_22, 11 nov 2026)
 
