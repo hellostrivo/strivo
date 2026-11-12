@@ -223,4 +223,16 @@ rápido), sin push. Commits por tema:
 
 ### 10.2 Pruebas manuales
 
-*(A1–A8, A10 y A11, la fundadora con «La 23C con diagnóstico». A9 en Netlify tras fusionar.)*
+**A1–A8, A10 y A11 pasan** (12 nov 2026, la fundadora en su iPhone con «La 23C con diagnóstico»).
+
+- **El cuadro de la pantalla de bloqueo** sale con el ícono de la app, «Respiración · Strivo» y
+  «Calma 5-5-3», y **pausa y reproducir funcionan**. Así queda confirmado en el teléfono lo que se
+  había leído en el código de WebKit: la pausa y el reproducir llegan como cambios de estado del
+  contexto, y `mediaSession.metadata` sustituye a «localhost». WebKit carga la imagen desde
+  `capacitor://`.
+- **O-23.1 (no bloquea):** en A5 la música de otra app **baja durante la sesión, pero al terminar se
+  pausa** en lugar de volver a su volumen. Queda anotada en `CLAUDE.md`, junto a D-23.1, como tarea
+  para antes de los testers externos.
+  - Una pista, sin comprobar: WebKit desactiva la sesión de audio sin la opción que avisa a las
+    demás apps de que pueden seguir (`NotifyOthersOnDeactivation`).
+- **A9** (la PWA en Netlify) se repite después de fusionar.

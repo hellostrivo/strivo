@@ -908,8 +908,10 @@ nada distinto.** Vale en la app de iPhone y en la PWA por igual, donde exista `n
 
 **Tamaño.** El chunk principal de la web pasa de 744,69 a 758,18 kB (gzip, de 211,16 a 215,11).
 
-**Las pruebas manuales A1–A8, A10 y A11** las hace la fundadora con «La 23C con diagnóstico»; **A9**,
-la PWA en Netlify, tras fusionar.
+**Las pruebas manuales A1–A8, A10 y A11 pasan** (12 nov 2026, la fundadora en su iPhone). El cuadro
+sale con el ícono, «Respiración · Strivo» y «Calma 5-5-3», y pausa y reproducir funcionan. **A9**,
+la PWA en Netlify, se prueba tras fusionar. **Queda O-23.1** (abajo, en la deuda): al terminar, la
+música de otra app se pausa en lugar de volver a su volumen.
 
 ### El audio de Respiración al irse y al volver (SPEC_23C, diagnóstico, 12 nov 2026)
 
@@ -2571,6 +2573,11 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
   guía de Respiración va directa a la salida y no pasa por el mezclador, cuya entrada de guía no
   tiene nada conectado: mover el control no cambia lo que suena. **Para una tarea aparte, antes de
   los testers externos**; la Parte 2 lo dejó fuera porque no tocaba mezcla ni volúmenes.
+- **O-23.1 · Al terminar una sesión con sonido, la música de otra app se pausa** en lugar de volver a
+  su volumen (A5 de SPEC_23 Parte 2). Durante la sesión baja, como se aprobó (DP-23.2). No bloquea.
+  **Para antes de los testers externos, junto a D-23.1.** Una pista, sin comprobar: WebKit desactiva
+  la sesión de audio sin `NotifyOthersOnDeactivation`, así que la otra app no recibe aviso para
+  seguir.
 
 - **El IndexedDB viejo de la app nativa no se borra** (SPEC_17B, DP-17B.10). Después de migrar se
   queda ahí, intacto y sin usarse. Borrarlo es una decisión de la fundadora para una versión
