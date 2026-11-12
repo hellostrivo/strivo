@@ -21,8 +21,27 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { ESTADOS, crearMaquina } from '@lib/respiracion/maquinaSesion'
 import { resolverEstado } from '@lib/respiracion/motorRitmo'
-import { adquirir, despertarAlVolver, liberar, reanudar } from '@lib/audio/contextoAudio'
+import {
+  actual,
+  adquirir,
+  alSiguienteToque,
+  audioMudo,
+  despertarAlVolver,
+  liberar,
+  medirReloj,
+  reanudar,
+  sonoFuera,
+} from '@lib/audio/contextoAudio'
 import { avisar } from '@lib/audio/observadorAudio'
+import {
+  estadoDelCuadro,
+  ponerCuadro,
+  quitarCuadro,
+  reclamar,
+  soltar,
+  vigilar,
+} from '@lib/audio/sesionAudio'
+import { crearAcompanamientoDeFondo } from '@lib/respiracion/acompanamientoDeFondo'
 import { crearAudioRespiracion } from '@lib/audioRespiracion'
 import { toqueSuave } from '@lib/haptica'
 import { crearMotorAmbiente } from '../audio/motorAmbiente.js'
@@ -56,7 +75,7 @@ const ESTADOS_QUE_SUENAN = new Set([
  * @param {object} configuracion - patrón, visual, sonido, volúmenes y duración.
  * @param {{alCompletar?: Function}} [manejadores]
  */
-export function useSesionRespiracion(configuracion, { alCompletar = null } = {}) {
+export function useSesionRespiracion(configuracion, { alCompletar = null, cuadro = null } = {}) {
   // Lo único que pasa por React: el estado de sesión y la fase. Cambian nueve
   // veces en cuarenta segundos, no sesenta por segundo (RN-RE-VIS-33).
   const [estadoSesion, setEstadoSesion] = useState(ESTADOS.INACTIVO)
@@ -71,6 +90,25 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
   /** Cancela la espera para despertar el audio al volver a la app (D-21.13). */
   const retirarEsperaDeToque = useRef(null)
   const config = useRef(configuracion)
+
+  // ─── SPEC_23 Parte 2: el sonido fuera de la app ─────────────────────────────
+  /** Si esta sesión reclamó «reproducción» (tiene sonido). */
+  const conSonidoReclamado = useRef(false)
+  /** Lo que WebKit hace con el contexto: pausa y reproducir de la pantalla de bloqueo. */
+  const vigilancia = useRef(null)
+  /** La pausa vino de la pantalla de bloqueo: solo esa se reanuda sola. */
+  const pausadaDesdeBloqueo = useRef(false)
+  /** Con la app fuera y sonido, la guía va programada por adelantado. */
+  const enFondo = useRef(false)
+  const fondo = useRef(null)
+  /** El reloj del audio y el de pared al irse, para saber si sonó fuera. */
+  const alIrse = useRef(null)
+  /** Cancela la reconstrucción que espera al siguiente toque (DP-23.21). */
+  const retirarReconstruccion = useRef(null)
+  /** Suelta el sonido al acabar el fundido final (DP-23.19). */
+  const temporizadorSoltar = useRef(null)
+  const textosCuadro = useRef(cuadro)
+  textosCuadro.current = cuadro
 
   /**
    * Si tenemos un préstamo del `AudioContext` en pie.
@@ -128,6 +166,8 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
   const soltarTodo = useCallback(() => {
     retirarEsperaDeToque.current?.()
     retirarEsperaDeToque.current = null
+    // SPEC_23 Parte 2 — `'auto'` antes de cerrar nada, y el cuadro fuera.
+    soltarSonido()
     pararBucle()
     maquina.current?.detener()
     maquina.current = null
@@ -164,12 +204,42 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
     function alCambiarVisibilidad() {
       if (document.visibilityState === 'hidden') {
         oculta.current = Date.now()
+        const ctx = actual()
+        alIrse.current = ctx ? { audio: ctx.currentTime, pared: performance.now() } : null
+        // DP-23.22 — Con sonido, la guía sigue programada por adelantado.
+        if (conSonidoReclamado.current && maquina.current) {
+          enFondo.current = true
+          obtenerFondo().entrar()
+        }
         return
       }
       const desde = oculta.current
       oculta.current = null
       if (desde === null) return
-      maquina.current?.notificarAusencia(Date.now() - desde)
+
+      // Vuelve la app: lo programado se cancela y la guía sigue con `fase()`
+      // desde el valor que suena; el fundido final, si no terminó, también.
+      if (enFondo.current) {
+        enFondo.current = false
+        fondo.current?.salir()
+        const estado = maquina.current?.instantanea()?.estado
+        if (ambiente.current?.saliendo() && estado !== ESTADOS.COMPLETADO) restablecerAudio(estado)
+        if (vibraEnFase(estado)) resincronizarGuia()
+      }
+
+      // DP-23.23 — Si la sesión tenía sonido y sonó fuera, siguió.
+      const ctx = actual()
+      const ido = alIrse.current
+      alIrse.current = null
+      const sono =
+        conSonidoReclamado.current &&
+        ido !== null &&
+        ctx !== null &&
+        sonoFuera({
+          avanceAudio: ctx.currentTime - ido.audio,
+          segundosFuera: (performance.now() - ido.pared) / 1000,
+        })
+      maquina.current?.notificarAusencia(Date.now() - desde, { sono })
       // RN-RE-SND-24 — Al volver el foco, el contexto puede venir suspendido, o
       // `'interrupted'` en iOS (D-21.13). Se intenta ya; si WebKit exige un
       // gesto, se espera al siguiente toque en esta pantalla. Sin eso la sesión
@@ -180,6 +250,27 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
       retirarEsperaDeToque.current = despertarAlVolver(document, () => {
         retirarEsperaDeToque.current = null
         restablecerAudio(maquina.current?.instantanea()?.estado)
+      })
+
+      // DP-23.21 — El respaldo: si el audio no vuelve (iOS 16, o el fallo de
+      // WebKit tras una llamada), el siguiente toque reconstruye el motor.
+      if (!conSonidoReclamado.current) return
+      const medido = actual()
+      medirReloj(medido).then((medida) => {
+        if (actual() !== medido || !conSonidoReclamado.current) return
+        const mudo = audioMudo({
+          ...medida,
+          pasoPorInterrumpido: vigilancia.current?.pasoPorInterrumpido() ?? false,
+        })
+        vigilancia.current?.olvidarInterrupcion()
+        if (mudo !== true) return
+        retirarEsperaDeToque.current?.()
+        retirarEsperaDeToque.current = null
+        retirarReconstruccion.current?.()
+        retirarReconstruccion.current = alSiguienteToque(document, () => {
+          retirarReconstruccion.current = null
+          reconstruirAudio()
+        })
       })
     }
 
@@ -216,6 +307,171 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
     guia.current?.silenciar(estado === ESTADOS.PAUSADO || !config.current.guiaSonoraActiva)
   }
 
+  // ─── SPEC_23 Parte 2: el sonido fuera de la app ─────────────────────────────
+
+  /** ¿Esta configuración suena? Ambiente distinto de silencio, o guía. */
+  function conSonido() {
+    const actualConfig = config.current
+    return (
+      (actualConfig.sonidoAmbienteId ?? ID_SILENCIO) !== ID_SILENCIO ||
+      actualConfig.guiaSonoraActiva === true
+    )
+  }
+
+  /** La fase en curso, con `fase()`, desde el valor que suena ahora. */
+  function resincronizarGuia() {
+    const ritmo = maquina.current?.instantanea()?.ritmo
+    if (!ritmo || !guia.current) return
+    if (FASES_CON_PULSO.has(ritmo.fase)) {
+      guia.current.fase(ritmo.fase, ritmo.msRestantesFase / 1000)
+    } else {
+      guia.current.fase('pausa', 0)
+    }
+  }
+
+  /**
+   * DP-23.24 y 23.25 — Lo que WebKit hace con el contexto. Con Web Audio, los
+   * botones de la pantalla de bloqueo no llaman a nuestro código: WebKit
+   * suspende o reanuda el contexto, y aquí se lee. Una llamada lo interrumpe:
+   * se pausa y **no** se reanuda sola al colgar; se reanuda con «Seguir».
+   */
+  function vigilarContexto() {
+    vigilancia.current?.cancelar()
+    vigilancia.current = vigilar(actual(), {
+      alSuspender() {
+        const estado = maquina.current?.instantanea()?.estado
+        if (!vibraEnFase(estado)) return
+        pausadaDesdeBloqueo.current = true
+        maquina.current?.pausar()
+      },
+      alReanudar() {
+        if (!pausadaDesdeBloqueo.current) return
+        pausadaDesdeBloqueo.current = false
+        // Reproducir llega con la app fuera. Si está a la vista, quien reanudó
+        // el contexto fue la vuelta a la app, y la pausa se queda: se sigue
+        // con «Seguir».
+        if (typeof document !== 'undefined' && document.visibilityState === 'visible') return
+        maquina.current?.reanudar()
+        const estado = maquina.current?.instantanea()?.estado
+        // La vuelta con la rampa de 0,4 s (RN-RE-SND-24), no con la de pausa.
+        restablecerAudio(estado)
+        if (!enFondo.current) resincronizarGuia()
+      },
+      alInterrumpir() {
+        pausadaDesdeBloqueo.current = false
+        const estado = maquina.current?.instantanea()?.estado
+        if (vibraEnFase(estado)) maquina.current?.pausar()
+      },
+    })
+  }
+
+  /**
+   * DP-23.19 — Suelta «reproducción»: primero `'auto'` y después se cierra el
+   * contexto, que es lo que devuelve el volumen a la música de la persona.
+   * Leído en WebKit: `'auto'` sola no desactiva la sesión de audio.
+   */
+  function soltarSonido() {
+    clearTimeout(temporizadorSoltar.current)
+    temporizadorSoltar.current = null
+    retirarReconstruccion.current?.()
+    retirarReconstruccion.current = null
+    fondo.current?.salir()
+    enFondo.current = false
+    vigilancia.current?.cancelar()
+    vigilancia.current = null
+    if (!conSonidoReclamado.current) return
+    conSonidoReclamado.current = false
+    quitarCuadro()
+    soltar()
+    guia.current?.detener()
+    guia.current = null
+    ambiente.current?.liberar()
+    ambiente.current = null
+    if (prestado.current) {
+      prestado.current = false
+      liberar()
+    }
+  }
+
+  /** Reclama «reproducción» y pone el cuadro. Dentro del toque. */
+  function reclamarSonido() {
+    reclamar()
+    conSonidoReclamado.current = true
+    if (textosCuadro.current) ponerCuadro(textosCuadro.current)
+  }
+
+  /** Crea la guía si toca y no existe: al empezar o al encenderla a media sesión. */
+  function asegurarGuia() {
+    if (!config.current.guiaSonoraActiva || guia.current !== null) return
+    guia.current = crearAudioRespiracion()
+    guia.current.iniciar()
+    const estado = maquina.current?.instantanea()?.estado
+    guia.current.silenciar(estado === ESTADOS.PAUSADO)
+  }
+
+  /**
+   * DP-23.21 — Cerrar el contexto y montar uno nuevo **dentro de un toque**,
+   * en el punto de la sesión y con la rampa de 0,4 s. Es lo que hacía
+   * «Probar con un audio nuevo» en el diagnóstico (D8), hecho normal.
+   */
+  function reconstruirAudio() {
+    const foto = maquina.current?.instantanea()
+    const estado = foto?.estado
+    if (!ESTADOS_QUE_SUENAN.has(estado)) return
+    vigilancia.current?.cancelar()
+    guia.current?.detener()
+    guia.current = null
+    ambiente.current?.liberar()
+    ambiente.current = null
+    if (prestado.current) {
+      prestado.current = false
+      liberar()
+    }
+    if (conSonidoReclamado.current) reclamar()
+    const motor = asegurarAudio()
+    if (motor === null) return
+    motor.confirmarSonido(config.current.sonidoAmbienteId ?? ID_SILENCIO)
+    motor.restablecer({ estadoSesion: estado, volumenAmbiente: config.current.volumenAmbiente })
+    asegurarGuia()
+    guia.current?.silenciar(estado === ESTADOS.PAUSADO || !config.current.guiaSonoraActiva)
+    if (estado !== ESTADOS.PAUSADO) resincronizarGuia()
+    vigilarContexto()
+  }
+
+  /** DP-23.22 — Quien mueve la sesión y programa la guía con la app fuera. */
+  function obtenerFondo() {
+    if (fondo.current) return fondo.current
+    fondo.current = crearAcompanamientoDeFondo({
+      instante() {
+        const m = maquina.current
+        if (!m) return null
+        m.evaluarAhora()
+        const foto = m.instantanea()
+        if (!foto?.ritmo) return { corriendo: false, ms: foto?.ms ?? 0, finFaseMs: 0, finMs: null }
+        return {
+          corriendo: vibraEnFase(foto.estado),
+          ms: foto.ms,
+          finFaseMs: foto.ms + foto.ritmo.msRestantesFase,
+          finMs: m.msCierrePrevisto(),
+        }
+      },
+      resolver(ms) {
+        const estado = resolverEstado(config.current.patron, ms)
+        return {
+          fase: FASES_CON_PULSO.has(estado.fase) ? estado.fase : 'pausa',
+          restanteMs: estado.msRestantesFase,
+        }
+      },
+      guia: () => guia.current,
+      relojAudio: () => actual()?.currentTime ?? null,
+      sincronizar: resincronizarGuia,
+      alCierre(instanteAudio) {
+        ambiente.current?.salirEn('completado', instanteAudio)
+      },
+    })
+    return fondo.current
+  }
+
   /**
    * Arranca. **Se llama desde el manejador del toque**, y de ahí cuelga todo lo
    * demás: es el único instante en que un navegador entrega un `AudioContext`
@@ -235,6 +491,13 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
       maquina.current.detener()
       maquina.current = null
     }
+
+    // SPEC_23 Parte 2 (DP-23.19) — Con sonido, «reproducción» se reclama aquí,
+    // dentro del toque y **antes** de crear o reanudar el contexto. En
+    // silencio no se reclama nada (§3.3): ni cuadro ni música ajena tocada.
+    clearTimeout(temporizadorSoltar.current)
+    temporizadorSoltar.current = null
+    if (conSonido()) reclamarSonido()
 
     const motor = asegurarAudio()
     if (motor !== null) {
@@ -259,12 +522,29 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
       duracion: config.current.duracion,
       alCambiarEstado(estado) {
         setEstadoSesion(estado)
-        aplicarAudio(estado)
+        // Si el fundido final ya se programó con la pantalla bloqueada, no se
+        // pisa con la rampa del estado: se deja terminar.
+        if (!(estado === ESTADOS.COMPLETADO && ambiente.current?.saliendo())) aplicarAudio(estado)
+        estadoDelCuadro(estado !== ESTADOS.PAUSADO)
         if (estado === ESTADOS.COMPLETADO) {
           pararBucle()
+          fondo.current?.salir()
           const duracionSalida = ambiente.current?.salir(
             maquina.current?.resumen()?.terminadaPorPersona ? 'terminar' : 'completado',
           )
+          // DP-23.19 — Al acabar el fundido, la música de la persona vuelve a
+          // su volumen: `'auto'` y el contexto cerrado. «Otra vez» monta uno
+          // nuevo en su toque.
+          if (conSonidoReclamado.current) {
+            clearTimeout(temporizadorSoltar.current)
+            temporizadorSoltar.current = setTimeout(
+              () => {
+                temporizadorSoltar.current = null
+                if (maquina.current?.instantanea()?.estado === ESTADOS.COMPLETADO) soltarSonido()
+              },
+              ((duracionSalida ?? 0) + 0.2) * 1000,
+            )
+          }
           alCompletar?.(maquina.current?.resumen(), duracionSalida)
         }
       },
@@ -276,6 +556,9 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
        */
       alCambiarFase(ritmo) {
         setEstadoRitmo(ritmo)
+        // DP-23.22 — Con la app fuera, la guía va programada por adelantado y
+        // la mano no siente nada: ni `fase()` ni toque.
+        if (enFondo.current) return
         // SPEC_23B — Un toque suave en cada cambio de fase, solo con la sesión
         // corriendo. El reloj no emite durante el acomodo ni en pausa, y al
         // reanudar no repite la fase en la que se pausó; la guarda lo dice
@@ -292,39 +575,20 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
     maquina.current.iniciar()
     pararBucle()
     frame.current = requestAnimationFrame(pintarFrame)
+    if (conSonidoReclamado.current) vigilarContexto()
 
     // SPEC_23C (DP-23.16 y 23.17 b) — Solo con la bandera del diagnóstico: lo
     // que el panel lee de esta sesión, y «Probar con un audio nuevo», que
     // corre dentro del toque. El orden importa: primero la guía (guarda su
     // propio préstamo), luego el ambiente y luego el préstamo de aquí; con
     // los préstamos a cero el contexto se cierra y `asegurarAudio` crea otro.
+    // SPEC_23C (DP-23.16 y 23.28) — Solo con la bandera del diagnóstico: lo
+    // que el panel lee de esta sesión. «Probar con un audio nuevo» ya no está:
+    // la reconstrucción es comportamiento normal (DP-23.21).
     if (import.meta.env.VITE_DIAG_AUDIO === '1') {
       avisar('sesion', {
         motor: () => ambiente.current,
-        reconstruir: () => {
-          guia.current?.detener()
-          guia.current = null
-          ambiente.current?.liberar()
-          ambiente.current = null
-          if (prestado.current) {
-            prestado.current = false
-            liberar()
-          }
-          const nuevo = asegurarAudio()
-          if (nuevo === null) return
-          nuevo.confirmarSonido(config.current.sonidoAmbienteId ?? ID_SILENCIO)
-          nuevo.entrar()
-          if (config.current.guiaSonoraActiva) {
-            guia.current = crearAudioRespiracion()
-            guia.current.iniciar()
-          }
-          const foto = maquina.current?.instantanea()
-          aplicarAudio(foto?.estado)
-          const ritmo = foto?.ritmo
-          if (ritmo && FASES_CON_PULSO.has(ritmo.fase)) {
-            guia.current?.fase(ritmo.fase, ritmo.msRestantesFase / 1000)
-          }
-        },
+        programadas: () => guia.current?.programado?.() ?? null,
       })
     }
   }, [alCompletar, asegurarAudio, pintarFrame, pararBucle])
@@ -380,7 +644,39 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
    */
   const ajustarEnVivo = useCallback(
     (cambios) => {
+      const antes = conSonido()
       config.current = { ...config.current, ...cambios }
+      const sesionViva =
+        vibraEnFase(maquina.current?.instantanea()?.estado) ||
+        maquina.current?.instantanea()?.estado === ESTADOS.PAUSADO ||
+        maquina.current?.instantanea()?.estado === ESTADOS.ACOMODANDO
+
+      // SPEC_23 Parte 2 (DP-23.19) — Pasar a silencio a media sesión suelta
+      // «reproducción» (y la música ajena recupera su volumen); activar el
+      // sonido la reclama en este mismo toque. El cambio de tipo vale al
+      // instante para el contexto que ya suena: no hace falta reconstruirlo.
+      if (sesionViva && antes && !conSonido()) {
+        soltarSonido()
+      } else if (sesionViva && !conSonidoReclamado.current && conSonido()) {
+        reclamarSonido()
+        if (ambiente.current === null) {
+          const motor = asegurarAudio()
+          motor?.confirmarSonido(config.current.sonidoAmbienteId ?? ID_SILENCIO)
+          motor?.restablecer({
+            estadoSesion: maquina.current?.instantanea()?.estado,
+            volumenAmbiente: config.current.volumenAmbiente,
+          })
+        }
+        vigilarContexto()
+      }
+
+      // Encender la guía a media sesión la crea en este toque. Hasta aquí no
+      // se creaba nunca: solo al empezar.
+      if (sesionViva && cambios.guiaSonoraActiva === true && guia.current === null) {
+        asegurarGuia()
+        if (vibraEnFase(maquina.current?.instantanea()?.estado)) resincronizarGuia()
+      }
+
       if (cambios.sonidoAmbienteId !== undefined) {
         ambiente.current?.cambiarSonido(cambios.sonidoAmbienteId)
       }

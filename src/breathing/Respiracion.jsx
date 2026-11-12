@@ -18,12 +18,14 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
 import { ESTADOS } from '@lib/respiracion/maquinaSesion'
+import { imagenDeLaApp } from '@lib/audio/sesionAudio'
+import { copy } from '@copy'
 
 import PantallaRespiracion from './PantallaRespiracion.jsx'
 import PantallaSesion from './PantallaSesion.jsx'
 import { useSesionRespiracion } from './hooks/useSesionRespiracion.js'
 import { configuracionDe, favoritoIdentico } from './lib/comparadorConfiguracion.js'
-import { patronDe, presetPrimeraVez } from './data/catalogoPatrones.js'
+import { obtenerPreset, patronDe, presetPrimeraVez } from './data/catalogoPatrones.js'
 import { ID_SILENCIO, resolverSonidoId } from './data/catalogoSonidos.js'
 import { validarPatron } from '@lib/respiracion/motorRitmo'
 import * as repo from './data/repositorioRespiracion.js'
@@ -66,6 +68,20 @@ export function configuracionInicial(preferencias) {
  * @param {string} salida  - A dónde se vuelve al cerrar.
  * @param {Function} [onHideNav] - Para que la sesión ocupe la pantalla entera.
  */
+/**
+ * SPEC_23 Parte 2 (DP-23.24) — El cuadro de la pantalla de bloqueo de una
+ * sesión con sonido: «Respiración · Strivo» y el nombre del patrón, tal como
+ * sale en la pantalla de patrones. Ningún dato de la persona.
+ */
+function cuadroDe(configuracion) {
+  const preset = obtenerPreset(configuracion?.patronBaseId)
+  return {
+    titulo: copy.respiracion.bloqueo.titulo,
+    subtitulo: preset ? copy.respiracion.patrones[preset.claveCopy].nombre : '',
+    imagen: imagenDeLaApp(),
+  }
+}
+
 export default function Respiracion({
   uid,
   base = '/respiracion',
@@ -99,6 +115,7 @@ export default function Respiracion({
 
   const sesion = useSesionRespiracion(configuracion ?? {}, {
     alCompletar: (resumen) => persistirFinal(resumen),
+    cuadro: cuadroDe(configuracion),
   })
 
   // ── Carga inicial ───────────────────────────────────────────────────────────

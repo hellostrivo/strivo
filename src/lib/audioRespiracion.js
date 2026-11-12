@@ -71,6 +71,12 @@ export function crearAudioRespiracion({ crearContexto = null } = {}) {
   let maestro = null
   let silenciado = false
   let cerrado = false
+  // Adónde va la envolvente al acabar lo último que se programó. De ahí parte
+  // el siguiente tramo programado por adelantado (SPEC_23 Parte 2).
+  let previsto = { ganancia: 0, frecuencia: FRECUENCIA_BAJA }
+  // Hasta qué instante del reloj del audio hay fases programadas, y cuántas.
+  let programadoHasta = null
+  let programadas = 0
 
   const ahora = () => contexto?.currentTime ?? 0
 
@@ -160,22 +166,86 @@ export function crearAudioRespiracion({ crearContexto = null } = {}) {
       const t = desdeElValorActual(envolvente.gain)
       desdeElValorActual(oscilador.frequency)
 
+      programadoHasta = null
+      programadas = 0
+
       if (id === 'inhalar') {
         envolvente.gain.linearRampToValueAtTime(GANANCIA_MAX, t + segundos)
         oscilador.frequency.linearRampToValueAtTime(FRECUENCIA_ALTA, t + segundos)
+        previsto = { ganancia: GANANCIA_MAX, frecuencia: FRECUENCIA_ALTA }
         return
       }
 
       if (id === 'exhalar') {
         envolvente.gain.linearRampToValueAtTime(0, t + segundos)
         oscilador.frequency.linearRampToValueAtTime(FRECUENCIA_BAJA, t + segundos)
+        previsto = { ganancia: 0, frecuencia: FRECUENCIA_BAJA }
         return
       }
 
       // Pausa: silencio real. Baja a cero en la rampa corta y se queda ahí.
       envolvente.gain.linearRampToValueAtTime(0, t + SUAVIZADO)
       oscilador.frequency.linearRampToValueAtTime(FRECUENCIA_BAJA, t + SUAVIZADO)
+      previsto = { ganancia: 0, frecuencia: FRECUENCIA_BAJA }
     },
+
+    /**
+     * SPEC_23 Parte 2 (DP-23.22) — Programa por adelantado varias fases sobre
+     * el reloj del audio, que sí es exacto con la pantalla bloqueada.
+     *
+     * Cada tramo es `{ fase, inicio, fin }` en segundos del contexto, seguidos
+     * y sin solaparse (`lib/respiracion/tramos.js`). Cada uno se ancla en el
+     * valor en que acabó el anterior y hace lo mismo que `fase()`: inhalar
+     * sube, exhalar baja y la pausa calla en la rampa corta. Las fases las
+     * decide quien las calcula, con el mismo resolvedor que dibuja.
+     */
+    programar(tramos) {
+      if (!contexto || cerrado || !Array.isArray(tramos)) return
+      for (const tramo of tramos) {
+        const { fase: id, inicio, fin } = tramo
+        if (!(fin > inicio) || inicio < ahora() - SUAVIZADO) continue
+        envolvente.gain.setValueAtTime(previsto.ganancia, inicio)
+        oscilador.frequency.setValueAtTime(previsto.frecuencia, inicio)
+        if (id === 'inhalar') {
+          envolvente.gain.linearRampToValueAtTime(GANANCIA_MAX, fin)
+          oscilador.frequency.linearRampToValueAtTime(FRECUENCIA_ALTA, fin)
+          previsto = { ganancia: GANANCIA_MAX, frecuencia: FRECUENCIA_ALTA }
+        } else if (id === 'exhalar') {
+          envolvente.gain.linearRampToValueAtTime(0, fin)
+          oscilador.frequency.linearRampToValueAtTime(FRECUENCIA_BAJA, fin)
+          previsto = { ganancia: 0, frecuencia: FRECUENCIA_BAJA }
+        } else {
+          const corte = Math.min(inicio + SUAVIZADO, fin)
+          envolvente.gain.linearRampToValueAtTime(0, corte)
+          oscilador.frequency.linearRampToValueAtTime(FRECUENCIA_BAJA, corte)
+          previsto = { ganancia: 0, frecuencia: FRECUENCIA_BAJA }
+        }
+        programadoHasta = fin
+        programadas += 1
+      }
+    },
+
+    /**
+     * Cancela todo lo programado y deja la envolvente donde suena ahora. Al
+     * pausar, al salir del fondo o al reconstruir: quien sigue, sigue con
+     * `fase()` desde el valor real, sin salto.
+     */
+    cancelarProgramado() {
+      programadoHasta = null
+      programadas = 0
+      if (!contexto || cerrado) return
+      desdeElValorActual(envolvente.gain)
+      desdeElValorActual(oscilador.frequency)
+    },
+
+    /** Hasta qué instante del reloj del audio hay fases programadas. */
+    programado() {
+      const vigentes = programadoHasta !== null && programadoHasta > ahora()
+      return { hasta: vigentes ? programadoHasta : null, fases: vigentes ? programadas : 0 }
+    },
+
+    /** El reloj del audio de esta guía, en segundos. */
+    ahora,
 
     /** RN-AUD-02 — Alcanzable en un toque durante el propio ejercicio. */
     silenciar(valor) {

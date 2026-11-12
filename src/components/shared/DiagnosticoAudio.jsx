@@ -9,6 +9,10 @@
 // lee de `lib/audio/diagnosticoAudio.js`, y el estado de la sesión le llega
 // por props.
 //
+// **Desde la Parte 2 solo mide** (DP-23.28): sin el control del tipo de sesión
+// de audio ni «Probar con un audio nuevo», que ya decide el comportamiento
+// normal.
+//
 // **Abierto por defecto, y se repinta solo.** Desplegarlo sería un toque, y un
 // toque despierta el audio: la captura de pantalla tiene que poder hacerse al
 // volver sin tocar nada.
@@ -16,7 +20,7 @@
 import { useEffect, useState } from 'react'
 import { DIAGNOSTICO_AUDIO as t } from '@copy/diagnostico'
 import { interpolate } from '@copy'
-import { TIPOS, elegirTipo, leer, reconstruir, suscribir } from '@lib/audio/diagnosticoAudio'
+import { leer, suscribir } from '@lib/audio/diagnosticoAudio'
 
 const dosCifras = (n) => String(n).padStart(2, '0')
 
@@ -103,6 +107,18 @@ function lineas(foto, sesion, fase) {
     }),
   )
   resultado.push(interpolate(t.tipo, { tipo: t.tipos[foto.tipo] ?? t.tipos.noExiste }))
+  const programadas = foto.programadas
+  resultado.push(
+    programadas?.hasta && foto.relojAudio !== null
+      ? interpolate(t.programadas, {
+          n: programadas.fases,
+          hora: hora(Date.now() + (programadas.hasta - foto.relojAudio) * 1000),
+        })
+      : t.programadasNinguna,
+  )
+  resultado.push(
+    interpolate(t.cuadro, { estado: foto.cuadro ? t.cuadros.puesto : t.cuadros.sinPoner }),
+  )
   return resultado
 }
 
@@ -133,33 +149,6 @@ export default function DiagnosticoAudio({ origen, sesion, fase }) {
               {linea}
             </p>
           ))}
-          <div className="mt-3 flex flex-wrap gap-2">
-            {foto.tipo !== null && (
-              <>
-                <button
-                  type="button"
-                  aria-pressed={foto.tipo === TIPOS.automatico}
-                  onClick={() => elegirTipo(TIPOS.automatico)}
-                  className={boton}
-                >
-                  {t.tipos.auto}
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={foto.tipo === TIPOS.reproduccion}
-                  onClick={() => elegirTipo(TIPOS.reproduccion)}
-                  className={boton}
-                >
-                  {t.tipos.playback}
-                </button>
-              </>
-            )}
-            {foto.puedeReconstruir && (
-              <button type="button" onClick={() => reconstruir(origen)} className={boton}>
-                {t.nuevo}
-              </button>
-            )}
-          </div>
         </div>
       )}
     </section>

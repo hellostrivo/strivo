@@ -506,7 +506,9 @@ prohíbe. **Los campos de versiones anteriores se siguen leyendo** con sus rótu
 usa, se sale. No acumula historial visible, no puntúa, no lleva la cuenta de sesiones. Siete
 patrones, dos visuales, tres modos de duración, seis sonidos **sintetizados en tiempo real** —cero
 archivos de audio, cero dependencias nuevas—, hasta veinte combinaciones guardadas. **Silencio por
-defecto en toda la app** (RN-RE-11). Todos los nodos de audio se liberan al salir.
+defecto en toda la app** (RN-RE-11). Todos los nodos de audio se liberan al salir. **Con sonido,
+sigue sonando fuera de la app y con la pantalla bloqueada, con la guía a su ritmo hasta el final**
+(SPEC_23 Parte 2); en silencio, todo como siempre.
 
 Dos entradas: la sección, y la **tarjeta de Hoy** («Respira un momento»), que **no muestra la
 duración** (RN-RE-02) —cuánto dura se dice donde hay un botón que arranca, que es donde alguien
@@ -710,6 +712,15 @@ el componente.**
 - `src/lib/audio/observadorAudio.js` y `diagnosticoAudio.js` → el diagnóstico del audio
   (SPEC_23C). Solo existen con `VITE_DIAG_AUDIO=1`; cada `avisar()` de la app va detrás de la
   bandera.
+- `src/lib/audio/sesionAudio.js` → **el único sitio que toca `navigator.audioSession` y
+  `navigator.mediaSession`**: reclamar y soltar «reproducción», el cuadro de la pantalla de bloqueo
+  y `vigilar`, que lee del estado del contexto la pausa, el reproducir y las llamadas.
+- `src/lib/audio/contextoAudio.js` → además del contexto compartido, **cuándo el audio está mudo**
+  (`audioMudo`, `medirReloj`), si sonó fuera (`sonoFuera`) y `alSiguienteToque`, el gesto que
+  reconstruye el motor.
+- `src/lib/respiracion/acompanamientoDeFondo.js` → con la app fuera, quién mueve la sesión y
+  programa la guía por adelantado; lo comparten la sección y «Respira un momento». Debajo,
+  `tramos.js` (qué fases caen en los próximos segundos) y `relojDeFondo.js` (el temporizador).
 
 **Pila:** React + Vite (PWA) · IndexedDB en web · SQLite en la app nativa (SPEC_17B) · Firestore para sync · Firebase Auth · Netlify con
 publicación automática · Vitest · Capacitor 8 para la app de iPhone (SPEC_21.1).
@@ -752,7 +763,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**121 archivos de prueba · 2.874 casos** en el proyecto `indexeddb`, **2.803 más** en el proyecto
+**125 archivos de prueba · 2.956 casos** en el proyecto `indexeddb`, **2.885 más** en el proyecto
 `sqlite` (la misma suite contra SQLite) **y 17 XCTest del plugin** · los seis comandos y
 `validar:frases` en verde. **La intermitente de `journal.test.js` se cerró** (10 nov 2026): sus dos
 entradas empataban en el milisegundo y el orden lo decidía un UUID; ahora se crean con `Date`
@@ -841,6 +852,67 @@ con los dos plugins): el `.app` de 9.504 a 9.640 KB (+136 KB), comprimido +35 KB
 cámara: la pantalla del PIN quedó sin mensaje y con «Abrir con Face ID». El detalle está en el §10
 de la instrucción.
 
+### El audio de Respiración con la pantalla bloqueada (SPEC_23C Parte 2, 12 nov 2026) — D-21.13 se cierra
+
+La instrucción completa y sus decisiones están en
+`docs/specs/INSTRUCCION_SPEC_23_PARTE_2_AUDIO_RESPIRACION.md` (v1.1; **su §9 manda**). **Quien
+respira con sonido puede bloquear el teléfono o salir un momento, y Strivo sigue acompañándola hasta
+el final, con la guía a su ritmo; al volver, todo está donde debe; quien respira en silencio no nota
+nada distinto.** Vale en la app de iPhone y en la PWA por igual, donde exista `navigator.audioSession`
+(iOS 17 o más). Ni archivos de audio, ni plugins, ni Swift: el motor de síntesis sigue siendo el
+único origen del sonido (DP-23.3 = c).
+
+**Lo que dijo el código de WebKit, y manda** (leído en las ramas de iOS 17, iOS 26 y la actual):
+- **`audioSession.type = 'playback'` vale al instante**, también para el contexto que ya suena.
+- **Soltar es `'auto'` y después cerrar el contexto.** `'auto'` sola no desactiva la sesión de audio,
+  y la música ajena solo recupera su volumen al desactivarla.
+- **Los botones de la pantalla de bloqueo no llaman a nuestro código con Web Audio**: WebKit suspende
+  y reanuda el contexto. Por eso se leen sus estados.
+- El «localhost» del cuadro salía del origen (`capacitor://localhost`), no del `<title>`; con
+  `mediaSession.metadata` se sustituye. Sin metadatos, la PWA enseñaría «netlify.app».
+- **Anomalía sin explicar:** según WebKit, «reproducción» debería interrumpir la música ajena; en el
+  iPhone la bajó. Nada nativo configura la sesión. Ningún código depende de ello.
+
+**Cómo funciona:**
+- **Reclamar** (`sesionAudio.reclamar`): con sonido —ambiente distinto de silencio, o guía—, en el
+  toque de «Empezar» y antes del contexto; a media sesión, en el toque que activa el sonido. **En
+  silencio no se reclama nada**: ni cuadro, ni música ajena tocada.
+- **Soltar**: al acabar el fundido final (la música de la persona vuelve entonces, no al salir de
+  Respiración), al salir y al pasar a silencio. «Otra vez» monta un contexto nuevo en su toque.
+- **Con la app fuera** (`acompanamientoDeFondo`): un temporizador —iOS lo deja llegar cada 1–2 s—
+  mueve la máquina con `evaluar()` y programa la guía 10 s por delante sobre el reloj del audio
+  (`programar(tramos)`), con el mismo resolvedor que dibuja: **la máquina sigue siendo la única
+  fuente de verdad** (RN-RE-SND-19/20). El fundido final se programa en su instante (`salirEn`) y no
+  se repite cuando la máquina completa. Al volver se cancela lo programado y la guía sigue con
+  `fase()` desde el valor que suena.
+- **El cierre sale del límite**, no del instante en que se detecta: con tics de 2 s, medirlo desde el
+  tic podía alargar la sesión un ciclo. Es el único cambio con la app a la vista, en un caso de borde.
+- **El cuadro**: «Respiración · Strivo» y el nombre del patrón («Respira un momento» en Hoy), con el
+  ícono de la app; solo pausa y reproducir. **Pausa** se lee como «suspendido» —este código nunca
+  llama a `suspend()`— y pausa la sesión; **reproducir**, como la vuelta a «en marcha», y la reanuda
+  con la rampa de 0,4 s, sin tocar la app y solo si la app sigue fuera. **Una llamada** es
+  «interrumpido»: pausa y no se reanuda sola; se sigue con «Seguir». Se acepta que «reproducir» no
+  haga nada si la pausa se hizo desde la app.
+- **El 9.4 con sonido** (`notificarAusencia(ms, { sono })`): si el reloj del audio avanzó al menos el
+  80 % del tiempo fuera, la sesión siguió y no se pausa. En silencio, como siempre.
+- **El respaldo** (iOS 16, o el fallo de WebKit tras una llamada, en el que el contexto dice «en
+  marcha» con el reloj quieto): al volver se miden 500 ms de reloj de pared (al menos 400 reales); si
+  el reloj del audio avanzó menos de 0,1 s, si el contexto no está «en marcha» o si pasó por
+  «interrumpido», **el siguiente toque reconstruye el motor** dentro del gesto. Es lo de D8 hecho
+  comportamiento normal. Sin `suspend()`/`resume()`: un contexto suspendido por el código ya no lo
+  reanuda la pantalla de bloqueo.
+- **El Wake Lock se vuelve a pedir al volver** si el sistema lo soltó y la sesión sigue despierta.
+- **Encender la guía a media sesión ya la crea**: hasta aquí solo se creaba al empezar.
+- **«Respira un momento»**, lo mismo a su escala, con las piezas de `lib/` y los textos del cuadro
+  por props desde Hoy.
+
+**Tamaño.** El chunk principal de la web pasa de 744,69 a 758,18 kB (gzip, de 211,16 a 215,11).
+
+**Las pruebas manuales A1–A8, A10 y A11 pasan** (12 nov 2026, la fundadora en su iPhone). El cuadro
+sale con el ícono, «Respiración · Strivo» y «Calma 5-5-3», y pausa y reproducir funcionan. **A9**,
+la PWA en Netlify, se prueba tras fusionar. **Queda O-23.1** (abajo, en la deuda): al terminar, la
+música de otra app se pausa en lugar de volver a su volumen.
+
 ### El audio de Respiración al irse y al volver (SPEC_23C, diagnóstico, 12 nov 2026)
 
 **Primer paso de 23C: medir, no arreglar.** D-21.13 (el sonido no vuelve al regresar a la app)
@@ -856,7 +928,9 @@ motor y el planificador, y la sesión. Y dos experimentos: el **tipo de sesión 
 (`navigator.audioSession.type`, automático o reproducción; se guarda y se aplica a cada contexto
 nuevo, así que tras cambiarlo se empieza una sesión nueva) y **«Probar con un audio nuevo»**, que
 dentro del toque suelta guía, ambiente y préstamo, deja cerrarse el contexto y monta uno nuevo en
-el punto de la sesión.
+el punto de la sesión. **Desde la Parte 2 los dos experimentos ya no están** (DP-23.28): decide el
+comportamiento normal. El panel añade dos líneas, las fases programadas por adelantado y si el
+cuadro de la pantalla de bloqueo está puesto, y conserva la del tipo que rige.
 
 - **Cómo se entera:** `lib/audio/observadorAudio.js`, un solo oyente. Cada `avisar()` de
   `contextoAudio`, el planificador, el hook de la sesión y `shared/Respiracion` va dentro de
@@ -885,11 +959,13 @@ la instrucción). **Se confirma la hipótesis 4: el tipo de sesión de audio de 
   volver dice «en marcha», con el motor vivo, pero **no suena, ni con toques**. En modo silencio
   tampoco suena. **La PWA en Safari se porta igual**: no es Capacitor, es WebKit.
 - **En «reproducción»** sigue sonando fuera y con la pantalla bloqueada (49,4 s de 49,4 s) y suena
-  en modo silencio. También **pausa la música de otra app** y **pone el cuadro de reproducción en
-  la pantalla de bloqueo, titulado «localhost»**. El JavaScript fuera corre a medias (25 tics de 49)
-  y con 0 fotogramas, así que el reloj de la sesión no avanza bloqueado.
-- **Por anotar:** D8 («Probar con un audio nuevo»), si la música vuelve sola al terminar (D7) y si
-  se oían las fases con la pantalla bloqueada.
+  en modo silencio. También **baja el volumen de la música de otra app, sin pausarla** (D7; a la
+  fundadora le parece bien) y **pone el cuadro de reproducción en la pantalla de bloqueo, titulado
+  «localhost»**. El JavaScript fuera corre a medias (25 tics de 49) y con 0 fotogramas, así que el
+  reloj de la sesión no avanza bloqueado: **con la pantalla bloqueada no se oía la guía, solo el
+  ambiente** (D5).
+- **D8, en «automático»: «Probar con un audio nuevo» sí devuelve el sonido.** Cerrar el contexto y
+  reconstruir el motor dentro de un toque funciona.
 
 ### Al abrir la app, papel desde el primer instante (D-21.11, 12 nov 2026)
 
@@ -1483,8 +1559,9 @@ puro en frío y 1,1 s en el segundo arranque a ningún cuadro negro, en los dos 
 tienen ahora, idéntico en web: la cabecera de la sesión de Respiración (`pt-safe`), el editor del
 Journal (`max(1.5rem, env(...))`) y la hoja de ajustes de la sesión, por abajo.
 
-**`UIBackgroundModes: [audio]` está declarado para SPEC_23.** Si DP-23.3 decide no tener audio en
-segundo plano, **se retira antes de App Review**: declararlo sin usarlo es motivo de rechazo.
+**`UIBackgroundModes: [audio]` se queda, y se usa** (SPEC_23 Parte 2, DP-23.3 = c): una sesión de
+Respiración con sonido sigue sonando con la pantalla bloqueada. Declararlo sin usarlo sería motivo
+de rechazo; ahora es lo que permite que el sonido siga.
 
 **Probado en el simulador de Xcode** (iPhone 18 Pro, iOS 27): compila, arranca, la pantalla de
 arranque se retira, el onboarding de noche sale con la hora en claro sobre índigo y debajo de la
@@ -2492,6 +2569,16 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
 
 ### Deuda consciente (se salda en su fase)
 
+- **D-23.1 · El control de volumen de la guía no hace nada** (encontrado en SPEC_23 Parte 2). La
+  guía de Respiración va directa a la salida y no pasa por el mezclador, cuya entrada de guía no
+  tiene nada conectado: mover el control no cambia lo que suena. **Para una tarea aparte, antes de
+  los testers externos**; la Parte 2 lo dejó fuera porque no tocaba mezcla ni volúmenes.
+- **O-23.1 · Al terminar una sesión con sonido, la música de otra app se pausa** en lugar de volver a
+  su volumen (A5 de SPEC_23 Parte 2). Durante la sesión baja, como se aprobó (DP-23.2). No bloquea.
+  **Para antes de los testers externos, junto a D-23.1.** Una pista, sin comprobar: WebKit desactiva
+  la sesión de audio sin `NotifyOthersOnDeactivation`, así que la otra app no recibe aviso para
+  seguir.
+
 - **El IndexedDB viejo de la app nativa no se borra** (SPEC_17B, DP-17B.10). Después de migrar se
   queda ahí, intacto y sin usarse. Borrarlo es una decisión de la fundadora para una versión
   posterior a la 1.0, nunca de esta.
@@ -2557,8 +2644,8 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
   C-072). Son textos ajenos citados tal cual y no son copy: la comprobación global de signos de
   exclamación de `lint:copy` recorre `src/copy/` y no los mira. **Qué hacer con ellas es de la
   fundadora.**
-- **El interruptor de silencio del iPhone calla los sonidos de Respiración** en la app nativa: usa la
-  sesión de audio por defecto. Lo resuelve SPEC_23.
+- ~~**El interruptor de silencio del iPhone calla los sonidos de Respiración**~~ — **saldada por
+  SPEC_23 Parte 2**: con sonido, la sesión reclama «reproducción» y suena también en modo silencio.
 - **El `_redirects` de Netlify no existe.** Mientras el router sea `HashRouter` no hace falta.
 - **Con dos pestañas abiertas sobre el mismo día, la última escritura gana.** Sin bloqueo optimista.
   Es el comportamiento de todo el producto y está asumido.

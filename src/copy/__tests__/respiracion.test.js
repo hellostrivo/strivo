@@ -26,6 +26,8 @@ describe('el namespace existe y está completo (§7.2)', () => {
     expect(Object.keys(respiracion).sort()).toEqual([
       'accesibilidad',
       'acomodo',
+      // `bloqueo` lo añadió SPEC_23 Parte 2: el cuadro de la pantalla de bloqueo.
+      'bloqueo',
       'cierre',
       // `configuracion` y `sesion` los añadió SPEC_16 (§6). El tercero que
       // añadió, `home`, se retiró el 24 ago con el acceso del Home de Strivo:

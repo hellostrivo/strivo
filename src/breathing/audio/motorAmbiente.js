@@ -33,6 +33,8 @@ export function crearMotorAmbiente(ctx, { destino, azar = Math.random } = {}) {
   let volumen = normalizarVolumen(undefined)
   let estadoSesion = 'inactivo'
   let temporizadorPrevia = null
+  // SPEC_23 Parte 2 — La duración del fundido de salida si ya está programado.
+  let salidaProgramada = null
 
   /** Cada fuente entra por su propia ganancia, que es lo que permite cruzarlas. */
   function montar(id) {
@@ -118,15 +120,32 @@ export function crearMotorAmbiente(ctx, { destino, azar = Math.random } = {}) {
 
     /** RN-RE-SND-09 — Entra durante el acomodo, ya presente al primer inhalar. */
     entrar() {
+      salidaProgramada = null
       mezclador.entrar(volumen)
     },
 
     salir(motivo) {
+      // Si el fundido ya se programó con la pantalla bloqueada, no se repite:
+      // empezaría otra vez desde donde va y el final se alargaría.
+      if (salidaProgramada !== null) return salidaProgramada
       return mezclador.salir(motivo)
+    },
+
+    /** SPEC_23 Parte 2 — Programa el fundido de salida en `instante` (s). */
+    salirEn(motivo, instante) {
+      salidaProgramada = mezclador.salirEn(motivo, instante)
+      return salidaProgramada
+    },
+
+    /** ¿Hay un fundido de salida programado? */
+    saliendo() {
+      return salidaProgramada !== null
     },
 
     /** RN-RE-SND-12/13 — El ambiente se agacha, la guía se calla. */
     aplicarEstado(siguiente) {
+      // Cualquier rampa nueva cancela lo programado, el fundido incluido.
+      salidaProgramada = null
       estadoSesion = siguiente.estadoSesion ?? estadoSesion
       if (siguiente.volumenAmbiente !== undefined) {
         volumen = normalizarVolumen(siguiente.volumenAmbiente)
@@ -140,6 +159,7 @@ export function crearMotorAmbiente(ctx, { destino, azar = Math.random } = {}) {
      * (`FUNDIDOS.reanudarContexto`), no con la de pausa (D-21.13).
      */
     restablecer(siguiente = {}) {
+      salidaProgramada = null
       estadoSesion = siguiente.estadoSesion ?? estadoSesion
       if (siguiente.volumenAmbiente !== undefined) {
         volumen = normalizarVolumen(siguiente.volumenAmbiente)

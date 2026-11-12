@@ -161,9 +161,19 @@ export function crearMezclador(ctx, { destino = ctx.destination } = {}) {
     },
 
     salir(motivo) {
+      return this.salirEn(motivo, ctx.currentTime)
+    },
+
+    /**
+     * SPEC_23 Parte 2 (DP-23.22) — El mismo fundido, programado en un instante
+     * del reloj del audio: con la pantalla bloqueada el tic que cierra la
+     * sesión puede llegar tarde, y el final no debe depender de él.
+     */
+    salirEn(motivo, instante) {
       const duracion = duracionSalida(motivo)
-      rampa(ambiente.gain, 0, ctx.currentTime, duracion)
-      rampa(guia.gain, 0, ctx.currentTime, duracion)
+      const desde = Math.max(instante, ctx.currentTime)
+      rampa(ambiente.gain, 0, desde, duracion)
+      rampa(guia.gain, 0, desde, duracion)
       return duracion
     },
 

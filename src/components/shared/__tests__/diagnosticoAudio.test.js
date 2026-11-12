@@ -15,6 +15,9 @@ import { leer } from '@lib/audio/diagnosticoAudio'
 
 const leerArchivo = (ruta) => readFileSync(ruta, 'utf8')
 
+/** Una frase que solo existe en el panel: «Cuadro de la pantalla de bloqueo». */
+const LINEA_DEL_CUADRO = DIAGNOSTICO_AUDIO.cuadro.replace(': {estado}', '')
+
 describe('solo con su bandera', () => {
   it('PantallaSesion y «Respira un momento» montan el panel bajo VITE_DIAG_AUDIO, perezoso', () => {
     expect(leerArchivo('src/breathing/PantallaSesion.jsx')).toMatch(
@@ -90,11 +93,10 @@ describe('solo con su bandera', () => {
     'sin la bandera, ni una línea del diagnóstico del audio llega a dist/ (criterio 10)',
     () => {
       const todo = construir({})
-      expect(todo).not.toContain(DIAGNOSTICO_AUDIO.nuevo)
+      expect(todo).not.toContain(LINEA_DEL_CUADRO)
       expect(todo).not.toContain('Tipo de sesión de audio')
       expect(todo).not.toContain('reanudarEmpieza')
       expect(todo).not.toContain('strivo.diag.tipoDeAudio')
-      expect(todo).not.toContain('audioSession')
     },
     180000,
   )
@@ -103,18 +105,18 @@ describe('solo con su bandera', () => {
     'cada bandera enciende lo suyo y no arrastra los textos de las otras',
     () => {
       const audio = construir({ VITE_DIAG_AUDIO: '1' })
-      expect(audio).toContain(DIAGNOSTICO_AUDIO.nuevo)
+      expect(audio).toContain(LINEA_DEL_CUADRO)
       expect(audio).toContain('reanudarEmpieza')
       expect(audio).not.toContain(DIAGNOSTICO.simular)
       expect(audio).not.toContain('Avisos programados:')
 
       const avisos = construir({ VITE_DIAG_AVISOS: '1' })
       expect(avisos).toContain(DIAGNOSTICO_AVISOS.programados.replace(' {n}', ''))
-      expect(avisos).not.toContain(DIAGNOSTICO_AUDIO.nuevo)
+      expect(avisos).not.toContain(LINEA_DEL_CUADRO)
 
       const almacen = construir({ VITE_DIAG_ALMACEN: '1' })
       expect(almacen).toContain(DIAGNOSTICO.simular)
-      expect(almacen).not.toContain(DIAGNOSTICO_AUDIO.nuevo)
+      expect(almacen).not.toContain(LINEA_DEL_CUADRO)
     },
     540000,
   )
@@ -168,13 +170,26 @@ describe('lo que mide (sin navegador)', () => {
     expect(leer('sesion').tics).toBe(antes + 2)
   })
 
-  it('el motor y «audio nuevo» los publica quien suena', () => {
+  it('el motor y las fases programadas los publica quien suena (DP-23.28)', () => {
     const motor = { fuentesVivas: () => 2 }
-    avisar('sesion', { motor: () => motor, reconstruir: () => {} })
+    avisar('sesion', { motor: () => motor, programadas: () => ({ hasta: 12, fases: 7 }) })
     const foto = leer('sesion')
     expect(foto.motor).toBe(motor)
-    expect(foto.puedeReconstruir).toBe(true)
-    expect(leer('momento').puedeReconstruir).toBe(false)
+    expect(foto.programadas).toEqual({ hasta: 12, fases: 7 })
+    expect(leer('momento').programadas).toBeNull()
+  })
+
+  it('ya no trae los experimentos de la Parte 1 (DP-23.28)', () => {
+    const panel = leerArchivo('src/components/shared/DiagnosticoAudio.jsx')
+    const modulo = leerArchivo('src/lib/audio/diagnosticoAudio.js')
+    expect(panel).not.toMatch(/elegirTipo|reconstruir/)
+    expect(modulo).not.toMatch(/export function (elegirTipo|reconstruir)/)
+    expect(modulo).not.toMatch(/audioSession\.type\s*=/)
+    expect(DIAGNOSTICO_AUDIO.nuevo).toBeUndefined()
+  })
+
+  it('dice si el cuadro de la pantalla de bloqueo está puesto', () => {
+    expect(leer('sesion').cuadro).toBe(false)
   })
 
   it('sin la API de WebKit, el tipo de sesión de audio no existe', () => {

@@ -207,6 +207,17 @@ export function crearMaquina({
    * ciclo, así que la sesión real dura entre `valor` y `valor + un ciclo`. Por
    * eso el copy dice "unos 3 minutos" y nunca promete una cifra exacta.
    */
+  /**
+   * Dónde cae el cierre según el límite: al final del ciclo en que se cumple.
+   * `null` en una sesión abierta. Lo usa la guía programada por adelantado
+   * para el fundido de salida con la pantalla bloqueada (DP-23.22).
+   */
+  function cierreDelLimite() {
+    if (limite.modo === 'ciclos') return limite.valor * msCiclo
+    if (limite.modo === 'minutos') return Math.ceil((limite.valor * 60_000) / msCiclo) * msCiclo
+    return null
+  }
+
   function evaluarLimite(estadoRitmo, ms) {
     if (limite.modo === 'abierta') return // RN-RE-MOT-18
     if (estado !== ESTADOS.ACTIVO && estado !== ESTADOS.CERRANDO) return
@@ -218,8 +229,10 @@ export function crearMaquina({
           : ms >= limite.valor * 60_000
 
       if (alcanzado) {
-        msCierre =
-          limite.modo === 'ciclos' ? limite.valor * msCiclo : Math.ceil(ms / msCiclo) * msCiclo
+        // El cierre sale del límite y no del instante en que se detecta: con la
+        // pantalla bloqueada los tics llegan cada uno o dos segundos, y medirlo
+        // desde el tic podía alargar la sesión un ciclo entero (SPEC_23 Parte 2).
+        msCierre = cierreDelLimite() ?? Math.ceil(ms / msCiclo) * msCiclo
         cambiar(ESTADOS.CERRANDO)
       }
     }
@@ -331,12 +344,32 @@ export function crearMaquina({
      *
      * Quien escucha `visibilitychange` es la capa visual (SPEC_14); la máquina
      * no toca el DOM.
+     *
+     * **Con sonido que sonó fuera, la sesión sí siguió** (SPEC_23 Parte 2,
+     * DP-23.23): la guía marcó las fases con la pantalla bloqueada y el reloj
+     * del audio avanzó. Entonces no se pausa, porque decir que no siguió sería
+     * lo que no es honesto. `sono` lo decide quien midió el reloj del audio; en
+     * silencio, o si el audio no sonó, se pausa como siempre.
+     *
+     * @param {number} msAusente
+     * @param {{sono?: boolean}} [opciones]
      */
-    notificarAusencia(msAusente) {
+    notificarAusencia(msAusente, { sono = false } = {}) {
       if (estado !== ESTADOS.ACTIVO && estado !== ESTADOS.CERRANDO) return false
       if (!(Number(msAusente) > msCiclo)) return false
+      if (sono === true) return false
       this.pausar()
       return true
+    },
+
+    /** SPEC_23 Parte 2 (DP-23.22) — Una pasada del reloj sin fotograma. */
+    evaluarAhora() {
+      reloj.evaluar()
+    },
+
+    /** Dónde cae el cierre, en ms de sesión; `null` si es abierta. */
+    msCierrePrevisto() {
+      return msCierre ?? cierreDelLimite()
     },
 
     /** Para desmontar. Idempotente, como el reloj (RN-RE-MOT-15). */
