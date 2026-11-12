@@ -313,7 +313,7 @@ describe('ios/App/App/Info.plist', () => {
 
   it('el texto de Face ID, exacto', () => {
     expect(valor('NSFaceIDUsageDescription')).toBe(
-      '<string>Para abrir tu Journal sin escribir el PIN.</string>',
+      '<string>Para abrir tu journal sin escribir tu PIN.</string>',
     )
   })
 
