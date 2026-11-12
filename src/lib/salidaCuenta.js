@@ -43,6 +43,23 @@ async function apagarAvisos() {
   }
 }
 
+/**
+ * SPEC_23A (DP-23.12) — Cerrar sesión borra también la clave de Face ID de la
+ * Keychain: `pinConfig` se va con lo demás, y una clave sin su verificador no
+ * abre nada. Solo en la app de iPhone, con el puente cargado bajo demanda.
+ * Borrar no pide la cara y nunca lanza: salir no se detiene por esto.
+ * (SPEC_24 tendrá que hacer lo mismo al borrar la cuenta.)
+ */
+async function olvidarFaceId() {
+  if (!esIPhone()) return
+  try {
+    const { biometria } = await import('./biometria.js')
+    await biometria.borrar()
+  } catch {
+    // Nada que hacer: la clave no frena la salida.
+  }
+}
+
 /** Qué confirmación toca. */
 export const SALIDA = Object.freeze({ libre: 'libre', pendiente: 'pendiente' })
 
@@ -76,8 +93,8 @@ async function subir(uid) {
  * Cierra la sesión y borra del teléfono todo lo del uid, solo con la cola vacía.
  *
  * El orden importa: primero se cierra la sesión —si eso fallara, no se ha
- * borrado nada— y después se borra. `pinConfig` se va con lo demás; el copy de
- * la confirmación lo dice.
+ * borrado nada— y después se borra. `pinConfig` se va con lo demás, y con él
+ * la clave de Face ID; el copy de la confirmación lo dice.
  *
  * @returns {Promise<{ok: boolean, motivo?: 'pendiente'}>}
  */
@@ -89,6 +106,7 @@ export async function salirDeCuenta(uid) {
   await apagarAvisos()
   await cerrarSesion()
   await borrarUid(uid)
+  await olvidarFaceId()
   olvidarUid(uid)
   return { ok: true }
 }
