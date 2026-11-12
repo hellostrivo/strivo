@@ -290,3 +290,94 @@ export function reiniciarParaPruebas() {
   contexto = null
   prestamos = 0
 }
+
+// ─── El respaldo: cuando el audio no vuelve (SPEC_23 Parte 2, DP-23.21) ───────
+//
+// Con «reproducción» (`sesionAudio.reclamar`) el contexto no se interrumpe al
+// irse. Pero en iOS 16 esa API no existe, y WebKit tiene un fallo conocido
+// (bugs 243727, 273511, 276016): tras una llamada o un cambio de foco el
+// contexto dice «en marcha» con el reloj quieto y no suena. El diagnóstico lo
+// vio con «automático»: «Audio: en marcha», «Reloj del audio ahora: quieto».
+//
+// La salida que funciona es la de D8: cerrar el contexto y montar uno nuevo
+// **dentro de un toque**. Aquí se decide si hace falta y se espera el toque;
+// quien suena reconstruye su motor. **Sin `suspend()`/`resume()`**: un
+// contexto suspendido por el código ya no lo reanuda el botón de reproducir
+// de la pantalla de bloqueo.
+
+/** Cuánto se mide, de reloj de pared. */
+export const MS_DE_MEDIDA = 500
+
+/** Lo mínimo que tiene que haber esperado de verdad el temporizador. */
+export const MS_MINIMOS_DE_MEDIDA = 400
+
+/** Lo que el reloj del audio tiene que haber avanzado en esa medida, en s. */
+export const AVANCE_MINIMO_S = 0.1
+
+/** La parte del tiempo fuera que el audio tiene que haber sonado (DP-23.23). */
+export const PARTE_QUE_SONO = 0.8
+
+/**
+ * ¿Está mudo? `null` si la medida no vale: el temporizador no esperó lo
+ * bastante (con la página frenada), y entonces no se decide nada.
+ */
+export function audioMudo({ avanceAudio, msPared, estado, pasoPorInterrumpido = false }) {
+  if (!(msPared >= MS_MINIMOS_DE_MEDIDA)) return null
+  if (pasoPorInterrumpido) return true
+  if (estado !== 'running') return true
+  return !(avanceAudio >= AVANCE_MINIMO_S)
+}
+
+/** ¿Sonó mientras la app estaba fuera? (DP-23.23) */
+export function sonoFuera({ avanceAudio, segundosFuera }) {
+  if (!(segundosFuera > 0)) return false
+  return avanceAudio >= PARTE_QUE_SONO * segundosFuera
+}
+
+/**
+ * Mide cuánto avanza el reloj del audio en `MS_DE_MEDIDA` de reloj de pared.
+ *
+ * @returns {Promise<{avanceAudio: number, msPared: number, estado: string|null}>}
+ */
+export function medirReloj(
+  ctx,
+  {
+    esperaMs = MS_DE_MEDIDA,
+    ahora = () => performance.now(),
+    esperar = (ms) => new Promise((resolver) => setTimeout(resolver, ms)),
+  } = {},
+) {
+  const audio0 = ctx?.currentTime ?? 0
+  const pared0 = ahora()
+  return esperar(esperaMs).then(() => ({
+    avanceAudio: (ctx?.currentTime ?? 0) - audio0,
+    msPared: ahora() - pared0,
+    estado: ctx?.state ?? null,
+  }))
+}
+
+/**
+ * Llama a `fn` **dentro** del siguiente toque, una sola vez: un contexto nuevo
+ * solo suena si nace de un gesto. La captura va primero, antes que el botón
+ * tocado, así que vale cualquier toque —«Seguir» incluido—.
+ *
+ * @returns {() => void} Cancela la espera.
+ */
+export function alSiguienteToque(objetivo, fn) {
+  if (!objetivo?.addEventListener) return () => {}
+  let vivo = true
+  function retirar() {
+    if (!vivo) return
+    vivo = false
+    EVENTOS_DE_GESTO.forEach((tipo) => objetivo.removeEventListener(tipo, alTocar, true))
+  }
+  function alTocar() {
+    if (!vivo) return
+    retirar()
+    fn()
+  }
+  EVENTOS_DE_GESTO.forEach((tipo) =>
+    objetivo.addEventListener(tipo, alTocar, { capture: true, passive: true }),
+  )
+  return retirar
+}
