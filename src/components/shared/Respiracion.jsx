@@ -1,11 +1,11 @@
 // src/components/shared/Respiracion.jsx
 // El ejercicio de respiración guiada: 5-5-3, tres ciclos (§C2.3 · §5.1.2).
 //
-// **Un solo componente para los dos sitios** que lo usan: la respiración diaria
-// de la sección Mañana de Hoy y P1 del onboarding (RN-LU-RESP-02). Por eso
-// vive en `components/shared/` y **no conoce ninguno de los dos espacios**: no
-// importa `diario/` ni `breathing/`, no lee la capa de datos y no sabe qué copy
-// está pintando. Todo llega por props. Dos implementaciones divergentes es
+// **Hoy lo monta un solo sitio**, «Respira un momento» de Hoy. Se escribió para
+// dos —también P1 del onboarding (RN-LU-RESP-02)—, y P1 dejó de montarlo; el
+// componente se queda en `components/shared/` y **no conoce ningún espacio**:
+// no importa `diario/` ni `breathing/`, no lee la capa de datos y no sabe qué
+// copy está pintando. Todo llega por props. Dos implementaciones divergentes es
 // exactamente lo que produjo la contradicción que v4.1 vino a cerrar.
 //
 // **RN-LU-RESP-01 — Enteramente voluntaria.** No se abre sola, no arranca al
@@ -28,7 +28,9 @@ import { clsx } from 'clsx'
 import Button from '@components/ui/Button'
 import { despertarAlVolver } from '@lib/audio/contextoAudio'
 import { crearAudioRespiracion } from '@lib/audioRespiracion'
-import { CICLOS, OPACIDAD_ESTATICA, escalaEn, faseEn } from '@lib/ritmoRespiracion'
+import { toqueSuave } from '@lib/haptica'
+import { CICLOS, OPACIDAD_ESTATICA, claveDeFase, escalaEn, faseEn } from '@lib/ritmoRespiracion'
+import { unaVezCon } from './unaVez'
 
 /** ¿Está activada la preferencia del sistema? Se consulta, no se asume. */
 function usaMovimientoReducido() {
@@ -75,6 +77,14 @@ export default function Respiracion({
   const transcurrido = useRef(0)
   const desde = useRef(0)
   const faseActual = useRef(null)
+  // SPEC_23B — La última fase que vibró (ciclo y fase). No se borra al pausar
+  // ni al volver a la app, a diferencia de `faseActual`: así la misma fase no
+  // vibra dos veces.
+  const ultimoToque = useRef(null)
+  // Un «Empezar» a la vez: un doble toque mientras se crea el audio dejaba dos
+  // bucles, y el huérfano seguía emitiendo fases —y vibrando— en la pausa.
+  const arrancando = useRef(false)
+  const unaVez = useRef(unaVezCon(arrancando)).current
   // Cancela la espera para despertar el audio al volver a la app (D-21.13).
   const cancelarDespertar = useRef(null)
 
@@ -148,6 +158,11 @@ export default function Respiracion({
       faseActual.current = punto.fase
       setFase(punto.fase)
       audio.current?.fase(punto.fase, punto.restante / 1000)
+      const clave = claveDeFase(punto)
+      if (clave !== ultimoToque.current) {
+        ultimoToque.current = clave
+        toqueSuave()
+      }
     }
 
     if (circulo.current) {
@@ -160,20 +175,23 @@ export default function Respiracion({
     cuadro.current = requestAnimationFrame(avanzar)
   }, [ciclos, reducido, terminar])
 
-  const arrancar = async () => {
-    // El contexto de audio nace **aquí dentro**, en el manejador del gesto
-    // (RN-AUD-01). Si arrancara al montarse, el gesto habría ocurrido en la
-    // pantalla anterior y el navegador entregaría un contexto suspendido.
-    if (!audio.current) {
-      audio.current = crearAudioRespiracion()
-      await audio.current.iniciar()
-      audio.current.silenciar(silenciado)
-    }
-    desde.current = performance.now()
-    setEmpezado(true)
-    setCorriendo(true)
-    cuadro.current = requestAnimationFrame(avanzar)
-  }
+  const arrancar = () =>
+    unaVez(async () => {
+      // Si ya hay un bucle en marcha, no se arranca otro.
+      if (cuadro.current) return
+      // El contexto de audio nace **aquí dentro**, en el manejador del gesto
+      // (RN-AUD-01). Si arrancara al montarse, el gesto habría ocurrido en la
+      // pantalla anterior y el navegador entregaría un contexto suspendido.
+      if (!audio.current) {
+        audio.current = crearAudioRespiracion()
+        await audio.current.iniciar()
+        audio.current.silenciar(silenciado)
+      }
+      desde.current = performance.now()
+      setEmpezado(true)
+      setCorriendo(true)
+      cuadro.current = requestAnimationFrame(avanzar)
+    })
 
   const pausar = () => {
     transcurrido.current += performance.now() - desde.current

@@ -51,6 +51,7 @@ import ResumenNoche from './noche/ResumenNoche'
 import { IndicadorPasos, NavegacionPasos } from './Pasos'
 import { volverAlInicio } from '@lib/volverAlInicio'
 import { alCerrarMomento } from '@lib/avisos/pedido'
+import { toqueSuave } from '@lib/haptica'
 import { copy, interpolate } from '@copy'
 import { LIMITES, desdeTextos, filasIniciales, textosDe } from '@/diario/filas'
 import { diaDeLaSemana } from '@/diario/fechas'
@@ -285,6 +286,11 @@ export default function DiarioNoche({ estado, acciones, soloLectura = false }) {
   const terminar = () => {
     if (cerrando.current) return
     cerrando.current = true
+    // SPEC_23B — Un toque suave en el gesto de cerrar, uno por cierre (lo
+    // garantiza `cerrando`). Nunca en el autoguardado ni al reintentar, que
+    // llama a `persistir` y no pasa por aquí. Si la escritura falla después,
+    // el toque ya ocurrió y está bien: el gesto de cerrar fue de la persona.
+    toqueSuave()
     setConCierre(true)
     setVista('cierre')
     persistir()

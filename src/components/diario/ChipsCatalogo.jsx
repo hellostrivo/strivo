@@ -45,7 +45,13 @@ import { clsx } from 'clsx'
 import { CampoLinea } from '@components/shared/Campo'
 import { PILDORA, PILDORA_ELEGIDA, PILDORA_LIBRE } from '@components/shared/pildora'
 import { resolveGender } from '@copy/gender'
-import { ID_OTRA, MAX_PALABRA_PROPIA, etiquetaPropia } from '@/diario/seleccionEmociones'
+import { toqueSuave } from '@lib/haptica'
+import {
+  ID_OTRA,
+  MAX_PALABRA_PROPIA,
+  entroEnLaSeleccion,
+  etiquetaPropia,
+} from '@/diario/seleccionEmociones'
 
 /** La marca de lo elegido. No es copy: es un signo, y va oculto al lector. */
 const MARCA = '✓'
@@ -85,6 +91,8 @@ export default function ChipsCatalogo({
   /** Aplica la regla del catálogo y devuelve si la opción quedó elegida. */
   const aplicar = (id) => {
     const { seleccion: siguiente, topeAlcanzado } = alternar(elegidas, id)
+    // SPEC_23B — Vibra solo lo que entra: ni lo que se suelta ni el tope.
+    if (entroEnLaSeleccion(elegidas, siguiente, id)) toqueSuave()
     onSeleccionar(siguiente)
     setAviso(topeAlcanzado)
     return siguiente.includes(id)

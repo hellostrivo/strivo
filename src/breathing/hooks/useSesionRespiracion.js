@@ -23,8 +23,18 @@ import { ESTADOS, crearMaquina } from '@lib/respiracion/maquinaSesion'
 import { resolverEstado } from '@lib/respiracion/motorRitmo'
 import { adquirir, despertarAlVolver, liberar, reanudar } from '@lib/audio/contextoAudio'
 import { crearAudioRespiracion } from '@lib/audioRespiracion'
+import { toqueSuave } from '@lib/haptica'
 import { crearMotorAmbiente } from '../audio/motorAmbiente.js'
 import { ID_SILENCIO } from '../data/catalogoSonidos.js'
+
+/**
+ * SPEC_23B — ¿Toca vibrar en un cambio de fase con la sesión en este estado?
+ * Solo con el ritmo de verdad en marcha: `activo` o `cerrando` (el último
+ * ciclo). Nunca en el acomodo, en pausa ni sin sesión.
+ */
+export function vibraEnFase(estado) {
+  return estado === ESTADOS.ACTIVO || estado === ESTADOS.CERRANDO
+}
 
 /** Las fases en las que suena la guía. En las retenciones, el silencio marca. */
 const FASES_CON_PULSO = new Set(['inhalar', 'exhalar'])
@@ -265,6 +275,11 @@ export function useSesionRespiracion(configuracion, { alCompletar = null } = {})
        */
       alCambiarFase(ritmo) {
         setEstadoRitmo(ritmo)
+        // SPEC_23B — Un toque suave en cada cambio de fase, solo con la sesión
+        // corriendo. El reloj no emite durante el acomodo ni en pausa, y al
+        // reanudar no repite la fase en la que se pausó; la guarda lo dice
+        // igual en voz alta, por si eso cambiara algún día.
+        if (vibraEnFase(maquina.current?.instantanea()?.estado)) toqueSuave()
         if (!FASES_CON_PULSO.has(ritmo.fase)) {
           guia.current?.fase('pausa', 0)
           return

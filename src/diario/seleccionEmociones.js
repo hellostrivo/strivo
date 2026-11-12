@@ -60,6 +60,25 @@ export function etiquetaPropia(texto) {
  *   pregunta. Uno por defecto; los tres catálogos del día piden tres.
  * @returns {object} las funciones de ese catálogo.
  */
+/**
+ * SPEC_23B — ¿Entró esta emoción en la selección con este toque?
+ *
+ * Es lo único que vibra al elegir: **entrar**. Quitar una no vibra, y un toque
+ * que choca con el tope y no cambia nada tampoco —sería un toque de más sobre
+ * algo que no pasó—. En el Journal la cuarta entra desplazando a la más
+ * antigua, y eso sí es entrar. «Algo más» entra la primera vez; retocarlo solo
+ * reabre su campo y no cambia la selección.
+ *
+ * Se mira la lista de antes y la de después, y no lo que diga la regla del
+ * catálogo, porque los dos catálogos del producto devuelven cosas distintas
+ * (`topeAlcanzado` uno, `desplazada` el otro) y la pregunta es la misma.
+ */
+export function entroEnLaSeleccion(antes, despues, id) {
+  const previa = Array.isArray(antes) ? antes : []
+  const siguiente = Array.isArray(despues) ? despues : []
+  return !previa.includes(id) && siguiente.includes(id)
+}
+
 export function crearSeleccion(textos, { maximo = 1 } = {}) {
   const CATALOGO = Object.freeze(textos.catalogo)
   const IDS = Object.freeze(CATALOGO.map((opcion) => opcion.id))

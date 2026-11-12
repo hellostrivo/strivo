@@ -120,6 +120,17 @@ export function faseEn(ms, ciclos = CICLOS) {
 }
 
 /**
+ * SPEC_23B — Qué fase de qué ciclo es este punto, para no tocar dos veces la
+ * misma. `faseActual` del componente se olvida al pausar y al volver a la app
+ * (para reprogramar la envolvente del tono), así que la háptica no puede
+ * colgarse de él: lleva su propia memoria con esta clave, que no se borra.
+ */
+export function claveDeFase(punto) {
+  if (!punto || punto.terminado || !punto.fase) return null
+  return `${punto.ciclo}:${punto.fase}`
+}
+
+/**
  * Escala del círculo en una fase (§5.1.2): 1,0 → 1,18 al inhalar, de vuelta al
  * exhalar, y quieto en la pausa. Sin desplazamiento, sin rotación, sin
  * partículas.
