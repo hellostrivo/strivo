@@ -1,70 +1,94 @@
 #!/usr/bin/env node
 // scripts/componer-arranque.js
-// Compone la fuente de la pantalla de arranque de iOS (SPEC_21.1 §4.7).
+// Compone la «S» de la pantalla de arranque de iOS (SPEC_21.1 §4.7, D-21.11).
 //
 // **Qué hace.** Toma el símbolo de la marca tal cual —`STRIVO_simbolo_original`,
-// la «S» en carbón con los puntos en gris malva— y lo centra sobre papel
-// `#FBF8F4` en un lienzo de 2732 × 2732, que es lo que pide
-// `@capacitor/assets`. No toca un trazo ni un color: el SVG se rasteriza y se
-// pega encima, nada más (manual §3, «No: redibujar, cambiar colores…»).
+// la «S» en carbón con los puntos en gris malva— y escribe
+// `SimboloArranque.imageset`: tres PNG transparentes (1x, 2x y 3x) del tamaño
+// exacto al que se pintan y su `Contents.json`. No toca un trazo ni un color: el
+// SVG se rasteriza y se encaja, nada más (manual §3, «No: redibujar, cambiar
+// colores…»). El papel no va en la imagen: es el fondo de la vista del
+// storyboard, así que no hay recuadro que pueda no empatar.
 //
-// **Dos archivos iguales a propósito.** `splash.png` y `splash-dark.png` son el
-// mismo: el modo oscuro del sistema no cambia el arranque (DP-21.1). Si fueran
-// distintos, la app abriría en dos colores según un ajuste que nadie relaciona
-// con ella.
+// **Por qué tan pequeña (D-21.11, 12 nov 2026).** Hasta aquí el arranque era
+// una imagen de 2732 × 2732 a sangre en las tres escalas: 29,9 MB al
+// decodificarse, y **el límite de iOS para una pantalla de arranque es de
+// 25 MB**. Al pasarse, iOS descarta el storyboard entero y la ventana que crece
+// desde el ícono sale negra, en los dos modos. Ninguna imagen del arranque va a
+// sangre ni más grande de lo que se pinta: la de 3x pesa ~420 KiB decodificada.
 //
-// **El tamaño.** El encuadre del símbolo mide `ALTO_SIMBOLO` px de alto en el
-// lienzo, el 14 %, y el trazo visible 329, porque el espacio libre ya viene
-// dentro del encuadre del SVG. iOS pinta la imagen rellenando la pantalla
-// (`scaleAspectFill`), así que la «S» visible mide unos 103 pt en un iPhone de
-// 6,1″, 112 en uno de 6,7″ y 80 en un SE: por encima de los 48 pt «cómodos» del
-// LEEME del logotipo, y lejos de los 32 de mínimo.
+// **Sin variante oscura.** El modo oscuro del sistema no cambia el arranque
+// (DP-21.1). Si la hubiera, la app abriría en dos colores según un ajuste que
+// nadie relaciona con ella.
 //
-// Cómo correr: node scripts/componer-arranque.js
-// Después, y solo después de revisar el resultado:
-//   npx @capacitor/assets@3.0.5 generate --ios
+// **El tamaño.** `ANCHO_PT` × `ALTO_PT` es lo que medía el encuadre del símbolo
+// en un iPhone 17 (402 × 874 pt) con la imagen anterior: 385 px de alto sobre un
+// lienzo de 2732 pintado a pantalla llena, 385 / 2732 × 874 ≈ 123 pt, y con la
+// proporción del `viewBox` del SVG (513,83 × 655,27), ≈ 97 pt de ancho. Así el
+// relevo al umbral, medido con esa «S» (D-21.9, D-21.10), no cambia; ahora es el
+// mismo en todos los iPhone. **El storyboard dice los mismos números** en las
+// restricciones del `imageView`, y `appIos.test.js` comprueba que coinciden.
+//
+// Cómo correr: npm run ios:arranque. Dos veces seguidas deja `git status`
+// limpio. **No** pases `@capacitor/assets` por aquí: `npm run ios:recursos` es
+// solo para el ícono, y un `assets/splash.png`, `logo.png` o `icon.png` le haría
+// volver a escribir un arranque de 2732.
 
-import { readFileSync } from 'fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { dirname, join } from 'path'
-import { fileURLToPath } from 'url'
+import { fileURLToPath, pathToFileURL } from 'url'
 import sharp from 'sharp'
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..')
 const SIMBOLO = join(RAIZ, 'docs/marca/logotipo-v1/STRIVO_simbolo_original.svg')
-const DESTINOS = [join(RAIZ, 'assets/splash.png'), join(RAIZ, 'assets/splash-dark.png')]
 
-export const LIENZO = 2732
-export const ALTO_SIMBOLO = 385
-/** Papel: el fondo del ícono y del velo de día (manual §3.5). */
-export const PAPEL = '#FBF8F4'
+/** El conjunto de imágenes que pinta el storyboard. Un nombre que `@capacitor/assets` no usa. */
+export const NOMBRE = 'SimboloArranque'
+export const DESTINO = join(RAIZ, `ios/App/App/Assets.xcassets/${NOMBRE}.imageset`)
+
+/** El recuadro de la «S», en puntos. Ver «El tamaño», arriba. */
+export const ANCHO_PT = 97
+export const ALTO_PT = 123
+export const ESCALAS = [1, 2, 3]
+
+/** El nombre del PNG de cada escala. */
+export const archivoDe = (escala) => `${NOMBRE}@${escala}x.png`
 
 async function componer() {
-  // Se rasteriza a cuatro veces la densidad de referencia y se reduce después:
-  // reducir desde grande es lo que deja el borde de la curva limpio.
-  const simbolo = await sharp(readFileSync(SIMBOLO), { density: 72 * 4 })
-    .resize({ height: ALTO_SIMBOLO, kernel: 'lanczos3' })
-    .png()
-    .toBuffer()
+  mkdirSync(DESTINO, { recursive: true })
+  const svg = readFileSync(SIMBOLO)
+  const imagenes = []
 
-  const lienzo = sharp({
-    create: { width: LIENZO, height: LIENZO, channels: 3, background: PAPEL },
-  })
-    .composite([{ input: simbolo, gravity: 'center' }])
-    // Opaco: sin canal alfa no hay borde que iOS pueda pintar de negro.
-    .removeAlpha()
-    .png()
-
-  const imagen = await lienzo.toBuffer()
-  for (const destino of DESTINOS) {
-    await sharp(imagen).toFile(destino)
+  for (const escala of ESCALAS) {
+    const ancho = ANCHO_PT * escala
+    const alto = ALTO_PT * escala
+    // Se rasteriza a ocho veces la densidad de referencia y se reduce después:
+    // reducir desde grande es lo que deja el borde de la curva limpio. `contain`
+    // encaja sin deformar y centra; lo que sobra es transparente.
+    const png = await sharp(svg, { density: 72 * 8 })
+      .resize({
+        width: ancho,
+        height: alto,
+        fit: 'contain',
+        kernel: 'lanczos3',
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
+      })
+      .png({ compressionLevel: 9 })
+      .toBuffer()
+    writeFileSync(join(DESTINO, archivoDe(escala)), png)
+    imagenes.push({ idiom: 'universal', filename: archivoDe(escala), scale: `${escala}x` })
+    console.log(`  ${escala}x: ${ancho} × ${alto} px → ${archivoDe(escala)}`)
   }
 
-  const { width, height } = await sharp(simbolo).metadata()
-  console.log(`Símbolo: ${width} × ${height} px sobre ${LIENZO} × ${LIENZO}, fondo ${PAPEL}.`)
-  for (const destino of DESTINOS) console.log(`  → ${destino.replace(`${RAIZ}/`, '')}`)
+  const contenido = { images: imagenes, info: { author: 'xcode', version: 1 } }
+  writeFileSync(join(DESTINO, 'Contents.json'), `${JSON.stringify(contenido, null, 2)}\n`)
+  console.log(`${NOMBRE}: ${ANCHO_PT} × ${ALTO_PT} pt → ${DESTINO.replace(`${RAIZ}/`, '')}`)
 }
 
-componer().catch((error) => {
-  console.error(error)
-  process.exitCode = 1
-})
+// Solo genera al ejecutarse; importado (las pruebas leen las medidas) no hace nada.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  componer().catch((error) => {
+    console.error(error)
+    process.exitCode = 1
+  })
+}
