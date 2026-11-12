@@ -149,6 +149,19 @@ export function crearReloj({
 
     obtenerMs,
 
+    /**
+     * SPEC_23 Parte 2 (DP-23.22) — Una pasada ahora, sin pedir fotograma.
+     *
+     * Con la pantalla bloqueada no hay fotogramas: la mueve un temporizador
+     * (`relojDeFondo`). Es la misma pasada que un fotograma —emite la fase si
+     * cambió y avisa del estado—, así que la máquina sigue siendo la única
+     * fuente de verdad de las fases. En pausa o detenido no hace nada.
+     */
+    evaluar() {
+      if (!corriendo || congeladoEn !== null) return null
+      return emitir()
+    },
+
     /** Resuelve el estado ahora mismo, sin esperar al siguiente fotograma. */
     estadoActual() {
       return resolverEstado(patron, obtenerMs(), { curva })
