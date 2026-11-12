@@ -15,27 +15,25 @@
 //   - **si el JavaScript siguió corriendo fuera**: los tics de un temporizador
 //     de 1 s y los fotogramas que llegaron con la página oculta;
 //   - si el motor sigue vivo, cuántas fuentes tiene y cuántos tics lleva el
-//     planificador.
+//     planificador;
+//   - las fases programadas por adelantado y si el cuadro está puesto.
 //
 // «Al volver» se apunta solo, al hacerse visible la página: **cualquier toque
 // en la pantalla despierta el audio** (`despertarAlVolver` escucha todo el
 // documento), también uno en el panel, así que la captura se hace antes de
 // tocar nada.
 //
-// **Los dos experimentos** (DP-23.17): el tipo de sesión de audio de WebKit
-// (`navigator.audioSession.type`, iOS 17+), que se guarda y se aplica a cada
-// contexto nuevo —cambiarlo a media sesión puede no surtir efecto, por eso las
-// pruebas empiezan una sesión nueva—, y «Probar con un audio nuevo», que pide
-// a quien suena que cierre su contexto y monte uno nuevo dentro del toque.
+// **Desde la Parte 2 no trae experimentos** (DP-23.28): el control del tipo de
+// sesión de audio y «Probar con un audio nuevo» se retiraron, porque ya decide
+// el comportamiento normal (`sesionAudio.js` y el respaldo de DP-23.21). Mide,
+// además, cuántas fases hay programadas por adelantado y si el cuadro de la
+// pantalla de bloqueo está puesto.
 
 import { observar } from './observadorAudio.js'
 import { actual } from './contextoAudio.js'
+import { cuadroPuesto, tipoActual } from './sesionAudio.js'
 
-const CLAVE_DEL_TIPO = 'strivo.diag.tipoDeAudio'
 const CAMBIOS_QUE_SE_VEN = 6
-
-/** Los dos tipos que se prueban, con el nombre de WebKit. */
-export const TIPOS = Object.freeze({ automatico: 'auto', reproduccion: 'playback' })
 
 const estado = {
   cambios: [],
@@ -68,59 +66,6 @@ function contar() {
 
 const ahora = () => Date.now()
 
-// ─── El tipo de sesión de audio (DP-23.17 a) ──────────────────────────────────
-
-function hayTipo() {
-  return typeof navigator !== 'undefined' && 'audioSession' in navigator
-}
-
-function tipoGuardado() {
-  try {
-    return localStorage.getItem(CLAVE_DEL_TIPO)
-  } catch {
-    return null
-  }
-}
-
-function aplicarTipo() {
-  if (!hayTipo()) return
-  const elegido = tipoGuardado()
-  if (elegido !== TIPOS.automatico && elegido !== TIPOS.reproduccion) return
-  try {
-    navigator.audioSession.type = elegido
-  } catch {
-    // WebKit dijo que no: la línea del panel enseña el que rige.
-  }
-}
-
-/** El tipo que rige ahora, o `null` si la API no existe. */
-export function tipoActual() {
-  if (!hayTipo()) return null
-  try {
-    return navigator.audioSession.type ?? null
-  } catch {
-    return null
-  }
-}
-
-/** Lo elige el panel. Se aplica ya y a cada contexto nuevo. */
-export function elegirTipo(tipo) {
-  try {
-    localStorage.setItem(CLAVE_DEL_TIPO, tipo)
-  } catch {
-    // Sin almacenamiento, se aplica solo a esta vez.
-  }
-  aplicarTipo()
-  if (hayTipo()) {
-    try {
-      navigator.audioSession.type = tipo
-    } catch {
-      // Ídem.
-    }
-  }
-  contar()
-}
-
 // ─── Lo que cuentan el contexto, el planificador y la sesión ──────────────────
 
 function apuntarCambio(nombre) {
@@ -131,7 +76,6 @@ function apuntarCambio(nombre) {
 
 observar((tipo, datos) => {
   if (tipo === 'creado') {
-    aplicarTipo()
     apuntarCambio(datos?.state ?? 'sin audio')
     datos?.addEventListener?.('statechange', () => apuntarCambio(datos.state))
   } else if (tipo === 'cerrado') {
@@ -154,6 +98,8 @@ observar((tipo, datos) => {
     contar()
   } else if (tipo === 'tic') {
     estado.tics += 1
+  } else if (tipo === 'cuadro') {
+    contar()
   } else if (tipo === 'sesion' || tipo === 'momento') {
     estado.fuentes[tipo] = datos
     contar()
@@ -209,7 +155,6 @@ if (typeof document !== 'undefined') {
   document.addEventListener('visibilitychange', alCambiarVisibilidad)
   setInterval(cadaSegundo, 1000)
   requestAnimationFrame(cadaFotograma)
-  aplicarTipo()
 }
 
 // ─── Lo que lee el panel ──────────────────────────────────────────────────────
@@ -233,18 +178,10 @@ export function leer(origen) {
     motor: fuente?.motor?.() ?? null,
     tics: estado.tics,
     tipo: tipoActual(),
-    puedeReconstruir: typeof fuente?.reconstruir === 'function',
+    programadas: fuente?.programadas?.() ?? null,
+    relojAudio: ctx?.currentTime ?? null,
+    cuadro: cuadroPuesto(),
   }
-}
-
-/** «Probar con un audio nuevo»: lo hace quien suena, dentro del toque. */
-export function reconstruir(origen) {
-  try {
-    estado.fuentes[origen]?.reconstruir?.()
-  } catch {
-    // Si falla, el panel lo enseña con el estado del audio.
-  }
-  contar()
 }
 
 /** El panel se repinta con cada cosa que pasa. */

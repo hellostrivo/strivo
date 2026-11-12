@@ -106,7 +106,11 @@ export const DIAGNOSTICO_AUDIO = Object.freeze({
     playback: 'reproducción',
     noExiste: 'no existe',
   }),
-  nuevo: 'Probar con un audio nuevo',
+  // SPEC_23 Parte 2 (DP-23.28). Los experimentos de la Parte 1 se retiraron.
+  programadas: 'Fases programadas por adelantado: {n} · hasta {hora}',
+  programadasNinguna: 'Fases programadas por adelantado: 0',
+  cuadro: 'Cuadro de la pantalla de bloqueo: {estado}',
+  cuadros: Object.freeze({ puesto: 'puesto', sinPoner: 'sin poner' }),
   plegar: 'Ocultar diagnóstico',
   desplegar: 'Diagnóstico',
 })
