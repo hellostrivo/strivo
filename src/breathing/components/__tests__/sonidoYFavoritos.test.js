@@ -68,8 +68,10 @@ describe('el repo no engorda por audio (criterios 35 y 36, RN-RE-SND-00)', () =>
   // de iPhone), el plugin de Google y Apple de SPEC_21.2 y el almacén propio de
   // SPEC_17B (`plugins/strivo-almacen`, SQLite del sistema), y los avisos
   // locales de SPEC_22 (`@capacitor/local-notifications`, sin sonidos propios:
-  // el del sistema), y la háptica de SPEC_23B (`@capacitor/haptics`, un toque
-  // del sistema, sin sonido). Ninguna trae audio: el sonido sigue sintetizado.
+  // el del sistema), la háptica de SPEC_23B (`@capacitor/haptics`, un toque
+  // del sistema, sin sonido) y Face ID de SPEC_23A
+  // (`@capgo/capacitor-native-biometric`). Ninguna trae audio: el sonido sigue
+  // sintetizado.
   it('las dependencias son las ocho de siempre y las de la app de iPhone', () => {
     const paquete = JSON.parse(readFileSync('package.json', 'utf8'))
     expect(Object.keys(paquete.dependencies).sort()).toEqual([
@@ -81,6 +83,7 @@ describe('el repo no engorda por audio (criterios 35 y 36, RN-RE-SND-00)', () =>
       '@capacitor/local-notifications',
       '@capacitor/splash-screen',
       '@capacitor/status-bar',
+      '@capgo/capacitor-native-biometric',
       '@fontsource-variable/inter',
       'clsx',
       'date-fns',
