@@ -747,14 +747,19 @@ IndexedDB por dentro tiene su equivalente que vuelca todas las tablas de SQLite.
 
 ### Al abrir la app, papel desde el primer instante (D-21.11, 12 nov 2026)
 
-La instrucción completa está en `docs/specs/INSTRUCCION_D_21_11_PANTALLA_DE_ARRANQUE.md` (v1.1;
+La instrucción completa está en `docs/specs/INSTRUCCION_D_21_11_PANTALLA_DE_ARRANQUE.md` (v1.2;
 **su §9 manda**). **La ventana que crece desde el ícono ya no pasa por negro**: la imagen de arranque
 de 2732 × 2732 pasaba del límite de memoria de iOS para una pantalla de arranque (25 MB), iOS
 descartaba el storyboard y pintaba negro. Ahora es papel con la «S» a su tamaño justo. El porqué,
 el arreglo y las reglas que deja están en «App iOS (SPEC_21.1)», en el apartado «Por qué la pantalla
 de arranque es ligera». **Ni Swift, ni `capacitor.config.json`, ni `Info.plist`, ni
-`project.pbxproj`, ni `package.json`, ni la web cambiaron.** Las pruebas manuales M1–M6 en el
-iPhone están pendientes, y antes de M1 hay que **borrar la app y reiniciar el teléfono**.
+`project.pbxproj`, ni `package.json`, ni la web cambiaron.**
+
+**Pruebas manuales M1–M6 no realizadas, por decisión de la fundadora (12 nov 2026).** D-21.11 se
+cierra con la causa confirmada por `splashboardd` y las grabaciones del simulador (0 cuadros negros
+en frío y en segundo arranque, en oscuro y en claro). Queda por ver en el iPhone, sin bloquear: el
+relevo de noche de D-21.9 (criterio d) y O-21.11.1. La primera build en el iPhone va tras borrar la
+app y reiniciar el teléfono.
 
 ### Los recordatorios llegan en el iPhone (SPEC_22, 11 nov 2026)
 

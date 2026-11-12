@@ -1,7 +1,7 @@
 # INSTRUCCIÓN D-21.11 — Al abrir la app, papel desde el primer instante
 
 **Para:** Claude Code
-**Fecha:** 12 nov 2026 · **Versión:** 1.1 (reporte previo aprobado el 12 nov 2026: §9. **Donde §9 y el resto difieran, manda §9**)
+**Fecha:** 12 nov 2026 · **Versión:** 1.2 (reporte previo aprobado el 12 nov 2026: §9. **Donde §9 y el resto difieran, manda §9**. Cerrada el 12 nov 2026 sin pruebas manuales: §10)
 **Rama de partida:** `strivo` en `59a7147`, la fusión de SPEC_22. Compruébalo en §0.
 **Gobierna:** esta instrucción + `docs/specs/INSTRUCCION_SPEC_21_1_CAPACITOR_IOS.md` (sobre todo la fila D-21.11 de su §2) + `docs/specs/INSTRUCCION_SPEC_21_1_ADENDA_ARRANQUE_Y_UMBRAL.md` + `SPEC_00B` + `CLAUDE.md`. **Donde esta instrucción y otra difieran, manda esta.**
 **Por qué existe:** al abrir Strivo desde el ícono, la ventana que crece pasa por negro antes de llegar al papel. Medido el 14 oct con grabación a 60 fps: en frío, ~500 ms de negro puro a pantalla completa y luego una subida al papel de ~320 ms; en el segundo arranque, ~80 ms de oscuro. Pasa igual de día que de noche, y en modo claro y en modo oscuro.
@@ -248,7 +248,7 @@ Reporte previo de Claude Code (12 nov 2026) **aprobado por la fundadora con las 
 
 **Peso.** `Assets.car` del Release de simulador: de 81 480 B (con `Splash` de 2732×2732 en 3x, clara y oscura, 29,9 MB decodificada cada una) a 51 032 B (`SimboloArranque` 3x, 291×369).
 
-**Pruebas manuales M1–M6:** *pendientes, de la fundadora en su iPhone 17.* Antes de M1: borrar la app y reiniciar el teléfono (§9).
+**Pruebas manuales M1–M6 no realizadas, por decisión de la fundadora (12 nov 2026).** D-21.11 se cierra con la causa confirmada por `splashboardd` y las grabaciones del simulador (0 cuadros negros en frío y en segundo arranque, en oscuro y en claro). Queda por ver en el iPhone, sin bloquear: el relevo de noche de D-21.9 (criterio d) y O-21.11.1. La primera build en el iPhone va tras borrar la app y reiniciar el teléfono.
 
 ---
 
