@@ -182,7 +182,12 @@ export const FIELDS = Object.freeze({
     'release',
   ]),
   dayState: Object.freeze(['mood', 'updatedAt']),
-  pinConfig: Object.freeze(['salt', 'hash', 'iterations', 'algorithm', 'enabled']),
+  // SPEC_23A (DP-23.8) — `biometria`, opcional: `{ verificador, activadaEn }`
+  // con Face ID o Touch ID activo, o `{ cambiada: true }` cuando iOS invalidó
+  // la clave. `verificador` es el SHA-256 de la clave que vive en la Keychain;
+  // ni la clave ni el PIN están aquí. Viaja con el resto de `pinConfig`, que
+  // nunca sale del dispositivo.
+  pinConfig: Object.freeze(['salt', 'hash', 'iterations', 'algorithm', 'enabled', 'biometria']),
 
   // ─── Frases personalizadas (SPEC_29, 4 oct 2026) ──────────────────────────
   // Los dos registros **nunca salen del dispositivo**, igual que `pinConfig`:
