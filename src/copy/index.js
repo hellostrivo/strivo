@@ -1478,6 +1478,23 @@ export const copy = {
           aviso:
             'Tu journal pide un PIN y esta cuenta se quedó sin forma de recuperarlo. Añade un correo o retira el PIN.',
         },
+
+        // SPEC_23A — Abrir con la cara en la app de iPhone. Es otra forma de
+        // abrir la misma puerta: no cifra nada y no promete más que eso. Los
+        // nombres son de producto y no se traducen; se elige uno por lo que
+        // diga el teléfono (`biometryType`), y se interpolan en `{biometria}`.
+        biometria: {
+          nombres: { faceId: 'Face ID', touchId: 'Touch ID' },
+          interruptor: 'Abrir con {biometria}',
+          texto: 'Tu PIN sigue siendo el respaldo.',
+          confirmarPin: 'Escribe tu PIN para activar {biometria}.',
+          activar: 'Activar',
+          abrir: 'Abrir con {biometria}',
+          cambiada:
+            'El teléfono cambió su configuración de {biometria}. Actívalo de nuevo cuando quieras.',
+          // Lo que iOS enseña al pedir Touch ID. Con Face ID manda Info.plist.
+          motivo: 'Para abrir tu journal.',
+        },
       },
     },
 
