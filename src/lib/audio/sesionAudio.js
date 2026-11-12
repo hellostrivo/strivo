@@ -138,6 +138,18 @@ export function quitarCuadro() {
   }
 }
 
+/**
+ * La imagen del cuadro: el ícono de la app (`public/icon-512.png`), en el
+ * origen de la página. Si WebKit no la carga, el cuadro va sin imagen.
+ */
+export function imagenDeLaApp() {
+  try {
+    return new globalThis.URL('icon-512.png', globalThis.location?.origin + '/').href
+  } catch {
+    return null
+  }
+}
+
 /** ¿Está puesto? Lo lee el diagnóstico. */
 export function cuadroPuesto() {
   return puesto
