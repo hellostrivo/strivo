@@ -350,6 +350,19 @@ export default function BloqueoPin({ modo, estado, acciones, onCerrar }) {
         >
           {textos.bloqueo.olvide}
         </button>
+
+        {/* SPEC_24 (DP-24.6) — La misma puerta, montada antes de preparar el
+            archivo de «Llevarme lo que escribí»: ahí sí se puede volver sin
+            abrirla, y cerrar no prepara nada. El Journal no la pasa. */}
+        {onCerrar && (
+          <button
+            type="button"
+            onClick={onCerrar}
+            className="self-start rounded-full px-3 py-2 min-h-touch-sm text-sm text-on-surface-soft hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30"
+          >
+            {textos.cerrar}
+          </button>
+        )}
       </section>
     )
   }

@@ -41,6 +41,7 @@
 import { Suspense, lazy } from 'react'
 import Bloque from './Bloque'
 import TuCuenta from './TuCuenta'
+import TusDatos from './TusDatos'
 import TusFrases from './TusFrases'
 import TusRecordatorios from './TusRecordatorios'
 import Button from '@components/ui/Button'
@@ -74,7 +75,13 @@ function Marco({ children }) {
   )
 }
 
-export default function Perfil({ uid }) {
+/**
+ * @param {object} props
+ * @param {string} props.uid
+ * @param {object} [props.exportacion] - SPEC_24: preparar el archivo, de `App.jsx`.
+ * @param {Function} [props.Puerta] - SPEC_24: la puerta del Journal, de `App.jsx`.
+ */
+export default function Perfil({ uid, exportacion, Puerta }) {
   const { valores, carga, acciones, reintentar } = usePerfil(uid)
   const sincronizacion = useSincronizacion(uid)
 
@@ -177,6 +184,9 @@ export default function Perfil({ uid }) {
         )}
       </div>
     ),
+
+    // SPEC_24 — Lo que sabe del diario le llega por props desde `App.jsx`.
+    tusDatos: () => <TusDatos uid={uid} exportacion={exportacion} Puerta={Puerta} />,
   }
 
   if (carga === 'cargando') {

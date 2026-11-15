@@ -135,6 +135,88 @@ const CUENTA = {
     otroMetodo:
       'Ese correo ya tiene una cuenta con otra forma de entrar. Entra como lo hiciste la primera vez.',
   },
+
+  // ─── Llevarme lo que escribí (SPEC_24A) ────────────────────────────────
+  // RN-08. El archivo es de la persona: se dice como un hecho, sin
+  // ceremonia. `archivo` son los encabezados que no son preguntas dentro de
+  // `entradas.md`: las preguntas y los rótulos del día salen de donde ya
+  // viven (la mañana, la noche y el Historial).
+  exportar: {
+    titulo: 'Llevarme lo que escribí',
+    texto: 'Un archivo con todas tus entradas, tal como las escribiste. Es tuyo.',
+    boton: 'Preparar mi archivo',
+    preparando: 'Preparando tu archivo',
+    sinEntradas: 'Todavía no hay entradas. El archivo tendrá solo tu perfil.',
+    // Solo en la web: en el iPhone, la hoja de compartir ya es el acuse.
+    descargado: 'Listo. Tu archivo se descargó.',
+    error: 'No pudimos preparar tu archivo. Lo que escribiste sigue aquí. Inténtalo de nuevo.',
+    // D7: la cuenta no terminó de bajar a este teléfono.
+    incompleto:
+      'Puede que el archivo no tenga todo: algo de lo que guardaste en la nube todavía no llega a este teléfono.',
+    archivo: {
+      titulo: 'Lo que escribí en Strivo',
+      exportadoConNombre: '{nombre} · exportado el {fecha}',
+      exportado: 'Exportado el {fecha}',
+      tu: 'Tú',
+      // La identidad central de una versión anterior del onboarding (se lee,
+      // no se escribe). Su pregunta ya no existe en ninguna pantalla.
+      sobreTi: 'Lo que escribiste sobre ti',
+      respiracion: 'Respiración',
+      combinaciones: 'Tus combinaciones guardadas:',
+    },
+  },
+
+  // ─── Borrar mi cuenta (SPEC_24B) ───────────────────────────────────────
+  // Sin culpa, sin presión y sin alarma. Se dice qué se borra, qué no, y que
+  // no tiene vuelta. «Quedarme» está siempre. `despedida` es el único texto
+  // de todo el proyecto que puede sonar a cierre emocional: no se añade nada
+  // más, y nada de «esperamos verte pronto».
+  borrar: {
+    titulo: 'Borrar mi cuenta',
+    queSeBorra:
+      'Se borran tu cuenta, tus entradas y tus preferencias, aquí y en la nube. No hay forma de recuperarlas después.',
+    otroDispositivo:
+      'Si usas Strivo con esta cuenta en otro teléfono o en la web, lo que esté guardado ahí se queda ahí.',
+    // Solo en la app de iPhone (DP-24.16).
+    suscripcion:
+      'Borrar tu cuenta no cancela tu suscripción. Si quieres cancelarla, se hace en los ajustes de tu teléfono.',
+    suscripcionEnlace: 'Ver mi suscripción',
+    // «Restaurar compras» es el nombre que usa SPEC_25 (`paywall.restaurar`).
+    compras:
+      'Lo que pagaste queda ligado a tu Apple ID, no a tu cuenta de Strivo. Si más adelante creas otra cuenta, lo recuperas con “Restaurar compras”.',
+    exportarAntes: 'Antes, llevarme lo que escribí',
+    continuar: 'Continuar con el borrado',
+    quedarme: 'Quedarme',
+    verificarTitulo: 'Confirma que eres tú',
+    porQuePedimosContrasena: 'Te pedimos tu contraseña para asegurarnos de que eres tú.',
+    porQuePedimosProveedor: 'Vuelve a entrar con {proveedor} para asegurarnos de que eres tú.',
+    // Nombres de producto: no se traducen.
+    proveedores: { 'google.com': 'Google', 'apple.com': 'Apple' },
+    verificar: 'Continuar',
+    // D12: la pantalla «a medio borrar» sin sesión.
+    entrarAntes: 'Para seguir, entra de nuevo a tu cuenta.',
+    confirmarTitulo: 'Última confirmación',
+    confirmarTexto: 'Escribe BORRAR para confirmar.',
+    confirmarPlaceholder: 'BORRAR',
+    // La palabra que se compara, sin distinguir mayúsculas (DP-24.2).
+    palabra: 'BORRAR',
+    confirmarNoCoincide: 'Para confirmar, escribe la palabra BORRAR.',
+    boton: 'Borrar mi cuenta',
+    borrando: 'Borrando',
+    necesitaConexion: 'Para borrar tu cuenta hace falta conexión. Lo que escribiste sigue aquí.',
+    errorAntes: 'No pudimos borrar tu cuenta. No se borró nada. Inténtalo de nuevo con conexión.',
+    errorDurante:
+      'No pudimos terminar de borrar tu cuenta. Lo de este teléfono sigue aquí. Inténtalo de nuevo con conexión.',
+    aMediasTitulo: 'Tu cuenta quedó a medio borrar',
+    aMediasTexto:
+      'La última vez no terminamos. Lo de este teléfono sigue aquí. Puedes terminar ahora o conservar tu cuenta.',
+    terminar: 'Terminar de borrar',
+    conservar: 'Conservar mi cuenta',
+    conservada:
+      'Tu cuenta sigue aquí. Lo de este teléfono vuelve a la nube en cuanto haya conexión.',
+    despedida: 'Listo. Tu cuenta y tus entradas ya no existen. Gracias por haber estado aquí.',
+    cerrar: 'Cerrar',
+  },
 }
 
 export const copy = {
@@ -1704,6 +1786,12 @@ export const copy = {
         reintento: {
           sinExito: 'Lo intentamos y todavía no se pudo. Seguiremos solos cuando haya conexión.',
         },
+      },
+
+      // SPEC_24 — Llevarme lo que escribí y, con cuenta, borrarla. Lo de
+      // dentro vive en `copy.cuenta.exportar` y `copy.cuenta.borrar`.
+      tusDatos: {
+        titulo: 'Tus datos',
       },
     },
 

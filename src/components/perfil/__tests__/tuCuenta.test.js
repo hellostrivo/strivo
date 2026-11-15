@@ -34,7 +34,10 @@ const cuentaLib = codigoDe(CUENTA_LIB)
 
 describe('el copy de Tu cuenta es el de la SPEC §4, literal', () => {
   it('copy.cuenta, clave por clave', () => {
-    expect(copy.cuenta).toEqual({
+    // SPEC_24 añade `exportar` y `borrar` al mismo objeto; su copy se comprueba
+    // literal en sus propias pruebas. Lo de Tu cuenta no cambió.
+    const { exportar: _exportar, borrar: _borrar, ...deTuCuenta } = copy.cuenta
+    expect(deTuCuenta).toEqual({
       bloque: { titulo: 'Tu cuenta' },
       estado: {
         sinCuenta: 'Sin cuenta. Puedes crear una cuando quieras.',
