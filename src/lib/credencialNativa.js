@@ -83,24 +83,45 @@ export function datosDeCredencial(cual, respuesta) {
 }
 
 /**
+ * El código de autorización de Apple, **solo para borrar la cuenta** (SPEC_24,
+ * DP-24.11). Con él se revoca el token de Apple. Caduca a los cinco minutos y
+ * sirve una vez: sale de la hoja que se acaba de abrir y no se guarda en
+ * ningún sitio. `datosDeCredencial` sigue sin tomarlo.
+ */
+export function codigoDeAutorizacion(respuesta) {
+  const codigo = respuesta?.credential?.authorizationCode
+  return typeof codigo === 'string' && codigo !== '' ? codigo : null
+}
+
+/**
  * Abre la hoja de Google o de Apple y devuelve la credencial de Firebase.
  * Lanza lo que lance el plugin: quien llama decide si fue una cancelación
  * (`esCancelacion`) o un tropiezo.
  *
+ * Con `conCodigo` (solo el borrado de la cuenta, y solo con Apple) devuelve
+ * `{ credencial, codigo }`: la misma hoja da la credencial para reautenticar y
+ * el código para revocar.
+ *
  * @param {'apple'|'google'} cual
- * @param {object} [dobles] - Existen para las pruebas.
+ * @param {object} [opciones]
+ * @param {boolean} [opciones.conCodigo]
+ * @param {Function} [opciones.cargar] - Existe para las pruebas.
+ * @param {Function} [opciones.firebaseAuth] - Existe para las pruebas.
  */
 export async function credencialNativa(
   cual,
-  { cargar = cargarPlugin, firebaseAuth = () => import('firebase/auth') } = {},
+  { cargar = cargarPlugin, firebaseAuth = () => import('firebase/auth'), conCodigo = false } = {},
 ) {
   const [{ plugin: nativo }, { GoogleAuthProvider, OAuthProvider }] = await Promise.all([
     cargar(),
     firebaseAuth(),
   ])
   if (cual === 'apple') {
-    const datos = datosDeCredencial('apple', await nativo.signInWithApple({ skipNativeAuth: true }))
-    return new OAuthProvider(PROVEEDOR_DE_FIREBASE.apple).credential(datos)
+    const respuesta = await nativo.signInWithApple({ skipNativeAuth: true })
+    const credencial = new OAuthProvider(PROVEEDOR_DE_FIREBASE.apple).credential(
+      datosDeCredencial('apple', respuesta),
+    )
+    return conCodigo ? { credencial, codigo: codigoDeAutorizacion(respuesta) } : credencial
   }
   const { idToken } = datosDeCredencial(
     'google',

@@ -208,9 +208,15 @@ describe('SPEC_21.2: el método sale de la sesión, y cancelar no es un error', 
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/\/\/.*$/gm, '')
     expect(codigo).toMatch(/import\('@\/lib\/reautenticacion'\)/)
-    expect(codigo).toMatch(/await reautenticarConProveedor\(usuario, proveedor/)
+    // Desde SPEC_24 la verificación entera vive en lib/ (`reautenticarCuenta`),
+    // que comparte con el borrado de la cuenta; es la misma llamada.
+    expect(codigo).toMatch(/await reautenticarCuenta\(\{ contrasena \}\)/)
+    const lib = readFileSync('src/lib/reautenticacion.js', 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\/\/.*$/gm, '')
+    expect(lib).toMatch(/await reautenticarConProveedor\(usuario, metodo/)
     expect(codigo).not.toMatch(/reauthenticateWithPopup/)
-    expect(codigo).not.toMatch(/providerData/)
+    expect(codigo + lib).not.toMatch(/providerData/)
   })
 
   it('BloqueoPin no dice nada al cancelar: se queda en la pantalla, sin nota', () => {
@@ -276,14 +282,20 @@ describe('criterio 8: la contraseña no se escribe en ningún sitio', () => {
     },
   )
 
+  // Desde SPEC_24 pin.js la pasa a `reautenticarCuenta`, en lib/, que es
+  // quien se la entrega a Firebase. Lo que se comprueba no cambió: nadie más
+  // la toca.
   it('pin.js solo se la entrega a Firebase', () => {
-    const fuente = readFileSync('src/diario/pin.js', 'utf8')
-    const codigo = fuente.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '')
-    const usos = codigo.match(/(?<!-)\bcontrasena\b/g)
+    const quitar = (texto) => texto.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '')
+    const pin = quitar(readFileSync('src/diario/pin.js', 'utf8'))
+    const fuente = readFileSync('src/lib/reautenticacion.js', 'utf8')
+    const lib = quitar(fuente)
+    // En pin.js: la firma y la entrega a lib/.
+    expect(pin.match(/(?<!-)\bcontrasena\b/g)).toHaveLength(2)
     expect(fuente).toMatch(/EmailAuthProvider\.credential\(usuario\.email, contrasena\)/)
-    expect(fuente).not.toMatch(/console\./)
-    // La firma, la comprobación de que llegó y la credencial: nada más.
-    expect(usos).toHaveLength(3)
+    expect(pin + lib).not.toMatch(/console\./)
+    // En lib/: la firma, la comprobación de que llegó y la credencial: nada más.
+    expect(lib.match(/(?<!-)\bcontrasena\b/g)).toHaveLength(3)
   })
 
   it('BloqueoPin la tiene solo en su estado, y no la guarda ni la registra', () => {
@@ -331,6 +343,6 @@ describe('criterio 8: el campo aparece solo cuando hace falta, y bien etiquetado
     const pin = readFileSync('src/diario/pin.js', 'utf8')
     expect(pin).not.toMatch(/no existe ni\s+\/\/?\s*\*?\s*autenticación por correo/)
     expect(pin).not.toMatch(/solo\s+(\*\s+)?configura Google y Apple/)
-    expect(pin).toMatch(/Firebase se carga aquí y no arriba a propósito/)
+    expect(pin).toMatch(/Firebase se carga dentro y no arriba a propósito/)
   })
 })
