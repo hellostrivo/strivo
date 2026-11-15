@@ -63,6 +63,10 @@ const textos = copy.diario.perfil
 const DiagnosticoAlmacen =
   import.meta.env.VITE_DIAG_ALMACEN === '1' ? lazy(() => import('./DiagnosticoAlmacen')) : null
 
+// El diagnóstico del borrado (SPEC_24, DP-24.20): igual, con su propia bandera.
+const DiagnosticoBorrado =
+  import.meta.env.VITE_DIAG_BORRADO === '1' ? lazy(() => import('./DiagnosticoBorrado')) : null
+
 // El catálogo se lee de donde se pregunta por primera vez. Ver la nota del
 // namespace en `copy/index.js`: un solo sitio hasta que haya un tercero.
 const OPCIONES_GENERO = copy.diario.onboarding.p2a.options
@@ -186,7 +190,20 @@ export default function Perfil({ uid, exportacion, Puerta }) {
     ),
 
     // SPEC_24 — Lo que sabe del diario le llega por props desde `App.jsx`.
-    tusDatos: () => <TusDatos uid={uid} exportacion={exportacion} Puerta={Puerta} />,
+    tusDatos: () => (
+      <TusDatos
+        uid={uid}
+        exportacion={exportacion}
+        Puerta={Puerta}
+        diagnostico={
+          DiagnosticoBorrado && (
+            <Suspense fallback={null}>
+              <DiagnosticoBorrado uid={uid} />
+            </Suspense>
+          )
+        }
+      />
+    ),
   }
 
   if (carga === 'cargando') {

@@ -172,7 +172,7 @@ describe('la pantalla', () => {
   it('Tu perfil recibe la exportación y la puerta desde App.jsx', () => {
     const perfil = readFileSync('src/components/perfil/Perfil.jsx', 'utf8')
     expect(perfil).toMatch(
-      /<TusDatos uid=\{uid\} exportacion=\{exportacion\} Puerta=\{Puerta\} \/>/,
+      /<TusDatos\s+uid=\{uid\}\s+exportacion=\{exportacion\}\s+Puerta=\{Puerta\}/,
     )
     expect(perfil).not.toMatch(/from '@\/diario/)
     const app = readFileSync('src/App.jsx', 'utf8')

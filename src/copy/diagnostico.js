@@ -114,3 +114,31 @@ export const DIAGNOSTICO_AUDIO = Object.freeze({
   plegar: 'Ocultar diagnóstico',
   desplegar: 'Diagnóstico',
 })
+
+// SPEC_24 (DP-24.20) — El borrado de la cuenta, con `VITE_DIAG_BORRADO=1`.
+// Exportación aparte y bandera propia, como las otras. Lo importa solo
+// `components/perfil/DiagnosticoBorrado.jsx`. Aprobados en el §9.
+export const DIAGNOSTICO_BORRADO = Object.freeze({
+  fase: 'Borrado: {fase}',
+  fases: Object.freeze({
+    sinEmpezar: 'sin empezar',
+    revocando: 'revocando',
+    nube: 'borrando la nube',
+    cuenta: 'borrando la cuenta',
+    telefono: 'limpiando el teléfono',
+    terminado: 'terminado',
+    detenido: 'detenido',
+  }),
+  marca: 'Marca de borrado: {estado}',
+  marcas: Object.freeze({ si: 'sí', no: 'no' }),
+  nube: 'Nube: {encontrados} encontrados · {borrados} borrados · lotes {n}',
+  apple: 'Apple: {estado}',
+  apples: Object.freeze({ revocado: 'revocado', fallo: 'falló', noAplica: 'no aplica' }),
+  fallarAntes: 'Fallar antes de la nube',
+  detenerDespues: 'Detenerse después de la nube',
+  activo: '{control}: activado',
+  sembrar: 'Sembrar días de prueba',
+  sembrados: 'Sembrados: {n} documentos',
+  plegar: 'Ocultar diagnóstico',
+  desplegar: 'Diagnóstico del borrado',
+})
