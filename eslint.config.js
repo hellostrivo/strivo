@@ -83,10 +83,7 @@ const DIARIO_FILES = [
   'src/components/diario/**/*.{js,jsx}',
 ]
 
-const ONBOARDING_FILES = [
-  'src/onboarding/**/*.{js,jsx}',
-  'src/components/onboarding/**/*.{js,jsx}',
-]
+const ONBOARDING_FILES = ['src/onboarding/**/*.{js,jsx}', 'src/components/onboarding/**/*.{js,jsx}']
 
 // La presentación de las secciones es la otra mitad de la entrada: corre una
 // vez, justo detrás del onboarding, y **cuenta** lo que hay en las secciones
@@ -145,6 +142,11 @@ const browserGlobals = {
   performance: 'readonly',
   requestAnimationFrame: 'readonly',
   cancelAnimationFrame: 'readonly',
+  // SPEC_24 — El archivo de «Llevarme lo que escribí»: la descarga de la web
+  // (un `Blob` y su URL) y el base64 que cruza al plugin en el iPhone.
+  Blob: 'readonly',
+  URL: 'readonly',
+  btoa: 'readonly',
 }
 
 export default [

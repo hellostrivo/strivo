@@ -529,9 +529,30 @@ describe('plugins/strivo-almacen (SPEC_17B)', () => {
     expect(swift).toMatch(/DispatchQueue\(label: "com\.hellostrivo\.strivo\.almacen"\)/)
   })
 
-  it('cuatro métodos y ninguno más (condición 7)', () => {
+  // Eran cuatro hasta SPEC_24, que añade los dos del archivo de exportar (D1):
+  // solo tocan `Library/Caches/Strivo/exportar/`.
+  it('seis métodos y ninguno más (condición 7 de 17B y D1 de SPEC_24)', () => {
     const metodos = [...puente.matchAll(/CAPPluginMethod\(name: "(\w+)"/g)].map((m) => m[1])
-    expect(metodos.sort()).toEqual(['abrir', 'consultar', 'ejecutar', 'existe'])
+    expect(metodos.sort()).toEqual([
+      'abrir',
+      'borrarTemporal',
+      'consultar',
+      'ejecutar',
+      'escribirTemporal',
+      'existe',
+    ])
+  })
+
+  it('el archivo de exportar va a Caches y no lee atributos de archivos (SPEC_24, D1)', () => {
+    const temporales = leer(
+      'plugins/strivo-almacen/ios/Sources/StrivoAlmacenPlugin/ArchivosTemporales.swift',
+    )
+    expect(codigo(temporales)).toMatch(/for: \.cachesDirectory, in: \.userDomainMask/)
+    expect(codigo(temporales)).toMatch(/appendingPathComponent\("exportar"/)
+    // Ninguna API de las que Apple pide declarar (fechas y atributos).
+    expect(codigo(temporales)).not.toMatch(
+      /attributesOfItem|creationDate|modificationDate|systemUptime|UserDefaults/,
+    )
   })
 
   it('sin cifrado ni bibliotecas de terceros: el SQLite del sistema (DP-17B.1)', () => {

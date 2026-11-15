@@ -167,10 +167,12 @@ final class AlmacenTests: XCTestCase {
 
     // ─── El puente ───────────────────────────────────────────────────────────
 
-    func testElPluginSeLlamaComoLoPideJSYTieneCuatroMetodos() {
+    func testElPluginSeLlamaComoLoPideJSYTieneSeisMetodos() {
         let plugin = StrivoAlmacenPlugin()
         XCTAssertEqual(plugin.jsName, "StrivoAlmacen")
-        XCTAssertEqual(plugin.pluginMethods.map { $0.name }.sorted(), ["abrir", "consultar", "ejecutar", "existe"])
+        XCTAssertEqual(
+            plugin.pluginMethods.map { $0.name }.sorted(),
+            ["abrir", "borrarTemporal", "consultar", "ejecutar", "escribirTemporal", "existe"])
     }
 
     func testElPuenteTraduceSentenciasYFilas() throws {
@@ -185,5 +187,68 @@ final class AlmacenTests: XCTestCase {
         XCTAssertEqual((fila["b"] as? NSNumber)?.doubleValue, 1.5)
         XCTAssertEqual(fila["c"] as? String, "texto")
         XCTAssertTrue(fila["d"] is NSNull)
+    }
+}
+
+// ─── El archivo de exportar (SPEC_24, D1) ──────────────────────────────────
+
+final class ArchivosTemporalesTests: XCTestCase {
+
+    private var raiz: URL!
+    private var temporales: ArchivosTemporales!
+
+    override func setUpWithError() throws {
+        raiz = FileManager.default.temporaryDirectory
+            .appendingPathComponent("strivo-exportar-\(UUID().uuidString)", isDirectory: true)
+        temporales = ArchivosTemporales(carpeta: raiz.appendingPathComponent("exportar", isDirectory: true))
+    }
+
+    override func tearDownWithError() throws {
+        try? FileManager.default.removeItem(at: raiz)
+    }
+
+    func testLaCarpetaDeFabricaEsCachesStrivoExportar() throws {
+        let url = try ArchivosTemporales.carpetaDeFabrica()
+        XCTAssertEqual(url.lastPathComponent, "exportar")
+        XCTAssertEqual(url.deletingLastPathComponent().lastPathComponent, "Strivo")
+        XCTAssertEqual(url.deletingLastPathComponent().deletingLastPathComponent().lastPathComponent, "Caches")
+    }
+
+    func testEscribeLosBytesYDevuelveSuURL() throws {
+        let url = try temporales.escribir(nombre: "strivo-ana-2026-11-15.zip", base64: Data([1, 2, 3]).base64EncodedString())
+        XCTAssertEqual(url.lastPathComponent, "strivo-ana-2026-11-15.zip")
+        XCTAssertEqual(try Data(contentsOf: url), Data([1, 2, 3]))
+    }
+
+    func testCadaEscrituraVaciaLaCarpetaAntes() throws {
+        let viejo = try temporales.escribir(nombre: "viejo.zip", base64: Data([9]).base64EncodedString())
+        _ = try temporales.escribir(nombre: "nuevo.zip", base64: Data([1]).base64EncodedString())
+        XCTAssertFalse(FileManager.default.fileExists(atPath: viejo.path))
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: temporales.carpeta.path), ["nuevo.zip"])
+    }
+
+    func testUnNombreQueSaleDeLaCarpetaNoEntra() {
+        for nombre in ["../fuera.zip", "a/b.zip", "", "con espacio.zip", "ñ.zip"] {
+            XCTAssertThrowsError(try temporales.escribir(nombre: nombre, base64: "AA=="), nombre)
+        }
+    }
+
+    func testDatosQueNoSonBase64SeRechazan() {
+        XCTAssertThrowsError(try temporales.escribir(nombre: "a.zip", base64: "no es base64 ***"))
+    }
+
+    func testBorrarQuitaElArchivoYEsIdempotente() throws {
+        let url = try temporales.escribir(nombre: "a.zip", base64: Data([1]).base64EncodedString())
+        try temporales.borrar(url: url)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: url.path))
+        XCTAssertNoThrow(try temporales.borrar(url: url))
+    }
+
+    func testBorrarNoTocaNadaFueraDeLaCarpeta() throws {
+        try FileManager.default.createDirectory(at: raiz, withIntermediateDirectories: true)
+        let ajeno = raiz.appendingPathComponent("ajeno.zip")
+        try Data([1]).write(to: ajeno)
+        XCTAssertThrowsError(try temporales.borrar(url: ajeno))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: ajeno.path))
     }
 }
