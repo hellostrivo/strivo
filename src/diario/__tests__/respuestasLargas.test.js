@@ -34,7 +34,7 @@ import {
   textosDe,
 } from '@/diario/filas'
 import { PREGUNTAS as MANANA, resumenDeManana } from '@/diario/manana'
-import { PREGUNTAS as NOCHE, resumenDeNoche } from '@/diario/noche'
+import { PREGUNTAS as NOCHE, bloquesHeredadosDeNoche, resumenDeNoche } from '@/diario/noche'
 import { contarPalabras, recortarAPalabras } from '@/diario/palabras'
 
 const codigoDe = (ruta) =>
@@ -342,8 +342,12 @@ describe('lo guardado vuelve numerado, entero y con sus párrafos', () => {
     expect(dia).toMatch(/<ListaNumerada lineas=\{morning\.gratitude\} \/>/)
     expect(dia).toMatch(/<ListaNumerada lineas=\{night\.recognized\} \/>/)
     // La gratitud de las noches de la versión 1 se sigue leyendo, y con la
-    // misma forma (RN-DB-04).
-    expect(dia).toMatch(/<ListaNumerada lineas=\{night\.gratitude\} \/>/)
+    // misma forma (RN-DB-04). Desde SPEC_24 la decide `bloquesHeredadosDeNoche`.
+    expect(dia).toMatch(/<ListaNumerada lineas=\{bloque\.lineas\} \/>/)
+    expect(bloquesHeredadosDeNoche({ gratitude: ['a', 'b'] }, 'n')[0]).toMatchObject({
+      numerado: true,
+      lineas: ['a', 'b'],
+    })
     expect(dia).not.toMatch(/function Lista\(/)
   })
 

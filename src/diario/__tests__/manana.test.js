@@ -37,6 +37,7 @@ import {
   lineasDeCierre,
   marcaLocal,
   resumenDeManana,
+  bloquesHeredadosDeManana,
 } from '@/diario/manana'
 import { ANIMO, INTENCION, ID_OTRA, MAX_PALABRA_PROPIA } from '@/diario/mananaEmociones'
 import { MAX_ANTERIORES, MAX_IDEAS, ideasAnteriores, ideasGenerales } from '@/diario/mananaAcciones'
@@ -850,9 +851,16 @@ describe('§9 — el registro guarda lo que la actualización pide', () => {
     expect(hayAlgoEscrito({ emotions: ['en_paz'] })).toBe(true)
     expect(hayAlgoEscrito({ granVision: 'un día sin prisa' })).toBe(true)
     expect(hayAlgoEscrito({})).toBe(false)
+    // Desde SPEC_24 qué bloques hay lo decide `bloquesHeredadosDeManana`, que
+    // leen el Historial y el archivo de «Llevarme lo que escribí».
     const vista = codigoDe('src/components/diario/VistaDiaCompleto.jsx')
-    expect(vista).toMatch(/emocionesHeredadas/)
-    expect(vista).toMatch(/granVision/)
+    expect(vista).toMatch(/bloquesHeredadosDeManana\(morning, genero\)/)
+    const bloques = bloquesHeredadosDeManana(
+      { emotions: ['en_paz'], granVision: ' sin prisa ' },
+      'f',
+    )
+    expect(bloques.map((b) => b.id)).toEqual(['emociones', 'granVision'])
+    expect(bloques[1].lineas).toEqual(['sin prisa'])
   })
 
   it('lo que ya no se escribe tampoco se puede reabrir a la escritura', () => {

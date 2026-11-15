@@ -63,6 +63,20 @@ export async function readCollection(uid, collection) {
   return rows.map(toItem)
 }
 
+/**
+ * Todas las filas de un uid, tal como están guardadas (SPEC_24A): lo que lee
+ * «Llevarme lo que escribí». Cada una con su ruta completa, su colección, su
+ * id y su contenido; ni la cola, ni las claves del teléfono, ni nada de otro
+ * uid.
+ *
+ * @returns {Promise<Array<{path: string, collection: string, id: ?string, data: object}>>}
+ */
+export async function leerTodoDelUid(uid) {
+  assertUid(uid)
+  const filas = await adaptador().leerIndice('byUser', uid)
+  return filas.map(({ path, collection, id, data }) => ({ path, collection, id, data }))
+}
+
 /** Igual que `readCollection`, filtrando por el campo `date` del registro. */
 export async function readCollectionByDate(uid, collection, date) {
   assertUid(uid)

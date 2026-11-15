@@ -29,6 +29,7 @@
 import { copy, interpolate, interpolarPartes, textoDePartes } from '@copy'
 import { ANIMO, ID_OTRA, INTENCION, recortarPropia } from './mananaEmociones.js'
 import { preguntaPorId } from './mananaPausa.js'
+import { etiquetaDe as etiquetaHeredada } from './emociones.js'
 
 /**
  * Versión del recorrido, guardada con cada mañana.
@@ -332,6 +333,52 @@ export function resumenDeManana(entrada, genero) {
       numerado: false,
       fichas: [],
       lineas: [String(entrada.reflection).trim()],
+    })
+  }
+
+  return bloques
+}
+
+/**
+ * Los bloques de la mañana de la versión anterior (§5.3): las emociones a
+ * cultivar y la gran visión (SPEC_24).
+ *
+ * **Vivían dentro del JSX de `VistaDiaCompleto`**, y ahora los leen dos: el
+ * Historial y el archivo de «Llevarme lo que escribí». Una regla, un sitio.
+ * Su pregunta no se guardó, así que llevan **su rótulo del Historial**
+ * (RN-HIS-07), no una pregunta reconstruida. Cada uno aparece solo si tiene
+ * contenido: un día nuevo no arrastra los huecos del viejo.
+ *
+ * Misma forma que `resumenDeManana`.
+ *
+ * @param {object} entrada
+ * @param {'m'|'f'|'n'} genero
+ */
+export function bloquesHeredadosDeManana(entrada, genero) {
+  const rotulos = copy.diario.historial.dia
+  const bloques = []
+
+  const emociones = (entrada?.emotions ?? []).map((id) => etiquetaHeredada(id, genero))
+  if (emociones.length > 0) {
+    bloques.push({
+      id: 'emociones',
+      titulo: rotulos.emociones,
+      forma: 'chip',
+      numerado: false,
+      fichas: emociones.map((texto) => ({ texto, emoji: null })),
+      lineas: [],
+    })
+  }
+
+  const granVision = String(entrada?.granVision ?? '').trim()
+  if (granVision !== '') {
+    bloques.push({
+      id: 'granVision',
+      titulo: rotulos.granVision,
+      forma: 'texto',
+      numerado: false,
+      fichas: [],
+      lineas: [granVision],
     })
   }
 
