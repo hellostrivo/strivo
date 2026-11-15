@@ -50,6 +50,7 @@ import { MOTIVOS_RESTAURACION, alTerminarRestauracion, mudarUid, shared } from '
 import { claveDeMudanzaPendiente } from './db/local.js'
 import { guardarClave, leerClave, quitarClave } from './db/clavesDelTelefono.js'
 import { ganaOrigenAlMudar } from './db/conflictos.js'
+import { hayMarcaDeBorrado } from './db/marcaDeBorrado.js'
 import { TECHO_DE_ESPERA_MS, reintentarAlVolverLaRed, restaurarConUnReintento } from './sesion.js'
 
 // ─── La mudanza pendiente ─────────────────────────────────────────────────────
@@ -110,6 +111,9 @@ export function completarMudanzaPendiente(uidCuenta, { email = null } = {}) {
   if (enCurso) return enCurso
 
   const promesa = (async () => {
+    // SPEC_24: no se muda hacia una cuenta que se está borrando. Mudar encola
+    // bajo ella, y la marca existe justo para que nada suyo vuelva a la nube.
+    if (hayMarcaDeBorrado(uidCuenta)) return null
     const origen = mudanzaPendiente(uidCuenta)
     if (!origen) return null
     if (origen === uidCuenta) {

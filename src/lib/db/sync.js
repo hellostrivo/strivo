@@ -39,6 +39,7 @@
 
 import { alEncolar, dequeueSiIgual, listQueue, markQueueAttempt, pendingCount } from './local.js'
 import { LIMITE_DE_RED_MS, conLimite, esLimiteVencido } from './limite.js'
+import { hayMarcaDeBorrado } from './marcaDeBorrado.js'
 
 /**
  * Espera entre reintentos con red, en milisegundos (DP-31.4). Crece hasta el
@@ -132,6 +133,12 @@ export async function flush(uid = null, { limiteMs = LIMITE_DE_RED_MS } = {}) {
       const queue = await listQueue(uid)
       if (queue.length > 0 && reabrirAntes) await reabrirConexion(handles, limiteMs)
       for (const entry of queue) {
+        // SPEC_24 (DP-24.12): con la marca de borrado, nada de ese uid sale.
+        // Se mira en cada entrada y no solo al empezar: un vaciado que ya
+        // estaba en camino se detiene entre un documento y el siguiente. Es el
+        // cerrojo de todas las subidas —al escribir, al volver la red, al irse
+        // al fondo, los reintentos y los botones—, porque todas pasan por aquí.
+        if (hayMarcaDeBorrado(entry.uid)) continue
         try {
           const ref = handles.doc(handles.db, entry.path)
           const envio =
@@ -183,6 +190,8 @@ export function flushEnCurso() {
 
 function scheduleRetry(attempts, uid) {
   if (retryTimer !== null) return
+  // SPEC_24: un uid que se está borrando no rearma nada.
+  if (uid && hayMarcaDeBorrado(uid)) return
   const delay = RETRY_BACKOFF_MS[Math.min(attempts, RETRY_BACKOFF_MS.length - 1)]
   retryTimer = setTimeout(() => {
     retryTimer = null
@@ -253,6 +262,8 @@ function cancelarSubida() {
  * @returns {() => void} función para dejar de escuchar.
  */
 export function startSync(uid) {
+  // SPEC_24: la sesión de una cuenta que se está borrando no sincroniza.
+  if (hayMarcaDeBorrado(uid)) return () => {}
   flush(uid)
 
   if (listenersAttached) return () => {}
