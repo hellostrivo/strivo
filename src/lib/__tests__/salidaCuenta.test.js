@@ -126,9 +126,15 @@ describe('cerrar sesión cancela los avisos de Strivo', () => {
     expect(cerrar).toBeGreaterThan(apagar)
   })
 
+  // `apagarAvisos` vive en `limpiezaDelTelefono.js` desde SPEC_24, que la
+  // comparte con borrar la cuenta. Lo que hace no cambió.
   it('solo en la app de iPhone, con la reconciliación bajo demanda, y sin lanzar', () => {
-    expect(fuente).toMatch(/if \(!esIPhone\(\)\) return/)
-    expect(fuente).toMatch(/await import\('\.\/avisos\/reconciliar\.js'\)/)
-    expect(fuente).toMatch(/try \{[\s\S]*apagar\(\)[\s\S]*\} catch/)
+    const limpieza = readFileSync('src/lib/limpiezaDelTelefono.js', 'utf8')
+    expect(fuente).toMatch(
+      /import \{ apagarAvisos, olvidarFaceId \} from '\.\/limpiezaDelTelefono\.js'/,
+    )
+    expect(limpieza).toMatch(/iphone = esIPhone\(\)[\s\S]*if \(!iphone\) return/)
+    expect(limpieza).toMatch(/await import\('\.\/avisos\/reconciliar\.js'\)/)
+    expect(limpieza).toMatch(/try \{[\s\S]*apagar\(\)[\s\S]*\} catch/)
   })
 })

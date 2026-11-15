@@ -112,6 +112,22 @@ const REFERENCIAS =
 
 const REFERENCIAS_FILES = ['src/referencias/**/*.{js,jsx}', 'src/content/**/*.{js,jsx}']
 
+// SPEC_24 — Lo neutral de «Llevarme lo que escribí» y el borrado de la cuenta
+// no conocen las secciones: lo del día lo construye `diario/`, lo de
+// Respiración `breathing/`, y los junta `src/exportarCuenta.js`, que solo
+// importa `App.jsx`.
+const CUENTA_NEUTRAL =
+  'lib/exportar/ y lib/borrarCuenta.js son neutrales: no pueden depender de ' +
+  'diario/ ni de breathing/. Lo que necesiten de una sección llega por ' +
+  'src/exportarCuenta.js o por props desde App.jsx.'
+
+const CUENTA_NEUTRAL_FILES = [
+  'src/lib/exportar/**/*.js',
+  'src/lib/borrarCuenta.js',
+  'src/lib/revocarApple.js',
+  'src/lib/limpiezaDelTelefono.js',
+]
+
 // El motor no conoce a nadie: ni el diario ni la propia Respiración.
 // Si algún día necesitara el catálogo de patrones, dejaría de poder usarlo el diario.
 const NEUTRAL_FILES = ['src/lib/respiracion/**/*.js']
@@ -270,6 +286,22 @@ export default [
           patterns: [
             { group: [...DIARIO_MODULES, ...BREATHING_MODULES], message: REFERENCIAS },
             { group: DB_ENTRYPOINT, importNames: ['diario'], message: REFERENCIAS },
+          ],
+        },
+      ],
+    },
+  },
+
+  // ─── Exportar y borrar la cuenta son neutrales (SPEC_24) ─────────────────────
+  {
+    files: CUENTA_NEUTRAL_FILES,
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            { group: [...DIARIO_MODULES, ...BREATHING_MODULES], message: CUENTA_NEUTRAL },
+            { group: DB_ENTRYPOINT, importNames: ['diario'], message: CUENTA_NEUTRAL },
           ],
         },
       ],

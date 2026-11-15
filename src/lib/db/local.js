@@ -356,6 +356,44 @@ export async function mudarUid(desde, hacia, { politica = null } = {}) {
   return { mudados: mudadas.length, conservados }
 }
 
+// ─── Borrar la cuenta (SPEC_24B) ──────────────────────────────────────────────
+
+/**
+ * Vacía el almacén entero: filas y cola **de todos los uid** (DP-24.14, D5).
+ *
+ * Solo lo llama borrar la cuenta, y solo cuando la nube ya está vacía y la
+ * cuenta ya no existe. Los `local-…` que una entrada a cuenta dejó conservados
+ * son lo escrito por la persona antes de entrar, y salir de una cuenta ya
+ * borra los suyos, así que no puede quedar nada de otra persona.
+ */
+export async function vaciarAlmacen() {
+  return adaptador().vaciar()
+}
+
+/**
+ * «Conservar mi cuenta» (DP-24.13): vuelve a encolar todo lo de un uid para
+ * que la nube se reconstruya desde el teléfono.
+ *
+ * Cada fila se encola como `put`, que `sync.js` sube con `setDoc` sin `merge`:
+ * el documento queda en la nube tal como está aquí. **Las semillas no se
+ * encolan** —la misma pregunta que hace `mudarUid`—: una semilla en la nube
+ * pisaría lo que la persona escribió en otro teléfono. Lo que vive solo en el
+ * dispositivo lo descarta `enqueue`.
+ *
+ * @returns {Promise<number>} cuántas filas se encolaron.
+ */
+export async function reencolarTodo(uid) {
+  assertUid(uid)
+  let encoladas = 0
+  for (const fila of await adaptador().leerIndice('byUser', uid)) {
+    if (esRutaLocal(fila.path)) continue
+    if (esSemilla(fila.collection, fila.data)) continue
+    await enqueue({ uid, path: fila.path, op: 'put', data: fila.data })
+    encoladas += 1
+  }
+  return encoladas
+}
+
 // ─── La mudanza pendiente (SPEC_19.1, F1) ─────────────────────────────────────
 //
 // Cuando se entra a una cuenta y la restauración no termina bien, la mudanza

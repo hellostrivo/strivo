@@ -23,42 +23,9 @@ import { borrarUid, flush, flushEnCurso, getPendingCount, olvidarUid } from './d
 import { cancelRetries } from './db/sync.js'
 import { cerrarSesion } from './cuenta.js'
 import { TECHO_DE_ESPERA_MS, conTecho } from './sesion.js'
-import { esIPhone } from './plataforma.js'
-
-/**
- * SPEC_22, DP-22.11 — Cerrar sesión cancela todos los avisos de Strivo en este
- * teléfono, antes de volver a la bienvenida: lo que llegue después lo decide
- * la preferencia de quien entre. Solo en la app de iPhone, y la reconciliación
- * se carga bajo demanda: la web no la descarga. Nunca lanza: salir no se
- * detiene por los avisos. (SPEC_24 tendrá que hacer lo mismo al borrar la
- * cuenta.)
- */
-async function apagarAvisos() {
-  if (!esIPhone()) return
-  try {
-    const { apagarAvisos: apagar } = await import('./avisos/reconciliar.js')
-    await apagar()
-  } catch {
-    // Nada que hacer: los avisos no frenan la salida.
-  }
-}
-
-/**
- * SPEC_23A (DP-23.12) — Cerrar sesión borra también la clave de Face ID de la
- * Keychain: `pinConfig` se va con lo demás, y una clave sin su verificador no
- * abre nada. Solo en la app de iPhone, con el puente cargado bajo demanda.
- * Borrar no pide la cara y nunca lanza: salir no se detiene por esto.
- * (SPEC_24 tendrá que hacer lo mismo al borrar la cuenta.)
- */
-async function olvidarFaceId() {
-  if (!esIPhone()) return
-  try {
-    const { biometria } = await import('./biometria.js')
-    await biometria.borrar()
-  } catch {
-    // Nada que hacer: la clave no frena la salida.
-  }
-}
+// `apagarAvisos` y `olvidarFaceId` viven en `limpiezaDelTelefono.js` desde
+// SPEC_24: borrar la cuenta hace lo mismo.
+import { apagarAvisos, olvidarFaceId } from './limpiezaDelTelefono.js'
 
 /** Qué confirmación toca. */
 export const SALIDA = Object.freeze({ libre: 'libre', pendiente: 'pendiente' })

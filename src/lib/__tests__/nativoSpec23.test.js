@@ -69,10 +69,12 @@ describe('cada plugin lo importa un solo archivo, y bajo demanda (criterio 9)', 
     })
   }
 
-  it('el puente de biometría solo lo cargan pin.js y salidaCuenta.js, bajo demanda', () => {
+  // `salidaCuenta.js` lo cargaba hasta SPEC_24; ahora lo hace la limpieza del
+  // teléfono, que comparten cerrar sesión y borrar la cuenta.
+  it('el puente de biometría solo lo cargan pin.js y limpiezaDelTelefono.js, bajo demanda', () => {
     const quienes = fuentes().filter((ruta) => /(lib\/|\.\/)biometria(\.js)?['"]/.test(leer(ruta)))
     expect(quienes.sort()).toEqual(
-      [join('src', 'diario', 'pin.js'), join('src', 'lib', 'salidaCuenta.js')].sort(),
+      [join('src', 'diario', 'pin.js'), join('src', 'lib', 'limpiezaDelTelefono.js')].sort(),
     )
     quienes.forEach((ruta) => {
       expect(leer(ruta)).not.toMatch(/^import .*biometria/m)
@@ -82,8 +84,8 @@ describe('cada plugin lo importa un solo archivo, y bajo demanda (criterio 9)', 
   it('los dos, detrás de esIPhone()', () => {
     expect(leer('src/lib/haptica.js')).toMatch(/esIPhone/)
     expect(leer('src/diario/pin.js')).toMatch(/if \(!esIPhone\(\)\) return null/)
-    expect(leer('src/lib/salidaCuenta.js')).toMatch(
-      /async function olvidarFaceId\(\) \{\s+if \(!esIPhone\(\)\) return/,
+    expect(leer('src/lib/limpiezaDelTelefono.js')).toMatch(
+      /async function olvidarFaceId\(\{ iphone = esIPhone\(\) \} = \{\}\) \{\s+if \(!iphone\) return/,
     )
   })
 })
