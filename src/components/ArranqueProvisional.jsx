@@ -72,9 +72,15 @@
 // Se monta **una sola vez, en la raíz**, por encima de la navegación y dentro
 // del router, que es lo que le deja volver a Hoy al cerrar sesión.
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { alTerminarRestauracion, hayMarcaDeRestauracion, restaurar, startSync } from '@/lib/db'
+import {
+  alTerminarRestauracion,
+  hayMarcaDeRestauracion,
+  restaurar,
+  shared,
+  startSync,
+} from '@/lib/db'
 import {
   ESTADOS_SESION,
   escucharUsuario,
@@ -101,6 +107,18 @@ import { ContextoSesion } from '@lib/useSesion'
 import { momentoDe } from '@lib/timeSlot'
 import { copy } from '@copy'
 import { CLAVE_UID, guardarClave, leerClave } from '@/lib/db/clavesDelTelefono'
+import { hayMarcaDeBorrado } from '@/lib/db/marcaDeBorrado'
+import { flush } from '@/lib/db/sync'
+import { cruzarUmbral } from '@lib/umbralSesion'
+import { esIPhone } from '@lib/plataforma'
+import Despedida from '@components/perfil/Despedida'
+
+// SPEC_24 — La pantalla «a medio borrar» solo existe si un borrado se
+// interrumpió: se carga bajo demanda.
+const CapaDeBorrado = lazy(() => import('@components/perfil/CapaDeBorrado'))
+
+/** `lib/borrarCuenta.js`, bajo demanda: solo hace falta al borrar o al retomar. */
+const cargarBorrado = () => import('@lib/borrarCuenta')
 
 function acunarUidLocal() {
   return `local-${crypto.randomUUID()}`
@@ -128,6 +146,14 @@ function uidLocal() {
  */
 async function resolverArranque(uidGuardado, enRestauracion) {
   const { configurado, usuario } = await leerSesionGuardada()
+  // SPEC_24 (DP-24.13): un borrado que se interrumpió manda sobre todo lo
+  // demás. Ni se entra a la cuenta —restauraría y mudaría— ni se decide nada
+  // antes de terminar o reparar.
+  if (hayMarcaDeBorrado(uidGuardado)) {
+    const { queHacerAlArrancar } = await cargarBorrado()
+    const retoma = queHacerAlArrancar(uidGuardado, usuario)
+    if (retoma) return { configurado, usuario, uid: uidGuardado, entro: false, retoma }
+  }
   const { uid, requiereEntrada } = resolverSesion({ configurado, usuario, uidGuardado })
   if (!requiereEntrada) return { configurado, usuario, uid, entro: false }
   const entrada = await entrarACuenta(requiereEntrada, usuario, { enRestauracion })
@@ -158,6 +184,14 @@ export default function ArranqueProvisional({ children }) {
   // de manos, para que nada se pinte con un árbol a medio mudar.
   const [cambiando, setCambiando] = useState(false)
   const [selloRestauracion, setSelloRestauracion] = useState(0)
+  // SPEC_24 — Un borrado interrumpido al arrancar (`{ accion, sinSesion,
+  // marca }`), la despedida, y un sello para que la subida vuelva a arrancar
+  // tras «Conservar mi cuenta».
+  const [retoma, setRetoma] = useState(null)
+  const [despedida, setDespedida] = useState(false)
+  const [selloBorrado, setSelloBorrado] = useState(0)
+  // La verificación del borrado: solo en memoria, y vale cuatro minutos.
+  const verificacionDeBorrado = useRef(null)
 
   const estado = estadoVivo(configurado, usuario, uid)
 
@@ -208,6 +242,7 @@ export default function ArranqueProvisional({ children }) {
     arranque.current.then((r) => {
       if (!vigente) return
       entroAlArrancar.current = r.entro
+      if (r.retoma) setRetoma(r.retoma)
       if (r.entro) ponerOyenteRed(reintentarEntradaAlVolverLaRed(r.entrada, r.usuario.uid))
       if (r.uid !== uidVigente.current) fijarUid(r.uid)
       setConfigurado(r.configurado)
@@ -279,7 +314,9 @@ export default function ArranqueProvisional({ children }) {
   useEffect(() => {
     if (estado !== ESTADOS_SESION.conCuenta) return undefined
     return startSync(uid)
-  }, [estado, uid])
+    // `selloBorrado`: tras «Conservar mi cuenta», con la marca ya quitada,
+    // la subida vuelve a arrancar (con la marca puesta, `startSync` no hace nada).
+  }, [estado, uid, selloBorrado])
 
   // Firebase sigue hablando con la app abierta. Un usuario que pasa a `null`
   // sin que nadie haya llamado a `salir` deja la sesión en `vencida`: lo dice
@@ -444,6 +481,123 @@ export default function ArranqueProvisional({ children }) {
     return r
   }, [fijarUid, navegar, retirarOyenteRed])
 
+  // ─── Borrar la cuenta (SPEC_24B) ────────────────────────────────────────
+
+  /**
+   * Después de borrar, como al cerrar sesión: uid local nuevo, árbol sembrado y
+   * a Hoy, donde `Entrada` encontrará el onboarding. Antes, la despedida, y el
+   * umbral se da por cruzado: «Cerrar» lleva a P1 sin el video (DP-24.19).
+   */
+  const empezarDeCero = useCallback(async () => {
+    cruzarUmbral('diario')
+    setDespedida(true)
+    setRetoma(null)
+    retirarOyenteRed()
+    const nuevo = acunarUidLocal()
+    await prepararArbol(nuevo)
+    setUsuario(null)
+    fijarUid(nuevo)
+  }, [fijarUid, retirarOyenteRed])
+
+  // Al arrancar con la cuenta ya borrada: se termina la limpieza y se despide.
+  useEffect(() => {
+    if (!listo || retoma?.accion !== 'limpiar') return
+    let vigente = true
+    cargarBorrado()
+      .then(({ limpiarElTelefono }) => limpiarElTelefono(uidVigente.current))
+      .catch(() => {})
+      .then(() => vigente && empezarDeCero())
+    return () => {
+      vigente = false
+    }
+  }, [listo, retoma, empezarDeCero])
+
+  const hayConexionParaBorrar = useCallback(
+    () => typeof navigator === 'undefined' || navigator.onLine !== false,
+    [],
+  )
+
+  /** Con qué hay que verificarse: el de la sesión, o el de la marca sin sesión (D12). */
+  const metodoParaBorrar = useCallback(async () => {
+    if (retoma?.sinSesion) return retoma.marca?.metodo ?? 'password'
+    try {
+      const [{ auth }, { metodoDeSesion }] = await Promise.all([
+        import('@lib/firebase'),
+        import('@lib/reautenticacion'),
+      ])
+      return (await metodoDeSesion(auth?.currentUser ?? null)) ?? 'password'
+    } catch {
+      return 'password'
+    }
+  }, [retoma])
+
+  const verificadaParaBorrar = useCallback(
+    () =>
+      verificacionDeBorrado.current !== null &&
+      Date.now() - verificacionDeBorrado.current.en < 4 * 60 * 1000,
+    [],
+  )
+
+  /**
+   * Verificar para borrar. Con sesión, `reautenticarCuenta` (con Apple, trae el
+   * código para revocar). Sin sesión (D12), entrar con el método de la marca.
+   */
+  const verificarParaBorrar = useCallback(
+    async ({ contrasena } = {}) => {
+      if (retoma?.sinSesion && !verificadaParaBorrar()) {
+        const { entrarParaRetomar } = await cargarBorrado()
+        const registro = await shared.getAuthRecord(uidVigente.current).catch(() => null)
+        const r = await entrarParaRetomar(uidVigente.current, {
+          metodo: retoma.marca?.metodo ?? 'password',
+          correo: registro?.email ?? null,
+          contrasena,
+        })
+        if (!r.ok) return r
+        verificacionDeBorrado.current = r.verificacion
+        setUsuario({ uid: uidVigente.current, email: registro?.email ?? null })
+        return { ok: true }
+      }
+      const { reautenticarCuenta } = await import('@lib/reautenticacion')
+      const r = await reautenticarCuenta({ contrasena, conCodigoDeApple: true })
+      if (!r.ok) return r
+      verificacionDeBorrado.current = { metodo: r.metodo, codigo: r.codigo ?? null, en: Date.now() }
+      return { ok: true }
+    },
+    [retoma, verificadaParaBorrar],
+  )
+
+  const borrarCuentaDeSesion = useCallback(async () => {
+    const { borrarCuenta } = await cargarBorrado()
+    const r = await borrarCuenta(uidVigente.current, {
+      verificacion: verificacionDeBorrado.current,
+    })
+    if (r.estado === 'reverificar') verificacionDeBorrado.current = null
+    if (!r.ok) return r
+    verificacionDeBorrado.current = null
+    await empezarDeCero()
+    return r
+  }, [empezarDeCero])
+
+  const conservarCuentaDeSesion = useCallback(async () => {
+    const { conservarCuenta } = await cargarBorrado()
+    const r = await conservarCuenta(uidVigente.current)
+    if (!r.ok) return r
+    verificacionDeBorrado.current = null
+    setSelloBorrado((n) => n + 1)
+    flush(uidVigente.current).catch(() => {})
+    return r
+  }, [])
+
+  const cerrarRetoma = useCallback(() => {
+    setRetoma(null)
+    setSelloRestauracion((n) => n + 1)
+  }, [])
+
+  const cerrarDespedida = useCallback(() => {
+    setDespedida(false)
+    navegar('/hoy', { replace: true })
+  }, [navegar])
+
   const sesion = useMemo(
     () => ({
       uid,
@@ -457,6 +611,12 @@ export default function ArranqueProvisional({ children }) {
       reintentarRestauracion,
       comprobarSalida,
       salir,
+      hayConexionParaBorrar,
+      metodoParaBorrar,
+      verificadaParaBorrar,
+      verificarParaBorrar,
+      borrarCuenta: borrarCuentaDeSesion,
+      conservarCuenta: conservarCuentaDeSesion,
     }),
     [
       uid,
@@ -470,6 +630,12 @@ export default function ArranqueProvisional({ children }) {
       reintentarRestauracion,
       comprobarSalida,
       salir,
+      hayConexionParaBorrar,
+      metodoParaBorrar,
+      verificadaParaBorrar,
+      verificarParaBorrar,
+      borrarCuentaDeSesion,
+      conservarCuentaDeSesion,
     ],
   )
 
@@ -497,9 +663,29 @@ export default function ArranqueProvisional({ children }) {
     )
   }
 
+  // SPEC_24: la despedida va delante de todo, también del velo del cambio de uid.
+  if (despedida) return <Despedida onCerrar={cerrarDespedida} />
+
   if (!listo || cambiando) {
     return (
       <div data-moment={momentoDe()} className="velo-transicion min-h-screen" aria-busy="true" />
+    )
+  }
+
+  // SPEC_24 (DP-24.13): con un borrado a medias, se termina o se conserva
+  // antes de enseñar nada más. Nada queda sin decidir.
+  if (retoma?.accion === 'aMedias') {
+    return (
+      <ContextoSesion.Provider value={sesion}>
+        <Suspense fallback={<div className="velo-transicion min-h-screen" aria-busy="true" />}>
+          <CapaDeBorrado
+            modo="aMedias"
+            iphone={esIPhone()}
+            sinSesion={retoma.sinSesion}
+            onCerrar={cerrarRetoma}
+          />
+        </Suspense>
+      </ContextoSesion.Provider>
     )
   }
 
