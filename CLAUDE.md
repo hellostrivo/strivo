@@ -1,6 +1,6 @@
 # CLAUDE.md — Strivo
 
-**Última actualización:** 15 nov 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
+**Última actualización:** 17 nov 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
 **Blueprint (documento rector):** `/docs/blueprint/Strivo_Blueprint_de_Producto_v5_0_24-08-2026.md`
 **Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO.md`
 **Plan operativo del repliegue:** `/docs/Strivo_Plan_de_Separacion_Tecnica_v1_24-08-2026.md`
@@ -890,11 +890,15 @@ documentos encontrados y borrados, Apple, «Fallar antes de la nube», «Detener
 bloque, la puerta, el copy, la retoma en el arranque y la limpieza. La exportación (12 kB), `fflate`
 (9 kB), la entrega nativa, el borrado (6,7 kB) y sus pantallas (5,8 kB) van en chunks bajo demanda.
 
-**Lo que no se comprobó todavía en un teléfono**: los bloques E y B (instrucción §5.2) y E8. **La
-cuenta de prueba `atreloz.prueba.1+claudecode@gmail.com` quedó creada en `strivo-fe04f`** con 600
-documentos sembrados al recorrer la web con Playwright: el recorrido se cortó antes de borrarla (un
-error del script) y su contraseña aleatoria no se guardó. Hay que borrarla a mano (consola, o
-restablecer la contraseña y usar el propio flujo).
+**Las pruebas manuales E1–E8 y B1–B13 pasan** (15–17 nov 2026, la fundadora en su iPhone 17 y en la
+web contra `strivo-fe04f`; el detalle está en el §10 de la instrucción). **B7 confirma el camino
+(c)**: tras borrar, Strivo desaparece de «Iniciar sesión con Apple», la hoja vuelve a pedir compartir
+u ocultar el correo y el panel dice «Apple: revocado». Antes, la web se recorrió entera con
+Playwright, de crear la cuenta a la despedida (605 documentos en 2 lotes).
+
+**O-24.1, sin bloquear:** en «Iniciar sesión con Apple» la app sale como «XC com hellostrivo strivo»
+con ícono genérico: es el nombre del App ID que creó Xcode. Se corrige al crear la app en App Store
+Connect con el nombre Strivo, o cambiando la descripción del App ID.
 
 ### Face ID y háptica en el iPhone (SPEC_23A y 23B, 12 nov 2026)
 

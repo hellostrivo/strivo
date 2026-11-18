@@ -1,7 +1,7 @@
 # INSTRUCCIÓN SPEC_24 — Llevarme lo que escribí (24A) y borrar mi cuenta (24B)
 
 **Para:** Claude Code
-**Fecha:** 14 nov 2026 · **Versión:** 1.1 (reporte previo aprobado el 15 nov 2026: §9. **Donde §9 y el resto difieran, manda §9**)
+**Fecha:** 14 nov 2026 · **Versión:** 1.2 (reporte previo aprobado el 15 nov 2026: §9. **Donde §9 y el resto difieran, manda §9**. Resultados en §10, 17 nov 2026)
 **Rama de partida:** `strivo` en `d90427a`, la fusión de SPEC_23. Compruébalo en §0.
 **Gobierna:** esta instrucción + `docs/specs/SPEC_24_BORRADO_CUENTA_EXPORTACION.md` (con sus tres notas finales: SPEC_21.2, SPEC_22 y SPEC_23A) + `docs/specs/INSTRUCCION_SPEC_21_2_GOOGLE_Y_APPLE.md` + `docs/specs/INSTRUCCION_SPEC_17B_SQLITE.md` + `docs/specs/INSTRUCCION_SPEC_31_SINCRONIZACION_FIABLE.md` + `SPEC_00B` + `CLAUDE.md`. **Donde esta instrucción y otra difieran, manda esta.** En particular, **corrige varias partes de SPEC_24**, que se escribió en septiembre, antes de la app de iPhone, de Google y Apple nativos, de SQLite y de Face ID (ver §2.7).
 
@@ -407,6 +407,34 @@ Reporte previo de Claude Code (15 nov 2026, `docs/specs/REPORTE_PREVIO_SPEC_24.m
 | **Trabajo** | En `~/Developer/strivo-24`, rama `revision-24`, según §8. Orden: 24A → 24B → diagnóstico → docs. Al terminar, la build con diagnóstico para E y B. |
 
 ---
+
+## 10. Resultados (17 nov 2026)
+
+### 10.1 Implementación
+
+En `~/Developer/strivo-24`, rama `revision-24`, sobre `d90427a`, en el orden de §8: 24A (cuatro commits), 24B (seis), diagnóstico y documentación. **Todo lo del §9 se aplicó tal como se aprobó**: el bloque «Tus datos», el `.zip` con `entradas.md` y `entradas.json` (`strivo.exportacion` v1), la puerta del Journal reutilizada (`PuertaDelJournal` = `usePin` + `BloqueoPin` en desbloqueo con «Cerrar»), `@capacitor/share` 8.0.3 y `fflate` 0.8.3 con un solo importador cada una, los dos métodos nuevos de `strivo-almacen` (D1), `rutasEnLaNube` en la única lectora, la marca `strivo.borrado.<uid>` como cerrojo de la subida y de la bajada, la revocación de Apple por el camino (c), la máquina de nueve estados con sus cuatro fases, la retoma con D12, la limpieza del teléfono (D5) y el diagnóstico.
+
+**Desvíos menores, anotados en el reporte final:**
+
+- La capa del borrado y la despedida viven en `components/perfil/` y no en una carpeta nueva: una prueba exige decidir cada carpeta de `components/`, y el borrado es gestión de cuenta.
+- El plugin `strivo-almacen` lo importan dos archivos (la base y la entrega del archivo); la prueba que exigía uno lista ahora los dos.
+- El chunk principal de la web crece 12,6 kB (de 758,18 a 770,82; gzip de 215,11 a 218,46), más que los ~2 kB estimados en el reporte previo: el bloque, la puerta, el copy, la retoma en el arranque y la limpieza. La exportación (12 kB), `fflate` (9 kB), el borrado (6,7 kB) y sus pantallas (5,8 kB) van en chunks bajo demanda.
+- «Cómo imaginabas el día», del Historial, respeta ahora los saltos de línea al salir a una función pura.
+- Las pruebas que leían el código fuente de `pin.js`, `salidaCuenta.js`, `VistaDiaCompleto.jsx` y `Perfil.jsx` se apuntaron a donde vive ahora la misma lógica; ninguna comprobación de comportamiento cambió.
+
+**Validaciones**: los seis comandos de `CLAUDE.md` §12 y `validar:frases` en verde. Proyecto `indexeddb`: de 125 archivos y 2.957 casos a 132 y 3.109 (+152); proyecto `sqlite`: de 2.894 a 3.046 casos; XCTest del plugin: de 17 a 24.
+
+**Recorrido de la web con Playwright** (16 nov 2026, contra `strivo-fe04f`, cuenta `atreloz.prueba.1+claudecode2@gmail.com`, UID `iJVEuaJ3m7S1hAgGq9kWFeVn1023`): crear la cuenta, escribir el reconocimiento de la noche, exportar (1 día, con la pregunta delante y el Markdown escapado), sembrar 600 documentos, exportar (301 días en 99 ms), borrar con contraseña equivocada y «BORAR» antes de lo correcto: despedida a los 5,1 s, 605 encontrados y 605 borrados en 2 lotes, el navegador como recién instalado y la cuenta sin poder volver a entrar. **El primer intento** (con `+claudecode`) se cortó antes de borrar por un error del script y su contraseña aleatoria no se guardó; la fundadora borró esa cuenta a mano.
+
+### 10.2 Pruebas manuales
+
+**E1–E8 y B1–B13 pasan** (15–17 nov 2026, la fundadora en su iPhone 17 con «La 24 con diagnóstico» y «La 24 limpia», y en la web de la 24, contra `strivo-fe04f`).
+
+- **B7, Apple, confirmado**: tras borrar, Strivo desapareció de Ajustes → Iniciar sesión con Apple, la hoja volvió a pedir compartir u ocultar el correo y el panel dijo «Apple: revocado». **El camino (c) basta: no hace falta la adenda del camino (a).**
+
+**Observación, que no bloquea:**
+
+- **O-24.1 · En «Iniciar sesión con Apple» la app sale como «XC com hellostrivo strivo», con ícono genérico.** Es el nombre del App ID que creó Xcode. Se corrige al crear la app en App Store Connect con el nombre Strivo, o cambiando la descripción del App ID en developer.apple.com. No es código.
 
 ## Anexo A · Para la fundadora: la primera vez en el Xcode del worktree
 
