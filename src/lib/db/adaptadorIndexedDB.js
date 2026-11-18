@@ -229,6 +229,22 @@ async function borrarUid(uid) {
   return { registros: rutas.length, cola: entradas.length }
 }
 
+/**
+ * Vacía los dos almacenes, de todos los uid (SPEC_24, DP-24.14): borrar la
+ * cuenta deja el teléfono como recién instalado. La base no se borra: se
+ * queda, vacía.
+ */
+async function vaciar() {
+  const db = await getLocalDB()
+  const tx = db.transaction([STORE_RECORDS, STORE_SYNC_QUEUE], 'readwrite')
+  const registros = await tx.objectStore(STORE_RECORDS).count()
+  const cola = await tx.objectStore(STORE_SYNC_QUEUE).count()
+  await tx.objectStore(STORE_RECORDS).clear()
+  await tx.objectStore(STORE_SYNC_QUEUE).clear()
+  await tx.done
+  return { registros, cola }
+}
+
 // ─── Cola de sincronización ───────────────────────────────────────────────────
 
 /** Una entrada por ruta, con su revisión (`rev`) subiendo en cada reescritura (H-1). */
@@ -309,6 +325,7 @@ export const adaptadorIndexedDB = Object.freeze({
   quitar,
   mudarFilas,
   borrarUid,
+  vaciar,
   encolar,
   listarCola,
   sacar,

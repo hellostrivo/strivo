@@ -26,10 +26,10 @@
 // la cuenta: no está todas las noches, y un total que cambia de una noche a
 // otra deja de orientar. Es la misma decisión que la pausa de la mañana.
 
-import { copy } from '@copy'
+import { copy, interpolate } from '@copy'
 import { CIERRE, animoDeCierre } from './nocheEmociones.js'
 import { reconocimientoDeLaNoche } from './nocheReconocimiento.js'
-import { animoDerivado } from './estadoSueno.js'
+import { animoDerivado, etiquetasDe as etiquetasDeSueno } from './estadoSueno.js'
 import { preguntaGuardada } from './nocheReflexion.js'
 
 export { marcaLocal } from './fechas.js'
@@ -260,6 +260,63 @@ export function resumenDeNoche(entrada, morning, genero, fecha) {
       numerado: false,
       fichas: [],
       lineas: [String(entrada.release).trim()],
+    })
+  }
+
+  return bloques
+}
+
+/**
+ * Los bloques de la noche de la versión anterior (§5.4): la gratitud, el
+ * aprendizaje y el estado de sueño (SPEC_24).
+ *
+ * **Vivían dentro del JSX de `VistaDiaCompleto`**, y ahora los leen el
+ * Historial y el archivo de «Llevarme lo que escribí». Llevan su rótulo del
+ * Historial (RN-HIS-07). El estado de sueño no tiene rótulo: es una frase
+ * entera, «Te fuiste a dormir: …», y va con `titulo: null`.
+ *
+ * Las líneas van **tal como se guardaron**: es lo que el Historial pintaba.
+ *
+ * @param {object} entrada
+ * @param {'m'|'f'|'n'} genero
+ */
+export function bloquesHeredadosDeNoche(entrada, genero) {
+  const rotulos = copy.diario.historial.dia
+  const sueno = copy.diario.noche.sueno
+  const bloques = []
+
+  if ((entrada?.gratitude?.length ?? 0) > 0) {
+    bloques.push({
+      id: 'gratitud',
+      titulo: rotulos.gratitud,
+      forma: 'texto',
+      numerado: true,
+      fichas: [],
+      lineas: entrada.gratitude,
+    })
+  }
+
+  if (String(entrada?.learning ?? '').trim() !== '') {
+    bloques.push({
+      id: 'aprendizaje',
+      titulo: rotulos.aprendizaje,
+      forma: 'texto',
+      numerado: false,
+      fichas: [],
+      lineas: [entrada.learning],
+    })
+  }
+
+  // Si no se eligió nada, no aparece: no hay marcador de ausencia (§5.4.1).
+  const estados = etiquetasDeSueno(entrada?.sleepState, entrada?.sleepStateOther, genero)
+  if (estados.length > 0) {
+    bloques.push({
+      id: 'sueno',
+      titulo: null,
+      forma: 'frase',
+      numerado: false,
+      fichas: [],
+      lineas: [interpolate(sueno.guardadoTemplate, { estados: estados.join(sueno.separador) })],
     })
   }
 

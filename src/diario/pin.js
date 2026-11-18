@@ -235,69 +235,20 @@ export async function desactivarPin(uid, pin) {
 export async function reautenticar(uid, { contrasena } = {}) {
   if ((await metodoDeRecuperacion(uid)) === null) return { ok: false, motivo: 'sin-metodo' }
 
-  try {
-    // Firebase se carga aquí y no arriba a propósito: el PIN **no es una
-    // credencial de cuenta** (§7.7.1). No autentica contra ningún servidor, no
-    // viaja por la red y no sirve para iniciar sesión. Que su módulo no
-    // dependa de la capa de autenticación es esa misma frase, dicha en código.
-    const [
-      { auth, appleProvider, googleProvider },
-      { EmailAuthProvider, reauthenticateWithCredential },
-      { metodoDeSesion, reautenticarConProveedor },
-    ] = await Promise.all([
-      import('@/lib/firebase'),
-      import('firebase/auth'),
-      import('@/lib/reautenticacion'),
-    ])
-
-    const usuario = auth?.currentUser ?? null
-    if (!usuario) return { ok: false, motivo: 'sin-sesion' }
-
-    const proveedor = await metodoDeSesion(usuario)
-    if (proveedor === 'password') {
-      if (!contrasena) return { ok: false, motivo: 'pide-contrasena' }
-      await reauthenticateWithCredential(
-        usuario,
-        EmailAuthProvider.credential(usuario.email, contrasena),
-      )
-      return { ok: true }
-    }
-
-    await reautenticarConProveedor(usuario, proveedor, {
-      proveedores: { appleProvider, googleProvider },
-    })
-    return { ok: true }
-  } catch (error) {
-    return { ok: false, motivo: await motivoDeReautenticacion(error) }
-  }
-}
-
-/** Contraseña que no coincide: los tres códigos con que Firebase lo dice. */
-const CODIGOS_DE_CREDENCIALES = new Set([
-  'auth/wrong-password',
-  'auth/invalid-credential',
-  'auth/invalid-login-credentials',
-])
-
-/** Cerrar la ventana emergente de Google o de Apple, en web. */
-const CODIGOS_DE_CANCELACION = new Set([
-  'auth/popup-closed-by-user',
-  'auth/cancelled-popup-request',
-  'auth/user-cancelled',
-])
-
-/**
- * Lo que puede salir mal al reautenticar, sin un solo código a la vista
- * (RN-EST-04). Qué es cancelar la hoja nativa lo sabe `credencialNativa`, y se
- * pregunta aquí dentro para no cargarlo antes de hacer falta.
- */
-async function motivoDeReautenticacion(error) {
-  const codigo = String(error?.code ?? '')
-  const { esCancelacion } = await import('@/lib/credencialNativa')
-  if (CODIGOS_DE_CANCELACION.has(codigo) || esCancelacion(error)) return 'cancelado'
-  if (CODIGOS_DE_CREDENCIALES.has(codigo)) return 'credenciales'
-  if (codigo === 'auth/network-request-failed') return 'sin-conexion'
-  return 'no-verificado'
+  // Firebase se carga dentro y no arriba a propósito: el PIN **no es una
+  // credencial de cuenta** (§7.7.1). No autentica contra ningún servidor, no
+  // viaja por la red y no sirve para iniciar sesión. Que su módulo no
+  // dependa de la capa de autenticación es esa misma frase, dicha en código.
+  //
+  // Desde SPEC_24 la verificación vive en `lib/reautenticacion.js`
+  // (`reautenticarCuenta`), que comparte con el borrado de la cuenta. Aquí
+  // queda lo que es del PIN: que haya un método de recuperación. Lo que
+  // devuelve no cambió.
+  const { reautenticarCuenta } = await import('@/lib/reautenticacion')
+  const { ok, motivo } = await reautenticarCuenta({ contrasena })
+  if (ok) return { ok: true }
+  // Desde aquí, una cuenta que ya no existe se dice como siempre.
+  return { ok: false, motivo: motivo === 'sin-cuenta' ? 'no-verificado' : motivo }
 }
 
 /**

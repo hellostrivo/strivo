@@ -20,7 +20,7 @@ import {
 } from './schema.js'
 import { DEFAULT_DIA_TERMINA_A } from './dates.js'
 
-const SHARED_DOCS = Object.freeze(['profile', 'auth', 'preferences', 'onboarding'])
+export const SHARED_DOCS = Object.freeze(['profile', 'auth', 'preferences', 'onboarding'])
 
 function docSpec(uid, doc) {
   return {

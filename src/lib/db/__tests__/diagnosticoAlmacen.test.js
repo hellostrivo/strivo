@@ -152,6 +152,7 @@ describe('criterio 12: sin la bandera, ni la línea ni el botón existen en lo s
       const entorno = { ...process.env }
       delete entorno.VITE_DIAG_ALMACEN
       delete entorno.VITE_DIAG_AUDIO
+      delete entorno.VITE_DIAG_BORRADO
       execFileSync('npx', ['vite', 'build', '--outDir', salida, '--logLevel', 'error'], {
         env: entorno,
         stdio: 'pipe',

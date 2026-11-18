@@ -32,6 +32,10 @@ export const BLOQUES = Object.freeze([
   'frases',
   'cuenta',
   'sincronizacion',
+  // SPEC_24 — Llevarme lo que escribí y, con cuenta, borrarla. Es lo último de
+  // la pantalla: «Borrar mi cuenta» se encuentra sin buscar, pero no es lo
+  // primero que se ve.
+  'tusDatos',
 ])
 
 /**

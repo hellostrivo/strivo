@@ -41,6 +41,7 @@
 import { Suspense, lazy } from 'react'
 import Bloque from './Bloque'
 import TuCuenta from './TuCuenta'
+import TusDatos from './TusDatos'
 import TusFrases from './TusFrases'
 import TusRecordatorios from './TusRecordatorios'
 import Button from '@components/ui/Button'
@@ -62,6 +63,10 @@ const textos = copy.diario.perfil
 const DiagnosticoAlmacen =
   import.meta.env.VITE_DIAG_ALMACEN === '1' ? lazy(() => import('./DiagnosticoAlmacen')) : null
 
+// El diagnóstico del borrado (SPEC_24, DP-24.20): igual, con su propia bandera.
+const DiagnosticoBorrado =
+  import.meta.env.VITE_DIAG_BORRADO === '1' ? lazy(() => import('./DiagnosticoBorrado')) : null
+
 // El catálogo se lee de donde se pregunta por primera vez. Ver la nota del
 // namespace en `copy/index.js`: un solo sitio hasta que haya un tercero.
 const OPCIONES_GENERO = copy.diario.onboarding.p2a.options
@@ -74,7 +79,13 @@ function Marco({ children }) {
   )
 }
 
-export default function Perfil({ uid }) {
+/**
+ * @param {object} props
+ * @param {string} props.uid
+ * @param {object} [props.exportacion] - SPEC_24: preparar el archivo, de `App.jsx`.
+ * @param {Function} [props.Puerta] - SPEC_24: la puerta del Journal, de `App.jsx`.
+ */
+export default function Perfil({ uid, exportacion, Puerta }) {
   const { valores, carga, acciones, reintentar } = usePerfil(uid)
   const sincronizacion = useSincronizacion(uid)
 
@@ -176,6 +187,22 @@ export default function Perfil({ uid }) {
           </Suspense>
         )}
       </div>
+    ),
+
+    // SPEC_24 — Lo que sabe del diario le llega por props desde `App.jsx`.
+    tusDatos: () => (
+      <TusDatos
+        uid={uid}
+        exportacion={exportacion}
+        Puerta={Puerta}
+        diagnostico={
+          DiagnosticoBorrado && (
+            <Suspense fallback={null}>
+              <DiagnosticoBorrado uid={uid} />
+            </Suspense>
+          )
+        }
+      />
     ),
   }
 

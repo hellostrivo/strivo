@@ -14,38 +14,13 @@
 // un dedo que apunta a "Eliminar" acaba cargando otra cosa, y al revés. Los dos
 // destinos tienen 44 px y no se tocan entre sí.
 
+// `subtitulo` y `duracionCorta` viven en `breathing/lib/favoritos.js` desde
+// SPEC_24: los lee también el archivo de «Llevarme lo que escribí». Se siguen
+// exportando desde aquí para quien ya los importaba.
 import { copy } from '@copy'
-import { obtenerSonido, ID_SILENCIO } from '../../data/catalogoSonidos.js'
-import { obtenerPreset } from '../../data/catalogoPatrones.js'
+import { subtitulo } from '../../lib/favoritos.js'
 
-/**
- * `{patrón} · {sonido} · {duración}`, omitiendo el sonido si es silencio.
- *
- * Se omite porque "Silencio" en la línea de resumen ocupa el sitio de algo que
- * sí informa, y porque la ausencia de sonido ya se nota al usarla.
- */
-export function subtitulo(favorito) {
-  const patron = obtenerPreset(favorito.patronBaseId)
-  const partes = []
-
-  if (patron !== null) partes.push(copy.respiracion.patrones[patron.claveCopy].nombre)
-
-  const sonidoId = favorito.sonidoAmbienteId ?? ID_SILENCIO
-  if (sonidoId !== ID_SILENCIO && obtenerSonido(sonidoId) !== null) {
-    partes.push(copy.respiracion.sonidos[obtenerSonido(sonidoId).claveCopy].nombre)
-  }
-
-  partes.push(duracionCorta(favorito.duracion))
-  return partes.join(copy.respiracion.favoritos.separador)
-}
-
-/** La duración en su forma más corta, con el copy de SPEC_13. */
-export function duracionCorta(duracion) {
-  const textos = copy.respiracion.duracion
-  if (duracion?.modo === 'abierta') return textos.abierta
-  const plantilla = duracion?.modo === 'ciclos' ? textos.ciclos : textos.minutos
-  return plantilla.replace('{n}', String(duracion?.valor ?? ''))
-}
+export { duracionCorta, subtitulo } from '../../lib/favoritos.js'
 
 export default function FilaFavorito({ favorito, onCargar, onOpciones, conOpciones = true }) {
   return (

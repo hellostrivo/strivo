@@ -42,7 +42,9 @@ describe('el plugin', () => {
     expect(cargarPlugin.toString()).toMatch(/return \{ plugin: StrivoAlmacen \}/)
   })
 
-  it('criterio 10: solo un archivo de src/ importa el plugin, y bajo demanda', () => {
+  // Desde SPEC_24 son dos: la base, y la entrega del archivo de «Llevarme lo
+  // que escribí», que usa los dos métodos de Caches (D1). Los dos bajo demanda.
+  it('criterio 10: solo dos archivos de src/ importan el plugin, y bajo demanda', () => {
     const importadores = []
     const recorrer = (dir) => {
       for (const nombre of readdirSync(dir)) {
@@ -55,10 +57,15 @@ describe('el plugin', () => {
       }
     }
     recorrer('src')
-    expect(importadores).toEqual([join('src', 'lib', 'db', 'adaptadorSQLite.js')])
-    const fuente = readFileSync(importadores[0], 'utf8')
-    expect(fuente).toMatch(/await import\('strivo-almacen'\)/)
-    expect(fuente).not.toMatch(/^import .*strivo-almacen/m)
+    expect(importadores.sort()).toEqual([
+      join('src', 'lib', 'db', 'adaptadorSQLite.js'),
+      join('src', 'lib', 'exportar', 'entregarNativo.js'),
+    ])
+    for (const ruta of importadores) {
+      const fuente = readFileSync(ruta, 'utf8')
+      expect(fuente).toMatch(/await import\('strivo-almacen'\)/)
+      expect(fuente).not.toMatch(/^import .*strivo-almacen/m)
+    }
   })
 
   it('la web no carga ni SQLite ni la migración: almacen.js los pide bajo demanda', () => {

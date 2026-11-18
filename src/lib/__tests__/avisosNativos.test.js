@@ -128,12 +128,17 @@ describe('un solo archivo importa el plugin, y bajo demanda (criterio 10)', () =
     expect(puente).not.toMatch(/^import .*@capacitor\/local-notifications/m)
   })
 
-  it('la reconciliación tampoco se importa arriba: solo useAvisos y salidaCuenta, bajo demanda', () => {
+  // Desde SPEC_24 la carga `limpiezaDelTelefono.js`, que usan cerrar sesión y
+  // borrar la cuenta.
+  it('la reconciliación tampoco se importa arriba: solo useAvisos y la limpieza del teléfono, bajo demanda', () => {
     const quienes = fuentes().filter((ruta) =>
       /(avisos\/|\.\/)reconciliar(\.js)?['"]/.test(readFileSync(ruta, 'utf8')),
     )
     expect(quienes.sort()).toEqual(
-      [join('src', 'lib', 'avisos', 'useAvisos.js'), join('src', 'lib', 'salidaCuenta.js')].sort(),
+      [
+        join('src', 'lib', 'avisos', 'useAvisos.js'),
+        join('src', 'lib', 'limpiezaDelTelefono.js'),
+      ].sort(),
     )
     for (const ruta of quienes) {
       expect(readFileSync(ruta, 'utf8')).not.toMatch(/^import .*reconciliar/m)

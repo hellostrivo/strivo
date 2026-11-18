@@ -163,3 +163,22 @@ Décimo. Requiere 19, 20 y 21. SPEC_24 añade `logOut()` aquí si se implementa 
 - **DP-25.3** ¿Se añade un SDK de analítica (p. ej. Firebase Analytics) para el embudo? Recomendación: no en v1.0. RevenueCat da conversión; el resto se mide a mano con seis números.
 - **DP-25.4** Duración y tope de la oferta Fundador (propuesta del plan: 30 días desde el lanzamiento, sin tope de unidades). Se controla desde RevenueCat, no en código.
 - **DP-25.5** Precios finales en App Store Connect (propuesta del plan: $119 / $799 MXN; $1,499 MXN fundador; 5.99 € / 44.99 € / 89 USD). No afecta al código.
+
+---
+
+## Nota de SPEC_24 (15 nov 2026) — borrar la cuenta y las compras
+
+Sin cambiar el alcance de esta SPEC, tres cosas que SPEC_24 deja dichas:
+
+1. **«Restaurar compras» se llama así porque la pantalla de borrado ya lo nombra.** En la app de
+   iPhone, la primera pantalla de «Borrar mi cuenta» dice: «Lo que pagaste queda ligado a tu Apple
+   ID, no a tu cuenta de Strivo. Si más adelante creas otra cuenta, lo recuperas con “Restaurar
+   compras”.» (`copy.cuenta.borrar.compras`). Si `paywall.restaurar` cambia de nombre, esa frase
+   tiene que cambiar con él. El enlace «Ver mi suscripción» abre hoy
+   `https://apps.apple.com/account/subscriptions`; esta SPEC puede cambiarlo por
+   `showManageSubscriptions`.
+2. **`Purchases.logOut()` de RevenueCat va en `src/lib/borrarCuenta.js`**, en la fase `telefono`
+   (`limpiarElTelefono`), en el sitio marcado con un comentario: después de `deleteUser` y antes de
+   vaciar el teléfono.
+3. **Si hiciera falta borrar el cliente de RevenueCat**, eso pide su llave secreta, que no puede ir
+   en la app: se decide aquí, con servidor o sin él.

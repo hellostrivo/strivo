@@ -35,6 +35,7 @@ import {
   hayAlgoEscrito,
   marcaLocal,
   resumenDeNoche,
+  bloquesHeredadosDeNoche,
 } from '@/diario/noche'
 import {
   CIERRE,
@@ -1050,9 +1051,17 @@ describe('criterio 12 — los registros anteriores quedan intactos', () => {
 
   it('el Historial las pinta enteras, cada bloque en su versión', () => {
     const vista = codigoDe('src/components/diario/VistaDiaCompleto.jsx')
-    ;['recognized', 'reflection', 'release', 'gratitude', 'learning', 'sleepState'].forEach(
-      (campo) => expect(vista).toMatch(new RegExp(campo)),
+    ;['recognized', 'reflection', 'release'].forEach((campo) =>
+      expect(vista).toMatch(new RegExp(campo)),
     )
+    // Los de la versión 1, desde SPEC_24, por `bloquesHeredadosDeNoche`: lo
+    // leen el Historial y el archivo de «Llevarme lo que escribí».
+    expect(vista).toMatch(/bloquesHeredadosDeNoche\(night, genero\)/)
+    const bloques = bloquesHeredadosDeNoche(
+      { gratitude: ['la lluvia'], learning: 'algo', sleepState: ['cansado'] },
+      'f',
+    )
+    expect(bloques.map((b) => b.id)).toEqual(['gratitud', 'aprendizaje', 'sueno'])
   })
 
   it('el punto del calendario se deriva de las dos versiones', () => {

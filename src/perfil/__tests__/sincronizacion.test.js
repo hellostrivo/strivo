@@ -45,9 +45,11 @@ function codigoDe(ruta) {
 }
 
 describe('el bloque existe entero: identificador, copy y componente', () => {
-  it('está declarado, al final y justo detrás de Tu cuenta', () => {
-    expect(BLOQUES[BLOQUES.length - 1]).toBe('sincronizacion')
-    expect(BLOQUES[BLOQUES.length - 2]).toBe('cuenta')
+  // Era el último hasta SPEC_24, que pone «Tus datos» detrás.
+  it('está declarado, justo detrás de Tu cuenta y antes de Tus datos', () => {
+    expect(BLOQUES[BLOQUES.length - 1]).toBe('tusDatos')
+    expect(BLOQUES[BLOQUES.length - 2]).toBe('sincronizacion')
+    expect(BLOQUES[BLOQUES.length - 3]).toBe('cuenta')
   })
 
   it('su copy es el del §5, cerrado', () => {

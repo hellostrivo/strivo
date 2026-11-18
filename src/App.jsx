@@ -46,8 +46,19 @@ import { useAvisos } from '@lib/avisos/useAvisos'
 import Respiracion from '@/breathing/Respiracion'
 import Hoy from '@/pages/diario/Hoy'
 import Perfil from '@components/perfil/Perfil'
+import PuertaDelJournal from '@components/diario/PuertaDelJournal'
 import Journal from '@/pages/diario/Journal'
 import Historial from '@/pages/diario/Historial'
+
+/**
+ * SPEC_24 — «Llevarme lo que escribí» conoce el diario y Respiración a la vez,
+ * y por eso se compone aquí, el único sitio que ya conoce a los dos. Se carga
+ * bajo demanda: la web no lo descarga hasta que alguien toca el botón.
+ */
+const EXPORTACION = Object.freeze({
+  exportar: (...args) => import('./exportarCuenta.js').then((m) => m.exportarCuenta(...args)),
+  pidePuerta: (...args) => import('./exportarCuenta.js').then((m) => m.pidePuerta(...args)),
+})
 
 /**
  * ¿Toca umbral en esta sesión?
@@ -350,7 +361,10 @@ function Secciones({ uid }) {
           {/* Tu perfil: la gestión de la cuenta. No es una sección del diario
               —no escribe en `diario/`, solo en `shared/profile`— y por eso su
               componente no vive con las otras. */}
-          <Route path="/perfil" element={<Perfil uid={uid} />} />
+          <Route
+            path="/perfil"
+            element={<Perfil uid={uid} exportacion={EXPORTACION} Puerta={PuertaDelJournal} />}
+          />
 
           {/* Cualquier ruta desconocida vuelve a Hoy. */}
           <Route path="*" element={<Navigate to={INICIO} replace />} />

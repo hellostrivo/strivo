@@ -42,6 +42,7 @@ import { guardarClave, leerClave, quitarClave } from './clavesDelTelefono.js'
 import { assertUid } from './schema.js'
 import { esExpediente, ganaRemoto, hechosQueFaltan } from './conflictos.js'
 import { LIMITE_DE_RED_MS, conLimite } from './limite.js'
+import { hayMarcaDeBorrado } from './marcaDeBorrado.js'
 
 // ─── Qué se baja ──────────────────────────────────────────────────────────────
 //
@@ -87,6 +88,9 @@ export const MOTIVOS = Object.freeze({
   sinConfiguracion: 'sin_configuracion',
   sinRed: 'sin_red',
   interrumpida: 'interrumpida',
+  // SPEC_24: la cuenta se está borrando. No se lee nada, no se marca y no se
+  // avisa a nadie: no es un fallo de la bajada.
+  borrando: 'borrando',
 })
 
 // ─── Acceso a Firestore ───────────────────────────────────────────────────────
@@ -227,6 +231,12 @@ export async function restaurar(uid, { limiteMs = LIMITE_DE_RED_MS } = {}) {
   assertUid(uid)
   const cuenta = { escritos: 0, fusionados: 0 }
 
+  // SPEC_24 (DP-24.12): con la marca de borrado, nada baja. Es el cerrojo de
+  // todas las bajadas —el arranque, la entrada a una cuenta, el reintento al
+  // volver la red, el botón de Tu perfil y el de la vista de entrar—, porque
+  // todas pasan por aquí. Sin avisar: nadie debe releer ni mudar nada.
+  if (hayMarcaDeBorrado(uid)) return { ok: false, motivo: MOTIVOS.borrando, ...cuenta }
+
   const resultado = await bajar(uid, cuenta, limiteMs)
   ultimos.set(uid, resultado)
   avisar(uid, resultado)
@@ -275,6 +285,62 @@ async function bajar(uid, cuenta, limiteMs) {
   marcar(uid)
   return { ok: true, ...cuenta }
 }
+
+/**
+ * Las rutas de `users/{uid}/` que existen en la nube (SPEC_24B, DP-24.10).
+ *
+ * **Leer para borrar sigue siendo leer, y por eso vive aquí**: esta es la única
+ * lectora de Firestore. Recorre la misma lista que la bajada —`DOCUMENTOS` y
+ * `SUBCOLECCIONES`—, con la misma paginación y el mismo límite por lectura, y
+ * devuelve la ruta completa de cada documento hoja que existe. No escribe
+ * nada, no marca nada y no avisa a nadie. Lanza si una lectura falla o vence:
+ * quien borra no puede seguir sin saber qué hay.
+ *
+ * Firestore no tiene documentos contenedores (`users/{uid}`,
+ * `…/diario/journal`): solo existen las hojas, y sin hojas el uid desaparece.
+ *
+ * @returns {Promise<string[]>}
+ */
+export async function rutasEnLaNube(uid, { limiteMs = LIMITE_DE_RED_MS, handles } = {}) {
+  assertUid(uid)
+  const f = handles ?? (await getFirestoreHandles())
+  if (!f) throw new Error(MOTIVOS.sinConfiguracion)
+  const rutas = []
+  for (const { doc } of DOCUMENTOS) {
+    const path = `users/${uid}/${doc}`
+    const snap = await conLimite(f.getDoc(f.doc(f.db, path)), limiteMs)
+    if (snap.exists()) rutas.push(path)
+  }
+  for (const { items } of SUBCOLECCIONES) {
+    const ruta = `users/${uid}/${items}`
+    let ultimo = null
+    for (;;) {
+      const partes = [f.collection(f.db, ruta), f.orderBy(f.documentId()), f.limit(TAMANO_PAGINA)]
+      if (ultimo) partes.push(f.startAfter(ultimo))
+      const pagina = await conLimite(f.getDocs(f.query(...partes)), limiteMs)
+      for (const snap of pagina.docs) rutas.push(`${ruta}/${snap.id}`)
+      if (pagina.docs.length < TAMANO_PAGINA) break
+      ultimo = pagina.docs[pagina.docs.length - 1]
+    }
+  }
+  return rutas
+}
+
+/**
+ * Las rutas que se borran sin leerlas (SPEC_24B, DP-24.10): `diario/pinConfig`,
+ * que nunca se sube, por si alguna versión vieja lo hubiera subido. Borrar un
+ * documento que no existe no falla.
+ */
+export function rutasQueSeBorranSinLeer(uid) {
+  assertUid(uid)
+  return [`users/${uid}/diario/pinConfig`]
+}
+
+/** La lista de lo que hay en la nube, para la prueba del criterio 9 de SPEC_24. */
+export const LISTA_DE_LA_NUBE = Object.freeze({
+  documentos: Object.freeze(DOCUMENTOS.map(({ doc }) => doc)),
+  subcolecciones: Object.freeze(SUBCOLECCIONES.map(({ items }) => items)),
+})
 
 /**
  * Un documento remoto contra lo que hay en su ruta. Regla 1 si no hay nada;

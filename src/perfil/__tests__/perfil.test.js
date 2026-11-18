@@ -18,7 +18,7 @@ import { perfilDesde } from '@/onboarding/estado'
 const textos = copy.diario.perfil
 
 describe('los bloques del perfil', () => {
-  it('son los siete de esta fase, en su orden', () => {
+  it('son los ocho de esta fase, en su orden', () => {
     // Los tres que son la persona primero; la gestión detrás: Tu cuenta
     // (SPEC_19.1) antes de dónde vive lo que escribe (SPEC_17A). Los
     // recordatorios (SPEC_22) van detrás de los horarios: llegan a esas horas.
@@ -30,6 +30,8 @@ describe('los bloques del perfil', () => {
       'frases',
       'cuenta',
       'sincronizacion',
+      // SPEC_24: lo último de la pantalla.
+      'tusDatos',
     ])
   })
 

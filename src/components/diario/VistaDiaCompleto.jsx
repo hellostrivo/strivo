@@ -43,13 +43,17 @@
 
 import ListaNumerada from '@components/diario/ListaNumerada'
 import TextoConCitas from '@components/diario/TextoConCitas'
-import { copy, interpolate } from '@copy'
+import { copy } from '@copy'
 import { diaVacio } from '@/diario/historial'
 import { etiquetasDe as etiquetasDeEmocion } from '@/diario/emocionesJournal'
-import { etiquetasDe as etiquetasDeSueno } from '@/diario/estadoSueno'
-import { etiquetaDe as etiquetaHeredada } from '@/diario/emociones'
-import { fichasDeAnimo, fichasDeIntencion, hayAlgoEscrito } from '@/diario/manana'
 import {
+  bloquesHeredadosDeManana,
+  fichasDeAnimo,
+  fichasDeIntencion,
+  hayAlgoEscrito,
+} from '@/diario/manana'
+import {
+  bloquesHeredadosDeNoche,
   fichasDeCierre,
   hayAlgoEscrito as hayAlgoDeNoche,
   hayDescarga,
@@ -61,7 +65,6 @@ import { horaDe } from '@/diario/journal'
 import { fechaLarga } from '@/diario/fechas'
 
 const textos = copy.diario.historial.dia
-const noche = copy.diario.noche
 
 function Bloque({ titulo, children }) {
   return (
@@ -70,6 +73,31 @@ function Bloque({ titulo, children }) {
       {children}
     </section>
   )
+}
+
+/**
+ * Un bloque de la versión anterior (SPEC_24): qué bloques hay, en qué orden y
+ * con qué rótulo lo deciden `bloquesHeredadosDeManana` y
+ * `bloquesHeredadosDeNoche`, que lee también el archivo de «Llevarme lo que
+ * escribí». Aquí solo se pinta, igual que antes.
+ */
+function BloqueHeredado({ bloque }) {
+  if (bloque.forma === 'frase') {
+    return <p className="text-base text-on-surface">{bloque.lineas[0]}</p>
+  }
+  let cuerpo
+  if (bloque.forma === 'chip') {
+    cuerpo = (
+      <p className="text-base text-on-surface">
+        {bloque.fichas.map((ficha) => ficha.texto).join(' · ')}
+      </p>
+    )
+  } else if (bloque.numerado) {
+    cuerpo = <ListaNumerada lineas={bloque.lineas} />
+  } else {
+    cuerpo = <p className="text-base text-on-surface whitespace-pre-wrap">{bloque.lineas[0]}</p>
+  }
+  return <Bloque titulo={bloque.titulo}>{cuerpo}</Bloque>
 }
 
 export default function VistaDiaCompleto({ dia, genero, onVolver }) {
@@ -82,9 +110,8 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
   const intencion = fichasDeIntencion(morning, genero).map((ficha) => ficha.texto)
   const accion = String(morning?.action ?? '').trim()
   const pausa = String(morning?.reflection ?? '').trim()
-  const granVision = String(morning?.granVision ?? '').trim()
-  const emocionesHeredadas = (morning?.emotions ?? []).map((id) => etiquetaHeredada(id, genero))
-  const estadoDeSueno = etiquetasDeSueno(night?.sleepState, night?.sleepStateOther, genero)
+  const mananaHeredada = bloquesHeredadosDeManana(morning, genero)
+  const nocheHeredada = bloquesHeredadosDeNoche(night, genero)
   // Hasta tres desde el 10 de septiembre de 2026, y se leen todas, igual que
   // las de la mañana: la vista de un día es lo que se escribió ese día.
   const emocionDeCierre = fichasDeCierre(night, genero).map((ficha) => ficha.texto)
@@ -142,17 +169,9 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
 
           {/* Las dos preguntas de la versión anterior. Solo aparecen en los
               días que las respondieron. */}
-          {emocionesHeredadas.length > 0 && (
-            <Bloque titulo={textos.emociones}>
-              <p className="text-base text-on-surface">{emocionesHeredadas.join(' · ')}</p>
-            </Bloque>
-          )}
-
-          {granVision !== '' && (
-            <Bloque titulo={textos.granVision}>
-              <p className="text-base text-on-surface">{granVision}</p>
-            </Bloque>
-          )}
+          {mananaHeredada.map((bloque) => (
+            <BloqueHeredado key={bloque.id} bloque={bloque} />
+          ))}
         </div>
       )}
 
@@ -194,27 +213,9 @@ export default function VistaDiaCompleto({ dia, genero, onVolver }) {
 
           {/* Los tres bloques de la versión anterior. Solo aparecen en las
               noches que los respondieron. */}
-          {(night?.gratitude?.length ?? 0) > 0 && (
-            <Bloque titulo={textos.gratitud}>
-              <ListaNumerada lineas={night.gratitude} />
-            </Bloque>
-          )}
-
-          {String(night?.learning ?? '').trim() !== '' && (
-            <Bloque titulo={textos.aprendizaje}>
-              <p className="text-base text-on-surface whitespace-pre-wrap">{night.learning}</p>
-            </Bloque>
-          )}
-
-          {/* Si no se eligió nada, el bloque no aparece: no hay marcador de
-              ausencia (§5.4.1). */}
-          {estadoDeSueno.length > 0 && (
-            <p className="text-base text-on-surface">
-              {interpolate(noche.sueno.guardadoTemplate, {
-                estados: estadoDeSueno.join(noche.sueno.separador),
-              })}
-            </p>
-          )}
+          {nocheHeredada.map((bloque) => (
+            <BloqueHeredado key={bloque.id} bloque={bloque} />
+          ))}
         </div>
       )}
 

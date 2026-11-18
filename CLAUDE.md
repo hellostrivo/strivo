@@ -1,6 +1,6 @@
 # CLAUDE.md — Strivo
 
-**Última actualización:** 12 nov 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
+**Última actualización:** 17 nov 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
 **Blueprint (documento rector):** `/docs/blueprint/Strivo_Blueprint_de_Producto_v5_0_24-08-2026.md`
 **Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO.md`
 **Plan operativo del repliegue:** `/docs/Strivo_Plan_de_Separacion_Tecnica_v1_24-08-2026.md`
@@ -575,6 +575,9 @@ src/
 │   │                arranqueNativo · clavesDelTelefono (SPEC_17B)
 │   ├── cuenta · sesion · entradaCuenta · salidaCuenta · useSesion
 │   │                la sesión de Firebase, entrar y salir (SPEC_19.1)
+│   ├── exportar/    el archivo de «Llevarme lo que escribí»: md/json, zip, entrega (SPEC_24A)
+│   ├── borrarCuenta · revocarApple · limpiezaDelTelefono
+│   │                borrar la cuenta (SPEC_24B)
 │   ├── respiracion/ motor de ritmo (lógica pura)
 │   └── audio/       síntesis
 ├── diario/          lógica de mañana, noche, journal, historial, PIN
@@ -585,9 +588,10 @@ src/
 │   ├── shared/      Simbolo · TransicionLuz · Campo · Chips · pildora · BarraInferior
 │   ├── ui/          primitivas
 │   ├── onboarding/  las ocho pantallas y su contenedor
-│   ├── perfil/      la pantalla de cuenta y su marco de bloque
+│   ├── perfil/      la pantalla de cuenta y su marco de bloque; Tus datos, el borrado y la despedida
 │   └── diario/      NavStrivo · manana/ · noche/ · journal · historial
-└── pages/diario/    Hoy · Journal · Historial
+├── pages/diario/    Hoy · Journal · Historial
+└── exportarCuenta.js  junta las partes del archivo; solo lo importa App.jsx (SPEC_24A)
 ```
 
 **Reglas de arquitectura, impuestas por `eslint.config.js` y por pruebas, no por convención:**
@@ -662,6 +666,30 @@ el componente.**
   en `src/content/frases-v2/validacion.js` y las comparten el script y las pruebas.
 - `src/lib/db/local.js` → `esRutaLocal`: las rutas que nunca salen del dispositivo (PIN, preferencia
   de frases y asignaciones). `enqueue` las rechaza siempre.
+- `src/lib/db/restaurar.js` → además de la bajada, `rutasEnLaNube` (SPEC_24B): **la única lectora
+  de Firestore sigue siendo una**, y el borrado enumera con su misma lista (`DOCUMENTOS`,
+  `SUBCOLECCIONES`, `LISTA_DE_LA_NUBE`) y su misma paginación. `rutasQueSeBorranSinLeer` es
+  `diario/pinConfig`, por si una versión vieja lo hubiera subido.
+- `src/lib/db/marcaDeBorrado.js` → `strivo.borrado.<uid>` (SPEC_24B): la marca que escribe el borrado
+  antes de tocar la nube y quita al terminar o al conservar. Es el cerrojo de `sync.js` (por
+  entrada, `startSync` y `scheduleRetry`), de `restaurar` y de `completarMudanzaPendiente`.
+- `src/lib/borrarCuenta.js` → el orden del borrado, sus nueve estados de pantalla y sus cuatro
+  fases, la retoma al arrancar (`queHacerAlArrancar`), conservar y entrar para retomar (SPEC_24B).
+- `src/lib/limpiezaDelTelefono.js` → `apagarAvisos`, `olvidarFaceId` (antes privadas de
+  `salidaCuenta.js`) y `vaciarTelefono`: lo que se quita al salir y al borrar.
+- `src/lib/revocarApple.js` → la revocación del token de Apple desde JavaScript (SPEC_24B).
+- `src/lib/reautenticacion.js` → además, `reautenticarCuenta` y `motivoDeReautenticacion`: la
+  verificación sin el PIN, que el PIN llama después de lo suyo y el borrado usa directa (SPEC_24B).
+- `src/lib/exportar/` → lo neutral del archivo: `archivo.js` (md, json, escapado, nombre),
+  `comprimir.js` (el **único** que importa `fflate`), `entregar.js` (la descarga de la web) y
+  `entregarNativo.js` (el **único** que importa `@capacitor/share`, y el segundo que importa
+  `strivo-almacen`). Qué bloques tiene un día lo deciden `diario/exportar.js`, `breathing/data/exportar.js`
+  y `perfil/exportar.js`; los junta `src/exportarCuenta.js` (SPEC_24A).
+- `src/diario/manana.js` y `src/diario/noche.js` → `bloquesHeredadosDeManana` y
+  `bloquesHeredadosDeNoche`: los campos de versiones anteriores con sus rótulos. Salieron del JSX de
+  `VistaDiaCompleto` en SPEC_24A; los leen el Historial y el archivo.
+- `src/breathing/lib/favoritos.js` → `subtitulo` y `duracionCorta` de una combinación guardada
+  (salieron de `FilaFavorito.jsx`; los lee también el archivo).
 - `src/lib/db/limite.js` → `LIMITE_DE_RED_MS` y `conLimite`: cuánto se espera, como máximo, a una
   escritura o una lectura de Firestore (SPEC_31). Lo leen `sync.js` y `restaurar.js`.
 - `src/lib/db/sync.js` → qué pone la cola en marcha y con qué ritmo: `DEMORA_DE_SUBIDA_MS` y
@@ -763,12 +791,114 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**125 archivos de prueba · 2.956 casos** en el proyecto `indexeddb`, **2.885 más** en el proyecto
-`sqlite` (la misma suite contra SQLite) **y 17 XCTest del plugin** · los seis comandos y
+**132 archivos de prueba · 3.109 casos** en el proyecto `indexeddb`, **3.046 más** en el proyecto
+`sqlite` (la misma suite contra SQLite) **y 24 XCTest del plugin** · los seis comandos y
 `validar:frases` en verde. **La intermitente de `journal.test.js` se cerró** (10 nov 2026): sus dos
 entradas empataban en el milisegundo y el orden lo decidía un UUID; ahora se crean con `Date`
 congelado en dos instantes distintos. `listJournalEntries` no cambió. Cada caso que vuelca
 IndexedDB por dentro tiene su equivalente que vuelca todas las tablas de SQLite.
+
+### Llevarme lo que escribí y borrar mi cuenta (SPEC_24, 15 nov 2026)
+
+La instrucción completa y las decisiones del reporte previo están en
+`docs/specs/INSTRUCCION_SPEC_24_EXPORTAR_Y_BORRAR_CUENTA.md` (v1.1; **su §9 manda**) y en
+`docs/specs/REPORTE_PREVIO_SPEC_24.md`. **Llevarse lo escrito es fácil y está siempre a mano; borrar
+se encuentra sin buscar, se entiende sin miedo, se confirma sin culpa y, cuando termina, no queda
+nada; y si algo se interrumpe, nada queda a medias.** Las dos cosas viven en un bloque nuevo, al
+final de Tu perfil: **«Tus datos»** (`tusDatos` en `perfil/bloques.js`).
+
+**24A · Llevarme lo que escribí** (RN-08). Con cuenta y sin cuenta, en la web y en el iPhone, sin
+red. Un `.zip` llamado `strivo-{nombre}-{fecha}.zip` con `entradas.md` y `entradas.json`.
+
+- **La fuente es el almacén local** (`leerTodoDelUid`, por el índice `byUser`). Entra todo lo de la
+  persona —perfil, P3, frases, correo, preferencias, mañanas, noches y journal con los campos de
+  versiones anteriores, Respiración— y **nunca** `pinConfig`, `frasesDelDia`, `dayState`, la cola,
+  las marcas, las claves ni el uid. Lo que el exportador no conoce va al `.json`, tal cual, en `otros`.
+- **El `.md` lleva la pregunta delante de cada respuesta**, y lo decide lo que ya lo decide en
+  pantalla: `resumenDeManana`, `resumenDeNoche` y los bloques de versiones anteriores, que salieron
+  del JSX de `VistaDiaCompleto` a `manana.js` y `noche.js` (el Historial se ve igual). La pausa y la
+  reflexión sin pregunta reconstruible salen con el rótulo del Historial en vez de perderse.
+  Respiración: solo las combinaciones guardadas; sesiones y usos, solo en el `.json` (D8).
+- **El escapado**: `\` delante de lo que convertiría una línea en estructura y de `* _ ` < [ ] \`;
+  cada salto de línea se conserva (dos espacios al final) y cada párrafo. El texto exacto está
+  siempre en el `.json` (`formato: "strivo.exportacion"`, `version: 1`, esquema en el reporte).
+- **Con el PIN puesto**, antes la puerta del Journal: `components/diario/PuertaDelJournal.jsx`, que es
+  `usePin` + `BloqueoPin` en desbloqueo, con «Cerrar» (`onCerrar`, que el Journal no pasa). Se pide
+  haya o no entradas: pedirla solo cuando las hay contaría lo que el PIN tapa.
+- **Sin haber bajado la cuenta** (D7), se intenta bajar con el techo de 15 s; si no termina, se
+  exporta igual, el `.json` dice `completo: false` y la pantalla `exportar.incompleto`.
+- **La entrega**: en la web, descarga directa (`Blob` y `<a download>`). En el iPhone,
+  `@capacitor/share` 8.0.3 con un archivo que escribe `strivo-almacen` en Caches y borra después
+  (D1, D2). `navigator.share` no sirve dentro del WebView: el zip se arma de forma asíncrona y WebKit
+  pide el toque «activo». Cancelar la hoja (`Share canceled`) no dice nada.
+- **`fflate` 0.8.3**, `zipSync` (la asíncrona crea workers desde `blob:`). Cada dependencia, un solo
+  importador y bajo demanda. **La composición** (`src/exportarCuenta.js`) es lo único que conoce el
+  diario y Respiración a la vez: la importa solo `App.jsx`, bajo demanda, y llega a Tu perfil por
+  props con la puerta.
+
+**24B · Borrar mi cuenta** (Apple, Guideline 5.1.1(v)). DP-24.4 = A: **la app borra la nube, sin
+servidor**. Las reglas ya dejaban a cada uid borrar lo suyo.
+
+- **El orden** (`lib/borrarCuenta.js`). Antes de nada —y si falla, «No se borró nada» sin escribir
+  la marca—: red, Firebase, la sesión de esta cuenta, la verificación de hace menos de **4 minutos**
+  (Apple caduca a los 5 y Firebase pide sesión reciente) y **la cuenta bajada en este teléfono**
+  (D6: es lo que deja a «Conservar» reconstruir la nube entera; una cuenta creada aquí baja en el
+  acto). Después: (1) la marca `strivo.borrado.<uid>`, (2) se detienen la subida y la bajada, (3)
+  con Apple, se revoca —**si falla, «No se borró nada»** y se quita la marca (D4)—, (4) la nube por
+  lotes de 500 con `writeBatch` y `conLimite`, y una segunda enumeración que tiene que dar cero, (5)
+  `deleteUser`, (6) el teléfono, (7) la marca se va con las demás claves. **Desde la nube, cualquier
+  fallo es «No pudimos terminar…»**: la marca se queda y lo local, intacto.
+- **La marca es el cerrojo.** Con ella no sale nada de ese uid —`flush` la mira **en cada entrada**,
+  y `startSync` y los reintentos no arrancan—, `restaurar` contesta `borrando` sin leer, y la mudanza
+  pendiente no se completa. Está en `FAMILIAS` de `clavesDelTelefono.js`: sobrevive a que iOS limpie
+  el WebView.
+- **La lista de borrado es la de la restauración** (`rutasEnLaNube`, en la única lectora). Antes de
+  SPEC_17A nada subía, así que ninguna ruta de épocas anteriores puede estar en la nube. Una prueba
+  construye lo encolable desde el esquema y falla si algo no está cubierto.
+- **Apple, camino (c)** (`lib/revocarApple.js`): la misma llamada que el SDK de iOS 12.19.3,
+  `POST …/v2/accounts:revokeToken` con `tokenType: "3"`, el código, el `idToken` de la sesión de
+  JavaScript, la clave web y `X-Ios-Bundle-Identifier`. El código sale de la misma hoja de la
+  verificación (`credencialNativa('apple', { conCodigo: true })`); `datosDeCredencial` sigue sin
+  tomarlo. **El `revokeAccessToken` del plugin no se usa**: sin usuario nativo no contesta nunca.
+  **Pendiente de B7**: si Strivo sigue en «Iniciar sesión con Apple», se trae el camino (a) en una
+  adenda.
+- **Reautenticar sin el PIN** (DP-24.18): `reautenticarCuenta` en `lib/reautenticacion.js`; el PIN
+  pregunta antes `metodoDeRecuperacion` y devuelve lo mismo que antes. Se pide siempre.
+- **El teléfono, como recién instalado** (D5, `vaciarTelefono`): filas y cola **de todos los uid**,
+  las claves de las cuatro familias, Face ID, los avisos, la sesión nativa de Google (solo si entró
+  con proveedor) y, en nativo con SQLite, la copia vieja de IndexedDB. Se quedan la base SQLite
+  vacía en su sitio, su `meta` y `strivo.almacen`. Después, como al salir: uid local nuevo y a Hoy.
+- **Al arrancar con la marca** (DP-24.13, `queHacerAlArrancar`, antes de `entrarACuenta`): con la
+  fase `telefono`, o `cuenta` sin usuario, se limpia y se despide; si no, **«Tu cuenta quedó a medio
+  borrar»** con «Terminar de borrar» y «Conservar mi cuenta» —también sin sesión (D12), pidiendo
+  entrar antes con el método de la marca—. **Conservar** vuelve a encolar todo lo del teléfono
+  (`reencolarTodo`, sin semillas), quita la marca y reanuda la subida.
+- **Las pantallas** (`components/perfil/CapaDeBorrado.jsx`): una capa con `role="dialog"`,
+  «Quedarme» siempre salvo mientras se borra, **BORRAR sin botón deshabilitado** (sin distinguir
+  mayúsculas ni espacios), la suscripción y las compras solo en el iPhone (el enlace abre la App
+  Store con `window.open`, sin `allowNavigation`). La despedida (`Despedida.jsx`) la monta
+  `ArranqueProvisional` delante de todo; «Cerrar» lleva a P1 **sin el umbral** (se da por cruzado).
+- **Para SPEC_25**: `Purchases.logOut()` va en la fase `telefono` de `borrarCuenta.js`, en el sitio
+  marcado.
+
+**El diagnóstico**: `VITE_DIAG_BORRADO=1`, un panel plegable al final de «Tus datos»: fase, marca,
+documentos encontrados y borrados, Apple, «Fallar antes de la nube», «Detenerse después de la nube» y
+«Sembrar días de prueba» (300 días, 600 documentos). Se combina con `VITE_DIAG_ALMACEN` y
+`VITE_DIAG_AVISOS`; sin la bandera no llega a `dist/`.
+
+**Tamaño.** El chunk principal de la web pasa de 758,18 a 770,82 kB (gzip, de 215,11 a 218,46): el
+bloque, la puerta, el copy, la retoma en el arranque y la limpieza. La exportación (12 kB), `fflate`
+(9 kB), la entrega nativa, el borrado (6,7 kB) y sus pantallas (5,8 kB) van en chunks bajo demanda.
+
+**Las pruebas manuales E1–E8 y B1–B13 pasan** (15–17 nov 2026, la fundadora en su iPhone 17 y en la
+web contra `strivo-fe04f`; el detalle está en el §10 de la instrucción). **B7 confirma el camino
+(c)**: tras borrar, Strivo desaparece de «Iniciar sesión con Apple», la hoja vuelve a pedir compartir
+u ocultar el correo y el panel dice «Apple: revocado». Antes, la web se recorrió entera con
+Playwright, de crear la cuenta a la despedida (605 documentos en 2 lotes).
+
+**O-24.1, sin bloquear:** en «Iniciar sesión con Apple» la app sale como «XC com hellostrivo strivo»
+con ícono genérico: es el nombre del App ID que creó Xcode. Se corrige al crear la app en App Store
+Connect con el nombre Strivo, o cambiando la descripción del App ID.
 
 ### Face ID y háptica en el iPhone (SPEC_23A y 23B, 12 nov 2026)
 
@@ -1113,7 +1243,10 @@ sistema. **Sin SQLCipher, sin servidor local y sin terceros**, así que
 `ITSAppUsesNonExemptEncryption` sigue en `false` (con `@capacitor-community/sqlite` habría dejado de
 poder serlo: trae SQLCipher aunque no se cifre nada). `cap sync` lo enlaza por su ruta real
 (`../../../plugins/strivo-almacen`), sin `packageOptions` ni enlace en `symlinks/`. **Cuatro
-métodos y ninguno más:** `abrir`, `existe`, `ejecutar` (un lote en una transacción) y `consultar`.
+métodos de la base y ninguno más:** `abrir`, `existe`, `ejecutar` (un lote en una transacción) y
+`consultar`. **Desde SPEC_24 (D1) son seis**: `escribirTemporal` y `borrarTemporal`, que solo tocan
+`Library/Caches/Strivo/exportar/` (el zip de «Llevarme lo que escribí», con la carpeta vaciada antes
+de cada escritura). No leen fechas ni atributos de ningún archivo: nada que declarar a Apple.
 Todas las sentencias van con parámetros enlazados: **ningún texto de la persona entra en el SQL**.
 Una sola conexión, atendida por una cola serial; **WAL con `synchronous = FULL`**; la protección de
 archivo de fábrica (hasta el primer desbloqueo), **nunca `Complete`**, que dejaría la base cerrada
@@ -2581,7 +2714,15 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
 
 - **El IndexedDB viejo de la app nativa no se borra** (SPEC_17B, DP-17B.10). Después de migrar se
   queda ahí, intacto y sin usarse. Borrarlo es una decisión de la fundadora para una versión
-  posterior a la 1.0, nunca de esta.
+  posterior a la 1.0, nunca de esta. **Excepción (SPEC_24, DP-24.14): borrar la cuenta sí la
+  borra**, solo con la sesión sobre SQLite: es lo escrito por la persona y lo pidió borrar.
+- **Un token de otro dispositivo vale hasta una hora después del borrado** (SPEC_24, D11). Si ese
+  teléfono o esa web tiene algo en su cola, puede volver a escribir documentos sueltos bajo
+  `users/{uid}` sin cuenta detrás y sin nadie que pueda leerlos. Sin servidor no se puede evitar:
+  las reglas no saben si el usuario existe. Se documenta aquí y en la nota para el aviso de
+  privacidad (A9); si hiciera falta, se limpia con un script de administración.
+- **Firebase conserva copias de seguridad por su propia política** después del borrado (SPEC_24
+  §6). El aviso de privacidad (A9) tiene que decirlo.
 - **La sesión de Firebase Auth sigue en el IndexedDB del WebView** (SPEC_17B). Si iOS lo limpia, la
   sesión queda `vencida`: nada se pierde —lo escrito y la cola están en SQLite— y sube al volver a
   entrar. Moverla de ahí queda fuera de 17B.

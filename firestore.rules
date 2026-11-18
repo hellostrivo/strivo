@@ -4,8 +4,12 @@ rules_version = '2';
 // Nada más entra aquí. La validación de forma de los datos vive en
 // src/lib/db/schema.js, no en el servidor.
 //
-// RN-DB-04 — `lumia/pinConfig` no aparece en ninguna regla porque nunca se
-// sincroniza: no sale del dispositivo.
+// RN-DB-04 — `diario/pinConfig`, `shared/frases` y `diario/frasesDelDia` no
+// aparecen en ninguna regla porque nunca se sincronizan: no salen del
+// dispositivo (`esRutaLocal`).
+//
+// SPEC_24 — Borrar la cuenta borra el árbol desde la app (DP-24.4 = A): la
+// misma regla de arriba deja a cada uid borrar lo suyo, y a nadie más.
 
 service cloud.firestore {
   match /databases/{database}/documents {

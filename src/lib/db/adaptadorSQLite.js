@@ -292,6 +292,18 @@ export function crearAdaptadorSQLite(conexion) {
         return { registros, cola }
       }),
 
+    // SPEC_24 (DP-24.14): todos los uid, en un lote. `meta` y `claves` se
+    // quedan: lo primero es técnico, y las claves las quita
+    // `quitarTodasLasClaves`, que pasa por su espejo.
+    vaciar: () =>
+      enExclusiva(async (c) => {
+        const [registros, cola] = await c.ejecutar([
+          { sql: 'DELETE FROM registros', valores: [] },
+          { sql: 'DELETE FROM cola', valores: [] },
+        ])
+        return { registros, cola }
+      }),
+
     // Una sola sentencia: la entrada de la ruta conserva su `seq` y sus
     // `attempts`, y su revisión sube (H-1). Sin revisión previa, empieza en 1.
     encolar: ({ uid, path, op, data, enqueuedAt }) =>
