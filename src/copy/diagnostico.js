@@ -118,6 +118,29 @@ export const DIAGNOSTICO_AUDIO = Object.freeze({
 // SPEC_24 (DP-24.20) — El borrado de la cuenta, con `VITE_DIAG_BORRADO=1`.
 // Exportación aparte y bandera propia, como las otras. Lo importa solo
 // `components/perfil/DiagnosticoBorrado.jsx`. Aprobados en el §9.
+// SPEC_25 (DP-25.21) — La suscripción, solo con `VITE_DIAG_SUSCRIPCION=1`.
+export const DIAGNOSTICO_SUSCRIPCION = Object.freeze({
+  estado: 'Estado: {estado} · hasta {fecha}',
+  cliente: 'RevenueCat: {tipo} · …{final}',
+  tipos: Object.freeze({ anonimo: 'anónimo', cuenta: 'cuenta' }),
+  sinCliente: 'RevenueCat: sin cliente',
+  derecho: 'completo: {activo} · {producto}',
+  activos: Object.freeze({ si: 'activo', no: 'no' }),
+  planes: 'Planes: {n} paquetes · Fundador: {sale}',
+  fundadores: Object.freeze({ si: 'sale', no: 'no sale' }),
+  metadata: 'Metadata: {json}',
+  inicio: 'Inicio de la prueba: {fecha}',
+  eventos: 'Eventos: {lista}',
+  dia6: 'Simular día 6',
+  dia8: 'Simular día 8',
+  hoy: 'Volver al día de hoy',
+  olvidarTarjeta: 'Olvidar la tarjeta del día 6',
+  refrescar: 'Refrescar',
+  ninguno: 'ninguno',
+  plegar: 'Ocultar diagnóstico',
+  desplegar: 'Diagnóstico de la suscripción',
+})
+
 export const DIAGNOSTICO_BORRADO = Object.freeze({
   fase: 'Borrado: {fase}',
   fases: Object.freeze({
