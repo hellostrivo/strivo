@@ -229,6 +229,7 @@ const visibles = {
   DIAGNOSTICO: diagnosticos.DIAGNOSTICO,
   DIAGNOSTICO_AVISOS: diagnosticos.DIAGNOSTICO_AVISOS,
   DIAGNOSTICO_AUDIO: diagnosticos.DIAGNOSTICO_AUDIO,
+  DIAGNOSTICO_SUSCRIPCION: diagnosticos.DIAGNOSTICO_SUSCRIPCION,
 }
 recorrer(visibles, 'copy-visible', (cadena, ruta) => {
   if (EXCLAMACION.test(cadena)) avisar(ruta, cadena, 'Signo de exclamación (§3.2, SPEC_22 §9)')
@@ -246,6 +247,14 @@ Object.entries(nuevosDe22).forEach(([ruta, nodo]) => {
     if (PENDIENTE.test(cadena))
       avisar(donde, cadena, '«pendiente» (§3.2): di «por pedir» o «sin pedir»')
   })
+})
+
+// SPEC_25 §4 — Lo que no se dice en ningún texto de la suscripción. Los precios
+// y los porcentajes tampoco: el precio es el de la tienda.
+const PROHIBIDO_EN_SUSCRIPCION =
+  /oferta|descuento|ahorra|solo hoy|más popular|mejor valor|%|\$|€|\bMXN\b|\d{2,}[.,]?\d*\s*(pesos|al mes|al año)/i
+recorrer(copy.suscripcion, 'copy.suscripcion', (cadena, ruta) => {
+  if (PROHIBIDO_EN_SUSCRIPCION.test(cadena)) avisar(ruta, cadena, 'Léxico de venta (SPEC_25 §4)')
 })
 
 const { FRASES, revisablesDe } = await import('../src/content/frases-del-dia.js')
