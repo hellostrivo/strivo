@@ -41,6 +41,7 @@ import BarraInferior from '@components/shared/BarraInferior'
 import { cruzarUmbral, umbralPendiente } from '@lib/umbralSesion'
 import { aplicarLecturaDePuerta, leerPuerta } from '@/presentacion/entrada'
 import { useSesion } from '@lib/useSesion'
+import ProveedorDeSuscripcion from '@components/suscripcion/ProveedorDeSuscripcion'
 import { useAvisos } from '@lib/avisos/useAvisos'
 
 import Respiracion from '@/breathing/Respiracion'
@@ -308,70 +309,75 @@ function Secciones({ uid }) {
   )
 
   return (
-    // `data-moment` lo decide el reloj y elige la paleta; `data-surface` sigue
-    // eligiendo el color de texto: son dos capas distintas y no se pisan
-    // (manual §4.8).
-    <div
-      data-moment={momentoDe()}
-      // Se parecen y no son lo mismo, así que conviene el recordatorio: el de
-      // arriba —`data-moment`, en inglés— lo decide el reloj y elige la paleta
-      // de marca; este —`data-momento`— lo decide quien mira, con el conmutador
-      // de Hoy. A las diez de la mañana con el conmutador en Noche valen cosas
-      // distintas, y ese es justo el caso que hay que resolver bien. Sin
-      // atributo fuera de Hoy.
-      data-momento={momentoHoy ?? undefined}
-      data-surface="light"
-      className="flex min-h-screen flex-col bg-espacio font-sans text-on-surface"
-    >
-      {!hideNav && <NavStrivo />}
+    // SPEC_25 — La suscripción, para todo lo de dentro. El muro que aparece solo
+    // espera a que no haya nada delante: ni el umbral ni la escritura. El onboarding, la
+    // presentación, la despedida y el borrado a medias van por delante de esto o
+    // en su lugar.
+    <ProveedorDeSuscripcion uid={uid} libre={!entrando && !hideNav}>
+      {/* `data-moment` lo decide el reloj y elige la paleta; `data-surface` sigue
+        eligiendo el color de texto: son dos capas distintas y no se pisan
+        (manual §4.8). */}
+      <div
+        data-moment={momentoDe()}
+        // Se parecen y no son lo mismo, así que conviene el recordatorio: el de
+        // arriba —`data-moment`, en inglés— lo decide el reloj y elige la paleta
+        // de marca; este —`data-momento`— lo decide quien mira, con el conmutador
+        // de Hoy. A las diez de la mañana con el conmutador en Noche valen cosas
+        // distintas, y ese es justo el caso que hay que resolver bien. Sin
+        // atributo fuera de Hoy.
+        data-momento={momentoHoy ?? undefined}
+        data-surface="light"
+        className="flex min-h-screen flex-col bg-espacio font-sans text-on-surface"
+      >
+        {!hideNav && <NavStrivo />}
 
-      {/* El hueco de la barra de abajo, que va fija: sin él, el último bloque
+        {/* El hueco de la barra de abajo, que va fija: sin él, el último bloque
           de cualquier pantalla queda debajo de ella. Se retira con la barra
           durante la escritura y las secuencias de cierre, porque entonces no
           hay nada que esquivar (RN-NAV-04). */}
-      <main className={clsx('flex-1', !hideNav && 'pb-24')}>
-        <Routes>
-          <Route path="/" element={<Navigate to={INICIO} replace />} />
+        <main className={clsx('flex-1', !hideNav && 'pb-24')}>
+          <Routes>
+            <Route path="/" element={<Navigate to={INICIO} replace />} />
 
-          <Route
-            path="/hoy"
-            element={<Hoy uid={uid} onHideNav={setHideNav} onMomento={setMomentoHoy} />}
-          />
-          <Route path="/journal" element={<Journal uid={uid} onHideNav={setHideNav} />} />
+            <Route
+              path="/hoy"
+              element={<Hoy uid={uid} onHideNav={setHideNav} onMomento={setMomentoHoy} />}
+            />
+            <Route path="/journal" element={<Journal uid={uid} onHideNav={setHideNav} />} />
 
-          {/* La herramienta. Sus dos pantallas las resuelve su propio
+            {/* La herramienta. Sus dos pantallas las resuelve su propio
               contenedor, que es quien sostiene la sesión entre ellas para que
               el botón atrás pause en vez de destruir (RN-RE-NAV-10). `base` y
               `salida` llegan por props: `breathing/` sigue sin nombrar al
               diario en ningún import, que es lo que la separación exige. */}
-          <Route
-            path="/respiracion/*"
-            element={
-              <Respiracion
-                uid={uid}
-                base={RUTA_RESPIRACION}
-                salida={INICIO}
-                onHideNav={setHideNav}
-              />
-            }
-          />
+            <Route
+              path="/respiracion/*"
+              element={
+                <Respiracion
+                  uid={uid}
+                  base={RUTA_RESPIRACION}
+                  salida={INICIO}
+                  onHideNav={setHideNav}
+                />
+              }
+            />
 
-          <Route path="/historial" element={<Historial uid={uid} />} />
+            <Route path="/historial" element={<Historial uid={uid} />} />
 
-          {/* Tu perfil: la gestión de la cuenta. No es una sección del diario
+            {/* Tu perfil: la gestión de la cuenta. No es una sección del diario
               —no escribe en `diario/`, solo en `shared/profile`— y por eso su
               componente no vive con las otras. */}
-          <Route
-            path="/perfil"
-            element={<Perfil uid={uid} exportacion={EXPORTACION} Puerta={PuertaDelJournal} />}
-          />
+            <Route
+              path="/perfil"
+              element={<Perfil uid={uid} exportacion={EXPORTACION} Puerta={PuertaDelJournal} />}
+            />
 
-          {/* Cualquier ruta desconocida vuelve a Hoy. */}
-          <Route path="*" element={<Navigate to={INICIO} replace />} />
-        </Routes>
-      </main>
+            {/* Cualquier ruta desconocida vuelve a Hoy. */}
+            <Route path="*" element={<Navigate to={INICIO} replace />} />
+          </Routes>
+        </main>
 
-      {/* El umbral va sobre la app ya montada: cuando la luz se va, lo de
+        {/* El umbral va sobre la app ya montada: cuando la luz se va, lo de
           detrás ya está ahí (RN-LU-MAN-02).
 
           **`conVideo` y no `conFrase` desde el 25 de agosto de 2026.** Abrir la
@@ -384,12 +390,13 @@ function Secciones({ uid }) {
 
           Con "reducir movimiento" no se monta ninguno de los dos, aquí ni en
           Hoy: entrar es inmediato y sin velo (RN-VIS-05). */}
-      {/* Va después de `main` y no dentro: es cromo, como la cabecera, y las
+        {/* Va después de `main` y no dentro: es cromo, como la cabecera, y las
           dos se van juntas cuando la pantalla pide flujo en vez de navegación
           (RN-NAV-04). */}
-      {!hideNav && <BarraInferior />}
+        {!hideNav && <BarraInferior />}
 
-      {entrando && <TransicionLuz conVideo onTerminar={() => setEntrando(false)} />}
-    </div>
+        {entrando && <TransicionLuz conVideo onTerminar={() => setEntrando(false)} />}
+      </div>
+    </ProveedorDeSuscripcion>
   )
 }
