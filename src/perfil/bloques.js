@@ -30,6 +30,8 @@ export const BLOQUES = Object.freeze([
   'horarios',
   'recordatorios',
   'frases',
+  // SPEC_25 — Solo en la app de iPhone: el estado, restaurar y las opciones.
+  'suscripcion',
   'cuenta',
   'sincronizacion',
   // SPEC_24 — Llevarme lo que escribí y, con cuenta, borrarla. Es lo último de
@@ -43,7 +45,7 @@ export const BLOQUES = Object.freeze([
  * pintan, ni con un texto que diga que existen en otro sitio (DP-22.2).
  * `recordatorios` va detrás de `horarios`: sus avisos llegan a esas horas.
  */
-export const SOLO_EN_IPHONE = Object.freeze(['recordatorios'])
+export const SOLO_EN_IPHONE = Object.freeze(['recordatorios', 'suscripcion'])
 
 /** Los bloques que se ven aquí, en su orden. */
 export function visibles({ iphone = false } = {}) {
