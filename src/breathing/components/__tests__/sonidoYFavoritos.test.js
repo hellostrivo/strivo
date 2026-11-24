@@ -71,7 +71,8 @@ describe('el repo no engorda por audio (criterios 35 y 36, RN-RE-SND-00)', () =>
   // el del sistema), la háptica de SPEC_23B (`@capacitor/haptics`, un toque
   // del sistema, sin sonido) y Face ID de SPEC_23A
   // (`@capgo/capacitor-native-biometric`), y la hoja de compartir y el zip de
-  // «Llevarme lo que escribí» de SPEC_24 (`@capacitor/share`, `fflate`).
+  // «Llevarme lo que escribí» de SPEC_24 (`@capacitor/share`, `fflate`), y las compras de SPEC_25
+  // (`@revenuecat/purchases-capacitor`).
   // Ninguna trae audio: el sonido sigue sintetizado.
   it('las dependencias son las ocho de siempre y las de la app de iPhone', () => {
     const paquete = JSON.parse(readFileSync('package.json', 'utf8'))
@@ -87,6 +88,7 @@ describe('el repo no engorda por audio (criterios 35 y 36, RN-RE-SND-00)', () =>
       '@capacitor/status-bar',
       '@capgo/capacitor-native-biometric',
       '@fontsource-variable/inter',
+      '@revenuecat/purchases-capacitor',
       'clsx',
       'date-fns',
       'fflate',
