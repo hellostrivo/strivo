@@ -15,6 +15,7 @@
 
 import { useState } from 'react'
 import BloqueoPin from '@components/diario/BloqueoPin'
+import EntradaDelJournal from '@components/diario/EntradaDelJournal'
 import ChipsEmociones from '@components/diario/ChipsEmociones'
 import { CampoLinea, CampoTexto } from '@components/shared/Campo'
 import Button from '@components/ui/Button'
@@ -32,6 +33,7 @@ import { agrupar, buscar, extractoDe, horaDe } from '@/diario/journal'
 import { fechaCorta } from '@/diario/fechas'
 import { useJournal } from '@/diario/useJournal'
 import { usePin } from '@/diario/usePin'
+import { useSuscripcion } from '@lib/suscripcion/useSuscripcion'
 
 const textos = copy.diario.journal
 
@@ -79,11 +81,15 @@ function JournalAbierto({ uid, pin, onHideNav }) {
   const [ajustes, setAjustes] = useState(false)
   const [confirmandoBorrado, setConfirmandoBorrado] = useState(false)
   const [aviso, setAviso] = useState(false)
+  const { puedeEscribir, abrirMuro } = useSuscripcion()
 
   const abrirEditor = (entrada) => {
+    // SPEC_25 — En modo lectura, una entrada se abre para leerla; una nueva no.
+    if (!entrada && !puedeEscribir) return abrirMuro()
     acciones.abrir(entrada)
     setConfirmandoBorrado(false)
     onHideNav?.(true)
+    return undefined
   }
 
   const cerrarEditor = async () => {
@@ -110,6 +116,25 @@ function JournalAbierto({ uid, pin, onHideNav }) {
   }
 
   // ─── Editor ─────────────────────────────────────────────────────────────────
+
+  if (borrador && !puedeEscribir) {
+    return (
+      <EntradaDelJournal
+        entrada={borrador}
+        genero={estado.genero}
+        confirmando={confirmandoBorrado}
+        onVolver={cerrarEditor}
+        onOpciones={abrirMuro}
+        onBorrar={async () => {
+          if (!confirmandoBorrado) return setConfirmandoBorrado(true)
+          await acciones.borrar()
+          setConfirmandoBorrado(false)
+          onHideNav?.(false)
+          return undefined
+        }}
+      />
+    )
+  }
 
   if (borrador) {
     const seleccion = borrador.emotions ?? []

@@ -14,6 +14,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { shared } from '@/lib/db'
 import * as journal from './journal.js'
+import { useSuscripcion } from '@lib/suscripcion/useSuscripcion'
 
 /** §5.8 — Retraso del autoguardado desde el último carácter. */
 export const RETRASO_AUTOGUARDADO = 800
@@ -25,6 +26,9 @@ export function useJournal(uid) {
   const [carga, setCarga] = useState('cargando')
   const [error, setError] = useState(null)
   const [borrador, verBorrador] = useState(null)
+  // SPEC_25 — En modo lectura no se escribe nada nuevo. Borrar sí: lo escrito
+  // es de la persona.
+  const { puedeEscribir } = useSuscripcion()
 
   const vivo = useRef(true)
   // El borrador en curso, fuera del estado de React: entre que una escritura se
@@ -113,6 +117,7 @@ export function useJournal(uid) {
 
   const programar = useCallback(
     (patch) => {
+      if (!puedeEscribir) return
       const siguiente = { ...(borradorRef.current ?? {}), ...patch }
       fijarBorrador(siguiente)
       hayPendiente.current = true
@@ -121,8 +126,13 @@ export function useJournal(uid) {
         volcar()
       }, RETRASO_AUTOGUARDADO)
     },
-    [volcar],
+    [puedeEscribir, volcar],
   )
+
+  // Lo tecleado antes de pasar a lectura no se pierde.
+  useEffect(() => {
+    if (!puedeEscribir) volcar()
+  }, [puedeEscribir, volcar])
 
   // Cerrar la app a media frase no puede perderla (§5.8, criterio 2).
   useEffect(() => {

@@ -43,11 +43,14 @@ import { imagenDeLaApp } from '@lib/audio/sesionAudio'
 import TransicionLuz, { prefiereMenosMovimiento } from '@components/shared/TransicionLuz'
 import { cruzarUmbral, umbralPendiente } from '@lib/umbralSesion'
 import Button from '@components/ui/Button'
+import AvisoDeLectura from '@components/suscripcion/AvisoDeLectura'
+import TarjetaDePrueba from '@components/suscripcion/TarjetaDePrueba'
 import { copy, interpolate } from '@copy'
 import { shared } from '@/lib/db'
 import { getTimeSlot } from '@lib/timeSlot'
 import { franjaDelSaludo } from '@/diario/fechas'
 import { useDiario } from '@/diario/useDiario'
+import { useSuscripcion } from '@lib/suscripcion/useSuscripcion'
 
 /**
  * SPEC_23 Parte 2 (DP-23.26) — El cuadro de la pantalla de bloqueo de «Respira
@@ -104,6 +107,7 @@ export default function Hoy({ uid, onHideNav, onMomento }) {
   const [parametros, setParametros] = useSearchParams()
   const [momento, setMomento] = useState(momentoInicial)
   const [vista, setVista] = useState('hoy')
+  const { puedeEscribir, abrirMuro } = useSuscripcion()
   const [umbral, setUmbral] = useState(false)
   // §6.12 — Silencio por defecto en toda la app. Si el perfil todavía no tiene
   // preferencias, se arranca en silencio y no al revés.
@@ -290,7 +294,12 @@ export default function Hoy({ uid, onHideNav, onMomento }) {
       {/* Un día que ya cerró su ventana se dice una vez, en voz baja y sin
           alarma: no hay aviso, no hay ventana emergente y no hay nada que
           confirmar. Debajo sigue estando el día entero, para leerlo. */}
-      {!estado.editable && <p className="text-sm text-on-surface-soft">{textos.dias.cerrado}</p>}
+      {/* SPEC_25 — En modo lectura se dice eso, y no que el día se cerró. */}
+      <TarjetaDePrueba uid={uid} />
+      {!puedeEscribir && <AvisoDeLectura onOpciones={abrirMuro} aLaVista />}
+      {puedeEscribir && !estado.editable && (
+        <p className="text-sm text-on-surface-soft">{textos.dias.cerrado}</p>
+      )}
 
       {/* El Diario, aquí mismo. Sin tarjeta que lo anuncie y sin paso previo:
           la sección elegida arriba es la que se escribe abajo. */}
