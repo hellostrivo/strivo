@@ -33,8 +33,9 @@
 // Los avisos se cancelan en la fase `telefono`, después de `deleteUser`: es
 // lo del teléfono, y no necesita la sesión.
 //
-// **Para SPEC_25:** `Purchases.logOut()` de RevenueCat va en la fase
-// `telefono`, en el sitio marcado abajo.
+// **SPEC_25:** el cliente de RevenueCat se cierra también en la fase
+// `telefono`. Lo pagado sigue ligado al Apple ID y vuelve con «Restaurar
+// compras»; borrar su cliente pediría su llave secreta, que no va en la app.
 //
 // Nada de esto va a analítica (RN-07), ni el hecho de haber borrado.
 
@@ -56,6 +57,7 @@ import {
 } from './db/marcaDeBorrado.js'
 import { TECHO_DE_ESPERA_MS, conTecho } from './sesion.js'
 import { esNativa } from './plataforma.js'
+import { compras } from './compras.js'
 import { vaciarTelefono } from './limpiezaDelTelefono.js'
 
 /** Las pantallas del borrado (§6.4 del reporte previo). */
@@ -175,6 +177,7 @@ const ENTORNO = Object.freeze({
   revocar: async (datos) => (await import('./revocarApple.js')).revocarApple(datos),
   borrarUsuario: (f, usuario) => f.firebaseAuth.deleteUser(usuario),
   cerrarSesionNativa: async () => (await import('./credencialNativa.js')).cerrarSesionNativa(),
+  cerrarCompras: () => compras.cerrar(),
   vaciarTelefono: () => vaciarTelefono(),
   detenerSubida: async () => {
     cancelRetries()
@@ -327,7 +330,7 @@ export async function limpiarElTelefono(uid, { conProveedor = false, dobles = {}
   // La sesión de Google del SDK nativo: solo si se entró con un proveedor (sin
   // `GoogleService-Info.plist`, su `signOut` cerraría la app; ver cuenta.js).
   if (conProveedor && e.nativa()) await e.cerrarSesionNativa()
-  // SPEC_25: aquí va `Purchases.logOut()` de RevenueCat.
+  await e.cerrarCompras()
   await e.vaciarTelefono()
   quitarMarcaDeBorrado(uid)
   anotar({ fase: 'terminado' })
