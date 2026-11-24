@@ -150,6 +150,18 @@ export function esSemilla(coleccion, data) {
 /** Los hechos del expediente: haber terminado el onboarding y haber visto la presentación. */
 export const HECHOS_DEL_EXPEDIENTE = Object.freeze(['completedAt', 'tourCompletedAt'])
 
+/**
+ * Los hechos del expediente en los que, si los dos lados lo traen, **gana el
+ * más antiguo** (SPEC_25, DP-25.13): cuándo empezó la prueba. Ni cambiar de
+ * teléfono ni entrar a una cuenta la reinicia.
+ */
+export const HECHOS_MAS_ANTIGUOS = Object.freeze(['fechaInicioPrueba'])
+
+/** ¿Es `a` un instante legible anterior a `b`? Lo ilegible no gana a nadie. */
+function esAnterior(a, b) {
+  return Date.parse(a) < Date.parse(b)
+}
+
 /** ¿Es esta fila el expediente del onboarding, el único documento con hechos? */
 export function esExpediente(coleccion, id) {
   return coleccion === 'shared' && id === 'onboarding'
@@ -157,7 +169,8 @@ export function esExpediente(coleccion, id) {
 
 /**
  * Lo que el perdedor sabe y al ganador le falta: los hechos del expediente que
- * el perdedor trae no nulos y el ganador trae nulos o no trae.
+ * el perdedor trae no nulos y el ganador trae nulos o no trae, y los que el
+ * perdedor trae con una fecha más antigua (`HECHOS_MAS_ANTIGUOS`).
  *
  * @returns {object} los campos que hay que añadir al ganador; vacío si ninguno.
  */
@@ -165,6 +178,11 @@ export function hechosQueFaltan(ganador, perdedor) {
   const faltan = {}
   for (const campo of HECHOS_DEL_EXPEDIENTE) {
     if (perdedor?.[campo] != null && ganador?.[campo] == null) faltan[campo] = perdedor[campo]
+  }
+  for (const campo of HECHOS_MAS_ANTIGUOS) {
+    const suyo = perdedor?.[campo]
+    if (suyo == null) continue
+    if (ganador?.[campo] == null || esAnterior(suyo, ganador[campo])) faltan[campo] = suyo
   }
   return faltan
 }

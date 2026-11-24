@@ -2,12 +2,13 @@
 // Los hechos del teléfono que viven en `localStorage`, y su copia en SQLite
 // (SPEC_17B, DP-17B.4).
 //
-// Son cuatro familias de claves:
+// Son cinco familias de claves:
 //
 //   strivo.uid.local                — el uid de este teléfono (`ArranqueProvisional`)
 //   strivo.restaurado.<uid>         — la marca de restauración (`restaurar.js`)
 //   strivo.mudanzaPendiente.<uid>   — la mudanza aplazada (`entradaCuenta.js`, `borrarUid`)
 //   strivo.borrado.<uid>            — el borrado en curso (SPEC_24, `marcaDeBorrado.js`)
+//   strivo.tarjetaDePrueba.<uid>    — la tarjeta del día 6, ya vista (SPEC_25)
 //
 // **`localStorage` vive en el mismo sitio que IndexedDB**: si iOS limpia el
 // almacén del WebView, se va con él. Con los días ya en SQLite, perder el uid
@@ -36,6 +37,7 @@ const FAMILIAS = Object.freeze([
   'strivo.restaurado.',
   'strivo.mudanzaPendiente.',
   'strivo.borrado.',
+  'strivo.tarjetaDePrueba.',
 ])
 
 /** ¿Es una de las claves que se copian? */
@@ -125,7 +127,7 @@ export async function reconciliarClaves(copia, almacen = almacenLocal()) {
 }
 
 /**
- * Quita todas las claves de las cuatro familias, de cualquier uid, en
+ * Quita todas las claves de las cinco familias, de cualquier uid, en
  * `localStorage` y en su copia (SPEC_24, DP-24.14). Lo usa borrar la cuenta
  * para dejar el teléfono como recién instalado; `strivo.uid.local` lo vuelve a
  * escribir enseguida `ArranqueProvisional` con un uid local nuevo.
