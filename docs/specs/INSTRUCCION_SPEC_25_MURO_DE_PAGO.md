@@ -1,7 +1,7 @@
 # INSTRUCCIÓN SPEC_25 — Cobrar (25A) y «Tengo un código» (25B)
 
 **Para:** Claude Code
-**Fecha:** 24 nov 2026 · **Versión:** 1.2 (25A cerrada; §9 manda, §10 resultados)
+**Fecha:** 24 nov 2026 · **Versión:** 1.3 (25A y 25B cerradas; §9 manda, §10 resultados)
 **Rama de partida:** `strivo` en `f4c4653`, la fusión de SPEC_24. Compruébalo en §0.
 **Gobierna:** esta instrucción + `docs/specs/SPEC_25_MURO_DE_PAGO.md` (con la nota final de SPEC_24) + `docs/specs/ADENDA_SPEC_25_REVENUECAT_24-11-2026.md` + `docs/specs/INSTRUCCION_SPEC_24_EXPORTAR_Y_BORRAR_CUENTA.md` (§1.1, §9 y §10) + `SPEC_00B` + `CLAUDE.md`. **Donde esta instrucción y otra difieran, manda esta.** En particular, **corrige varias partes de SPEC_25**, que se escribió en septiembre, antes de la app de iPhone, de SQLite, de Tu perfil con bloques, de SPEC_24 y de la configuración real de RevenueCat (ver §2.4).
 
@@ -378,7 +378,14 @@ Las pruebas P1, C4, C6, C7, C10, K1 y H2 y el Anexo B ya están corregidos arrib
 
 ### 25B
 
-H1 pasa (25 nov 2026). H3, primer intento: con una clave inventada volvió un Fundador de antes de ese Apple ID y la app dijo «Listo». Corregido: «Listo» exige el Anual y una compra posterior a irse. Por repetir.
+25 nov 2026; la fundadora, en su iPhone 17 en sandbox.
+
+| Prueba | Resultado |
+|---|---|
+| H1 | Pasa: la hoja; «Continuar» vacío no hace nada; «Cancelar» cierra; el enlace está en el muro y en Tu perfil y se esconde con Anual o Fundador. |
+| H3a | Pasa con `3fd15c2`: con `PRUEBA123` volvió un Fundador de antes y se vio «Miembro fundador. Para siempre.» y «Tu suscripción está de vuelta.», nunca «Listo». El primer intento decía «Listo»: era un defecto, corregido (exige el Anual y una compra posterior a irse). |
+| H3b | **Sin hacer** (pedía una tercera cuenta de sandbox); lo cubren las pruebas automáticas. |
+| H2 | **En producción**, tras la aprobación (Anexo D). Hasta entonces, ningún canje real pasó por «Tengo un código». |
 
 ---
 

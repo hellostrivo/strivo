@@ -808,7 +808,7 @@ entradas empataban en el milisegundo y el orden lo decidía un UUID; ahora se cr
 congelado en dos instantes distintos. `listJournalEntries` no cambió. Cada caso que vuelca
 IndexedDB por dentro tiene su equivalente que vuelca todas las tablas de SQLite.
 
-### Cobrar (SPEC_25A, 25 nov 2026)
+### Cobrar (SPEC_25, 25 nov 2026)
 
 La instrucción y sus decisiones están en `docs/specs/INSTRUCCION_SPEC_25_MURO_DE_PAGO.md` (v1.1;
 **su §9 manda**) y en `docs/specs/REPORTE_PREVIO_SPEC_25.md`. **Pagar es fácil y se entiende sin
@@ -866,7 +866,9 @@ va aparte (5,5 kB) y el plugin no está.
 
 **Las pruebas manuales P, C, K, W y R pasan** (25 nov 2026, la fundadora en su iPhone 17 en sandbox y
 en la web; el detalle, en el §10 de la instrucción). Sin hacer a mano: C8 con `hasta` de ayer, C9 y
-K2. **K1: un código canjeado fuera de la app llega solo**, así que no hay `syncPurchases`. Antes del
+K2. **25B: H1 y H3a pasan**; H3b, sin hacer, y **H2 espera a producción** (Anexo D): antes de
+repartir claves hay que probar ahí un canje real. **K1: un código canjeado fuera de la app llega solo**, así que `syncPurchases` solo corre
+al volver de «Tengo un código». Antes del
 envío a revisión falta `URL_PRIVACIDAD`.
 
 ### Llevarme lo que escribí y borrar mi cuenta (SPEC_24, 15 nov 2026)
