@@ -10,7 +10,7 @@
 
 const CLAVE = 'strivo.diag.suscripcion.desfase'
 const CLAVE_PASOS = 'strivo.diag.suscripcion.pasos'
-const MAX_PASOS = 40
+const MAX_PASOS = 80
 // Distingue un arranque de otro: si cambia sin cerrar la app, algo recargó.
 const ARRANQUE = Math.random().toString(36).slice(2, 5)
 const eventos = []
@@ -79,6 +79,11 @@ export function anotarPaso(texto) {
       // El diagnóstico nunca frena a nadie.
     }
   }
+}
+
+/** Los seis últimos caracteres de un identificador: el entero no se enseña. */
+export function cola(id) {
+  return `…${String(id ?? '').slice(-6)}`
 }
 
 export function borrarPasos() {

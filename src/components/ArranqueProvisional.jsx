@@ -111,6 +111,7 @@ import { hayMarcaDeBorrado } from '@/lib/db/marcaDeBorrado'
 import { flush } from '@/lib/db/sync'
 import { cruzarUmbral } from '@lib/umbralSesion'
 import { esIPhone } from '@lib/plataforma'
+import { anotarPaso, cola } from '@lib/suscripcion/diagnostico'
 import Despedida from '@components/perfil/Despedida'
 
 // SPEC_24 — La pantalla «a medio borrar» solo existe si un borrado se
@@ -230,6 +231,7 @@ export default function ArranqueProvisional({ children }) {
 
   /** El único sitio que escribe `strivo.uid.local`, además de `uidLocal`. */
   const fijarUid = useCallback((nuevo) => {
+    anotarPaso(`sesión: uid ${cola(uidVigente.current)} → ${cola(nuevo)}`)
     guardarClave(CLAVE_UID, nuevo)
     uidVigente.current = nuevo
     setUid(nuevo)
@@ -378,6 +380,9 @@ export default function ArranqueProvisional({ children }) {
     async (cuenta) => {
       const origen = uidVigente.current
       const datos = { uid: cuenta.uid, email: cuenta.email ?? null }
+      anotarPaso(
+        `sesión: entrar a ${cola(cuenta.uid)} · cuenta ${cuenta.nueva ? 'nueva' : 'que ya existía'}`,
+      )
       if (cuenta.uid === origen) {
         setUsuario(datos)
         return { ok: true }
@@ -465,6 +470,7 @@ export default function ArranqueProvisional({ children }) {
       return { ok: false, motivo: SALIDA.pendiente }
     }
 
+    anotarPaso(`sesión: cerrar sesión de ${cola(origen)}`)
     setCambiando(true)
     retirarOyenteRed()
     const r = await salirDeCuenta(origen)
