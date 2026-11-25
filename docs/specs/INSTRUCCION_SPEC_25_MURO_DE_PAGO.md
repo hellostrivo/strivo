@@ -1,7 +1,7 @@
 # INSTRUCCIÓN SPEC_25 — Cobrar (25A) y «Tengo un código» (25B)
 
 **Para:** Claude Code
-**Fecha:** 24 nov 2026 · **Versión:** 1.1 (con el reporte previo aprobado; §9 manda)
+**Fecha:** 24 nov 2026 · **Versión:** 1.2 (25A cerrada; §9 manda, §10 resultados)
 **Rama de partida:** `strivo` en `f4c4653`, la fusión de SPEC_24. Compruébalo en §0.
 **Gobierna:** esta instrucción + `docs/specs/SPEC_25_MURO_DE_PAGO.md` (con la nota final de SPEC_24) + `docs/specs/ADENDA_SPEC_25_REVENUECAT_24-11-2026.md` + `docs/specs/INSTRUCCION_SPEC_24_EXPORTAR_Y_BORRAR_CUENTA.md` (§1.1, §9 y §10) + `SPEC_00B` + `CLAUDE.md`. **Donde esta instrucción y otra difieran, manda esta.** En particular, **corrige varias partes de SPEC_25**, que se escribió en septiembre, antes de la app de iPhone, de SQLite, de Tu perfil con bloques, de SPEC_24 y de la configuración real de RevenueCat (ver §2.4).
 
@@ -358,7 +358,26 @@ Las pruebas P1, C4, C6, C7, C10, K1 y H2 y el Anexo B ya están corregidos arrib
 
 ## 10. Resultados
 
-*(Se llena al terminar.)*
+### 25A (25 nov 2026; la fundadora, en su iPhone 17 en sandbox y en la web)
+
+| Prueba | Resultado |
+|---|---|
+| P1, P2, P4, P5 | Pasan. P2: sin cuenta de sandbox puesta, los precios salían en dólares. |
+| P3 | Pasa con `440a99b`, abriendo desde el ícono y sin Xcode conectado. Falló dos veces antes; **la causa en el iPhone no se identificó** y no se reprodujo en el simulador. Desde entonces la tarjeta es lo primero de Hoy y solo se gasta si se vio. |
+| C1, C2, C4, C5, C6, C7 | Pasan. |
+| C3 | Pasa con la segunda cuenta de sandbox y `+c3b`: «completo: activo · strivo_mensual» y el mismo «Inicio de la prueba». El primer intento falló porque en medio se cerró sesión (D15): no es un defecto. |
+| C8 | Pasa: tarjeta por metadata, compra, «Miembro fundador. Para siempre.» y la tarjeta deja de salir. **Sin hacer:** `hasta` en la fecha de ayer (lo cubren las pruebas automáticas). La metadata quedó en `{ "mostrar": false, "hasta": "2027-01-15" }`. |
+| C9 | **Sin hacer**; lo cubren las pruebas automáticas. |
+| C10 | Cubierta en el primer intento de C3: al cerrar sesión, el derecho no se pegó a la cuenta siguiente. |
+| K1 | Pasa: código canjeado desde Ajustes → Desarrollador → Cuenta de Apple de sandbox, con Strivo en segundo plano; al volver, «Anual. Se renueva el…» sin tocar nada. **`syncPurchases` no hace falta en 25A** (DP-25.18). |
+| K2 | **Sin hacer**; repetirla pedía reinstalar y limpiar cuentas. |
+| R1, R2, R3, W1 | Pasan. |
+
+**Queda antes del envío a revisión:** la URL de privacidad (D17), la captura real del muro en los tres productos y la ficha de privacidad con el §7 del reporte previo.
+
+### 25B
+
+*(Se llena al probar el bloque H.)*
 
 ---
 
@@ -374,6 +393,7 @@ Las pruebas P1, C4, C6, C7, C10, K1 y H2 y el Anexo B ya están corregidos arrib
 - **Las compras de sandbox no cobran nada.** Usan las dos cuentas de prueba que creaste el 19 nov en App Store Connect → Usuarios y acceso → Sandbox.
 - **Dónde se pone en el iPhone** (iOS 18.1 o más): Ajustes → **Desarrollador** → hasta abajo, **«Cuenta de Apple de sandbox»** → iniciar sesión con la cuenta de prueba. Ahí mismo, en **Gestionar**, se ven, se cancelan y se ajustan las suscripciones de sandbox. Tu Apple ID de siempre no se toca. (Si no aparece, la primera compra desde una app instalada con Xcode pide la cuenta de sandbox.)
 - **Se inicia sesión antes de P2, no solo antes de comprar.** Sin cuenta de sandbox, el muro enseñó $39.99 al año y $3.99 al mes, en dólares (25 nov 2026); con la de México, $799.00 y $89.00.
+- **La oferta de código es solo para personas nuevas:** antes del bloque K hay que borrar el historial de compras de la cuenta de sandbox.
 - **En la hoja de compra se ve «[Sandbox]».** Si no lo ves, no confirmes: estarías en tu cuenta real.
 - **Tiempos de sandbox:** un mes ≈ 5 minutos; un año ≈ 1 hora.
 - **Para repetir el Fundador con la misma cuenta:** App Store Connect → Usuarios y acceso → Sandbox → la cuenta → «Borrar historial de compras». O usa la otra cuenta.
