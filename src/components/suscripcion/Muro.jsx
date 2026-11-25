@@ -76,6 +76,7 @@ export function MuroVista({
   onContinuar,
   onRestaurar,
   onReintentar,
+  onCodigo,
   onCerrar,
   urlPrivacidad = URL_PRIVACIDAD,
   tituloRef = null,
@@ -122,6 +123,9 @@ export function MuroVista({
         <button type="button" className={ENLACE} onClick={onRestaurar}>
           {t.restaurar}
         </button>
+        <button type="button" className={ENLACE} onClick={onCodigo}>
+          {t.tengoCodigo}
+        </button>
         <a className={ENLACE} href={URL_TERMINOS} target="_blank" rel="noopener noreferrer">
           {t.terminos}
         </a>
@@ -142,10 +146,19 @@ export function MuroVista({
  * @param {object} props
  * @param {string} props.estado - el de la suscripción.
  * @param {() => void} props.onCerrar
+ * @param {() => void} props.onCodigo - abre la hoja del código.
+ * @param {boolean} props.codigoSinAplicar - se volvió de un canje sin ver nada.
  * @param {(texto: string) => void} props.onAcuse - cierra el muro y dice una frase.
  * @param {() => Promise<{motivo: string}>} props.restaurar
  */
-export default function Muro({ estado, onCerrar, onAcuse, restaurar }) {
+export default function Muro({
+  estado,
+  onCerrar,
+  onCodigo,
+  codigoSinAplicar = false,
+  onAcuse,
+  restaurar,
+}) {
   const momento = momentoDe()
   useBarraDeEstado({ capa: 'pantalla', momento })
   const [planes, setPlanes] = useState(null)
@@ -228,11 +241,15 @@ export default function Muro({ estado, onCerrar, onAcuse, restaurar }) {
         carga={carga}
         tarjetas={tarjetas}
         elegida={elegida}
-        nota={nota}
+        nota={nota ?? (codigoSinAplicar ? copy.suscripcion.codigo.noAplicado : null)}
         onElegir={setElegida}
         onContinuar={continuar}
         onRestaurar={alRestaurar}
         onReintentar={() => unaVez(traer)}
+        onCodigo={() => {
+          setNota(null)
+          onCodigo()
+        }}
         onCerrar={onCerrar}
         tituloRef={titulo}
       />

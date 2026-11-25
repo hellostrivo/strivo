@@ -38,9 +38,11 @@ export function fraseDeEstado({ estado, plan, hasta, seRenueva }) {
 }
 
 /** Qué controles tocan en cada estado. */
-export function controlesDe(estado) {
+export function controlesDe(estado, plan = null) {
   return {
     gestionar: estado === ESTADOS.activa,
+    // El Fundador no acepta claves (DP-25.9) y quien tiene el Anual no canjea nada.
+    codigo: estado !== ESTADOS.fundador && plan !== 'anual',
     opciones: estado === ESTADOS.prueba || estado === ESTADOS.lectura,
   }
 }
@@ -51,7 +53,7 @@ export default function TuSuscripcion({ diagnostico = null }) {
   const ocupado = useRef(false)
   const unaVez = unaVezCon(ocupado)
   const frase = fraseDeEstado(suscripcion)
-  const { gestionar, opciones } = controlesDe(suscripcion.estado)
+  const { gestionar, opciones, codigo } = controlesDe(suscripcion.estado, suscripcion.plan)
 
   const restaurar = () =>
     unaVez(async () => {
@@ -65,6 +67,11 @@ export default function TuSuscripcion({ diagnostico = null }) {
     <div className="flex flex-col gap-4">
       <div aria-live="polite" className="flex flex-col gap-1">
         {frase && <p className="text-base text-on-surface">{frase}</p>}
+        {!nota && suscripcion.codigoSinAplicar && (
+          <p className="text-sm text-on-surface-soft leading-relaxed">
+            {copy.suscripcion.codigo.noAplicado}
+          </p>
+        )}
         {nota && <p className="text-sm text-on-surface-soft leading-relaxed">{nota}</p>}
       </div>
       <div className="flex flex-col items-start gap-3">
@@ -86,6 +93,19 @@ export default function TuSuscripcion({ diagnostico = null }) {
         <Button type="button" size="sm" variant="surface" onClick={restaurar}>
           {t.restaurar}
         </Button>
+        {codigo && (
+          <Button
+            type="button"
+            size="sm"
+            variant="surface"
+            onClick={() => {
+              setNota(null)
+              suscripcion.abrirCodigo()
+            }}
+          >
+            {t.tengoCodigo}
+          </Button>
+        )}
       </div>
       {diagnostico}
     </div>
