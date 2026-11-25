@@ -257,6 +257,10 @@ export default function Hoy({ uid, onHideNav, onMomento }) {
 
   return marco(
     <div className="flex min-h-screen flex-col gap-8 px-5 pb-24 pt-10">
+      {/* SPEC_25 — Lo primero de la pantalla, una sola vez. Así se ve al abrir Hoy
+          sin depender de que nada la desplace. */}
+      <TarjetaDePrueba uid={uid} />
+
       {/* El conmutador va dentro del héroe, justo debajo de la fecha: es el
           primer elemento con el que se puede interactuar, por delante de la
           frase del día y de cualquier pregunta. Elegir el momento es lo que
@@ -295,7 +299,6 @@ export default function Hoy({ uid, onHideNav, onMomento }) {
           alarma: no hay aviso, no hay ventana emergente y no hay nada que
           confirmar. Debajo sigue estando el día entero, para leerlo. */}
       {/* SPEC_25 — En modo lectura se dice eso, y no que el día se cerró. */}
-      <TarjetaDePrueba uid={uid} />
       {!puedeEscribir && <AvisoDeLectura onOpciones={abrirMuro} aLaVista />}
       {puedeEscribir && !estado.editable && (
         <p className="text-sm text-on-surface-soft">{textos.dias.cerrado}</p>

@@ -15,7 +15,10 @@ import { mostrarFundador } from '../fundador.js'
 import { precioEnVoz, preseleccionada, tarjetasDe } from '../planes.js'
 import { darElMuroPorVisto, olvidarElMuro, tocaElMuro } from '../muroSolo.js'
 import {
+  TIEMPO_PARA_VERLA_MS,
+  crearVigia,
   descartarTarjeta,
+  estaDentro,
   marcarTarjeta,
   olvidarSesionDeTarjetas,
   olvidarTarjeta,
@@ -315,9 +318,45 @@ describe('la tarjeta del día 6, una vez en este teléfono', () => {
     expect(tarjetaVista('u1')).toBe(true)
   })
 
-  it('no se marca mientras el umbral la tapa', () => {
+  it('no se mira mientras el umbral la tapa, y solo el vigía la marca', () => {
     const fuente = readFileSync('src/components/suscripcion/TarjetaDePrueba.jsx', 'utf8')
-    expect(fuente).toContain('if (visible && libre) marcarTarjeta(uid)')
+    expect(fuente).toContain('if (!visible || !libre || !ref.current) return undefined')
+    expect(fuente.match(/marcarTarjeta\(/g)).toHaveLength(1)
+  })
+
+  it('más de la mitad dentro de la pantalla', () => {
+    const caja = { alto: 200, pantalla: 800 }
+    expect(estaDentro({ ...caja, arriba: 100 })).toBe(true)
+    expect(estaDentro({ ...caja, arriba: 699 })).toBe(true)
+    expect(estaDentro({ ...caja, arriba: 700 })).toBe(false)
+    expect(estaDentro({ ...caja, arriba: -101 })).toBe(false)
+    expect(estaDentro({ alto: 0, arriba: 0, pantalla: 800 })).toBe(false)
+  })
+
+  it('se da por vista tras 1,5 s seguidos, una vez; taparla o irse empieza de cero', () => {
+    let t = 0
+    const alVerla = vi.fn()
+    const vigia = crearVigia({ alVerla, ms: TIEMPO_PARA_VERLA_MS, reloj: () => t })
+    const mirar = (cuando, cambio = {}) => {
+      t = cuando
+      vigia.mirar({ arriba: 100, alto: 200, pantalla: 800, delante: true, ...cambio })
+    }
+    mirar(0)
+    mirar(1400)
+    mirar(1450, { delante: false })
+    mirar(1500)
+    mirar(2900)
+    expect(alVerla).not.toHaveBeenCalled()
+    mirar(2950, { arriba: 900 })
+    mirar(3000)
+    mirar(4500)
+    mirar(9000)
+    expect(alVerla).toHaveBeenCalledTimes(1)
+  })
+
+  it('es lo primero de Hoy', () => {
+    const hoy = readFileSync('src/pages/diario/Hoy.jsx', 'utf8')
+    expect(hoy.indexOf('<TarjetaDePrueba')).toBeLessThan(hoy.indexOf('<HeroeHoy'))
   })
 
   it('el diagnóstico puede olvidarla', () => {

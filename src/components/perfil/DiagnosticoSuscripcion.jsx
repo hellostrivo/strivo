@@ -14,7 +14,13 @@ import { interpolate } from '@copy'
 import { DIAGNOSTICO_SUSCRIPCION as t } from '@copy/diagnostico'
 import { DERECHO, compras } from '@lib/compras'
 import { DIA_DE_LA_TARJETA, claveDe, conDesfase, diaDePrueba } from '@lib/suscripcion/estado'
-import { escucharDiagnostico, eventosDeLaSesion, fijarDesfase } from '@lib/suscripcion/diagnostico'
+import {
+  borrarPasos,
+  escucharDiagnostico,
+  eventosDeLaSesion,
+  fijarDesfase,
+  leerPasos,
+} from '@lib/suscripcion/diagnostico'
 import { mostrarFundador } from '@lib/suscripcion/fundador'
 import { olvidarTarjeta, tarjetaMarcada } from '@lib/suscripcion/tarjetaDePrueba'
 import { useSuscripcion } from '@lib/suscripcion/useSuscripcion'
@@ -81,6 +87,7 @@ export default function DiagnosticoSuscripcion({ uid }) {
   const [cliente, setCliente] = useState(null)
   const [planes, setPlanes] = useState(null)
   const [eventos, setEventos] = useState(eventosDeLaSesion)
+  const [pasos, setPasos] = useState(leerPasos)
   const [tarjeta, setTarjeta] = useState(() => tarjetaMarcada(uid))
 
   const mirar = useCallback(async (forzar = false) => {
@@ -105,6 +112,13 @@ export default function DiagnosticoSuscripcion({ uid }) {
       () => {
         olvidarTarjeta(uid)
         setTarjeta(tarjetaMarcada(uid))
+      },
+    ],
+    [
+      'borrarPasos',
+      () => {
+        borrarPasos()
+        setPasos(leerPasos())
       },
     ],
     [
@@ -137,6 +151,12 @@ export default function DiagnosticoSuscripcion({ uid }) {
           }).map((linea) => (
             <p key={linea} className="text-sm text-on-surface-soft">
               {linea}
+            </p>
+          ))}
+          <p className="text-sm font-medium text-on-surface-soft">{t.pasos}</p>
+          {pasos.map((paso, i) => (
+            <p key={`${i}-${paso}`} className="text-sm text-on-surface-soft">
+              {paso}
             </p>
           ))}
           {controles.map(([id, alTocar]) => (

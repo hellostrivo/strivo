@@ -26,7 +26,7 @@ import { esIPhone } from '@lib/plataforma'
 import { ESTADOS_SESION, conTecho } from '@lib/sesion'
 import { useSesion } from '@lib/useSesion'
 import { ESTADOS, estadoDeSuscripcion, puedeEscribir } from '@lib/suscripcion/estado'
-import { escucharDiagnostico, leerDesfase } from '@lib/suscripcion/diagnostico'
+import { anotarPaso, escucharDiagnostico, leerDesfase } from '@lib/suscripcion/diagnostico'
 import { inicioDePrueba } from '@lib/suscripcion/inicioDePrueba'
 import { darElMuroPorVisto, tocaElMuro } from '@lib/suscripcion/muroSolo'
 import { ContextoSuscripcion } from '@lib/suscripcion/useSuscripcion'
@@ -52,10 +52,19 @@ export default function ProveedorDeSuscripcion({ uid, libre, children }) {
 
   useEffect(() => {
     vivo.current = true
+    anotarPaso('app: secciones montadas')
+    const alCambiar = () => anotarPaso(`app: ${document.visibilityState}`)
+    document.addEventListener('visibilitychange', alCambiar)
     return () => {
       vivo.current = false
+      anotarPaso('app: secciones desmontadas')
+      document.removeEventListener('visibilitychange', alCambiar)
     }
   }, [])
+
+  useEffect(() => {
+    anotarPaso(libre ? 'umbral fuera' : 'tapada por el umbral o la escritura')
+  }, [libre])
 
   const refrescar = useCallback(async () => {
     if (!iphone) return null

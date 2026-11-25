@@ -847,9 +847,11 @@ como siempre hasta DP-21.5. «Tengo un código» (25B) todavía no está.
 - **`ios:build` se detiene sin `VITE_REVENUECAT_IOS_KEY`** y avisa, sin detenerse, mientras
   `URL_PRIVACIDAD` esté vacía (el enlace no se pinta).
 - **Diagnóstico:** `VITE_DIAG_SUSCRIPCION=1`. El desfase de días es la clave
-  `strivo.diag.suscripcion.desfase`, que sin la bandera no existe; los eventos, en memoria.
-- **La tarjeta del día 6 y el aviso de lectura se llevan a la vista** (`useALaVista`): con el día ya
-  cerrado, Hoy se abre a la altura de la consulta.
+  `strivo.diag.suscripcion.desfase`, que sin la bandera no existe; igual la línea
+  temporal (`anotarPaso`, 40 pasos); los eventos, en memoria.
+- **La tarjeta del día 6 es lo primero de Hoy** y se gasta cuando se vio de verdad: más de la mitad en
+  pantalla, sin umbral, segundo y medio seguido (`crearVigia`). Ella y el aviso de lectura se llevan a
+  la vista (`useALaVista`): con el día ya cerrado, Hoy se abre a la altura de la consulta.
 
 **Tamaño.** El `.app` sin símbolos pasa de 6,8 a 13,9 MB y comprimido de 2,8 a 5,6 MB: el SDK
 nativo. El chunk principal de la web, de 770,84 a 785,78 kB (gzip, de 218,47 a 223,25); el muro
