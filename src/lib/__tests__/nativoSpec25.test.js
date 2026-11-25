@@ -59,8 +59,15 @@ describe('el plugin', () => {
     })
   })
 
-  it('25A no sincroniza compras (DP-25.18)', () => {
-    fuentes().forEach((r) => expect(`${r} ${leer(r)}`).not.toMatch(/\.syncPurchases\(/))
+  it('solo se sincroniza al volver de un canje que abrió la app (DP-25.18, 25B)', () => {
+    expect(fuentes().filter((r) => /\.syncPurchases\(/.test(leer(r)))).toEqual([
+      join('src', 'lib', 'compras.js'),
+    ])
+    const usos = fuentes().filter((r) => /compras\.sincronizar/.test(leer(r)))
+    expect(usos).toEqual([join('src', 'components', 'suscripcion', 'ProveedorDeSuscripcion.jsx')])
+    expect(leer(usos[0])).toMatch(
+      /const intento = tomarIntento\(\)\s+if \(!intento\) return\s+const aplicado = await esperarCanje/,
+    )
   })
 
   it('salir y borrar cierran el cliente, en su sitio', () => {
