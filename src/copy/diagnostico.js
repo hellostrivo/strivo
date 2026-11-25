@@ -121,6 +121,10 @@ export const DIAGNOSTICO_AUDIO = Object.freeze({
 // SPEC_25 (DP-25.21) — La suscripción, solo con `VITE_DIAG_SUSCRIPCION=1`.
 export const DIAGNOSTICO_SUSCRIPCION = Object.freeze({
   estado: 'Estado: {estado} · hasta {fecha}',
+  simulado: 'Hoy simulado: {fecha} (día {dia})',
+  sinSimular: 'Hoy: sin simular (día {dia})',
+  tarjeta: 'Tarjeta del día 6: {estado}',
+  tarjetas: Object.freeze({ si: 'ya vista', no: 'sin ver' }),
   cliente: 'RevenueCat: {tipo} · …{final}',
   tipos: Object.freeze({ anonimo: 'anónimo', cuenta: 'cuenta' }),
   sinCliente: 'RevenueCat: sin cliente',

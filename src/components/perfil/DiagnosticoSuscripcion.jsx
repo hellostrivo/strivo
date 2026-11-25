@@ -13,14 +13,21 @@ import Button from '@components/ui/Button'
 import { interpolate } from '@copy'
 import { DIAGNOSTICO_SUSCRIPCION as t } from '@copy/diagnostico'
 import { DERECHO, compras } from '@lib/compras'
-import { DIA_DE_LA_TARJETA, claveDe, diaDePrueba } from '@lib/suscripcion/estado'
+import { DIA_DE_LA_TARJETA, claveDe, conDesfase, diaDePrueba } from '@lib/suscripcion/estado'
 import { escucharDiagnostico, eventosDeLaSesion, fijarDesfase } from '@lib/suscripcion/diagnostico'
 import { mostrarFundador } from '@lib/suscripcion/fundador'
-import { olvidarTarjeta } from '@lib/suscripcion/tarjetaDePrueba'
+import { olvidarTarjeta, tarjetaMarcada } from '@lib/suscripcion/tarjetaDePrueba'
 import { useSuscripcion } from '@lib/suscripcion/useSuscripcion'
 
 /** Las líneas, en el orden en que se leen. Sin React, para probarla sin navegador. */
-export function lineasDeSuscripcion({ suscripcion, cliente, planes, eventos, ahora }) {
+export function lineasDeSuscripcion({
+  suscripcion,
+  cliente,
+  planes,
+  eventos,
+  ahora,
+  tarjeta = false,
+}) {
   const derecho = suscripcion.customerInfo?.entitlements?.active?.[DERECHO]
   const activo = derecho?.isActive === true
   const n = ['anual', 'mensual', 'fundador'].filter((id) => planes?.[id]).length
@@ -30,7 +37,17 @@ export function lineasDeSuscripcion({ suscripcion, cliente, planes, eventos, aho
     estado: suscripcion.estado,
     ahora,
   })
+  const simulado = conDesfase(ahora, suscripcion.desfaseDias)
+  const dia =
+    diaDePrueba(suscripcion.fechaInicioPrueba, {
+      ahora: simulado,
+      diaTerminaA: suscripcion.diaTerminaA,
+    }) ?? t.ninguno
   return [
+    suscripcion.desfaseDias
+      ? interpolate(t.simulado, { fecha: claveDe(simulado), dia })
+      : interpolate(t.sinSimular, { dia }),
+    interpolate(t.tarjeta, { estado: tarjeta ? t.tarjetas.si : t.tarjetas.no }),
     interpolate(t.estado, {
       estado: suscripcion.estado,
       fecha: suscripcion.hasta ? claveDe(suscripcion.hasta) : t.ninguno,
@@ -64,6 +81,7 @@ export default function DiagnosticoSuscripcion({ uid }) {
   const [cliente, setCliente] = useState(null)
   const [planes, setPlanes] = useState(null)
   const [eventos, setEventos] = useState(eventosDeLaSesion)
+  const [tarjeta, setTarjeta] = useState(() => tarjetaMarcada(uid))
 
   const mirar = useCallback(async (forzar = false) => {
     setCliente(await compras.cliente())
@@ -82,7 +100,13 @@ export default function DiagnosticoSuscripcion({ uid }) {
     ['dia6', () => ir(DIA_DE_LA_TARJETA)],
     ['dia8', () => ir(DIA_DE_LA_TARJETA + 2)],
     ['hoy', () => fijarDesfase(0)],
-    ['olvidarTarjeta', () => olvidarTarjeta(uid)],
+    [
+      'olvidarTarjeta',
+      () => {
+        olvidarTarjeta(uid)
+        setTarjeta(tarjetaMarcada(uid))
+      },
+    ],
     [
       'refrescar',
       async () => {
@@ -109,6 +133,7 @@ export default function DiagnosticoSuscripcion({ uid }) {
             planes,
             eventos,
             ahora: new Date(),
+            tarjeta,
           }).map((linea) => (
             <p key={linea} className="text-sm text-on-surface-soft">
               {linea}

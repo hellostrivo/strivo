@@ -1,6 +1,7 @@
 // SPEC_25 — El estado, el Fundador, los planes y lo que sale una vez
 // (criterios 2, 4, 5 y 6). Todo puro.
 
+import { readFileSync } from 'fs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   ESTADOS,
@@ -13,7 +14,14 @@ import {
 import { mostrarFundador } from '../fundador.js'
 import { precioEnVoz, preseleccionada, tarjetasDe } from '../planes.js'
 import { darElMuroPorVisto, olvidarElMuro, tocaElMuro } from '../muroSolo.js'
-import { marcarTarjeta, olvidarTarjeta, tarjetaVista, tocaLaTarjeta } from '../tarjetaDePrueba.js'
+import {
+  descartarTarjeta,
+  marcarTarjeta,
+  olvidarSesionDeTarjetas,
+  olvidarTarjeta,
+  tarjetaVista,
+  tocaLaTarjeta,
+} from '../tarjetaDePrueba.js'
 import { esClaveDelTelefono, quitarTodasLasClaves } from '../../db/clavesDelTelefono.js'
 
 const INICIO = new Date(2026, 10, 30, 21, 15)
@@ -266,6 +274,7 @@ describe('el muro, solo, una vez por sesión', () => {
 
 describe('la tarjeta del día 6, una vez en este teléfono', () => {
   beforeEach(() => {
+    olvidarSesionDeTarjetas()
     const m = new Map()
     vi.stubGlobal('localStorage', {
       get length() {
@@ -289,11 +298,26 @@ describe('la tarjeta del día 6, una vez en este teléfono', () => {
 
   it('la marca es por uid, se copia en SQLite y se va al borrar la cuenta', () => {
     marcarTarjeta('u1')
+    olvidarSesionDeTarjetas()
     expect(tarjetaVista('u1')).toBe(true)
     expect(tarjetaVista('u2')).toBe(false)
     expect(esClaveDelTelefono('strivo.tarjetaDePrueba.u1')).toBe(true)
     expect(quitarTodasLasClaves()).toBe(1)
     expect(tarjetaVista('u1')).toBe(false)
+  })
+
+  it('a la vista se queda hasta tocarla o cerrar la app, aunque Hoy se vuelva a montar', () => {
+    marcarTarjeta('u1')
+    expect(tarjetaVista('u1')).toBe(false)
+    descartarTarjeta('u1')
+    expect(tarjetaVista('u1')).toBe(true)
+    olvidarSesionDeTarjetas()
+    expect(tarjetaVista('u1')).toBe(true)
+  })
+
+  it('no se marca mientras el umbral la tapa', () => {
+    const fuente = readFileSync('src/components/suscripcion/TarjetaDePrueba.jsx', 'utf8')
+    expect(fuente).toContain('if (visible && libre) marcarTarjeta(uid)')
   })
 
   it('el diagnóstico puede olvidarla', () => {

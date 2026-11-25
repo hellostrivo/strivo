@@ -134,6 +134,8 @@ describe('las líneas', () => {
         ahora: new Date(2026, 11, 1),
       }),
     ).toEqual([
+      'Hoy: sin simular (día 2)',
+      'Tarjeta del día 6: sin ver',
       'Estado: prueba · hasta 2026-12-06',
       'RevenueCat: anónimo · …abc123',
       'completo: no · ninguno',
@@ -151,8 +153,20 @@ describe('las líneas', () => {
       eventos: [],
       ahora: new Date(),
     })
-    expect(l[1]).toBe('RevenueCat: sin cliente')
-    expect(l[3]).toBe('Planes: 0 paquetes · Fundador: no sale')
+    expect(l[3]).toBe('RevenueCat: sin cliente')
+    expect(l[5]).toBe('Planes: 0 paquetes · Fundador: no sale')
+  })
+  it('con el reloj movido, dice qué día cree que es', () => {
+    const l = lineasDeSuscripcion({
+      suscripcion: { ...suscripcion, desfaseDias: 5 },
+      cliente: null,
+      planes: null,
+      eventos: [],
+      ahora: new Date(2026, 10, 30, 12),
+      tarjeta: true,
+    })
+    expect(l[0]).toBe('Hoy simulado: 2026-12-05 (día 6)')
+    expect(l[1]).toBe('Tarjeta del día 6: ya vista')
   })
   it('simular día 6 y día 8', () => {
     const datos = {

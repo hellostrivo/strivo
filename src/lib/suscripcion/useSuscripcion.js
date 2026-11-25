@@ -16,6 +16,9 @@ export const SIN_SUSCRIPCION = Object.freeze({
   seRenueva: false,
   dia: null,
   puedeEscribir: true,
+  // ¿No hay nada delante? Ni el umbral ni la escritura.
+  libre: true,
+  desfaseDias: 0,
   customerInfo: null,
   fechaInicioPrueba: null,
   diaTerminaA: undefined,
