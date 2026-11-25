@@ -1,30 +1,39 @@
 // src/components/suscripcion/TarjetaDePrueba.jsx
 // «Tu prueba termina mañana», en Hoy, una vez en este teléfono (DP-25.17). Sin
-// contador y sin volver a salir: se marca al mostrarse.
+// contador y sin volver a salir: se marca al verse, con el umbral ya fuera.
 
 import { useEffect, useState } from 'react'
 import Button from '@components/ui/Button'
 import { copy } from '@copy'
 import { useSuscripcion } from '@lib/suscripcion/useSuscripcion'
-import { marcarTarjeta, tarjetaVista, tocaLaTarjeta } from '@lib/suscripcion/tarjetaDePrueba'
+import {
+  descartarTarjeta,
+  marcarTarjeta,
+  tarjetaVista,
+  tocaLaTarjeta,
+} from '@lib/suscripcion/tarjetaDePrueba'
 import { useALaVista } from './useALaVista'
 
 const textos = copy.suscripcion.prueba
 
 export default function TarjetaDePrueba({ uid }) {
-  const { estado, dia, abrirMuro } = useSuscripcion()
-  const [visible, setVisible] = useState(false)
+  const { estado, dia, libre, abrirMuro } = useSuscripcion()
+  const [descartada, setDescartada] = useState(false)
+  const visible = !descartada && tocaLaTarjeta({ estado, dia, vista: tarjetaVista(uid) })
 
   useEffect(() => {
-    if (!tocaLaTarjeta({ estado, dia, vista: tarjetaVista(uid) })) return
-    marcarTarjeta(uid)
-    setVisible(true)
-  }, [estado, dia, uid])
+    if (visible && libre) marcarTarjeta(uid)
+  }, [visible, libre, uid])
 
-  const ref = useALaVista(visible)
+  const descartar = () => {
+    descartarTarjeta(uid)
+    setDescartada(true)
+  }
+
+  const ref = useALaVista(visible && libre)
 
   // Si deja de ser el día 6 —se compró, o pasó la medianoche—, se retira sola.
-  if (!visible || !tocaLaTarjeta({ estado, dia, vista: false })) return null
+  if (!visible) return null
 
   return (
     <section
@@ -39,13 +48,13 @@ export default function TarjetaDePrueba({ uid }) {
           size="sm"
           variant="surface"
           onClick={() => {
-            setVisible(false)
+            descartar()
             abrirMuro()
           }}
         >
           {textos.verOpciones}
         </Button>
-        <Button type="button" size="sm" variant="surface" onClick={() => setVisible(false)}>
+        <Button type="button" size="sm" variant="surface" onClick={descartar}>
           {textos.ahoraNo}
         </Button>
       </div>

@@ -181,6 +181,8 @@ export default function ProveedorDeSuscripcion({ uid, libre, children }) {
     () => ({
       ...actual,
       puedeEscribir: puedeEscribir(actual.estado),
+      libre,
+      desfaseDias,
       customerInfo,
       fechaInicioPrueba: inicio.fecha,
       diaTerminaA: inicio.diaTerminaA,
@@ -196,6 +198,8 @@ export default function ProveedorDeSuscripcion({ uid, libre, children }) {
       actual.seRenueva,
       actual.dia,
       actual.hasta?.getTime(),
+      libre,
+      desfaseDias,
       customerInfo,
       inicio,
       abrirMuro,
