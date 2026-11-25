@@ -1,6 +1,6 @@
 # CLAUDE.md — Strivo
 
-**Última actualización:** 24 nov 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
+**Última actualización:** 25 nov 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
 **Blueprint (documento rector):** `/docs/blueprint/Strivo_Blueprint_de_Producto_v5_0_24-08-2026.md`
 **Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO.md`
 **Plan operativo del repliegue:** `/docs/Strivo_Plan_de_Separacion_Tecnica_v1_24-08-2026.md`
@@ -800,14 +800,14 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**137 archivos de prueba · 3.296 casos** en el proyecto `indexeddb`, **3.233 más** en el proyecto
+**137 archivos de prueba · 3.303 casos** en el proyecto `indexeddb`, **3.240 más** en el proyecto
 `sqlite` (la misma suite contra SQLite) **y 24 XCTest del plugin** · los seis comandos y
 `validar:frases` en verde. **La intermitente de `journal.test.js` se cerró** (10 nov 2026): sus dos
 entradas empataban en el milisegundo y el orden lo decidía un UUID; ahora se crean con `Date`
 congelado en dos instantes distintos. `listJournalEntries` no cambió. Cada caso que vuelca
 IndexedDB por dentro tiene su equivalente que vuelca todas las tablas de SQLite.
 
-### Cobrar (SPEC_25A, 24 nov 2026) — pendiente de las pruebas en sandbox
+### Cobrar (SPEC_25A, 25 nov 2026)
 
 La instrucción y sus decisiones están en `docs/specs/INSTRUCCION_SPEC_25_MURO_DE_PAGO.md` (v1.1;
 **su §9 manda**) y en `docs/specs/REPORTE_PREVIO_SPEC_25.md`. **Pagar es fácil y se entiende sin
@@ -856,6 +856,11 @@ como siempre hasta DP-21.5. «Tengo un código» (25B) todavía no está.
 **Tamaño.** El `.app` sin símbolos pasa de 6,8 a 13,9 MB y comprimido de 2,8 a 5,6 MB: el SDK
 nativo. El chunk principal de la web, de 770,84 a 785,78 kB (gzip, de 218,47 a 223,25); el muro
 va aparte (5,5 kB) y el plugin no está.
+
+**Las pruebas manuales P, C, K, W y R pasan** (25 nov 2026, la fundadora en su iPhone 17 en sandbox y
+en la web; el detalle, en el §10 de la instrucción). Sin hacer a mano: C8 con `hasta` de ayer, C9 y
+K2. **K1: un código canjeado fuera de la app llega solo**, así que no hay `syncPurchases`. Antes del
+envío a revisión falta `URL_PRIVACIDAD`.
 
 ### Llevarme lo que escribí y borrar mi cuenta (SPEC_24, 15 nov 2026)
 
