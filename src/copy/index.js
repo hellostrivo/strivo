@@ -78,6 +78,66 @@ const REFERENCIAS = {
 // Ningún texto lleva género, signo de exclamación ni código de error. El de
 // recuperar es el mismo exista o no la cuenta: decir "ese correo no tiene
 // cuenta" es contarle a cualquiera qué correos la tienen.
+// ─── Suscripción (SPEC_25 §4 y la instrucción §6) ─────────────────────────────
+// Se declara aquí arriba porque el título del bloque vive en
+// `diario.perfil.suscripcion`, donde lo tienen todos, y es el mismo objeto.
+//
+// **Ningún precio ni ninguna fecha se escribe aquí**: el precio es el que
+// devuelve la tienda. Y nada de «oferta», «descuento», «ahorra», porcentajes ni
+// comparaciones entre planes: lo vigila una prueba.
+const SUSCRIPCION = {
+  paywall: {
+    titulo: 'Strivo, completo',
+    texto:
+      'Un lugar tuyo para empezar y cerrar el día. Sin anuncios, sin distracciones, sin nadie mirando.',
+    anual: 'Anual',
+    anualDetalle: '{precio} al año',
+    mensual: 'Mensual',
+    mensualDetalle: '{precio} al mes',
+    boton: 'Continuar',
+    restaurar: 'Restaurar compras',
+    terminos: 'Términos',
+    privacidad: 'Privacidad',
+    ahoraNo: 'Ahora no',
+    cerrar: 'Cerrar',
+    fundadorTitulo: 'Miembro fundador',
+    fundadorTexto: 'Un solo pago, para siempre. Solo durante el lanzamiento.',
+    fundadorDetalle: '{precio}, una vez',
+    gracias: 'Gracias. Todo tuyo.',
+    errorCompra: 'No se completó la compra. Puedes intentarlo de nuevo cuando quieras.',
+    restaurado: 'Tu suscripción está de vuelta.',
+    nadaQueRestaurar: 'No encontramos compras anteriores con esta cuenta de Apple.',
+    renovacion:
+      'La suscripción se renueva sola al final de cada periodo. Puedes cancelarla cuando quieras en los ajustes de tu teléfono, hasta 24 horas antes de que se renueve.',
+    sinPlanes: 'Ahora no pudimos traer los planes. Inténtalo de nuevo en un momento.',
+    reintentar: 'Intentar de nuevo',
+    errorRestaurar: 'No pudimos revisar tus compras. Inténtalo de nuevo con conexión.',
+  },
+  prueba: {
+    tarjetaTitulo: 'Tu prueba termina mañana',
+    tarjetaTexto: 'Lo que escribiste se queda contigo pase lo que pase.',
+    verOpciones: 'Ver opciones',
+    ahoraNo: 'Ahora no',
+  },
+  lectura: {
+    aviso: 'Puedes leer todo lo que escribiste. Para seguir escribiendo, elige un plan.',
+    verOpciones: 'Ver opciones',
+  },
+  ajustes: {
+    titulo: 'Suscripción',
+    enPrueba: 'En prueba, hasta el {fecha}',
+    mensual: 'Mensual. Se renueva el {fecha}.',
+    anual: 'Anual. Se renueva el {fecha}.',
+    mensualTermina: 'Mensual. Termina el {fecha}.',
+    anualTermina: 'Anual. Termina el {fecha}.',
+    fundador: 'Miembro fundador. Para siempre.',
+    sinSuscripcion: 'Sin suscripción',
+    gestionar: 'Gestionar suscripción',
+    restaurar: 'Restaurar compras',
+    verOpciones: 'Ver opciones',
+  },
+}
+
 const CUENTA = {
   bloque: {
     titulo: 'Tu cuenta',
@@ -220,6 +280,8 @@ const CUENTA = {
 }
 
 export const copy = {
+  suscripcion: SUSCRIPCION,
+
   // ─── Generales ───────────────────────────────────────────────────────────
   appName: 'Strivo',
   tagline: 'Refugio digital para terminar cada día en paz contigo mismo.',
@@ -1763,6 +1825,9 @@ export const copy = {
       // bloque tenga su título donde lo tienen todos.
       cuenta: CUENTA.bloque,
 
+      // SPEC_25 — Solo en la app de iPhone. Lo de dentro es `copy.suscripcion`.
+      suscripcion: SUSCRIPCION.ajustes,
+
       // SPEC_17A §4.6 — Dónde vive lo que escribes. Cuatro estados que se
       // dicen con texto y nunca solo con un punto de color. Ninguno es una
       // alarma: sin cuenta no es un problema, es un hecho; sin conexión se
@@ -1932,16 +1997,6 @@ export const copy = {
     weekly: {
       // Template: "Cinco días esta semana. Tu palabra más repetida: calma."
       template: '{n} días esta semana. Tu palabra más repetida: {palabra}.',
-    },
-  },
-
-  // ─── Perfil / Identidad ───────────────────────────────────────────────────
-  profile: {
-    cancel: {
-      title: '¿Seguro que quieres cancelar?',
-      body: 'Tu historial se queda. La suscripción termina al final del ciclo.',
-      confirm: 'Cancelar suscripción',
-      back: 'Volver',
     },
   },
 
@@ -2190,16 +2245,6 @@ export const copy = {
     greeting: 'Hola de nuevo.',
     constancy: 'Tu Constancia sigue intacta. Aquí está todo como lo dejaste.',
     // NUNCA mencionar días ausentes
-  },
-
-  // ─── Paywall ─────────────────────────────────────────────────────────────
-  paywall: {
-    title: 'Tu historial vale oro',
-    price: '99 MXN/mes o 749 MXN/año',
-    trial: 'Primeros 7 días sin cobro',
-    cta: 'Prueba gratis',
-    skip: 'O sigue gratis',
-    // NUNCA urgencia artificial ni culpa por no pagar
   },
 
   // ─── Modo día difícil ─────────────────────────────────────────────────────

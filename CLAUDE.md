@@ -1,6 +1,6 @@
 # CLAUDE.md — Strivo
 
-**Última actualización:** 17 nov 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
+**Última actualización:** 25 nov 2026 · **Estado:** una sola aplicación, cuatro secciones y su onboarding
 **Blueprint (documento rector):** `/docs/blueprint/Strivo_Blueprint_de_Producto_v5_0_24-08-2026.md`
 **Manual de marca:** `/docs/blueprint/BRAND_MANUAL_STRIVO.md`
 **Plan operativo del repliegue:** `/docs/Strivo_Plan_de_Separacion_Tecnica_v1_24-08-2026.md`
@@ -300,7 +300,8 @@ shared/ {
   // `completedAt` es la única marca de que el onboarding terminó; `motivos` y
   // `motivoOtro` son la respuesta de P3, que se da una vez y no vuelve a mutar.
   onboarding:  { version, completedSteps, currentStep, completedAt,
-                 motivos[], motivoOtro },
+                 motivos[], motivoOtro,
+                 fechaInicioPrueba },   // SPEC_25, ISO en UTC; solo la app de iPhone
   // SPEC_29 — SOLO LOCAL: nunca se encola, ni al mudar, ni se restaura.
   // Sin documento es `sin_definir`. Restablecer lo borra.
   frases:      { modo, afinidades[], version, updatedAt }
@@ -694,6 +695,14 @@ el componente.**
   escritura o una lectura de Firestore (SPEC_31). Lo leen `sync.js` y `restaurar.js`.
 - `src/lib/db/sync.js` → qué pone la cola en marcha y con qué ritmo: `DEMORA_DE_SUBIDA_MS` y
   `RETRY_BACKOFF_MS` (SPEC_31).
+- `src/lib/suscripcion/estado.js` → en qué estado está la suscripción, `puedeEscribir` y el 7
+  (`DIAS_DE_PRUEBA`). **DP-25.12 (la web) vive solo aquí.** `fundador.js` → si sale la tarjeta del
+  Fundador; `inicioDePrueba.js` → cuándo empezó; `planes.js` → qué tarjetas y con qué precio (el de
+  la tienda); `muroSolo.js` y `tarjetaDePrueba.js` → lo que aparece una vez; `enlaces.js` → las URL de
+  fuera (SPEC_25).
+- `src/lib/compras.js` → **cómo** se habla con RevenueCat: el **único** archivo que importa
+  `@revenuecat/purchases-capacitor`, bajo demanda y solo en `--mode ios`. Hay pruebas que recorren
+  `src/` y que construyen.
 - `src/perfil/bloques.js` → qué bloques tiene Tu perfil y en qué orden. Añadir uno es un
   identificador aquí, un texto en el copy y un componente; hay una prueba que falla si falta alguno
   de los tres.
@@ -791,12 +800,67 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**132 archivos de prueba · 3.109 casos** en el proyecto `indexeddb`, **3.046 más** en el proyecto
+**137 archivos de prueba · 3.303 casos** en el proyecto `indexeddb`, **3.240 más** en el proyecto
 `sqlite` (la misma suite contra SQLite) **y 24 XCTest del plugin** · los seis comandos y
 `validar:frases` en verde. **La intermitente de `journal.test.js` se cerró** (10 nov 2026): sus dos
 entradas empataban en el milisegundo y el orden lo decidía un UUID; ahora se crean con `Date`
 congelado en dos instantes distintos. `listJournalEntries` no cambió. Cada caso que vuelca
 IndexedDB por dentro tiene su equivalente que vuelca todas las tablas de SQLite.
+
+### Cobrar (SPEC_25A, 25 nov 2026)
+
+La instrucción y sus decisiones están en `docs/specs/INSTRUCCION_SPEC_25_MURO_DE_PAGO.md` (v1.1;
+**su §9 manda**) y en `docs/specs/REPORTE_PREVIO_SPEC_25.md`. **Pagar es fácil y se entiende sin
+letra pequeña; lo escrito nunca queda tras el muro; quien no paga sigue leyendo, respirando y
+llevándose lo suyo; y nada presiona.** Todo, solo en la app de iPhone (`esIPhone()`): la web se porta
+como siempre hasta DP-21.5. «Tengo un código» (25B) todavía no está.
+
+- **Sin cuenta también se prueba y se paga** (DP-25.11, Guideline 5.1.1 de Apple). El cliente de
+  RevenueCat nace anónimo; con `conCuenta` es el uid de Firebase (`logIn`) y nada más; al salir y al
+  borrar, `logOut` si no es anónimo; con `vencida` no se toca. Lo pagado sigue ligado al Apple ID.
+  **Caso único (D7):** un anónimo con derecho que lo pierde al entrar a una cuenta que RevenueCat ya
+  conocía restaura una vez, en silencio.
+- **La prueba:** siete días de calendario, el primero el de empezar; «hasta el» nombra el séptimo.
+  `fechaInicioPrueba` vive en `shared/onboarding` —en el perfil, escribirla sellaría uno viejo y
+  pisaría en la nube el de otro teléfono—, la escribe `terminarRecorrido` y, para quien ya había
+  terminado, la primera apertura (con cuenta, solo si ya bajó). **Entre dos gana la más antigua**
+  (`HECHOS_MAS_ANTIGUOS` en `conflictos.js`, dentro de `hechosQueFaltan`).
+- **El estado**, en este orden: `web` · `fundador` · `activa` · `cargando` · `prueba` · `lectura`. Un
+  derecho activo gana siempre. Solo `lectura` cierra, y solo la mañana, la noche y el journal: lo
+  preguntan `useDiario` (dentro de `abierto`), `useJournal`, Hoy y el Journal, y una prueba falla si
+  alguien más lo hace. Lo ya tecleado se vuelca. Una entrada del journal se lee entera en
+  `EntradaDelJournal` (D6). El reloj se mira al abrir y al volver al frente: nadie pasa a lectura a
+  media frase.
+- **El muro** (`components/suscripcion/Muro.jsx`) aparece solo una vez por sesión, en lectura, con la
+  pantalla libre; se cierra siempre. Precios solo de la tienda. Sin planes, se dice y se reintenta.
+  Cancelar, o una compra que espera un permiso, no dice nada. El texto va entero en la tinta
+  principal: el secundario no llega a AAA sobre la noche.
+- **El Fundador** sale según el metadata del offering `fundador` en RevenueCat
+  (`{ "mostrar": true, "hasta": "2027-01-15" }`, inclusive y en hora local). Los cambios tardan hasta
+  cinco minutos (caché del SDK). Solo se consulta el derecho `completo`.
+- **Al volver al frente** se pregunta y se escucha; **no** se llama a `syncPurchases` (DP-25.18). La
+  caché nunca se invalida: sin red dejaría sin derecho a quien pagó.
+- **El plugin** (`@revenuecat/purchases-capacitor` 14.1.2, SPM) es un Proxy sobre el de Capacitor:
+  suelto de una promesa se cuelga, comprobado. No tiene `showManageSubscriptions`: «Gestionar
+  suscripción» es un enlace. **El import vive tras `import.meta.env.MODE === 'ios'`** porque el
+  service worker precarga todos los trozos: en la web no hay ni un byte suyo.
+- **`ios:build` se detiene sin `VITE_REVENUECAT_IOS_KEY`** y avisa, sin detenerse, mientras
+  `URL_PRIVACIDAD` esté vacía (el enlace no se pinta).
+- **Diagnóstico:** `VITE_DIAG_SUSCRIPCION=1`. El desfase de días es la clave
+  `strivo.diag.suscripcion.desfase`, que sin la bandera no existe; igual la línea
+  temporal (`anotarPaso`, 80 pasos); los eventos, en memoria.
+- **La tarjeta del día 6 es lo primero de Hoy** y se gasta cuando se vio de verdad: más de la mitad en
+  pantalla, sin umbral, segundo y medio seguido (`crearVigia`). Ella y el aviso de lectura se llevan a
+  la vista (`useALaVista`): con el día ya cerrado, Hoy se abre a la altura de la consulta.
+
+**Tamaño.** El `.app` sin símbolos pasa de 6,8 a 13,9 MB y comprimido de 2,8 a 5,6 MB: el SDK
+nativo. El chunk principal de la web, de 770,84 a 785,78 kB (gzip, de 218,47 a 223,25); el muro
+va aparte (5,5 kB) y el plugin no está.
+
+**Las pruebas manuales P, C, K, W y R pasan** (25 nov 2026, la fundadora en su iPhone 17 en sandbox y
+en la web; el detalle, en el §10 de la instrucción). Sin hacer a mano: C8 con `hasta` de ayer, C9 y
+K2. **K1: un código canjeado fuera de la app llega solo**, así que no hay `syncPurchases`. Antes del
+envío a revisión falta `URL_PRIVACIDAD`.
 
 ### Llevarme lo que escribí y borrar mi cuenta (SPEC_24, 15 nov 2026)
 
@@ -2691,9 +2755,8 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
   `insights`, `difficultDay`, `return`, `days` (restos anteriores). Retirarlos es limpieza, no
   riesgo. **Tres salieron de esta lista:** `notifications` lo consume la vista previa de P6, y
   `navegacion.barraLabel` volvió con la barra inferior, con otro valor —ya no dice "Strivo", nombra
-  los dos destinos que lleva—. `profile` y `paywall` siguen huérfanos y **conviene no retirarlos**:
-  son el texto que espera el bloque de plan y suscripción de Tu perfil. Cuando llegue, hay que
-  decidir si se mudan a `copy.diario.perfil` o si se quedan donde están.
+  los dos destinos que lleva—. `profile` y `paywall` se retiraron en
+  SPEC_25: sus textos no eran los del muro y llevaban precios a mano.
   **El bloque `onboarding` ya se retiró** (25 ago 2026): era el del commit raíz —`p1`, `p2`, `p3`,
   `p3b`, `p3c`, `p4`, `p5`, `p11`—, anterior incluso al onboarding de `feat/onboarding-p1-p3c`, y
   arrastraba copy de áreas que este producto ya no tiene.
@@ -2702,6 +2765,14 @@ Ninguna bloquea; **conviene no «corregir» una sin decidir cuál de las dos man
 
 ### Deuda consciente (se salda en su fase)
 
+- **Los avisos siguen llegando en modo lectura** (SPEC_25, D13): invitan a escribir a quien no puede.
+  No se tocan en la 1.0; **para la 1.0.1**. Se apagan en Tu perfil.
+- **RevenueCat recibe el IDFV** en cada petición y no se puede apagar (D9, aceptado): se declara en el
+  aviso de privacidad y en la ficha.
+- **Borrar la cuenta no borra el cliente de RevenueCat**: pide su llave secreta, que no va en la app.
+  Se documenta en el aviso de privacidad (A9).
+- **La web sin muro** (DP-25.12) queda ligada a DP-21.5.
+- **Cerrar sesión empieza una prueba nueva** (D15), como reinstalar. Aceptado.
 - **D-23.1 · El control de volumen de la guía no hace nada** (encontrado en SPEC_23 Parte 2). La
   guía de Respiración va directa a la salida y no pasa por el mezclador, cuya entrada de guía no
   tiene nada conectado: mover el control no cambia lo que suena. **Para una tarea aparte, antes de

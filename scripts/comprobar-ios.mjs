@@ -77,10 +77,46 @@ export function problemas(plist, info) {
   return fallos
 }
 
+/**
+ * SPEC_25 — La clave pública de RevenueCat (D11) y el aviso de privacidad
+ * (D17). Sin la clave, una build publicada dejaría a todo el mundo en lectura
+ * sin poder pagar: detiene. Sin el aviso, solo se avisa.
+ */
+export function problemasDeCompras(clave) {
+  if (/^appl_\S+$/.test(String(clave ?? '').trim())) return []
+  return [
+    'Falta VITE_REVENUECAT_IOS_KEY en .env.local, o no empieza por appl_.',
+    'Está en RevenueCat → Project settings → API keys, la de la app Strivo (App Store).',
+  ]
+}
+
+/** ¿Está puesta la URL del aviso de privacidad? */
+export function avisosDeEnlaces(fuente) {
+  return /URL_PRIVACIDAD = ''/.test(String(fuente ?? ''))
+    ? [
+        'Aviso: URL_PRIVACIDAD está vacía (src/lib/suscripcion/enlaces.js). El muro no enseña «Privacidad». Hace falta antes de enviar a revisión.',
+      ]
+    : []
+}
+
+/** El valor de una variable de un archivo `.env`, o `null`. */
+export function variableDe(env, nombre) {
+  const m = String(env ?? '').match(new RegExp(`^${nombre}=(.*)$`, 'm'))
+  return m ? m[1].trim().replace(/^["']|["']$/g, '') : null
+}
+
 function principal() {
   // npm corre los scripts desde la raíz del repo.
   const plist = existsSync(RUTA_PLIST) ? readFileSync(RUTA_PLIST, 'utf8') : null
-  const fallos = problemas(plist, readFileSync(RUTA_INFO, 'utf8'))
+  const env = existsSync('.env.local') ? readFileSync('.env.local', 'utf8') : ''
+  const clave =
+    process.env.VITE_REVENUECAT_IOS_KEY || variableDe(env, 'VITE_REVENUECAT_IOS_KEY')
+  const fallos = [
+    ...problemas(plist, readFileSync(RUTA_INFO, 'utf8')),
+    ...problemasDeCompras(clave),
+  ]
+  const enlaces = readFileSync('src/lib/suscripcion/enlaces.js', 'utf8')
+  avisosDeEnlaces(enlaces).forEach((aviso) => console.warn(`\n${aviso}\n`))
   if (fallos.length > 0) {
     console.error(['', 'No se puede construir la app de iPhone:', ...fallos, ''].join('\n'))
     process.exit(1)

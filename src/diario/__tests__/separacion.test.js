@@ -127,6 +127,8 @@ describe('el diario no sabe nada de hábitos (§C2.6, revisión 25 ago)', () => 
       'perfil',
       'presentacion',
       'shared',
+      // SPEC_25: el muro y lo suyo. Lo montan `App.jsx`, Hoy y el Journal.
+      'suscripcion',
       'ui',
     ])
   })

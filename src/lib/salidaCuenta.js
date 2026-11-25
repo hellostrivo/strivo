@@ -22,6 +22,7 @@
 import { borrarUid, flush, flushEnCurso, getPendingCount, olvidarUid } from './db/index.js'
 import { cancelRetries } from './db/sync.js'
 import { cerrarSesion } from './cuenta.js'
+import { compras } from './compras.js'
 import { TECHO_DE_ESPERA_MS, conTecho } from './sesion.js'
 // `apagarAvisos` y `olvidarFaceId` viven en `limpiezaDelTelefono.js` desde
 // SPEC_24: borrar la cuenta hace lo mismo.
@@ -72,6 +73,9 @@ export async function salirDeCuenta(uid) {
   cancelRetries()
   await apagarAvisos()
   await cerrarSesion()
+  // SPEC_25: el cliente de RevenueCat deja de ser esta cuenta. Lo pagado sigue
+  // ligado al Apple ID. No frena la salida.
+  await compras.cerrar()
   await borrarUid(uid)
   await olvidarFaceId()
   olvidarUid(uid)

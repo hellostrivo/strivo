@@ -27,11 +27,11 @@ import { copy, interpolate } from '@copy'
 import { useBarraDeEstado } from '@lib/barraEstado'
 import { ESTADOS, palabraCoincide } from '@lib/borrarCuenta'
 import { useSesion } from '@lib/useSesion'
+import { URL_SUSCRIPCIONES } from '@lib/suscripcion/enlaces'
 
 const textos = copy.cuenta.borrar
 const P7 = copy.diario.onboarding.p7
 const PROVEEDOR_DE_BOTON = Object.freeze({ 'google.com': 'google', 'apple.com': 'apple' })
-const URL_DE_SUSCRIPCIONES = 'https://apps.apple.com/account/subscriptions'
 
 const ENLACE =
   'self-start rounded-full px-3 py-2 min-h-touch-sm text-sm text-on-surface-soft hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30'
@@ -217,7 +217,7 @@ export default function CapaDeBorrado({
           <>
             {parrafo(textos.suscripcion)}
             <a
-              href={URL_DE_SUSCRIPCIONES}
+              href={URL_SUSCRIPCIONES}
               target="_blank"
               rel="noopener noreferrer"
               className={ENLACE}

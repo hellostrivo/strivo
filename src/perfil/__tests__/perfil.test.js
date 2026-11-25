@@ -18,7 +18,7 @@ import { perfilDesde } from '@/onboarding/estado'
 const textos = copy.diario.perfil
 
 describe('los bloques del perfil', () => {
-  it('son los ocho de esta fase, en su orden', () => {
+  it('son los nueve de esta fase, en su orden', () => {
     // Los tres que son la persona primero; la gestión detrás: Tu cuenta
     // (SPEC_19.1) antes de dónde vive lo que escribe (SPEC_17A). Los
     // recordatorios (SPEC_22) van detrás de los horarios: llegan a esas horas.
@@ -28,6 +28,8 @@ describe('los bloques del perfil', () => {
       'horarios',
       'recordatorios',
       'frases',
+      // SPEC_25: solo en la app de iPhone.
+      'suscripcion',
       'cuenta',
       'sincronizacion',
       // SPEC_24: lo último de la pantalla.
@@ -51,7 +53,7 @@ describe('los bloques del perfil', () => {
   it('lo que no está declarado no es un bloque', () => {
     expect(es('nombre')).toBe(true)
     expect(es('plan')).toBe(false)
-    expect(es('suscripcion')).toBe(false)
+    expect(es('suscripcion')).toBe(true)
   })
 
   it('la pantalla se anuncia con su nombre y no promete lo que no hay', () => {

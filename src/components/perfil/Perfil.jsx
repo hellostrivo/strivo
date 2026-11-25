@@ -41,6 +41,7 @@
 import { Suspense, lazy } from 'react'
 import Bloque from './Bloque'
 import TuCuenta from './TuCuenta'
+import TuSuscripcion from './TuSuscripcion'
 import TusDatos from './TusDatos'
 import TusFrases from './TusFrases'
 import TusRecordatorios from './TusRecordatorios'
@@ -66,6 +67,12 @@ const DiagnosticoAlmacen =
 // El diagnóstico del borrado (SPEC_24, DP-24.20): igual, con su propia bandera.
 const DiagnosticoBorrado =
   import.meta.env.VITE_DIAG_BORRADO === '1' ? lazy(() => import('./DiagnosticoBorrado')) : null
+
+// El diagnóstico de la suscripción (SPEC_25, DP-25.21): igual.
+const DiagnosticoSuscripcion =
+  import.meta.env.VITE_DIAG_SUSCRIPCION === '1'
+    ? lazy(() => import('./DiagnosticoSuscripcion'))
+    : null
 
 // El catálogo se lee de donde se pregunta por primera vez. Ver la nota del
 // namespace en `copy/index.js`: un solo sitio hasta que haya un tercero.
@@ -151,6 +158,19 @@ export default function Perfil({ uid, exportacion, Puerta }) {
     ),
 
     frases: () => <TusFrases uid={uid} />,
+
+    // SPEC_25 — Solo en la app de iPhone (`visibles`).
+    suscripcion: () => (
+      <TuSuscripcion
+        diagnostico={
+          DiagnosticoSuscripcion && (
+            <Suspense fallback={null}>
+              <DiagnosticoSuscripcion uid={uid} />
+            </Suspense>
+          )
+        }
+      />
+    ),
 
     cuenta: () => <TuCuenta />,
 

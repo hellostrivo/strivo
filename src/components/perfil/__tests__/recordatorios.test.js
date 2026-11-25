@@ -32,12 +32,12 @@ describe('el copy del bloque, tal como se aprobó (§6 y §9)', () => {
 describe('solo en la app de iPhone (DP-22.2)', () => {
   it('va detrás de «Cómo son tus días»', () => {
     expect(BLOQUES.indexOf('recordatorios')).toBe(BLOQUES.indexOf('horarios') + 1)
-    expect(SOLO_EN_IPHONE).toEqual(['recordatorios'])
+    expect(SOLO_EN_IPHONE).toEqual(['recordatorios', 'suscripcion'])
   })
 
   it('en la web el bloque no existe', () => {
     expect(visibles({ iphone: false })).not.toContain('recordatorios')
-    expect(visibles()).toEqual(BLOQUES.filter((id) => id !== 'recordatorios'))
+    expect(visibles()).toEqual(BLOQUES.filter((id) => !SOLO_EN_IPHONE.includes(id)))
   })
 
   it('en el iPhone están todos, en su orden', () => {

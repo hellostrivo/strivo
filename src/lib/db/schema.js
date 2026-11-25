@@ -105,6 +105,9 @@ export const FIELDS = Object.freeze({
     'tourCompletedAt',
     'motivos',
     'motivoOtro',
+    // SPEC_25 — Cuándo empezó la prueba de siete días, ISO en UTC. Es un hecho
+    // del expediente: entre dos, gana la más antigua (`conflictos.js`).
+    'fechaInicioPrueba',
     'updatedAt',
   ]),
 

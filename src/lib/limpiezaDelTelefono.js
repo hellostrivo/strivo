@@ -9,7 +9,7 @@
 //
 // `vaciarTelefono` es lo de borrar la cuenta (DP-24.14, D5): **el teléfono
 // queda como recién instalado**. Todas las filas y la cola de todos los uid,
-// las claves `strivo.*` de las cuatro familias, la clave de Face ID, los
+// las claves `strivo.*` de las cinco familias, la clave de Face ID, los
 // avisos y, en la app nativa, la copia vieja de IndexedDB que dejó la
 // migración a SQLite (la excepción a DP-17B.10: es lo escrito por la persona y
 // pidió borrarlo). Se quedan la base SQLite —vacía, en su sitio—, su `meta` y

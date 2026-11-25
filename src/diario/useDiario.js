@@ -14,6 +14,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import * as diario from './diario.js'
 import { editable as sePuedeEscribir } from './ventanaEdicion.js'
+import { useSuscripcion } from '@lib/suscripcion/useSuscripcion'
 
 /** §5.3 — Retraso del autoguardado desde el último carácter. */
 export const RETRASO_AUTOGUARDADO = 800
@@ -62,6 +63,9 @@ export function useDiario(uid, fechaPedida = null) {
   const [estado, setEstado] = useState(ESTADO_VACIO)
   const [carga, setCarga] = useState('cargando')
   const [error, setError] = useState(null)
+  // SPEC_25 — En modo lectura el día se pinta como uno fuera de su ventana: la
+  // misma consulta, el mismo guardián. Lo pendiente se vuelca igual.
+  const { puedeEscribir } = useSuscripcion()
 
   const vivo = useRef(true)
   // Lo que está esperando a guardarse, por espacio. Se acumula: dos teclas en
@@ -135,8 +139,8 @@ export function useDiario(uid, fechaPedida = null) {
    * a menudo no cuesta nada.
    */
   const abierto = useCallback(
-    () => sePuedeEscribir(estado.fecha, { diaTerminaA: estado.diaTerminaA }),
-    [estado.fecha, estado.diaTerminaA],
+    () => puedeEscribir && sePuedeEscribir(estado.fecha, { diaTerminaA: estado.diaTerminaA }),
+    [puedeEscribir, estado.fecha, estado.diaTerminaA],
   )
 
   /**

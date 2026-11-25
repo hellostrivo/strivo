@@ -33,6 +33,8 @@
 import { shared } from '@/lib/db'
 import { paraGuardar as referenciasParaGuardar } from '@/referencias/preferencias'
 import { arbolDeEntrada } from '@lib/entradaCuenta'
+import { esIPhone } from '@lib/plataforma'
+import { anotarPaso, cola } from '@lib/suscripcion/diagnostico'
 import { opcionDe } from './genero.js'
 import { expedienteDe, motivoDesde, perfilDesde } from './estado.js'
 import { quedanActivados } from './recordatorios.js'
@@ -152,13 +154,25 @@ export async function escribirPaso(uid, carga, destino, recorridos, valores) {
  * Cada escritura pregunta por su árbol, y `completedAt` lo hace la última: si
  * una mudanza pendiente se completa mientras tanto, el hecho cae en la cuenta,
  * que es donde la puerta va a mirar desde ese momento.
+ *
+ * En la app de iPhone, ahí empieza también la prueba de siete días (SPEC_25).
+ * Va en la misma escritura y sin leer antes: leer después de decidir el árbol
+ * dejaría que una mudanza se colara. Si la cuenta ya tenía una fecha más
+ * antigua, gana ella en cualquier fusión (`hechosQueFaltan`).
  */
-export async function terminarRecorrido(uid, carga, { respuestas, paso, recorridos }) {
+export async function terminarRecorrido(
+  uid,
+  carga,
+  { respuestas, paso, recorridos, iphone = esIPhone() },
+) {
   await escribirPerfil(uid, carga, respuestas)
   await escribirMotivo(uid, carga, respuestas)
+  const ahora = new Date().toISOString()
   const arbol = await arbolDeEntrada(uid)
+  anotarPaso(`onboarding terminado en ${cola(arbol)}`)
   return shared.updateOnboarding(arbol, {
     ...expedienteDe(paso, recorridos),
-    completedAt: new Date().toISOString(),
+    completedAt: ahora,
+    ...(iphone ? { fechaInicioPrueba: ahora } : {}),
   })
 }
