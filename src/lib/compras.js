@@ -24,6 +24,7 @@
 
 import { esIPhone } from './plataforma.js'
 import { conTecho } from './sesion.js'
+import { anotarPaso, cola } from './suscripcion/diagnostico.js'
 
 /** El derecho que se consulta. `strivo_pro` y Test Store son restos del panel. */
 export const DERECHO = 'completo'
@@ -160,12 +161,18 @@ export function crearCompras({
         conPlugin(async (plugin) => {
           const { appUserID } = await plugin.getAppUserID()
           if (appUserID === uid) return infoDe(plugin)
+          anotarPaso(`tienda: de ${cola(appUserID)} a ${cola(uid)}`)
 
           const teniaDerecho =
             esAnonimoElId(appUserID) && tieneDerecho(await infoDe(plugin).catch(() => null))
-          let info = (await plugin.logIn({ appUserID: uid }))?.customerInfo ?? null
+          const entrada = await plugin.logIn({ appUserID: uid })
+          let info = entrada?.customerInfo ?? null
+          anotarPaso(
+            `tienda: antes ${teniaDerecho ? 'con' : 'sin'} derecho · después ${tieneDerecho(info) ? 'con' : 'sin'} · cliente ${entrada?.created ? 'nuevo' : 'conocido'}`,
+          )
           if (teniaDerecho && !tieneDerecho(info)) {
             info = (await plugin.restorePurchases().catch(() => null))?.customerInfo ?? info
+            anotarPaso(`tienda: restaurado ${tieneDerecho(info) ? 'con' : 'sin'} derecho`)
           }
           avisar(info)
           return info
@@ -182,6 +189,7 @@ export function crearCompras({
           conPlugin(async (plugin) => {
             if ((await plugin.isAnonymous())?.isAnonymous !== false) return false
             await plugin.logOut()
+            anotarPaso('tienda: cliente cerrado')
             return true
           }, false),
         ),

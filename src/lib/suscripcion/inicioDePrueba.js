@@ -17,6 +17,7 @@
 import { hayMarcaDeRestauracion, shared } from '../db/index.js'
 import { arbolDeEntrada } from '../entradaCuenta.js'
 import { ESTADOS_SESION } from '../sesion.js'
+import { anotarPaso, cola } from './diagnostico.js'
 
 const EN_VUELO = new Map()
 
@@ -51,6 +52,7 @@ async function resolver(uid, { sesion, ahora = new Date() } = {}) {
   // vez la próxima.
   if ((await arbolDeEntrada(uid)) !== arbol) return null
   const fechaInicioPrueba = ahora.toISOString()
+  anotarPaso(`fecha de prueba puesta en ${cola(arbol)}`)
   await shared.updateOnboarding(arbol, { fechaInicioPrueba })
   return fechaInicioPrueba
 }

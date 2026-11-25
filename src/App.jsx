@@ -42,6 +42,7 @@ import { cruzarUmbral, umbralPendiente } from '@lib/umbralSesion'
 import { aplicarLecturaDePuerta, leerPuerta } from '@/presentacion/entrada'
 import { useSesion } from '@lib/useSesion'
 import ProveedorDeSuscripcion from '@components/suscripcion/ProveedorDeSuscripcion'
+import { anotarPaso, cola } from '@lib/suscripcion/diagnostico'
 import { useAvisos } from '@lib/avisos/useAvisos'
 
 import Respiracion from '@/breathing/Respiracion'
@@ -173,6 +174,7 @@ function Entrada({ uid }) {
           presentacionResuelta: presentacionResuelta.current,
         })
         if (!cambio) return
+        anotarPaso(`puerta de ${cola(uid)}: ${cambio.pendiente ? 'onboarding' : 'secciones'}`)
         setPendiente(cambio.pendiente)
         if (cambio.presentando !== undefined) setPresentando(cambio.presentando)
       })

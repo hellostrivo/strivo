@@ -186,3 +186,16 @@ it('viaja a la nube con el expediente y el modelo la admite', async () => {
   })
   expect(await readPath('users/x/shared/onboarding')).toEqual({ fechaInicioPrueba: VIEJA })
 })
+
+describe('crear una cuenta nueva desde Tu perfil (C3)', () => {
+  it('se lleva completedAt y la fecha, y vuelve a pedirla sin reiniciarla', async () => {
+    const { adoptarArbol } = await import('../../cuenta.js')
+    await shared.initShared('local-c3')
+    await shared.updateOnboarding('local-c3', { completedAt: VIEJA, fechaInicioPrueba: VIEJA })
+    expect(await adoptarArbol('local-c3', { uid: 'CuentaNuevaC3', email: 'x@y.com' })).toBe(
+      'CuentaNuevaC3',
+    )
+    expect(await shared.onboardingPendiente('CuentaNuevaC3')).toBe(false)
+    expect(await inicioDePrueba('CuentaNuevaC3', { sesion: 'conCuenta', ahora: AHORA })).toBe(VIEJA)
+  })
+})

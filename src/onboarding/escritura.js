@@ -34,6 +34,7 @@ import { shared } from '@/lib/db'
 import { paraGuardar as referenciasParaGuardar } from '@/referencias/preferencias'
 import { arbolDeEntrada } from '@lib/entradaCuenta'
 import { esIPhone } from '@lib/plataforma'
+import { anotarPaso, cola } from '@lib/suscripcion/diagnostico'
 import { opcionDe } from './genero.js'
 import { expedienteDe, motivoDesde, perfilDesde } from './estado.js'
 import { quedanActivados } from './recordatorios.js'
@@ -168,6 +169,7 @@ export async function terminarRecorrido(
   await escribirMotivo(uid, carga, respuestas)
   const ahora = new Date().toISOString()
   const arbol = await arbolDeEntrada(uid)
+  anotarPaso(`onboarding terminado en ${cola(arbol)}`)
   return shared.updateOnboarding(arbol, {
     ...expedienteDe(paso, recorridos),
     completedAt: ahora,
