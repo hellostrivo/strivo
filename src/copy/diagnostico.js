@@ -140,6 +140,8 @@ export const DIAGNOSTICO_SUSCRIPCION = Object.freeze({
   hoy: 'Volver al día de hoy',
   olvidarTarjeta: 'Olvidar la tarjeta del día 6',
   refrescar: 'Refrescar',
+  pasos: 'Línea temporal (lo último, abajo)',
+  borrarPasos: 'Borrar la línea temporal',
   ninguno: 'ninguno',
   plegar: 'Ocultar diagnóstico',
   desplegar: 'Diagnóstico de la suscripción',

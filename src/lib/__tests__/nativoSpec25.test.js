@@ -17,6 +17,9 @@ import { avisosDeEnlaces, problemasDeCompras, variableDe } from '../../../script
 import { desfaseHasta, lineasDeSuscripcion } from '@components/perfil/DiagnosticoSuscripcion'
 import {
   anotarEvento,
+  anotarPaso,
+  borrarPasos,
+  leerPasos,
   eventosDeLaSesion,
   fijarDesfase,
   leerDesfase,
@@ -98,9 +101,13 @@ describe('el diagnóstico, sin su bandera', () => {
     expect(leerDesfase()).toBe(0)
     fijarDesfase(5)
     anotarEvento('paywall_visto')
+    anotarPaso('x')
+    borrarPasos()
+    expect(leerPasos()).toEqual([])
     expect(eventosDeLaSesion()).toEqual([])
     expect(espia.getItem).not.toHaveBeenCalled()
     expect(espia.setItem).not.toHaveBeenCalled()
+    expect(espia.removeItem).not.toHaveBeenCalled()
   })
 
   it('con ella, el desfase sobrevive a cerrar y «hoy» borra la clave', () => {
@@ -113,6 +120,10 @@ describe('el diagnóstico, sin su bandera', () => {
     })
     fijarDesfase(7)
     expect(leerDesfase()).toBe(7)
+    for (let i = 0; i < 50; i += 1) anotarPaso(`paso ${i}`)
+    expect(leerPasos()).toHaveLength(40)
+    expect(leerPasos().at(-1)).toMatch(/^\d\d:\d\d:\d\d\.\d{3} \[\w+\] paso 49$/)
+    borrarPasos()
     fijarDesfase(0)
     expect(leerDesfase()).toBe(0)
     expect(m.size).toBe(0)
