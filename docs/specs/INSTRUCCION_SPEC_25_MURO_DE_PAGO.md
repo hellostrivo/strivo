@@ -271,6 +271,7 @@ Los nombres los propones tú; esta es la forma, respetando RN-TEC (`lib/` no imp
 - **H1.** En el muro y en Tu perfil, «Tengo un código» abre la hoja «Tu código». Con el campo vacío, «Continuar» no hace nada. «Cancelar» cierra.
 - **H2.** **Pasa a producción (Anexo D):** los códigos de sandbox no se canjean por enlace. Allí: escribir la clave en minúsculas y con espacios → «Continuar» → el App Store con la clave puesta → confirmar y volver. **Debe verse:** «Listo. Tu código quedó aplicado.» y Anual en Tu perfil.
 - **H3.** Una clave inventada → el App Store dice que no vale → volver. **Debe verse:** «Todavía no vemos tu código aquí…» con «Restaurar compras», y el muro igual.
+  - **Con una cuenta de sandbox sin compras.** Si el Apple ID ya tenía una (aunque se haya borrado su historial), al volver puede recuperarse: entonces **debe verse** ese plan y «Tu suscripción está de vuelta.», **nunca** «Listo. Tu código quedó aplicado.», que solo sale con el Anual comprado después de irse.
 
 **Al terminar:** volver a entrar en el iPhone con la cuenta de diario y poner `mostrar: false` en el Fundador.
 
@@ -377,7 +378,7 @@ Las pruebas P1, C4, C6, C7, C10, K1 y H2 y el Anexo B ya están corregidos arrib
 
 ### 25B
 
-*(Se llena al probar el bloque H.)*
+H1 pasa (25 nov 2026). H3, primer intento: con una clave inventada volvió un Fundador de antes de ese Apple ID y la app dijo «Listo». Corregido: «Listo» exige el Anual y una compra posterior a irse. Por repetir.
 
 ---
 

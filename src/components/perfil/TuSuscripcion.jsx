@@ -67,10 +67,8 @@ export default function TuSuscripcion({ diagnostico = null }) {
     <div className="flex flex-col gap-4">
       <div aria-live="polite" className="flex flex-col gap-1">
         {frase && <p className="text-base text-on-surface">{frase}</p>}
-        {!nota && suscripcion.codigoSinAplicar && (
-          <p className="text-sm text-on-surface-soft leading-relaxed">
-            {copy.suscripcion.codigo.noAplicado}
-          </p>
+        {!nota && suscripcion.notaDeCodigo && (
+          <p className="text-sm text-on-surface-soft leading-relaxed">{suscripcion.notaDeCodigo}</p>
         )}
         {nota && <p className="text-sm text-on-surface-soft leading-relaxed">{nota}</p>}
       </div>

@@ -19,8 +19,11 @@ import HojaDeCodigo, { continuarCon } from '../HojaDeCodigo.jsx'
 import { MuroVista } from '../Muro.jsx'
 
 const t = copy.suscripcion
-const con = (productIdentifier) => ({
-  entitlements: { active: { completo: { isActive: true, productIdentifier } } },
+const DESDE = Date.parse('2026-11-25T20:00:00Z')
+const con = (productIdentifier, latestPurchaseDateMillis = DESDE + 5000) => ({
+  entitlements: {
+    active: { completo: { isActive: true, productIdentifier, latestPurchaseDateMillis } },
+  },
 })
 const SIN = { entitlements: { active: {} } }
 
@@ -96,7 +99,7 @@ describe('la hoja', () => {
       )
     }
     empezarCanje(SIN)
-    expect(tomarIntento()).toEqual({ antes: null })
+    expect(Object.keys(tomarIntento()).sort()).toEqual(['antes', 'desde'])
   })
 })
 
@@ -106,13 +109,13 @@ describe('la vuelta', () => {
   const volver = async (infos, { antes = null, sincronizar = async () => {} } = {}) => {
     const esperados = []
     let i = 0
-    const aplicado = await esperarCanje({
-      intento: { antes },
+    const resultado = await esperarCanje({
+      intento: { antes, desde: DESDE },
       sincronizar,
       info: async () => infos[Math.min(i++, infos.length - 1)],
       esperar: async (ms) => esperados.push(ms),
     })
-    return { aplicado, esperados, preguntas: i }
+    return { resultado, esperados, preguntas: i }
   }
 
   it('sin intento no hay nada que mirar, y cada intento se mira una vez', () => {
@@ -124,7 +127,7 @@ describe('la vuelta', () => {
 
   it('derecho a la primera: aplicado, sin esperar', async () => {
     expect(await volver([con('strivo_anual')])).toEqual({
-      aplicado: true,
+      resultado: 'aplicado',
       esperados: [],
       preguntas: 1,
     })
@@ -132,13 +135,13 @@ describe('la vuelta', () => {
 
   it('derecho a los cinco segundos: aplicado', async () => {
     const r = await volver([SIN, SIN, con('strivo_anual')])
-    expect(r.aplicado).toBe(true)
+    expect(r.resultado).toBe('aplicado')
     expect(r.esperados).toEqual([2000, 3000])
   })
 
   it('sin derecho en diez segundos: no aplicado', async () => {
     const r = await volver([SIN])
-    expect(r.aplicado).toBe(false)
+    expect(r.resultado).toBe('nada')
     expect(r.esperados.reduce((a, b) => a + b, 0)).toBe(10000)
     expect(r.preguntas).toBe(ESPERAS_MS.length)
   })
@@ -150,21 +153,74 @@ describe('la vuelta', () => {
     const rota = async () => {
       throw new Error('no')
     }
-    expect((await volver([con('strivo_anual')], { sincronizar: rota })).aplicado).toBe(true)
+    expect((await volver([con('strivo_anual')], { sincronizar: rota })).resultado).toBe('aplicado')
     const colgada = () => new Promise(() => {})
-    expect((await volver([con('strivo_anual')], { sincronizar: colgada })).aplicado).toBe(true)
+    expect((await volver([con('strivo_anual')], { sincronizar: colgada })).resultado).toBe(
+      'aplicado',
+    )
   })
 
-  it('quien ya tenía el Mensual solo lo nota si pasa al Anual', () => {
-    expect(canjeAplicado('strivo_mensual', con('strivo_mensual'))).toBe(false)
-    expect(canjeAplicado('strivo_mensual', con('strivo_anual'))).toBe(true)
-    expect(canjeAplicado(null, SIN)).toBe(false)
-    expect(canjeAplicado('strivo_mensual', null)).toBe(false)
+  it('H3: una clave inventada con un Fundador que vuelve no es «aplicado»', async () => {
+    const viejo = con('strivo_fundador', DESDE - 3600000)
+    expect((await volver([SIN, viejo])).resultado).toBe('recuperado')
+    expect((await volver([con('strivo_fundador')])).resultado).toBe('recuperado')
+  })
+
+  it.each([
+    ['un Mensual de antes', null, con('strivo_mensual', DESDE - 60000), 'recuperado'],
+    ['un Mensual comprado ahora', null, con('strivo_mensual'), 'recuperado'],
+    ['un Anual de antes', null, con('strivo_anual', DESDE - 3600000), 'recuperado'],
+    ['el mismo Mensual con el que se fue', 'strivo_mensual', con('strivo_mensual'), 'nada'],
+    ['el mismo Fundador', 'strivo_fundador', con('strivo_fundador'), 'nada'],
+    ['el Anual que ya tenía, aunque renueve', 'strivo_anual', con('strivo_anual'), 'nada'],
+    ['del Mensual al Anual, ahora', 'strivo_mensual', con('strivo_anual'), 'aplicado'],
+    ['el Anual, ahora', null, con('strivo_anual'), 'aplicado'],
+    [
+      'el reloj del teléfono, un minuto adelantado',
+      null,
+      con('strivo_anual', DESDE - 60000),
+      'aplicado',
+    ],
+    ['un Anual sin fecha legible', null, con('strivo_anual', null), 'recuperado'],
+  ])('%s → %s', async (_n, antes, info, esperado) => {
+    expect((await volver([info], { antes })).resultado).toBe(esperado)
+  })
+
+  it('si vuelve lo viejo y después llega el Anual, es «aplicado»', async () => {
+    const r = await volver([con('strivo_fundador', DESDE - 3600000), con('strivo_anual')])
+    expect(r.resultado).toBe('aplicado')
+  })
+
+  it('sin red al final, vale lo último que se supo', async () => {
+    const r = await volver([con('strivo_fundador', DESDE - 1), null])
+    expect(r.resultado).toBe('recuperado')
+  })
+
+  it('sin la fecha en milisegundos, se lee la de texto', () => {
+    const info = con('strivo_anual', undefined)
+    info.entitlements.active.completo = {
+      isActive: true,
+      productIdentifier: 'strivo_anual',
+      latestPurchaseDate: '2026-11-25T20:00:09Z',
+    }
+    expect(canjeAplicado({ antes: null, desde: DESDE }, info)).toBe(true)
+  })
+
+  it('solo «aplicado» dice «Listo»; lo recuperado dice que está de vuelta', () => {
+    const fuente = readFileSync('src/components/suscripcion/ProveedorDeSuscripcion.jsx', 'utf8')
+    expect(fuente.match(/suscripcion\.codigo\.listo/g)).toHaveLength(1)
+    const tras = fuente.slice(fuente.indexOf('const resultado = await esperarCanje'))
+    const listo = tras.indexOf('codigo.listo')
+    expect(tras.indexOf('RESULTADO.recuperado')).toBeLessThan(listo)
+    expect(tras.indexOf('RESULTADO.nada')).toBeLessThan(listo)
+    expect(tras).toMatch(
+      /RESULTADO\.recuperado\)[\s\S]{0,40}copy\.suscripcion\.paywall\.restaurado/,
+    )
   })
 
   it('el producto de antes se toma al irse: un derecho que llega primero por el oyente cuenta', () => {
     empezarCanje(con('strivo_mensual'))
-    expect(tomarIntento()).toEqual({ antes: 'strivo_mensual' })
+    expect(tomarIntento()).toMatchObject({ antes: 'strivo_mensual' })
   })
 })
 
@@ -191,16 +247,16 @@ describe('dónde se ofrece', () => {
   })
 
   it('«no aplicado» sale con «Restaurar compras» y solo si hubo un intento', () => {
-    const pintar = (codigoSinAplicar) =>
+    const pintar = (notaDeCodigo) =>
       renderToStaticMarkup(
         createElement(
           ContextoSuscripcion.Provider,
-          { value: { ...SIN_SUSCRIPCION, estado: 'lectura', codigoSinAplicar } },
+          { value: { ...SIN_SUSCRIPCION, estado: 'lectura', notaDeCodigo } },
           createElement(TuSuscripcion),
         ),
       )
-    expect(pintar(true)).toContain(t.codigo.noAplicado)
-    expect(pintar(true)).toContain(t.ajustes.restaurar)
-    expect(pintar(false)).not.toContain(t.codigo.noAplicado)
+    expect(pintar(t.codigo.noAplicado)).toContain(t.codigo.noAplicado)
+    expect(pintar(t.codigo.noAplicado)).toContain(t.ajustes.restaurar)
+    expect(pintar(null)).not.toContain(t.codigo.noAplicado)
   })
 })

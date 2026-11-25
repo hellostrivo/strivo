@@ -801,7 +801,7 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**138 archivos de prueba · 3.332 casos** en el proyecto `indexeddb`, **3.269 más** en el proyecto
+**138 archivos de prueba · 3.346 casos** en el proyecto `indexeddb`, **3.283 más** en el proyecto
 `sqlite` (la misma suite contra SQLite) **y 24 XCTest del plugin** · los seis comandos y
 `validar:frases` en verde. **La intermitente de `journal.test.js` se cerró** (10 nov 2026): sus dos
 entradas empataban en el milisegundo y el orden lo decidía un UUID; ahora se crean con `Date`
@@ -843,8 +843,9 @@ como siempre hasta DP-21.5.
   caché nunca se invalida: sin red dejaría sin derecho a quien pagó.
 - **«Tengo un código» (25B):** la hoja (`HojaDeCodigo`) arma `urlDeCanje` y abre el App Store; la clave
   no se guarda y no se valida. El intento vive en memoria con el producto de antes: al volver se
-  llama a `syncPurchases` **una vez** y se pregunta a los 0, 2, 5 y 10 s. Aplicado es que cambió el
-  producto, no solo que haya derecho (quien tiene el Mensual pasa al Anual). Sin intento no se dice
+  llama a `syncPurchases` **una vez** y se pregunta a los 0, 2, 5 y 10 s. **«Listo» solo si es el
+  Anual y se compró después de irse** (`canjeAplicado`, con 2 min de margen de reloj): sincronizar
+  trae también lo que el Apple ID ya tenía. Si apareció otra compra, «Tu suscripción está de vuelta.». Sin intento no se dice
   nada. No se ofrece con el Anual ni con el Fundador. **No se usa la hoja de canje de Apple.**
 - **El plugin** (`@revenuecat/purchases-capacitor` 14.1.2, SPM) es un Proxy sobre el de Capacitor:
   suelto de una promesa se cuelga, comprobado. No tiene `showManageSubscriptions`: «Gestionar

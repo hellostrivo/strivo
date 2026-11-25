@@ -26,7 +26,13 @@ import { compras } from '@lib/compras'
 import { esIPhone } from '@lib/plataforma'
 import { ESTADOS_SESION, conTecho } from '@lib/sesion'
 import { useSesion } from '@lib/useSesion'
-import { empezarCanje, esperarCanje, productoActivo, tomarIntento } from '@lib/suscripcion/canje'
+import {
+  RESULTADO,
+  empezarCanje,
+  esperarCanje,
+  productoActivo,
+  tomarIntento,
+} from '@lib/suscripcion/canje'
 import { ESTADOS, estadoDeSuscripcion, puedeEscribir } from '@lib/suscripcion/estado'
 import { anotarPaso, escucharDiagnostico, leerDesfase } from '@lib/suscripcion/diagnostico'
 import { inicioDePrueba } from '@lib/suscripcion/inicioDePrueba'
@@ -52,7 +58,7 @@ export default function ProveedorDeSuscripcion({ uid, libre, children }) {
   const [muro, setMuro] = useState(false)
   const [acuse, setAcuse] = useState(null)
   const [hoja, setHoja] = useState(false)
-  const [codigoSinAplicar, setCodigoSinAplicar] = useState(false)
+  const [notaDeCodigo, setNotaDeCodigo] = useState(null)
   const vivo = useRef(true)
 
   useEffect(() => {
@@ -107,13 +113,17 @@ export default function ProveedorDeSuscripcion({ uid, libre, children }) {
   const resolverCanje = useCallback(async () => {
     const intento = tomarIntento()
     if (!intento) return
-    const aplicado = await esperarCanje({
+    const resultado = await esperarCanje({
       intento,
       sincronizar: compras.sincronizar,
       info: refrescar,
     })
+    anotarPaso(`código: ${resultado} · antes ${intento.antes ?? 'nada'}`)
     if (!vivo.current) return
-    if (!aplicado) return setCodigoSinAplicar(true)
+    // Con una compra de antes que ha vuelto, no se dice que el código se aplicó.
+    if (resultado === RESULTADO.recuperado)
+      return setNotaDeCodigo(copy.suscripcion.paywall.restaurado)
+    if (resultado === RESULTADO.nada) return setNotaDeCodigo(copy.suscripcion.codigo.noAplicado)
     setMuro(false)
     setAcuse(copy.suscripcion.codigo.listo)
     return undefined
@@ -169,7 +179,7 @@ export default function ProveedorDeSuscripcion({ uid, libre, children }) {
 
   // Si el código llega tarde, la frase de que no se veía deja de ser cierta.
   const producto = productoActivo(customerInfo)
-  useEffect(() => setCodigoSinAplicar(false), [producto])
+  useEffect(() => setNotaDeCodigo(null), [producto])
 
   const abrirMuro = useCallback(() => {
     darElMuroPorVisto()
@@ -177,12 +187,12 @@ export default function ProveedorDeSuscripcion({ uid, libre, children }) {
   }, [])
 
   const abrirCodigo = useCallback(() => {
-    setCodigoSinAplicar(false)
+    setNotaDeCodigo(null)
     setHoja(true)
   }, [])
 
   const restaurar = useCallback(() => {
-    setCodigoSinAplicar(false)
+    setNotaDeCodigo(null)
     return compras.restaurar()
   }, [])
 
@@ -197,7 +207,7 @@ export default function ProveedorDeSuscripcion({ uid, libre, children }) {
       diaTerminaA: inicio.diaTerminaA,
       abrirMuro,
       abrirCodigo,
-      codigoSinAplicar,
+      notaDeCodigo,
       refrescar,
       restaurar,
     }),
@@ -213,7 +223,7 @@ export default function ProveedorDeSuscripcion({ uid, libre, children }) {
       inicio,
       abrirMuro,
       abrirCodigo,
-      codigoSinAplicar,
+      notaDeCodigo,
       refrescar,
       restaurar,
     ],
@@ -228,10 +238,10 @@ export default function ProveedorDeSuscripcion({ uid, libre, children }) {
             estado={actual.estado}
             onCerrar={() => {
               setMuro(false)
-              setCodigoSinAplicar(false)
+              setNotaDeCodigo(null)
             }}
             onCodigo={abrirCodigo}
-            codigoSinAplicar={codigoSinAplicar}
+            notaDeCodigo={notaDeCodigo}
             onAcuse={(texto) => {
               setMuro(false)
               setAcuse(texto)

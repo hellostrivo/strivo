@@ -147,7 +147,7 @@ export function MuroVista({
  * @param {string} props.estado - el de la suscripción.
  * @param {() => void} props.onCerrar
  * @param {() => void} props.onCodigo - abre la hoja del código.
- * @param {boolean} props.codigoSinAplicar - se volvió de un canje sin ver nada.
+ * @param {?string} props.notaDeCodigo - lo que se dice al volver de un canje sin aplicar.
  * @param {(texto: string) => void} props.onAcuse - cierra el muro y dice una frase.
  * @param {() => Promise<{motivo: string}>} props.restaurar
  */
@@ -155,7 +155,7 @@ export default function Muro({
   estado,
   onCerrar,
   onCodigo,
-  codigoSinAplicar = false,
+  notaDeCodigo = null,
   onAcuse,
   restaurar,
 }) {
@@ -241,7 +241,7 @@ export default function Muro({
         carga={carga}
         tarjetas={tarjetas}
         elegida={elegida}
-        nota={nota ?? (codigoSinAplicar ? copy.suscripcion.codigo.noAplicado : null)}
+        nota={nota ?? notaDeCodigo}
         onElegir={setElegida}
         onContinuar={continuar}
         onRestaurar={alRestaurar}

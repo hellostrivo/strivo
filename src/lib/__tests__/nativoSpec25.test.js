@@ -69,7 +69,7 @@ describe('el plugin', () => {
     const usos = fuentes().filter((r) => /compras\.sincronizar/.test(leer(r)))
     expect(usos).toEqual([join('src', 'components', 'suscripcion', 'ProveedorDeSuscripcion.jsx')])
     expect(leer(usos[0])).toMatch(
-      /const intento = tomarIntento\(\)\s+if \(!intento\) return\s+const aplicado = await esperarCanje/,
+      /const intento = tomarIntento\(\)\s+if \(!intento\) return\s+const resultado = await esperarCanje/,
     )
   })
 
