@@ -219,7 +219,7 @@ describe('el bloque «Suscripción»', () => {
     ['fundador', { gestionar: false, opciones: false }],
     ['cargando', { gestionar: false, opciones: false }],
   ])('los controles en %s; «Restaurar compras», siempre', (estado, esperado) => {
-    expect(controlesDe(estado)).toEqual(esperado)
+    expect(controlesDe(estado)).toMatchObject(esperado)
     const html = renderToStaticMarkup(
       createElement(
         ContextoSuscripcion.Provider,

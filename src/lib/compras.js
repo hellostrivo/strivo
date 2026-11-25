@@ -236,6 +236,17 @@ export function crearCompras({
     },
 
     /**
+     * Manda a RevenueCat lo comprado con este Apple ID. **Solo al volver de un
+     * canje que abrió la propia app** (25B): con «Transferir», hacerlo en cada
+     * vuelta movería las compras entre dos cuentas una y otra vez.
+     */
+    sincronizar: () =>
+      conPlugin(async (plugin) => {
+        await plugin.syncPurchases()
+        return true
+      }, false),
+
+    /**
      * Restaura lo comprado con este Apple ID.
      *
      * @returns {Promise<{motivo: 'restaurado'|'nada'|'error', info?: object}>}

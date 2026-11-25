@@ -96,6 +96,7 @@ const SUSCRIPCION = {
     mensualDetalle: '{precio} al mes',
     boton: 'Continuar',
     restaurar: 'Restaurar compras',
+    tengoCodigo: 'Tengo un código',
     terminos: 'Términos',
     privacidad: 'Privacidad',
     ahoraNo: 'Ahora no',
@@ -112,6 +113,18 @@ const SUSCRIPCION = {
     sinPlanes: 'Ahora no pudimos traer los planes. Inténtalo de nuevo en un momento.',
     reintentar: 'Intentar de nuevo',
     errorRestaurar: 'No pudimos revisar tus compras. Inténtalo de nuevo con conexión.',
+  },
+  // SPEC_25B — El precio rebajado lo enseña el App Store; aquí solo se dice que
+  // la clave quedó aplicada.
+  codigo: {
+    titulo: 'Tu código',
+    campo: 'Escríbelo aquí',
+    aviso: 'Te llevamos al App Store para aplicarlo. Vuelve a Strivo cuando termines.',
+    continuar: 'Continuar',
+    cancelar: 'Cancelar',
+    listo: 'Listo. Tu código quedó aplicado.',
+    noAplicado:
+      'Todavía no vemos tu código aquí. Si ya lo aplicaste en el App Store, toca Restaurar compras.',
   },
   prueba: {
     tarjetaTitulo: 'Tu prueba termina mañana',
@@ -134,6 +147,7 @@ const SUSCRIPCION = {
     sinSuscripcion: 'Sin suscripción',
     gestionar: 'Gestionar suscripción',
     restaurar: 'Restaurar compras',
+    tengoCodigo: 'Tengo un código',
     verOpciones: 'Ver opciones',
   },
 }

@@ -23,6 +23,9 @@ export const SIN_SUSCRIPCION = Object.freeze({
   fechaInicioPrueba: null,
   diaTerminaA: undefined,
   abrirMuro: nada,
+  // 25B — La hoja del código, y lo que se dice al volver si no quedó aplicado.
+  abrirCodigo: nada,
+  notaDeCodigo: null,
   refrescar: async () => null,
   restaurar: async () => ({ motivo: 'error' }),
 })

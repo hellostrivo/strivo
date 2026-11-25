@@ -700,6 +700,7 @@ el componente.**
   Fundador; `inicioDePrueba.js` → cuándo empezó; `planes.js` → qué tarjetas y con qué precio (el de
   la tienda); `muroSolo.js` y `tarjetaDePrueba.js` → lo que aparece una vez; `enlaces.js` → las URL de
   fuera (SPEC_25).
+- `src/lib/suscripcion/canje.js` → `urlDeCanje`, el ID de la app y la vuelta del canje (25B).
 - `src/lib/compras.js` → **cómo** se habla con RevenueCat: el **único** archivo que importa
   `@revenuecat/purchases-capacitor`, bajo demanda y solo en `--mode ios`. Hay pruebas que recorren
   `src/` y que construyen.
@@ -800,20 +801,20 @@ literal en el manual.
 rama de resguardo está creada y congelada, la rama activa es `strivo`, y el código, las rutas, los
 componentes, los estilos, los textos, las pruebas y la documentación están depurados y renombrados.
 
-**137 archivos de prueba · 3.303 casos** en el proyecto `indexeddb`, **3.240 más** en el proyecto
+**138 archivos de prueba · 3.346 casos** en el proyecto `indexeddb`, **3.283 más** en el proyecto
 `sqlite` (la misma suite contra SQLite) **y 24 XCTest del plugin** · los seis comandos y
 `validar:frases` en verde. **La intermitente de `journal.test.js` se cerró** (10 nov 2026): sus dos
 entradas empataban en el milisegundo y el orden lo decidía un UUID; ahora se crean con `Date`
 congelado en dos instantes distintos. `listJournalEntries` no cambió. Cada caso que vuelca
 IndexedDB por dentro tiene su equivalente que vuelca todas las tablas de SQLite.
 
-### Cobrar (SPEC_25A, 25 nov 2026)
+### Cobrar (SPEC_25, 25 nov 2026)
 
 La instrucción y sus decisiones están en `docs/specs/INSTRUCCION_SPEC_25_MURO_DE_PAGO.md` (v1.1;
 **su §9 manda**) y en `docs/specs/REPORTE_PREVIO_SPEC_25.md`. **Pagar es fácil y se entiende sin
 letra pequeña; lo escrito nunca queda tras el muro; quien no paga sigue leyendo, respirando y
 llevándose lo suyo; y nada presiona.** Todo, solo en la app de iPhone (`esIPhone()`): la web se porta
-como siempre hasta DP-21.5. «Tengo un código» (25B) todavía no está.
+como siempre hasta DP-21.5.
 
 - **Sin cuenta también se prueba y se paga** (DP-25.11, Guideline 5.1.1 de Apple). El cliente de
   RevenueCat nace anónimo; con `conCuenta` es el uid de Firebase (`logIn`) y nada más; al salir y al
@@ -840,6 +841,12 @@ como siempre hasta DP-21.5. «Tengo un código» (25B) todavía no está.
   cinco minutos (caché del SDK). Solo se consulta el derecho `completo`.
 - **Al volver al frente** se pregunta y se escucha; **no** se llama a `syncPurchases` (DP-25.18). La
   caché nunca se invalida: sin red dejaría sin derecho a quien pagó.
+- **«Tengo un código» (25B):** la hoja (`HojaDeCodigo`) arma `urlDeCanje` y abre el App Store; la clave
+  no se guarda y no se valida. El intento vive en memoria con el producto de antes: al volver se
+  llama a `syncPurchases` **una vez** y se pregunta a los 0, 2, 5 y 10 s. **«Listo» solo si es el
+  Anual y se compró después de irse** (`canjeAplicado`, con 2 min de margen de reloj): sincronizar
+  trae también lo que el Apple ID ya tenía. Si apareció otra compra, «Tu suscripción está de vuelta.». Sin intento no se dice
+  nada. No se ofrece con el Anual ni con el Fundador. **No se usa la hoja de canje de Apple.**
 - **El plugin** (`@revenuecat/purchases-capacitor` 14.1.2, SPM) es un Proxy sobre el de Capacitor:
   suelto de una promesa se cuelga, comprobado. No tiene `showManageSubscriptions`: «Gestionar
   suscripción» es un enlace. **El import vive tras `import.meta.env.MODE === 'ios'`** porque el
@@ -859,7 +866,9 @@ va aparte (5,5 kB) y el plugin no está.
 
 **Las pruebas manuales P, C, K, W y R pasan** (25 nov 2026, la fundadora en su iPhone 17 en sandbox y
 en la web; el detalle, en el §10 de la instrucción). Sin hacer a mano: C8 con `hasta` de ayer, C9 y
-K2. **K1: un código canjeado fuera de la app llega solo**, así que no hay `syncPurchases`. Antes del
+K2. **25B: H1 y H3a pasan**; H3b, sin hacer, y **H2 espera a producción** (Anexo D): antes de
+repartir claves hay que probar ahí un canje real. **K1: un código canjeado fuera de la app llega solo**, así que `syncPurchases` solo corre
+al volver de «Tengo un código». Antes del
 envío a revisión falta `URL_PRIVACIDAD`.
 
 ### Llevarme lo que escribí y borrar mi cuenta (SPEC_24, 15 nov 2026)
