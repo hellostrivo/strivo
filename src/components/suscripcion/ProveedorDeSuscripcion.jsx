@@ -11,7 +11,7 @@
 // se intenta al volver al frente y al volver la red.
 //
 // **Al volver al frente** (DP-25.18) se pregunta y se escucha; no se
-// sincroniza. Lo que pasa fuera de la app —un canje, una renovación, un
+// sincroniza, salvo al volver de un canje que abrió la propia app (25B). Lo que pasa fuera de la app —un canje, una renovación, un
 // reembolso— llega por el oyente.
 //
 // El reloj solo se mira al abrir y al volver al frente: nadie pasa a lectura a
@@ -20,11 +20,13 @@
 // En la web no se llama a nadie.
 
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { copy } from '@copy'
 import { shared } from '@/lib/db'
 import { compras } from '@lib/compras'
 import { esIPhone } from '@lib/plataforma'
 import { ESTADOS_SESION, conTecho } from '@lib/sesion'
 import { useSesion } from '@lib/useSesion'
+import { empezarCanje, esperarCanje, productoActivo, tomarIntento } from '@lib/suscripcion/canje'
 import { ESTADOS, estadoDeSuscripcion, puedeEscribir } from '@lib/suscripcion/estado'
 import { escucharDiagnostico, leerDesfase } from '@lib/suscripcion/diagnostico'
 import { inicioDePrueba } from '@lib/suscripcion/inicioDePrueba'
@@ -34,6 +36,7 @@ import Acuse from './Acuse'
 
 // El muro solo existe en el iPhone y al abrirlo: la web no lo necesita nunca.
 const Muro = lazy(() => import('./Muro'))
+const HojaDeCodigo = lazy(() => import('./HojaDeCodigo'))
 
 /** Cuánto se espera a que el cliente sea el de la cuenta. */
 const TECHO_DE_IDENTIDAD_MS = 5000
@@ -48,6 +51,8 @@ export default function ProveedorDeSuscripcion({ uid, libre, children }) {
   const [desfaseDias, setDesfase] = useState(leerDesfase)
   const [muro, setMuro] = useState(false)
   const [acuse, setAcuse] = useState(null)
+  const [hoja, setHoja] = useState(false)
+  const [codigoSinAplicar, setCodigoSinAplicar] = useState(false)
   const vivo = useRef(true)
 
   useEffect(() => {
@@ -89,6 +94,22 @@ export default function ProveedorDeSuscripcion({ uid, libre, children }) {
     })
   }, [iphone])
 
+  /** Al volver de un canje que abrió la app (DP-25.25). Sin intento, nada. */
+  const resolverCanje = useCallback(async () => {
+    const intento = tomarIntento()
+    if (!intento) return
+    const aplicado = await esperarCanje({
+      intento,
+      sincronizar: compras.sincronizar,
+      info: refrescar,
+    })
+    if (!vivo.current) return
+    if (!aplicado) return setCodigoSinAplicar(true)
+    setMuro(false)
+    setAcuse(copy.suscripcion.codigo.listo)
+    return undefined
+  }, [refrescar])
+
   useEffect(() => {
     if (!iphone) return undefined
     refrescar()
@@ -96,6 +117,7 @@ export default function ProveedorDeSuscripcion({ uid, libre, children }) {
       if (document.visibilityState !== 'visible') return
       setAhora(new Date())
       refrescar()
+      resolverCanje()
     }
     const alVolverLaRed = () => refrescar()
     document.addEventListener('visibilitychange', alVolver)
@@ -104,7 +126,7 @@ export default function ProveedorDeSuscripcion({ uid, libre, children }) {
       document.removeEventListener('visibilitychange', alVolver)
       window.removeEventListener('online', alVolverLaRed)
     }
-  }, [iphone, refrescar])
+  }, [iphone, refrescar, resolverCanje])
 
   // La fecha puede llegar de la nube después de montar.
   useEffect(() => {
@@ -136,12 +158,24 @@ export default function ProveedorDeSuscripcion({ uid, libre, children }) {
     if (conDerecho) setMuro(false)
   }, [conDerecho])
 
+  // Si el código llega tarde, la frase de que no se veía deja de ser cierta.
+  const producto = productoActivo(customerInfo)
+  useEffect(() => setCodigoSinAplicar(false), [producto])
+
   const abrirMuro = useCallback(() => {
     darElMuroPorVisto()
     setMuro(true)
   }, [])
 
-  const restaurar = useCallback(() => compras.restaurar(), [])
+  const abrirCodigo = useCallback(() => {
+    setCodigoSinAplicar(false)
+    setHoja(true)
+  }, [])
+
+  const restaurar = useCallback(() => {
+    setCodigoSinAplicar(false)
+    return compras.restaurar()
+  }, [])
 
   const valor = useMemo(
     () => ({
@@ -151,6 +185,8 @@ export default function ProveedorDeSuscripcion({ uid, libre, children }) {
       fechaInicioPrueba: inicio.fecha,
       diaTerminaA: inicio.diaTerminaA,
       abrirMuro,
+      abrirCodigo,
+      codigoSinAplicar,
       refrescar,
       restaurar,
     }),
@@ -163,6 +199,8 @@ export default function ProveedorDeSuscripcion({ uid, libre, children }) {
       customerInfo,
       inicio,
       abrirMuro,
+      abrirCodigo,
+      codigoSinAplicar,
       refrescar,
       restaurar,
     ],
@@ -175,12 +213,28 @@ export default function ProveedorDeSuscripcion({ uid, libre, children }) {
         <Suspense fallback={null}>
           <Muro
             estado={actual.estado}
-            onCerrar={() => setMuro(false)}
+            onCerrar={() => {
+              setMuro(false)
+              setCodigoSinAplicar(false)
+            }}
+            onCodigo={abrirCodigo}
+            codigoSinAplicar={codigoSinAplicar}
             onAcuse={(texto) => {
               setMuro(false)
               setAcuse(texto)
             }}
             restaurar={restaurar}
+          />
+        </Suspense>
+      )}
+      {hoja && (
+        <Suspense fallback={null}>
+          <HojaDeCodigo
+            onCancelar={() => setHoja(false)}
+            onAbierto={() => {
+              empezarCanje(customerInfo)
+              setHoja(false)
+            }}
           />
         </Suspense>
       )}
